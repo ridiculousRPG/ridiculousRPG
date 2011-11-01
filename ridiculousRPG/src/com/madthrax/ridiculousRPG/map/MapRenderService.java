@@ -1,0 +1,58 @@
+package com.madthrax.ridiculousRPG.map;
+
+import java.util.List;
+
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Matrix4;
+import com.madthrax.ridiculousRPG.GameBase;
+import com.madthrax.ridiculousRPG.GameServiceProvider;
+import com.madthrax.ridiculousRPG.animations.WeatherEffectService;
+import com.madthrax.ridiculousRPG.movement.Movable;
+import com.madthrax.ridiculousRPG.service.Computable;
+import com.madthrax.ridiculousRPG.service.Drawable;
+import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
+
+public class MapRenderService extends GameServiceDefaultImpl implements Computable, Drawable {
+	private MapWithEvents<?> map;
+
+	/**
+	 * Loads a new map to render and automatically resizes the
+	 * weather effect if there is one running.
+	 * @param map
+	 * @return The old map or null. Don't forget to dispose the old map!
+	 */
+	public MapWithEvents<?> loadMap(MapWithEvents<?> map) {
+		MapWithEvents<?> old = this.map;
+		this.map = map;
+		GameBase.planeWidth = map.getWidth();
+		GameBase.planeHeight = map.getHeight();
+		WeatherEffectService wes = GameServiceProvider.getService(WeatherEffectService.class);
+		if (wes!=null) {
+			wes.resize(map.getWidth(), map.getHeight());
+		}
+		GameBase.camera.update();
+		return old;
+	}
+	@Override
+	public void dispose() {}
+	@Override
+	public void compute(float deltaTime, boolean pushButtonPressed) {
+		map.compute(deltaTime, pushButtonPressed);
+	}
+	@Override
+	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
+		map.draw(spriteBatch, camera, debug);
+	}
+	@Override
+	public void freeze() {
+		List<? extends Movable> events = map.getAllEvents();
+		for (int i=0, len=events.size(); i<len; i++) {
+			events.get(i).getMoveHandler().freeze();
+		}
+	}
+	@Override
+	public Matrix4 projectionMatrix(Camera camera) {
+		return camera.projection;
+	}
+}

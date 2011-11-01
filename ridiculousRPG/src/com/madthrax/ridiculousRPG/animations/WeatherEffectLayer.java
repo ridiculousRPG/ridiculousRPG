@@ -1,0 +1,305 @@
+package com.madthrax.ridiculousRPG.animations;
+
+import java.util.ArrayList;
+import java.util.Random;
+
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.TextureDict;
+import com.badlogic.gdx.graphics.TextureRef;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Disposable;
+
+/**
+ * A Layer for a weather effect.
+ * Every effect layer is simulated by a texture.
+ * The texture is tiled to fill the map (or whatever display-region is used)
+ * Use textures which are powers of 2 for your effects.
+ * @see WeatherEffectService
+ */
+public class WeatherEffectLayer implements Disposable {
+	private static final Random randomNumberGenerator = new Random();
+
+	private TextureRef tRef;
+	private int width, height;
+	private int tileWidth, tileHeight;
+	private ArrayList<ArrayList<Rectangle>> tileLayer = new ArrayList<ArrayList<Rectangle>>();
+	private boolean play = true, initializeEffect = true;
+
+	// Initialization of new tiles
+	private float newRowWindSpeed;
+	private int newRowTilesPerRow;
+	private int newRowTilesOffset;
+	/**
+	 * For tile position randomization. Use small values to get an acceptable result (default = 0.2)
+	 * You can change this if you want.
+	 */
+	public float newRowVarianz = .2f;
+	/**
+	 * Bounds for speed variance are automatically computed on instantiation.
+	 * You can change this if you want.
+	 */
+	public float effectSpeedMin, effectSpeedMax;
+	/**
+	 * Bounds for wind variance are automatically computed on instantiation.
+	 * You can change this if you want.
+	 */
+	public float windSpeedMin, windSpeedMax;
+
+	// Start values for the effect
+	private float effectSpeed;
+	private float effectAcceleratrion = 0f;
+	private float randomWindCountAll = 999999f;
+	private float randomWindCountTile = 999999f;
+
+	// Internally used, only computed once to enhance performance
+	private float internalRemoveRow;
+	private float internalNewRow;
+	private float internalWindAcceleration;
+	private float internalEffectAcceleration;
+	private ArrayList<Rectangle> recycleRow;
+	/**
+	 * Creates a new effect-layer. Layers are used for weather effects.
+	 * @param path
+	 * The texture path (e.g. data/snow.png)
+	 * @param pixelOverlap
+	 * For a smoother effect you can overlap the tiled effect-layer.<br>
+	 * Therefore the texture has to be less dense at the edges. (The bound is defined by pixelOverlap)<br>
+	 * Say 0 if you don't know what to do. (Negative values are allowed but not useful in most cases)
+	 * @param pixelWidth
+	 * Width of the entire weather effect in pixel
+	 * @param pixelHeight
+	 * Height of the entire weather effect in pixel
+	 * @param effectSpeed
+	 * The speed of the effect. Only positive
+	 * values > 0 are useful!<br>
+	 * For most situations the value should be between 0.1 and 5
+	 * @param windSpeed
+	 * The speed of the wind. Positive values generate
+	 * wind from west to east and negative values from east to west.<br>
+	 * For most situations the value should be between -2.5 and 2.5
+	 */
+	public WeatherEffectLayer(String path, int pixelOverlap, int pixelWidth, int pixelHeight, float effectSpeed, float windSpeed) {
+		this(TextureDict.loadTexture(path), pixelOverlap, pixelWidth, pixelHeight, effectSpeed, windSpeed);
+	}
+	/**
+	 * Attention: TextureRef tRef is unloaded automatically by calling the dispose method. You have to load it every time you use
+	 * this constructor. (The texture dictionary counts the references by loading and unloading a texture)<br>
+	 * Conclusion: Use the other constructor if it's possible!!!
+	 * @see TextureDict.loadTexture(...)
+	 * @see public WeatherEffectLayer(String path, ...)
+	 */
+	protected WeatherEffectLayer(TextureRef tRef, int pixelOverlap, int pixelWidth, int pixelHeight, float effectSpeed, float windSpeed) {
+		if (effectSpeed < .01) throw new IllegalArgumentException("The effectSpeed has to be greater or equal 0.01");
+		this.tRef = tRef;
+		tileWidth = tRef.get().getWidth()-pixelOverlap;
+		tileHeight = tRef.get().getHeight()-pixelOverlap;
+		width = pixelWidth;
+		height = pixelHeight;
+
+		// row length is relative to map height and the speed/wind ratio (caused by the wind-effect)
+		float offset = Math.abs(height * windSpeed / effectSpeed)*2f;
+		newRowTilesPerRow = (int) ((width+offset) / tileWidth + 1.7);
+		newRowTilesOffset = (int) (-tileWidth *.7f);
+		if (windSpeed > 0) {
+			newRowTilesOffset -= offset;
+		}
+		this.effectSpeed = effectSpeed;
+		this.newRowWindSpeed = windSpeed;
+		internalEffectAcceleration = effectSpeed*.3f;
+		internalWindAcceleration = newRowWindSpeed*.2f;
+		internalRemoveRow = - height*.4f - tileHeight;
+		internalNewRow = height*1.3f - tileHeight;
+
+		// compute bounds for speed-varianz
+		float tmp = effectSpeed / (float)Math.sqrt(effectSpeed);
+		effectSpeedMin = Math.max(effectSpeed * .5f, effectSpeed - tmp * .7f);
+		effectSpeedMax = effectSpeed + tmp;
+		windSpeedMin = windSpeed - (effectSpeed - effectSpeedMin) * .5f - tmp;
+		windSpeedMax = windSpeed + (effectSpeed - effectSpeedMin) + tmp * .5f;
+
+		// generate first row of tiles
+		tileLayer.add(newRow(height));
+	}
+	/**
+	 * Stops the effect-layer.<br>
+	 * Note that the layer is not removed immediately.
+	 * It takes some time while the last snow flake falls
+	 * from the sky to the ground - like in real nature ;)
+	 * @see dispose()
+	 */
+	public void stop() {
+		play = false;
+	}
+	/**
+	 * Resize this effect to a new width and height.
+	 */
+	public void resize(int pixelWidth, int pixelHeight) {
+		width = pixelWidth;
+		height = pixelHeight;
+		// row length is relative to map height and the speed/wind ratio (caused by the wind-effect)
+		float offset = Math.abs(height * newRowWindSpeed / effectSpeed)*2f;
+		newRowTilesPerRow = (int) ((width+offset) / tileWidth + 1.7);
+		newRowTilesOffset = (int) (-tileWidth *.7f);
+		if (newRowWindSpeed > 0) {
+			newRowTilesOffset -= offset;
+		}
+		internalRemoveRow = - height*.4f - tileHeight;
+		internalNewRow = height*1.3f - tileHeight;
+
+		// refill the layer
+		tileLayer.clear();
+		recycleRow = null;
+		for(int i = -tileHeight/2; i < height; i += tileHeight) {
+			tileLayer.add(newRow(i));
+		}
+		initializeEffect=true;
+	}
+	/**
+	 * Checks if this effect-layer is empty
+	 * @return true if this effect-layer is empty
+	 */
+	public boolean isEmpty() {
+		return tileLayer.isEmpty();
+	}
+	/**
+	 * Generates a virtual animation row over the entire map
+	 * (only the subset which is in the viewPort will be displayed)
+	 */
+	private ArrayList<Rectangle> newRow(int startY) {
+		int startX = newRowTilesOffset;
+		ArrayList<Rectangle> row = recycleRow;
+		if (row == null) {
+			row = new ArrayList<Rectangle>(newRowTilesPerRow);
+			for (int i = 0; i < newRowTilesPerRow; i++, startX += tileWidth) {
+				float x = randomNumberGenerator.nextFloat()*tileWidth*newRowVarianz;
+				float y = randomNumberGenerator.nextFloat()*tileHeight*newRowVarianz;
+				row.add(new Rectangle(startX+x, startY+y, newRowWindSpeed, 0f));
+			}
+		} else {
+			recycleRow = null; // consume recycled row
+			for (int i = 0; i < newRowTilesPerRow; i++, startX += tileWidth) {
+				// We have already random values. It should be much faster to reuse it ;)
+				Rectangle tileRect = row.get(i);
+				float x = tileRect.x < 0f ? -tileRect.x : tileRect.x;
+				float y = tileRect.y < 0f ? -tileRect.y : tileRect.y;
+				x %= tileWidth*newRowVarianz;
+				y %= tileHeight*newRowVarianz;
+			    tileRect.x = startX + x;
+			    tileRect.y = startY + y;
+			    tileRect.width = newRowWindSpeed;
+			    tileRect.height = 0f;
+			}
+		}
+		return row;
+	}
+	@Override
+	public void dispose() {
+		tileLayer = null;
+		tRef.unload();
+	}
+	/**
+	 * Computes the animation for this layer.
+	 */
+	public void compute(float deltaTime) {
+		// Skip first call after initialization and resize
+		// to avoid huge deltatimes with great impact
+		if (initializeEffect) {
+			initializeEffect = false;
+			return;
+		}
+
+		float deltaSpeed = deltaTime * 100;
+		randomWindCountTile += deltaTime;
+		randomWindCountAll += deltaTime;
+
+		// variable effect acceleration
+		if (randomWindCountAll > 2.7f) {
+			effectAcceleratrion = (randomNumberGenerator.nextFloat()-.5f)*internalEffectAcceleration;
+			randomWindCountAll = 0f;
+		}
+
+		effectSpeed += effectAcceleratrion * deltaTime;
+		if (effectSpeed < effectSpeedMin) effectSpeed = effectSpeedMin;
+		else if (effectSpeed > effectSpeedMax) effectSpeed = effectSpeedMax;
+
+		for (int i = 0; i < tileLayer.size();) {
+			ArrayList<Rectangle> row = tileLayer.get(i);
+			float yPos = 0f;
+			for (Rectangle clip : row) {
+				// variable wind acceleration (part 1)
+				if (randomWindCountTile > 1.4f) {
+					clip.height = (randomNumberGenerator.nextFloat()-.5f) * internalWindAcceleration;
+				}
+				clip.width += clip.height * deltaTime;
+				if (clip.width < windSpeedMin) clip.width = windSpeedMin;
+				else if (clip.width > windSpeedMax) clip.width = windSpeedMax;
+				clip.y -= (effectSpeed + (newRowWindSpeed < 0 ? -clip.width : clip.width) * .4) * deltaSpeed;
+				clip.x += clip.width * deltaSpeed;
+				yPos += clip.y;
+			}
+			yPos /= row.size();
+			// remove rows out of view
+			if (i==0 && yPos < internalRemoveRow) {
+				recycleRow = tileLayer.remove(0);
+			} else {
+				i++;
+				if (i==tileLayer.size() && play && yPos < internalNewRow) {
+					tileLayer.add(newRow((int)yPos + tileHeight));
+				}
+			}
+		}
+		// variable wind acceleration (part 2)
+		if (randomWindCountTile > 1.4f) {
+			randomWindCountTile = 0f;
+		}
+	}
+	/**
+	 * Draw the effect-layer.
+	 */
+	public void draw(SpriteBatch batch, Camera cam) {
+		// load frequently used variables into registers
+		Texture t = tRef.get();
+		int tWidth = t.getWidth();
+		int tHeight = t.getHeight();
+		float x1 = Math.max(0f, cam.position.x);
+		float y1 = Math.max(0f, cam.position.y);
+		float x2 = Math.min(width, x1 + cam.viewportWidth);
+		float y2 = Math.min(height, y1 + cam.viewportHeight);
+		float x3 = x1-tWidth;
+		float y3 = y1-tHeight;
+		float x4 = x2-tWidth;
+		float y4 = y2-tHeight;
+
+		for (ArrayList<Rectangle> row : tileLayer)
+		for (Rectangle clip : row) {
+			float x = clip.x;
+			float y = clip.y;
+			if (x > x3 && y > y3 && x < x2 && y < y2) {
+				// texel space origin is upper left corner (unlike screen space)
+				int srcX = 0;
+				int srcY = 0;
+				int srcWidth = tWidth;
+				int srcHeight = tHeight;
+				if (x < x1) {
+					srcX = (int) (x1-x+.7f);
+					srcWidth -= srcX;
+					x += srcX;
+				}
+				if (x > x4) {
+					srcWidth -= x-x4;
+				}
+				if (y < y1) {
+					srcHeight -= y1-y;
+					y = y1;
+				}
+				if (y > y4) {
+					srcY = (int) (y-y4);
+					srcHeight -= srcY;
+				}
+				batch.draw(t, x, y, srcX, srcY, srcWidth, srcHeight);
+			}
+		}
+	}
+}

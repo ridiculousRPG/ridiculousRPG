@@ -1,0 +1,158 @@
+package com.madthrax.ridiculousRPG.ui;
+
+import java.util.List;
+
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+
+public final class ActorFocusUtil { private ActorFocusUtil(){} // static container
+	private static Vector2 tmpPoint = new Vector2(0f, 0f);
+	/**
+	 * Adding null as a table cell will produce a new touchable and
+	 * focusable Group (i think this is a strange behavior).<br>
+	 * Use this {@link DUMMY_ACTOR} if you need an empty cell.
+	 */
+	public static final Actor DUMMY_ACTOR = new Actor() {
+		{visible=touchable=false;}
+		@Override
+		public void touchUp(float x, float y, int pointer) {}
+		@Override
+		public void touchDragged(float x, float y, int pointer) {}
+		@Override
+		public boolean touchDown(float x, float y, int pointer) {return false;}
+		@Override
+		public Actor hit(float x, float y) {return null;}
+		@Override
+		public void draw(SpriteBatch batch, float parentAlpha) {}
+	};
+	public static boolean focusPrev(Actor focused, Actor root, boolean up, boolean left) {
+		if (focused == null) return focus(root, true);
+		return focusPrevIntern(focused, up, left);
+	}
+	private static boolean focusPrevIntern(Actor focused, boolean up, boolean left) {
+		if (focused.parent == null) return false;
+
+		Vector2 tmpPoint = ActorFocusUtil.tmpPoint;
+		focused.toLocalCoordinates(tmpPoint.set(focused.x, focused.y));
+		float fX1 = focused.x - tmpPoint.x;
+		float fY1 = focused.y - tmpPoint.y;
+		float fX2 = fX1 + focused.width*.5f;
+		float fY2 = fY1 + focused.height*.5f;
+		List<Actor> allActors = focused.parent.getActors();
+		for (int i=allActors.size()-1; i>-1; i--) {
+			Actor a = allActors.get(i);
+			if (a==focused) continue;
+			a.toLocalCoordinates(tmpPoint.set(a.x, a.y));
+			float aX1 = a.x - tmpPoint.x;
+			float aY1 = a.y - tmpPoint.y;
+			float aX2 = aX1 + a.width*.5f;
+			float aY2 = aY1 + a.height*.5f;
+			if (isFocusable(a)) {
+				if (up) {
+					if (aY1>=fY2 && aX2>fX1 && aX1<fX2) return focus(a, true);
+				} else if (left) {
+					if (aX2<=fX1 && aY1<fY2 && aY2>fY1) return focus(a, true);
+				} else if (aY1>=fY2 || (aX2<=fX1 && aY1<fY2 && aY2>fY1))
+					return focus(a, true);
+			}
+		}
+
+		return focusPrevIntern(focused.parent, up, left);
+	}
+	public static boolean focusNext(Actor focused, Actor root, boolean down, boolean right) {
+		if (focused == null) return focus(root, false);
+		return focusNextIntern(focused, down, right);
+	}
+	private static boolean focusNextIntern(Actor focused, boolean down, boolean right) {
+		if (focused.parent == null) return false;
+
+		Vector2 tmpPoint = ActorFocusUtil.tmpPoint;
+		focused.toLocalCoordinates(tmpPoint.set(focused.x, focused.y));
+		float fX1 = focused.x - tmpPoint.x;
+		float fY1 = focused.y - tmpPoint.y;
+		float fX2 = fX1 + focused.width*.5f;
+		float fY2 = fY1 + focused.height*.5f;
+		List<Actor> allActors = focused.parent.getActors();
+		for (int i=0, len = allActors.size(); i<len; i++) {
+			Actor a = allActors.get(i);
+			if (a==focused) continue;
+			a.toLocalCoordinates(tmpPoint.set(a.x, a.y));
+			float aX1 = a.x - tmpPoint.x;
+			float aY1 = a.y - tmpPoint.y;
+			float aX2 = aX1 + a.width*.5f;
+			float aY2 = aY1 + a.height*.5f;
+			if (isFocusable(a)) {
+				if (down) {
+					if (aY2<=fY1 && aX2>fX1 && aX1<fX2) return focus(a, false);
+				} else if (right) {
+					if (aX1>=fX2 && aY1<fY2 && aY2>fY1) return focus(a, false);
+				} else if (aY2<=fY1 || (aX1>=fX2 && aY1<fY2 && aY2>fY1))
+					return focus(a, false);
+			}
+		}
+
+		return focusNextIntern(focused.parent, down, right);
+	}
+	public static boolean focusFirstChild(Group actorGrp) {
+		List<Actor> allActors = actorGrp.getActors();
+		for (int i=0, len = allActors.size(); i<len; i++) {
+			Actor a = allActors.get(i);
+			if (isFocusable(a)) return focus(a, false);
+		}
+		return false;
+	}
+	public static boolean focusLastChild(Group actorGrp) {
+		List<Actor> allActors = actorGrp.getActors();
+		for (int i=allActors.size()-1; i>-1; i--) {
+			Actor a = allActors.get(i);
+			if (isFocusable(a)) return focus(a, true);
+		}
+		return false;
+	}
+	/**
+	 * Sets the keyboard focus to the given actor. If the child is a group,
+	 * either the first or the last child of the group gets the focus.
+	 * @param actor
+	 * The actor to focus
+	 * @param focusLastIfGroup
+	 * If true and actor is a group the last child of the group gets the focus.
+	 * @return
+	 * true if succeeded, false if the actor is not focusable
+	 */
+	public static boolean focus(Actor actor, boolean focusLastIfGroup) {
+		// focus child
+		if (actor instanceof Group) {
+			if (focusLastIfGroup) {
+				if (focusLastChild((Group) actor)) return true;
+			} else {
+				if (focusFirstChild((Group) actor)) return true;
+			}
+		}
+		// focus self
+		if (actor==null || actor.parent==null) return false;
+		actor.parent.keyboardFocus(actor);
+		return true;
+	}
+	public static boolean isActorOnStage(Actor actor, Group root) {
+		if (actor==null) return false;
+		for (Group bottom=actor.parent; bottom!=null; bottom=(actor=bottom).parent) {
+			if (!isActorInList(actor, bottom.getActors()))
+				return false;
+		}
+		return actor == root;
+	}
+	private static boolean isActorInList(Actor actor, List<Actor> actors) {
+		int i = actors.size();
+		while (i>0) {
+			if (actors.get(--i)==actor) return true;
+		}
+		return false;
+	}
+	private static boolean isFocusable(Actor a) {
+		// Checkbox has a focusable and touchable image
+		return a.touchable && a.visible && !(a instanceof Image);
+	}
+}
