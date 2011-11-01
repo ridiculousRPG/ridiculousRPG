@@ -1,3 +1,19 @@
+/*
+ * Copyright 2011 Alexander Baumgartner
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.madthrax.ridiculousRPG.animations;
 
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
@@ -16,16 +32,7 @@ import com.madthrax.ridiculousRPG.events.Speed;
  * the texture should have a width and a height by the power of two.<br> 
  * Some good-sized animation textures for example: 256x256 pixel, 256x512 pixel
  * 1024x512 pixel. Don't use textures with more than 2048 pixel in width or height.
- * @param path
- * The path to the texture file - which should be a power of 2 sized png image
- * @param tileWidth
- * The width of one tile. Every animation tile must have the same width.
- * @param tileHeight
- * The height of one tile. Every animation tile must have the same height.
- * @param anzCols
- * The number of columns (how much tiles are in one row).
- * @param anzRows
- * The number of rows.
+ * @author Alexander Baumgartner
  */
 public class TileAnimation implements Disposable {
 	private TextureRef animationTexture;

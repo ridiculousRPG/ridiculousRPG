@@ -1,3 +1,19 @@
+/*
+ * Copyright 2011 Alexander Baumgartner
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.madthrax.ridiculousRPG.animations;
 
 import java.util.ArrayList;
@@ -17,6 +33,7 @@ import com.badlogic.gdx.utils.Disposable;
  * The texture is tiled to fill the map (or whatever display-region is used)
  * Use textures which are powers of 2 for your effects.
  * @see WeatherEffectService
+ * @author Alexander Baumgartner
  */
 public class WeatherEffectLayer implements Disposable {
 	private static final Random randomNumberGenerator = new Random();
