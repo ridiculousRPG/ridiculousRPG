@@ -19,6 +19,7 @@ package com.madthrax.ridiculousRPG.ui;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.math.Matrix4;
 import com.madthrax.ridiculousRPG.service.Computable;
 
@@ -27,8 +28,9 @@ import com.madthrax.ridiculousRPG.service.Computable;
  * @author Alexander Baumgartner
  */
 public class DisplayErrorService extends DisplayTextService implements Computable {
-	private float displayTime = 10;
+	private float displayTime = 10f;
 	private String msg;
+	private BitmapFontCache fontCache;
 	/**
 	 * Displays the specified error centered on the screen.<br>
 	 * The message is public and may be changed. 
@@ -41,15 +43,20 @@ public class DisplayErrorService extends DisplayTextService implements Computabl
 	@Override
 	public void compute(float deltaTime, boolean actionKeyPressed) {
 		String msg = this.msg;
+		int oldTime = (int) displayTime;
 		displayTime-=deltaTime;
-		if (displayTime < 0) {
-			displayTime = 0;
-			msg = "\nPress the action key to exit the game!\n\n" + msg;
-			if (actionKeyPressed) Gdx.app.exit();
-		} else {
-			msg = "\nERROR [" + ((int)(displayTime + 1f)) + "]\n\n" + msg;
+		// change the message every second
+		if (oldTime != (int) displayTime) {
+			if (fontCache!=null) removeMessage(fontCache);
+			if (displayTime < 0) {
+				displayTime = 0;
+				msg = "\nPress the action key to exit the game!\n\n" + msg;
+				if (actionKeyPressed) Gdx.app.exit();
+			} else {
+				msg = "\nERROR [" + ((int)(displayTime + 1f)) + "]\n\n" + msg;
+			}
+			addMessage(msg, Color.RED.toFloatBits(), Alignment.CENTER, Alignment.CENTER, 0f);
 		}
-		message(msg, Color.RED.toFloatBits(), Alignment.CENTER, Alignment.CENTER, 0f);
 	}
 	@Override
 	public Matrix4 projectionMatrix(Camera camera) {

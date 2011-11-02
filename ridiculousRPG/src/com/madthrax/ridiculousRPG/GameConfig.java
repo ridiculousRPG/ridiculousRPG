@@ -31,8 +31,8 @@ public class GameConfig implements Disposable {
 	public String mapDir = "data/map/";
 	public String mapPackDir = "data/map/pack/";
 
-	private String skinConf = "data/theme/default/layout.json";
-	private String skinImg = "data/theme/default/layout.png";
+	private String skinConf = "data/theme/default/uiskin.json";
+	private String skinImg = "data/theme/default/uiskin.png";
 
 
 	private static GameConfig INSTANCE = null;

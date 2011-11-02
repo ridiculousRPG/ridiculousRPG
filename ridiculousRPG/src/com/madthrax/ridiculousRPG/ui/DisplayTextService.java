@@ -16,14 +16,16 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
+import java.util.IdentityHashMap;
+import java.util.Map.Entry;
+
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
+import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Pool;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.GameServiceProvider;
 import com.madthrax.ridiculousRPG.service.Drawable;
@@ -57,7 +59,8 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 		}
 	};
 	private BitmapFont font;
-	private Array<Message> msgs = new Array<Message>(false, 64);
+	private final IdentityHashMap<BitmapFontCache, Boolean> msgs = new IdentityHashMap<BitmapFontCache, Boolean>(64);
+	private final BitmapFontCachePool fontCachePool = new BitmapFontCachePool();
 
 	/**
 	 * Changing the default color will effect all messages drawn afterwards.
@@ -67,34 +70,19 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	 */
 	public float defaultColor = Color.WHITE.toFloatBits();
 
-	private Pool<Message> messagePool = new Pool<Message>(64, 2048) {
-		@Override
-		protected Message newObject() {
-			return new Message();
-		}
-	};
-	class Message {
-		float x, y, color;
-		CharSequence text;
-		public void drawMultiLine(SpriteBatch spriteBatch) {
-			font.setColor(color);
-			font.draw(spriteBatch, text, x, y);
-		}
-	}
-
 	protected DisplayTextService() {}
 
 	/**
 	 * Adds a message which will be drawn onto the screen
 	 */
-	public void message(CharSequence text, float x, float y) {
-		message(text, defaultColor, x, y);
+	public BitmapFontCache addMessage(CharSequence text, float x, float y) {
+		return addMessage(text, defaultColor, x, y, 0f, false);
 	}
 	/**
 	 * Adds a message which will be drawn onto the screen
 	 */
-	public void message(CharSequence text, Alignment horizontalAlign, Alignment verticalAlign, float padding) {
-		message(text, defaultColor, horizontalAlign, verticalAlign, padding);
+	public BitmapFontCache addMessage(CharSequence text, Alignment horizontalAlign, Alignment verticalAlign, float padding) {
+		return addMessage(text, defaultColor, horizontalAlign, verticalAlign, padding);
 	}
 	/**
 	 * Adds a message which will be drawn onto the screen
@@ -102,10 +90,22 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	 * floatbits at every iteration)
 	 * @see {@link Color#toFloatBits()}
 	 */
-	public void message(CharSequence text, float color, Alignment horizontalAlign, Alignment verticalAlign, float padding) {
-		if (!isInitialized()) return;
-		TextBounds b = font.getMultiLineBounds(text);
-		float x=padding, y=b.height+padding;
+	public BitmapFontCache addMessage(CharSequence text, float color, Alignment horizontalAlign, Alignment verticalAlign, float padding) {
+		return addMessage(text, defaultColor, horizontalAlign, verticalAlign, padding, 0f, false);
+	}
+	/**
+	 * Adds a message which will be drawn onto the screen
+	 * (To increase the performance you should not compute the colors 
+	 * floatbits at every iteration)
+	 * @param wrapWidth If wrapWidth > 0 then the text will be wrapped at the specified bound.
+	 * @param autoRemove to remove the message immediately after displaying it (displays it for only one frame).
+	 * @see {@link Color#toFloatBits()}
+	 */
+	public BitmapFontCache addMessage(CharSequence text, float color, Alignment horizontalAlign, Alignment verticalAlign, float padding, float wrapWidth, boolean autoRemove) {
+		if (!isInitialized()) return null;
+		float x=padding, y=GameBase.screenHeight-padding;
+		BitmapFontCache bfc = createMsg(text, color, x, y, wrapWidth);
+		TextBounds b = bfc.getBounds();
 
 		if (horizontalAlign==Alignment.CENTER)
 			x = (GameBase.screenWidth-b.width)*.5f;
@@ -113,39 +113,55 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 			x = GameBase.screenWidth-b.width-padding;
 
 		if (verticalAlign==Alignment.CENTER)
-			y = (GameBase.screenHeight-b.height)*.5f;
-		else if (verticalAlign==Alignment.TOP)
-			y = GameBase.screenHeight-padding;
-			
-		msgs.add(createMsg(text, color, x, y));
+			y = GameBase.screenHeight - (GameBase.screenHeight-b.height)*.5f;
+		else if (verticalAlign==Alignment.BOTTOM)
+			y = b.height+padding;
+
+		if (wrapWidth==0 && projectionMatrix(GameBase.camera)==GameBase.camera.view) {
+			if (x < 0f) x = 0f;
+			if (y > GameBase.screenHeight) y = GameBase.screenHeight;
+		}
+
+		bfc.setPosition(x, y);
+		msgs.put(bfc, Boolean.valueOf(autoRemove));
+		return bfc;
 	}
 	/**
 	 * Adds a message which will be drawn onto the screen
 	 * (To increase the performance you should not compute the colors 
 	 * floatbits at every iteration)
+	 * @param wrapWidth If wrapWidth > 0 then the text will be wrapped at the specified bound.
+	 * @param autoRemove to remove the message immediately after displaying it (displays it for only one frame).
 	 * @see {@link Color#toFloatBits()}
 	 */
-	public void message(CharSequence text, float color, float x, float y) {
-		if (!isInitialized()) return;
-		msgs.add(createMsg(text, color, x, y));
+	public BitmapFontCache addMessage(CharSequence text, float color, float x, float y, float wrapWidth, boolean autoRemove) {
+		if (!isInitialized()) return null;
+		BitmapFontCache bfc = createMsg(text, color, x, y, wrapWidth);
+		msgs.put(bfc, Boolean.valueOf(autoRemove));
+		return bfc;
 	}
-	private Message createMsg(CharSequence text, float color, float x, float y) {
-		Message m = messagePool.obtain();
-		m.text = text;
-		m.x = x;
-		m.y = y;
-		m.color = color;
-		return m;
+	public void removeMessage(BitmapFontCache msg) {
+		fontCachePool.free(msg);
+		msgs.remove(msg);
+	}
+
+	private BitmapFontCache createMsg(CharSequence text, float color, float x, float y, float wrapWidth) {
+		BitmapFontCache bfc = fontCachePool.obtain(font);
+		bfc.setColor(color);
+		if (wrapWidth > 0f)
+			bfc.setWrappedText(text, x, y, wrapWidth);
+		else
+			bfc.setMultiLineText(text, x, y);
+		return bfc;
 	}
 	/**
 	 * Don't call this method yourself. It's called by the {@link GameServiceProvider}.
 	 */
 	@Override
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
-		Message m;
-		for (int i = msgs.size-1; i>-1; i--) {
-			messagePool.free(m = msgs.pop());
-			m.drawMultiLine(spriteBatch);
+		for (Entry<BitmapFontCache, Boolean> entry : msgs.entrySet()) {
+			entry.getKey().draw(spriteBatch);
+			if (entry.getValue().booleanValue()) removeMessage(entry.getKey());
 		}
 	}
 	/**
@@ -167,6 +183,7 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	}
 	@Override
 	public void dispose() {
+		msgs.clear();
 		if (isInitialized()) font.dispose();
 	}
 }

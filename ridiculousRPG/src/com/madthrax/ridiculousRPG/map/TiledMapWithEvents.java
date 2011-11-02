@@ -307,7 +307,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				}
 				debugRenderer.rect(ev.getX(), ev.getY(), ev.getWidth(), ev.getHeight());
 				if (ev.name!=null)
-					DisplayTextService.$map.message(ev.name, ev.drawBound.x+2f, ev.drawBound.y+ev.drawBound.height-2);
+					DisplayTextService.$map.addMessage(ev.name, DisplayTextService.$map.defaultColor, ev.drawBound.x+2f, ev.drawBound.y+ev.drawBound.height-2, 0f, true);
 			}
 			debugRenderer.end();
 			spriteBatch.begin();

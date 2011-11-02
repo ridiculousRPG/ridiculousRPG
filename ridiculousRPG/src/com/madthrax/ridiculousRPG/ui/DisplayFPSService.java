@@ -19,6 +19,7 @@ package com.madthrax.ridiculousRPG.ui;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.math.Matrix4;
 import com.madthrax.ridiculousRPG.service.Computable;
 
@@ -29,6 +30,8 @@ import com.madthrax.ridiculousRPG.service.Computable;
 public class DisplayFPSService extends DisplayTextService implements Computable {
 	private float colorBits;
 	private Alignment horiAlign, vertAlign;
+	private int oldFPS;
+	private BitmapFontCache fontCache;
 	/**
 	 * Displays the rendering speed in frames per second.
 	 */
@@ -51,7 +54,10 @@ public class DisplayFPSService extends DisplayTextService implements Computable 
 	}
 	@Override
 	public void compute(float deltaTime, boolean actionKeyPressed) {
-		message("FPS: "+Gdx.graphics.getFramesPerSecond(), colorBits, horiAlign, vertAlign, 5f);
+		if (oldFPS != Gdx.graphics.getFramesPerSecond()) {
+			if (fontCache!=null) removeMessage(fontCache);
+			addMessage("FPS: "+Gdx.graphics.getFramesPerSecond(), colorBits, horiAlign, vertAlign, 5f);
+		}
 	}
 	@Override
 	public Matrix4 projectionMatrix(Camera camera) {
