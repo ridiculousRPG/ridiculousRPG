@@ -73,4 +73,8 @@ public class CameraSimpleOrtho2D extends Camera {
 		}
 		return y;
 	}
+	@Override
+	public void update(boolean updateFrustum) {
+		update();
+	}
 }
