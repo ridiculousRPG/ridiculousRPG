@@ -16,16 +16,14 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
-import java.util.IdentityHashMap;
-import java.util.Map.Entry;
-
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.GameServiceProvider;
 import com.madthrax.ridiculousRPG.service.Drawable;
@@ -59,7 +57,8 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 		}
 	};
 	private BitmapFont font;
-	private final IdentityHashMap<BitmapFontCache, Boolean> msgs = new IdentityHashMap<BitmapFontCache, Boolean>(64);
+	private final Array<BitmapFontCache> msgDisplay = new Array<BitmapFontCache>(false, 32);
+	private final Array<BitmapFontCache> msgDisplayOnce = new Array<BitmapFontCache>(false, 64);
 	private final BitmapFontCachePool fontCachePool = new BitmapFontCachePool();
 
 	/**
@@ -98,10 +97,10 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	 * (To increase the performance you should not compute the colors 
 	 * floatbits at every iteration)
 	 * @param wrapWidth If wrapWidth > 0 then the text will be wrapped at the specified bound.
-	 * @param autoRemove to remove the message immediately after displaying it (displays it for only one frame).
+	 * @param forceRemove to remove the message immediately after displaying it (displays it for only one frame).
 	 * @see {@link Color#toFloatBits()}
 	 */
-	public BitmapFontCache addMessage(CharSequence text, float color, Alignment horizontalAlign, Alignment verticalAlign, float padding, float wrapWidth, boolean autoRemove) {
+	public BitmapFontCache addMessage(CharSequence text, float color, Alignment horizontalAlign, Alignment verticalAlign, float padding, float wrapWidth, boolean forceRemove) {
 		if (!isInitialized()) return null;
 		float x=padding, y=GameBase.screenHeight-padding;
 		BitmapFontCache bfc = createMsg(text, color, 0f, 0f, wrapWidth);
@@ -123,7 +122,8 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 		}
 
 		bfc.setPosition(x, y);
-		msgs.put(bfc, Boolean.valueOf(autoRemove));
+		if (forceRemove) msgDisplayOnce.add(bfc);
+		else msgDisplay.add(bfc);
 		return bfc;
 	}
 	/**
@@ -131,18 +131,19 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	 * (To increase the performance you should not compute the colors 
 	 * floatbits at every iteration)
 	 * @param wrapWidth If wrapWidth > 0 then the text will be wrapped at the specified bound.
-	 * @param autoRemove to remove the message immediately after displaying it (displays it for only one frame).
+	 * @param forceRemove to remove the message immediately after displaying it (displays it for only one frame).
 	 * @see {@link Color#toFloatBits()}
 	 */
-	public BitmapFontCache addMessage(CharSequence text, float color, float x, float y, float wrapWidth, boolean autoRemove) {
+	public BitmapFontCache addMessage(CharSequence text, float color, float x, float y, float wrapWidth, boolean forceRemove) {
 		if (!isInitialized()) return null;
 		BitmapFontCache bfc = createMsg(text, color, x, y, wrapWidth);
-		msgs.put(bfc, Boolean.valueOf(autoRemove));
+		if (forceRemove) msgDisplayOnce.add(bfc);
+		else msgDisplay.add(bfc);
 		return bfc;
 	}
 	public void removeMessage(BitmapFontCache msg) {
 		fontCachePool.free(msg);
-		msgs.remove(msg);
+		msgDisplay.removeValue(msg, true);
 	}
 
 	private BitmapFontCache createMsg(CharSequence text, float color, float x, float y, float wrapWidth) {
@@ -159,10 +160,11 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	 */
 	@Override
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
-		for (Entry<BitmapFontCache, Boolean> entry : msgs.entrySet()) {
-			entry.getKey().draw(spriteBatch);
-			if (entry.getValue().booleanValue()) removeMessage(entry.getKey());
-		}
+		for (int i = msgDisplay.size-1; i>-1; i--)
+			msgDisplay.get(i).draw(spriteBatch);
+		for (int i = msgDisplayOnce.size-1; i>-1; i--)
+			msgDisplayOnce.get(i).draw(spriteBatch);
+		msgDisplayOnce.clear();
 	}
 	/**
 	 * @param font
@@ -183,7 +185,9 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	}
 	@Override
 	public void dispose() {
-		msgs.clear();
+		msgDisplay.clear();
+		msgDisplayOnce.clear();
+		fontCachePool.clear();
 		if (isInitialized()) font.dispose();
 	}
 }

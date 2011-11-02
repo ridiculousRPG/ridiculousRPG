@@ -51,4 +51,7 @@ public class BitmapFontCachePool {
 	public void free (BitmapFontCache cache) {
 		pool.get(cache.getFont()).free(cache);
 	}
+	public void clear() {
+		pool.clear();
+	}
 }
