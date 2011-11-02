@@ -46,8 +46,8 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 	 * weather effect.
 	 */
 	public WeatherEffectService() {
-		width = GameBase.planeWidth;
-		height = GameBase.planeHeight;
+		width = GameBase.$().getPlaneWidth();
+		height = GameBase.$().getPlaneHeight();
 	}
 
 	/**
@@ -86,6 +86,7 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 			TextureDict.loadTexture(path);
 		}
 		new Thread() { // For simplicity let's do this in a new thread
+			@Override
 			public void run() {
 				int tmp = (int)waitIntervall * 1000;
 				for (int i = times; i > 0; i--) {
@@ -213,10 +214,11 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 	 */
 	public void stop(final float stopTime) {
 		new Thread() { // For simplicity let's do this in a new thread
+			@Override
 			public void run() {
 				int stopIntervall = renderLayers.size();
 				if (stopIntervall > 0) { // avoid division by null
-					stopIntervall = (int) (stopTime*1000f / (float)stopIntervall);
+					stopIntervall = (int) (stopTime*1000f / stopIntervall);
 				}
 				for (int i = renderLayers.size()-1; i > -1; i--) {
 					renderLayers.get(i).stop();

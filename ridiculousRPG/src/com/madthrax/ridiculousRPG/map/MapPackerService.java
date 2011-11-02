@@ -31,7 +31,6 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledLoader;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.badlogic.gdx.tiledmappacker.TiledMapPacker;
 import com.badlogic.gdx.tools.imagepacker.TexturePacker;
-import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.GameConfig;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 import com.madthrax.ridiculousRPG.service.Initializable;
@@ -44,7 +43,7 @@ public class MapPackerService extends GameServiceDefaultImpl implements Initiali
 
 	@Override
 	public void init() {
-		if (isInitialized() || !GameBase.isGameInitialized()) return;
+		if (isInitialized()) return;
 		File mapDir = new File(GameConfig.get().mapDir);
 		File packMapDir = new File(GameConfig.get().mapPackDir);
 		boolean packMaps = false;

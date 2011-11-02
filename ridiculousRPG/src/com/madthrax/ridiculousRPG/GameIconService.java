@@ -32,7 +32,7 @@ public class GameIconService extends GameServiceDefaultImpl implements Initializ
 
 	@Override
 	public void init() {
-		if (isInitialized() || !GameBase.isGameInitialized()) return;
+		if (isInitialized()) return;
 		FileHandle applIconFile = Gdx.files.internal("data/icon.png");
 		if (applIconFile.exists()) {
 			applIcon = new Pixmap(applIconFile);

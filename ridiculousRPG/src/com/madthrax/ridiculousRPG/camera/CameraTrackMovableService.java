@@ -53,7 +53,7 @@ public class CameraTrackMovableService extends GameServiceDefaultImpl implements
 		float newX = trackObj.getX();
 		float newY = trackObj.getY();
 		if (oldX != newX || oldY != newY) {
-			Camera cam = GameBase.camera;
+			Camera cam = GameBase.$().getCamera();
 			cam.translate(newX -oldX ,newY - oldY, 0f);
 			cam.update();
 			oldX = newX;
@@ -65,7 +65,7 @@ public class CameraTrackMovableService extends GameServiceDefaultImpl implements
 	 */
 	public void centerTrackObj() {
 		if (trackObj==null) return;
-		Camera cam = GameBase.camera;
+		Camera cam = GameBase.$().getCamera();
 		cam.lookAt(trackObj.getCenterX(), trackObj.getCenterY(), 0f);
 		cam.update();
 		oldX = trackObj.getX();

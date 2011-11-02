@@ -48,10 +48,10 @@ public class WindowWithVariableTitlebox extends Window {
 		this(title, stage, skin.getStyle(WindowWithVariableTitleboxStyle.class));
 	}
 	public WindowWithVariableTitlebox(String title, Stage stage, WindowWithVariableTitleboxStyle style) {
-		this(null, title, stage, style, 150, 150);
+		this(title, stage, style, 150, 150, null);
 	}
-	public WindowWithVariableTitlebox(String name, String title, Stage stage, WindowWithVariableTitleboxStyle style, int prefWidth, int prefHeight) {
-		super(name, title, stage, style, prefWidth, prefHeight);
+	public WindowWithVariableTitlebox(String title, Stage stage, WindowWithVariableTitleboxStyle style, int prefWidth, int prefHeight, String name) {
+		super(title, stage, style, prefWidth, prefHeight, name);
 	}
 
 	@Override
@@ -94,6 +94,7 @@ public class WindowWithVariableTitlebox extends Window {
 		padTop((int)(titleBounds.height + style.background.getTopHeight()));
 	}
 
+	@Override
 	public void draw (SpriteBatch batch, float parentAlpha) {
 		WindowWithVariableTitleboxStyle style = (WindowWithVariableTitleboxStyle) this.style;
 		final NinePatch background = style.background;

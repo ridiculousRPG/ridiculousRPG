@@ -16,9 +16,6 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
@@ -30,19 +27,18 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
-import com.badlogic.gdx.scenes.scene2d.ui.ComboBox;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.SplitPane;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox.CheckBoxStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.ComboBox.ComboBoxStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox.SelectBoxStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider.SliderStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.SplitPane.SplitPaneStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.GameServiceProvider;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
@@ -60,24 +56,14 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 	private static Vector2 tmpPoint = new Vector2(0f, 0f);
 
 	public ActorsOnStageService() {
-		super(GameBase.screenWidth, GameBase.screenHeight, true);
-		init();
+		super(GameBase.$().getScreenWidth(), GameBase.$().getScreenHeight(), true, GameBase.$().getSpriteBatch());
 	}
 	@Override
 	public void init() {
-		if (isInitialized() || !GameBase.isGameInitialized()) return;
-		setViewport(GameBase.screenWidth, GameBase.screenHeight, true);
+		if (isInitialized()) return;
+		setViewport(GameBase.$().getScreenWidth(), GameBase.$().getScreenHeight(), true);
 		skinNormal = new Skin(Gdx.files.internal("data/uiskin2.json"), Gdx.files.internal("data/uiskin2.png"));
 		skinFocused = new Skin(Gdx.files.internal("data/uiskin2.json"), Gdx.files.internal("data/uiskin2Focus.png"));
-	    try {
-	    	// This codeblock avoids wasting a lot of space in memory.
-	    	// It has the same effect as: batch = GameBase.spriteBatch;
-			Field modifiersField = Field.class.getDeclaredField("modifiers");
-			modifiersField.setAccessible(true);
-			Field field = Stage.class.getDeclaredField("batch");
-			modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-			field.set(this, GameBase.spriteBatch);
-		} catch (Exception ignored) {ignored.printStackTrace();}
 	}
 	@Override
 	public boolean isInitialized() {
@@ -100,12 +86,12 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 		if (actor.getClass() == Button.class) {
 			((Button)actor).setStyle(newSikn.getStyle(ButtonStyle.class));
 		} else if (actor.getClass() == CheckBox.class
-				|| actor.getClass() == com.badlogic.gdx.bugfix.scenes.scene2d.ui.CheckBox.class) {
+				|| actor.getClass() == SelectBox.class) {
 			((CheckBox)actor).setStyle(newSikn.getStyle(CheckBoxStyle.class));
 		} else if (actor.getClass() == TextField.class) {
 			((TextField)actor).setStyle(newSikn.getStyle(TextFieldStyle.class));
-		} else if (actor.getClass() == ComboBox.class) {
-			((ComboBox)actor).setStyle(newSikn.getStyle(ComboBoxStyle.class));
+		} else if (actor.getClass() == SelectBox.class) {
+			((SelectBox)actor).setStyle(newSikn.getStyle(SelectBoxStyle.class));
 		} else if (actor.getClass() == Slider.class) {
 			((Slider)actor).setStyle(newSikn.getStyle(SliderStyle.class));
 		} else if (actor.getClass() == SplitPane.class) {
@@ -219,13 +205,13 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 			a.toLocalCoordinates(tmpPoint.set(a.x, a.y));
 			// simulate touch event
 			if (down) {
-				if (GameServiceProvider.requestAttention(this, false, false)) {
+				if (GameBase.$serviceProvider().requestAttention(this, false, false)) {
 					root.touchDown(a.x-tmpPoint.x+1, a.y-tmpPoint.y+1, 0);
 					if (a.parent!=null) a.parent.keyboardFocusedActor = a;
 					return true;
 				}
 			} else {
-				if (GameServiceProvider.releaseAttention(this)) {
+				if (GameBase.$serviceProvider().releaseAttention(this)) {
 					root.touchUp(a.x-tmpPoint.x+1, a.y-tmpPoint.y+1, 0);
 				}
 			}

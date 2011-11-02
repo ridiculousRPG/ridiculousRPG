@@ -102,23 +102,23 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	 */
 	public BitmapFontCache addMessage(CharSequence text, float color, Alignment horizontalAlign, Alignment verticalAlign, float padding, float wrapWidth, boolean forceRemove) {
 		if (!isInitialized()) return null;
-		float x=padding, y=GameBase.screenHeight-padding;
+		float x=padding, y=GameBase.$().getScreenHeight()-padding;
 		BitmapFontCache bfc = createMsg(text, color, 0f, 0f, wrapWidth);
 		TextBounds b = bfc.getBounds();
 
 		if (horizontalAlign==Alignment.CENTER)
-			x = (GameBase.screenWidth-b.width)*.5f;
+			x = (GameBase.$().getScreenWidth()-b.width)*.5f;
 		else if (horizontalAlign==Alignment.RIGHT)
-			x = GameBase.screenWidth-b.width-padding;
+			x = GameBase.$().getScreenWidth()-b.width-padding;
 
 		if (verticalAlign==Alignment.CENTER)
-			y = GameBase.screenHeight - (GameBase.screenHeight-b.height)*.5f;
+			y = GameBase.$().getScreenHeight() - (GameBase.$().getScreenHeight()-b.height)*.5f;
 		else if (verticalAlign==Alignment.BOTTOM)
 			y = b.height+padding;
 
-		if (wrapWidth==0f && projectionMatrix(GameBase.camera)==GameBase.camera.view) {
+		if (wrapWidth==0f && projectionMatrix(GameBase.$().getCamera())==GameBase.$().getCamera().view) {
 			if (x < 0f) x = 0f;
-			if (y > GameBase.screenHeight) y = GameBase.screenHeight;
+			if (y > GameBase.$().getScreenHeight()) y = GameBase.$().getScreenHeight();
 		}
 
 		bfc.setPosition(x, y);
@@ -176,7 +176,7 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	}
 	@Override
 	public void init() {
-		if (isInitialized() || !GameBase.isGameInitialized()) return;
+		if (isInitialized()) return;
 		font = new BitmapFont();
 	}
 	@Override

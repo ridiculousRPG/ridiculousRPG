@@ -23,7 +23,6 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.GameServiceProvider;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
 
@@ -31,7 +30,7 @@ import com.madthrax.ridiculousRPG.service.GameService;
  * @author Alexander Baumgartner
  */
 public class MainMenuService extends InputAdapter implements GameService, Drawable {
-	boolean paused;
+	private boolean paused;
 
 	public void exit() {
 		Gdx.app.exit();
@@ -40,16 +39,16 @@ public class MainMenuService extends InputAdapter implements GameService, Drawab
 	public boolean keyUp(int keycode) {
 		if (keycode==Input.Keys.P) {
 			if (paused) {
-				return !(paused = !GameServiceProvider.releaseAttention(this));
+				return !(paused = !GameBase.$serviceProvider().releaseAttention(this));
 			}
-			return (paused = GameServiceProvider.requestAttention(this, true, false));
+			return (paused = GameBase.$serviceProvider().requestAttention(this, true, false));
 		}
 		if (keycode==Input.Keys.ESCAPE) {
 			exit();
 			return true;
 		}
 		// Ctrl+Alt+9 easter egg function ;)
-		if (GameBase.isControlKeyPressed()) {
+		if (GameBase.$().isControlKeyPressed()) {
 			if (keycode==Input.Keys.ALT_LEFT || keycode==Input.Keys.NUM_9) {
 				try {
 					Gdx.input.setCursorCatched(!Gdx.input.isCursorCatched());

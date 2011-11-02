@@ -28,7 +28,6 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.madthrax.ridiculousRPG.camera.CameraSimpleOrtho2D;
-import com.madthrax.ridiculousRPG.camera.CameraToggleFullscreenService;
 import com.madthrax.ridiculousRPG.events.EventObject;
 import com.madthrax.ridiculousRPG.events.Speed;
 import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
@@ -41,54 +40,52 @@ import com.madthrax.ridiculousRPG.ui.DisplayTextService;
  * @author Alexander Baumgartner
  */
 public class GameBase extends GameServiceDefaultImpl implements ApplicationListener {
-	public static SpriteBatch spriteBatch;
-	public static Camera camera;
-	private static Color gameColorTint = new Color(1f,1f,1f,1f);
-	private static float gameColorBits = gameColorTint.toFloatBits();
-	/**
-	 * The {@link #globalState} can be used to share global variables
-	 */
-	public static ObjectState globalState;
-	public static boolean resizeView;
-	/**
-	 * Don't forget to update the camera after changing
-	 * the screen dimension!
-	 */
-	public static int screenWidth, screenHeight;
-	/**
-	 * Don't forget to update the camera after changing
-	 * the drawing planes size!
-	 */
-	public static int planeWidth, planeHeight;
-	/**
-	 * Don't change this value!<br>
-	 * It should always store the original size from
-	 * initializing the game.
-	 */
-	public static int originalWidth, originalHeight;
-	/**
-	 * True if the game is running in debug mode
-	 */
-	public static boolean debugMode;
-	/**
-	 * True if the game is running in fullscreen mode
-	 */
-	public static boolean fullscreen;
-	/**
-	 * The version of the engine as string
-	 */
-	public static final String engineVersion = "0.3 prealpha (incomplete)";
+	private static GameBase instance;
 
-	private static boolean controlKeyPressed, pushActionPressed;
+	private SpriteBatch spriteBatch;
+	private Camera camera;
+	private ObjectState globalState;
+	private GameServiceProvider serviceProvider;
+	
+	private int screenWidth, screenHeight;
+	private int planeWidth, planeHeight;
+	private int originalWidth, originalHeight;
 
-	public GameBase(GameOptions options){
+	private boolean fullscreen, debugMode, resizeView;
+	private boolean controlKeyPressed, pushActionPressed;
+
+	private Color gameColorTint = new Color(1f,1f,1f,1f);
+	private float gameColorBits = gameColorTint.toFloatBits();
+
+	private final String engineVersion = "0.3 prealpha (incomplete)";
+
+	/**
+	 * Returns the FIRST GameBase instance which has been initialized
+	 * to simplify the access
+	 * @return The first instance, which has been initialized.
+	 */
+	public static GameBase $() {
+		if (!isInitialized()) throw new IllegalStateException("GameBase not initialized!");
+		return instance;
+	}
+	/**
+	 * The {@link GameServiceProvider} from the first GameBase instance
+	 * which has been initialized.<br>
+	 * A shortcut for calling {@link GameBase#$()}{@link #getServiceProvider() .getServiceProvider()}
+	 */
+	public static GameServiceProvider $serviceProvider() {
+		return $().getServiceProvider();
+	}
+	public GameBase(GameOptions options) {
 		debugMode = options.debug;
 		fullscreen = options.fullscreen;
 		resizeView = options.resize;
+
+		serviceProvider = new GameServiceProvider();
 		if (options.initGameService instanceof DisplayErrorService) {
-			GameServiceProvider.requestAttention(options.initGameService, true, true);
+			serviceProvider.requestAttention(options.initGameService, true, true);
 		} else {
-			GameServiceProvider.putService(options.initGameService);
+			serviceProvider.putService(options.initGameService);
 		}
 	}
 
@@ -97,25 +94,26 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 		spriteBatch = new SpriteBatch();
 		camera = new CameraSimpleOrtho2D();
 		globalState = new ObjectState();
-
 		camera.viewportWidth =planeWidth =screenWidth =originalWidth =Gdx.graphics.getWidth();
 		camera.viewportHeight=planeHeight=screenHeight=originalHeight=Gdx.graphics.getHeight();
+		// instance != null indicates that GameBase is initialized
+		if (isInitialized()) instance = this;
 
 		try {
-			GameServiceProvider.init();
-			GameServiceProvider.putService(DisplayTextService.$map);
-			GameServiceProvider.putService(DisplayTextService.$screen);
+			serviceProvider.init();
+			serviceProvider.putService(DisplayTextService.$map);
+			serviceProvider.putService(DisplayTextService.$screen);
 			if (debugMode) {
-				GameServiceProvider.putService(new DisplayFPSService());
+				serviceProvider.putService(new DisplayFPSService());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			StringWriter stackTrace = new StringWriter();
 			e.printStackTrace(new PrintWriter(stackTrace));
-			GameServiceProvider.dispose();
+			serviceProvider.dispose();
 			String msg = "The following error occured while initializing the services:\n"
 					+e.getMessage()+"\n\n"+stackTrace;
-			GameServiceProvider.requestAttention(new DisplayErrorService(msg), true, true);
+			serviceProvider.requestAttention(new DisplayErrorService(msg), true, true);
 		}
 
 		camera.update();
@@ -132,9 +130,9 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 				|| Gdx.input.isTouched(1)
 				|| Gdx.input.isButtonPressed(Buttons.RIGHT);
 	
-			GameServiceProvider.computeAll();
+			serviceProvider.computeAll();
 			Thread.yield();
-			GameServiceProvider.drawAll(debugMode);
+			serviceProvider.drawAll(debugMode);
 		} catch (Exception e) {
 			try {
 				spriteBatch.end();
@@ -142,16 +140,21 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 			e.printStackTrace();
 			StringWriter stackTrace = new StringWriter();
 			e.printStackTrace(new PrintWriter(stackTrace));
-			GameServiceProvider.dispose();
+			serviceProvider.dispose();
 			String msg = "The following error occured while executing the game:\n"
 					+e.getMessage()+"\n\n"+stackTrace;
-			GameServiceProvider.requestAttention(new DisplayErrorService(msg), true, true);
+			serviceProvider.requestAttention(new DisplayErrorService(msg), true, true);
 		}
 		Thread.yield();
 	}
 
-	public static boolean isGameInitialized() {
-		return globalState!=null;
+	/**
+	 * Indicates if the first {@link GameBase} instance has been initialized.<br>
+	 * (The first instance which is initzalized becomes the default)
+	 * @return true if initialized
+	 */
+	public static boolean isInitialized() {
+		return instance!=null;
 	}
 	/**
 	 * Signals if the control key is pressed.<br>
@@ -159,7 +162,7 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 	 * @return true if left or right control key is pressed or the 
 	 * third finger touches the touchpad
 	 */
-	public static boolean isControlKeyPressed() {
+	public boolean isControlKeyPressed() {
 		return controlKeyPressed;
 	}
 	/**
@@ -169,12 +172,12 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 	 * (left mouse button is used for movement) or the second finger touches
 	 * the touchpad (first finger is used for movement)
 	 */
-	public static boolean isActionKeyPressed() {
+	public boolean isActionKeyPressed() {
 		return pushActionPressed;
 	}
 	@Override
 	public void resize(int width, int height) {
-		Camera cam = GameBase.camera;
+		Camera cam = camera;
 		if (resizeView) {
 			float centerX = cam.viewportWidth*.5f;
 			float centerY = cam.viewportHeight*.5f;
@@ -192,12 +195,12 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 	@Override
 	public void pause() {
 		//TODO: save state
-		GameServiceProvider.requestAttention(this, true, false);
+		serviceProvider.requestAttention(this, true, false);
 	}
 	@Override
 	public void resume() {
 		//TODO: load state
-		GameServiceProvider.releaseAttention(this);
+		serviceProvider.releaseAttention(this);
 	}
 
 	/**
@@ -212,20 +215,125 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 	 * to create color animations (e.g. day and night effects).
 	 * @see {@link MoveFadeColorAdapter#$(Speed, Color, boolean)}
 	 */
-	public static void setGameColorTint(Color tint) {
+	public void setGameColorTint(Color tint) {
 		gameColorTint = tint;
 		gameColorBits = tint.toFloatBits();
 	}
-	public static Color getGameColorTint() {
+	public Color getGameColorTint() {
 		return gameColorTint;
 	}
-	public static float getGameColorBits() {
+	public float getGameColorBits() {
 		return gameColorBits;
+	}
+	public Camera getCamera() {
+		return camera;
+	}
+	public void setCamera(Camera camera) {
+		this.camera = camera;
+	}
+	/**
+	 * The {@link GameServiceProvider} contains all services which are managed
+	 * inside this engine instance.
+	 */
+	public GameServiceProvider getServiceProvider() {
+		return serviceProvider;
+	}
+	/**
+	 * The {@link #globalState} can be used to share global variables
+	 */
+	public ObjectState getGlobalState() {
+		return globalState;
+	}
+	public boolean isResizeView() {
+		return resizeView;
+	}
+	public void setResizeView(boolean resizeView) {
+		this.resizeView = resizeView;
+	}
+	public int getScreenWidth() {
+		return screenWidth;
+	}
+	/**
+	 * Don't forget to update the camera after changing
+	 * the screen dimension!
+	 */
+	public void setScreenWidth(int screenWidth) {
+		this.screenWidth = screenWidth;
+	}
+	public int getScreenHeight() {
+		return screenHeight;
+	}
+	/**
+	 * Don't forget to update the camera after changing
+	 * the screen dimension!
+	 */
+	public void setScreenHeight(int screenHeight) {
+		this.screenHeight = screenHeight;
+	}
+	public int getPlaneWidth() {
+		return planeWidth;
+	}
+	/**
+	 * Don't forget to update the camera after changing
+	 * the drawing planes size!
+	 */
+	public void setPlaneWidth(int planeWidth) {
+		this.planeWidth = planeWidth;
+	}
+	public int getPlaneHeight() {
+		return planeHeight;
+	}
+	/**
+	 * Don't forget to update the camera after changing
+	 * the drawing planes size!
+	 */
+	public void setPlaneHeight(int planeHeight) {
+		this.planeHeight = planeHeight;
+	}
+	/**
+	 * True if the game is running in fullscreen mode
+	 */
+	public boolean isFullscreen() {
+		return fullscreen;
+	}
+	/**
+	 * Toggle the fullscreen mode
+	 * @return true if succeeded, false otherwise
+	 */
+	public boolean toggleFullscreen() {
+		try {
+			fullscreen = !fullscreen;
+			// resize is called
+			Gdx.graphics.setDisplayMode(originalWidth, originalHeight, fullscreen);
+			return true;
+		} catch (Throwable notTooBad) {}
+		return false;
+	}
+	public SpriteBatch getSpriteBatch() {
+		return spriteBatch;
+	}
+	public int getOriginalWidth() {
+		return originalWidth;
+	}
+	public int getOriginalHeight() {
+		return originalHeight;
+	}
+	/**
+	 * True if the game is running in debug mode
+	 */
+	public boolean isDebugMode() {
+		return debugMode;
+	}
+	/**
+	 * The version of the engine as string
+	 */
+	public String getEngineVersion() {
+		return engineVersion;
 	}
 	@Override
 	public void dispose() {
-		if (fullscreen) CameraToggleFullscreenService.toggleFullscreen();
-		GameServiceProvider.dispose();
+		if (fullscreen) toggleFullscreen();
+		serviceProvider.dispose();
 		if (spriteBatch!=null) spriteBatch.dispose();
 		GameConfig.get().dispose();
 	}

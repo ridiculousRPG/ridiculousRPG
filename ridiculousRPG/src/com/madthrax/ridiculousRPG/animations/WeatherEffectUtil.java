@@ -16,7 +16,7 @@
 
 package com.madthrax.ridiculousRPG.animations;
 
-import com.madthrax.ridiculousRPG.GameServiceProvider;
+import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.ui.DisplayErrorService;
 
 /**
@@ -88,10 +88,10 @@ public abstract class WeatherEffectUtil {
 		engine().stop();
 	}
 	private static WeatherEffectService engine() {
-		WeatherEffectService wes = GameServiceProvider.getService(WeatherEffectService.class);
+		WeatherEffectService wes = GameBase.$serviceProvider().getService(WeatherEffectService.class);
 		if (wes == null) {
 			System.err.println("WeatherEffectService is not running, please add it to the GameServiceProvider before using WeatherEffectUtil");
-			GameServiceProvider.putService(new DisplayErrorService("WeatherEffectService is not running, please add it to the\n" +
+			GameBase.$serviceProvider().putService(new DisplayErrorService("WeatherEffectService is not running, please add it to the\n" +
 					"GameServiceProvider before using WeatherEffectUtil"));
 			wes = new WeatherEffectService(); // to avoid NullPointerException
 		}

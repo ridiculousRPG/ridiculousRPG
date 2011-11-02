@@ -41,6 +41,7 @@ public class GameLauncher extends AndroidApplication {
 	 * You don't need an other Android-activity inside your game.
 	 * @param savedInstanceState
 	 */
+	@Override
 	public void onCreate (Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 		GameOptions options = new GameOptions(new AndroidFiles(getAssets()).internal("data/game.ini"));

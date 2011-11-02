@@ -33,7 +33,7 @@ public class CameraZoomService extends InputAdapter implements GameService {
 
 	@Override
 	public boolean keyDown(int keycode) {
-		if (GameBase.isControlKeyPressed()) {
+		if (GameBase.$().isControlKeyPressed()) {
 			if (keycode==Input.Keys.PLUS) {
 				zoomIn();
 				return true;
@@ -51,7 +51,7 @@ public class CameraZoomService extends InputAdapter implements GameService {
 	}
 	@Override
 	public boolean scrolled(int amount) {
-		if (GameBase.isControlKeyPressed()) {
+		if (GameBase.$().isControlKeyPressed()) {
 			if (amount>0) zoomIn();
 			else zoomOut();
 			return true;
@@ -68,13 +68,13 @@ public class CameraZoomService extends InputAdapter implements GameService {
 		if (zoom > minZoomIn) zoom(1f/zoomIntervall);
 	}
 	private void zoom(float intervall) {
-		Camera cam = GameBase.camera;
+		Camera cam = GameBase.$().getCamera();
 		float centerX = cam.viewportWidth*.5f;
 		float centerY = cam.viewportHeight*.5f;
 		if (intervall==0) {
 			zoom = 1f;
-			cam.viewportWidth = GameBase.screenWidth;
-			cam.viewportHeight = GameBase.screenHeight;
+			cam.viewportWidth = GameBase.$().getScreenWidth();
+			cam.viewportHeight = GameBase.$().getScreenHeight();
 		} else {
 			zoom *= intervall;
 			cam.viewportHeight *= intervall;

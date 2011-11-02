@@ -78,7 +78,7 @@ public class MoveFadeColorAdapter extends MovementHandler {
 			float changeSpeed = transitionSpeed==null?1f:transitionSpeed.computeStretch(deltaTime)*.1f;
 			Color from;
 			if (tintEntireGame) {
-				from = GameBase.getGameColorTint();
+				from = GameBase.$().getGameColorTint();
 			} else {
 				from = ((EventObject) movable).getColor();
 			}
@@ -89,7 +89,7 @@ public class MoveFadeColorAdapter extends MovementHandler {
 			from.b = transition(from.b, to.b, changeSpeed);
 			from.a = transition(from.a, to.a, changeSpeed);
 			if (tintEntireGame) {
-				GameBase.setGameColorTint(from);
+				GameBase.$().setGameColorTint(from);
 			} else {
 				((EventObject) movable).setColor(from);
 			}

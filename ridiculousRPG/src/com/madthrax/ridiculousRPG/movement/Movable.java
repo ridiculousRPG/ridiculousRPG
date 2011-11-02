@@ -161,7 +161,7 @@ public abstract class Movable {
 	 * @return x position relative to this movable
 	 */
 	public float computeRelativX(int screenAbsolutX) {
-		Camera camera = GameBase.camera;
+		Camera camera = GameBase.$().getCamera();
 		float centerX = getCenterX()-camera.position.x;
 		centerX *= Gdx.graphics.getWidth()/camera.viewportWidth;
 		return screenAbsolutX - centerX;
@@ -171,7 +171,7 @@ public abstract class Movable {
 	 * @return y position relative to this movable
 	 */
 	public float computeRelativY(int screenAbsolutY) {
-		Camera camera = GameBase.camera;
+		Camera camera = GameBase.$().getCamera();
 		float centerY = getCenterY()-camera.position.y;
 		centerY *= Gdx.graphics.getHeight()/camera.viewportHeight;
 		return (Gdx.graphics.getHeight()-screenAbsolutY)-centerY;

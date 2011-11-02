@@ -45,12 +45,12 @@ public class CameraSimpleOrtho2D extends Camera {
 	}
 	@Override
 	public void update() {
-		view.setToOrtho2D(0, 0, GameBase.screenWidth, GameBase.screenHeight);
+		view.setToOrtho2D(0, 0, GameBase.$().getScreenWidth(), GameBase.$().getScreenHeight());
 		projection.setToOrtho2D(position.x, position.y, viewportWidth, viewportHeight);
 	}
 	private float adjustX() {
 		// keep view inside the plane
-		float planeWidth = GameBase.planeWidth;
+		float planeWidth = GameBase.$().getPlaneWidth();
 		float x = this.x;
 		if (viewportWidth >= planeWidth) {
 			x = (planeWidth-viewportWidth)/2;
@@ -62,7 +62,7 @@ public class CameraSimpleOrtho2D extends Camera {
 		return x;
 	}
 	private float adjustY() {
-		float planeHeight = GameBase.planeHeight;
+		float planeHeight = GameBase.$().getPlaneHeight();
 		float y = this.y;
 		if (viewportHeight >= planeHeight) {
 			y = (planeHeight-viewportHeight)/2;

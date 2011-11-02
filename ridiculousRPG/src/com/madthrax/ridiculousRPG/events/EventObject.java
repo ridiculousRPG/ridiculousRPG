@@ -374,11 +374,11 @@ public class EventObject extends Movable implements Comparable<EventObject>, Dis
 	public void draw(SpriteBatch spriteBatch) {
 		if (visible && image!=null) {
 			float eventColorBits = this.colorFloatBits;
-			float gameColorBits = GameBase.getGameColorBits();
+			float gameColorBits = GameBase.$().getGameColorBits();
 			if (gameColorBits!=COLOR_WHITE_BITS) {
 				if (eventColorBits!=COLOR_WHITE_BITS) {
 					Color c1 = this.color;
-					Color c2 = GameBase.getGameColorTint();
+					Color c2 = GameBase.$().getGameColorTint();
 					eventColorBits=Color.toFloatBits(c1.r*c2.r, c1.g*c2.g, c1.b*c2.b, c1.a*c2.a);
 				} else {
 					eventColorBits = gameColorBits;

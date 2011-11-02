@@ -22,7 +22,6 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.GameServiceProvider;
 import com.madthrax.ridiculousRPG.animations.WeatherEffectService;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.service.Computable;
@@ -44,13 +43,13 @@ public class MapRenderService extends GameServiceDefaultImpl implements Computab
 	public MapWithEvents<?> loadMap(MapWithEvents<?> map) {
 		MapWithEvents<?> old = this.map;
 		this.map = map;
-		GameBase.planeWidth = map.getWidth();
-		GameBase.planeHeight = map.getHeight();
-		WeatherEffectService wes = GameServiceProvider.getService(WeatherEffectService.class);
+		GameBase.$().setPlaneWidth(map.getWidth());
+		GameBase.$().setPlaneHeight(map.getHeight());
+		WeatherEffectService wes = GameBase.$serviceProvider().getService(WeatherEffectService.class);
 		if (wes!=null) {
 			wes.resize(map.getWidth(), map.getHeight());
 		}
-		GameBase.camera.update();
+		GameBase.$().getCamera().update();
 		return old;
 	}
 	@Override

@@ -42,29 +42,27 @@ import com.madthrax.ridiculousRPG.service.Initializable;
  * Every service of the same type(=class) can only be provided once!
  * @author Alexander Baumgartner
  */
-public abstract class GameServiceProvider {
-	private static InputAdapter nullInputAdapter = new InputAdapter();
-	private static Map<Class<? extends GameService>, GameService> services = new HashMap<Class<? extends GameService>, GameService>();
-	private static InputMultiplexer inputMultiplexer = new InputMultiplexer();
-	private static ArrayList<Computable> computables = new ArrayList<Computable>();
-	private static ArrayList<Drawable> drawables = new ArrayList<Drawable>();
-	private static AtomicReference<GameService> hasAttention = new AtomicReference<GameService>();
-	private static boolean freezeTheWorld = false;
-	private static boolean clearTheScreen = false;
+public class GameServiceProvider implements Initializable {
+	private InputAdapter nullInputAdapter = new InputAdapter();
+	private Map<Class<? extends GameService>, GameService> services = new HashMap<Class<? extends GameService>, GameService>();
+	private AtomicReference<GameService> hasAttention = new AtomicReference<GameService>();
+	private boolean freezeTheWorld = false;
+	private boolean clearTheScreen = false;
 
-	private static boolean initialized = false;
-	private static ArrayList<Initializable> initializables = new ArrayList<Initializable>();
+	private ArrayList<Initializable> initializables = new ArrayList<Initializable>();
+	private InputMultiplexer inputMultiplexer = new InputMultiplexer();
+	private ArrayList<Computable> computables = new ArrayList<Computable>();
+	private ArrayList<Drawable> drawables = new ArrayList<Drawable>();
 
-	public static void init() {
+	public void init() {
+		ArrayList<Initializable> initializables = this.initializables;
+		this.initializables = null;
 		Gdx.input.setInputProcessor(inputMultiplexer);
-		initialized = true;
-		for (Initializable service : initializables) {
+		for (Initializable service : initializables)
 			service.init();
-		}
-		initializables = null;
 	}
 	@SuppressWarnings("unchecked")
-	public static <T extends GameService> T getService(Class<T> serviceType) {
+	public <T extends GameService> T getService(Class<T> serviceType) {
 		return (T)services.get(serviceType);
 	}
 	/**
@@ -77,21 +75,21 @@ public abstract class GameServiceProvider {
 	 * @param service
 	 * @return the old service or null 
 	 */
-	public static GameService putService(GameService service) {
+	public GameService putService(GameService service) {
 		GameService old = services.put(service.getClass(), service);
 		if (service instanceof Initializable && !((Initializable)service).isInitialized()) {
-			if (initialized) {
+			if (isInitialized()) {
 				((Initializable) service).init();
 			} else { // initialize later, wait for the game-globals to be initialized
 				initializables.add((Initializable) service);
 			}
 		}
 		if (service instanceof Drawable) {
-			if (old!=null) drawables.remove((Drawable) old);
+			if (old!=null) drawables.remove(old);
 			drawables.add((Drawable) service);
 		}
 		if (service instanceof Computable) {
-			if (old!=null) computables.remove((Computable) old);
+			if (old!=null) computables.remove(old);
 			computables.add((Computable) service);
 		}
 		if (service instanceof InputProcessor) {
@@ -107,11 +105,11 @@ public abstract class GameServiceProvider {
 	 * @param service
 	 * @return the old service or null 
 	 */
-	public static GameService removeService(GameService service) {
+	public GameService removeService(GameService service) {
 		GameService old = services.remove(service.getClass());
 		if (old instanceof InputProcessor) inputMultiplexer.removeProcessor((InputProcessor) old);
-		if (old instanceof Computable) computables.remove((Computable) old);
-		if (old instanceof Drawable) drawables.remove((Drawable) old);
+		if (old instanceof Computable) computables.remove(old);
+		if (old instanceof Drawable) drawables.remove(old);
 		return old;
 	}
 	/**
@@ -133,14 +131,14 @@ public abstract class GameServiceProvider {
 	 * The screen is automatically cleared at every iteration.<br>
 	 * @return true on succeed, otherwise false
 	 */
-	public static boolean requestAttention(GameService service, boolean freezeTheWorld, boolean clearTheScreen) {
+	public boolean requestAttention(GameService service, boolean freezeTheWorld, boolean clearTheScreen) {
 		boolean succeed  = hasAttention.compareAndSet(null, service);
 		if (succeed) {
 			if (service instanceof Initializable && !((Initializable) service).isInitialized()) {
 				((Initializable) service).init();
 			}
-			GameServiceProvider.freezeTheWorld = freezeTheWorld;
-			GameServiceProvider.clearTheScreen = clearTheScreen;
+			this.freezeTheWorld = freezeTheWorld;
+			this.clearTheScreen = clearTheScreen;
 			if (service instanceof InputProcessor) {
 				Gdx.input.setInputProcessor((InputProcessor) service);
 			} else {
@@ -155,7 +153,7 @@ public abstract class GameServiceProvider {
 	 * @param service
 	 * @return true on succeed, otherwise false
 	 */
-	public static boolean releaseAttention(GameService service) {
+	public boolean releaseAttention(GameService service) {
 		boolean succeed  = hasAttention.compareAndSet(service, null);
 		if (succeed) {
 			freezeTheWorld = false;
@@ -164,7 +162,7 @@ public abstract class GameServiceProvider {
 		}
 		return succeed;
 	}
-	public static void dispose() {
+	public void dispose() {
 		for (GameService service : services.values()) {
 			service.dispose();
 		}
@@ -176,11 +174,11 @@ public abstract class GameServiceProvider {
 		freezeTheWorld = false;
 		clearTheScreen = false;
 	}
-	static void computeAll() {
+	void computeAll() {
 		float deltaTime = Gdx.graphics.getDeltaTime();
 		// to avoid over-/underflows (e.g. when debugging) we simulate at least 10 FPS
 		if (deltaTime>.1f) deltaTime = .1f;
-		boolean actionKeyPressed = GameBase.isActionKeyPressed();
+		boolean actionKeyPressed = GameBase.$().isActionKeyPressed();
 		if (freezeTheWorld) {
 			if (hasAttention.get() instanceof Computable)
 				((Computable) hasAttention.get()).compute(deltaTime, actionKeyPressed);
@@ -188,12 +186,12 @@ public abstract class GameServiceProvider {
 			computables.get(i).compute(deltaTime, actionKeyPressed);
 		}
 	}
-	static void drawAll(boolean debug) {
+	void drawAll(boolean debug) {
 		// clear the screen
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-		float tintColorBits = GameBase.getGameColorBits();
-		SpriteBatch spriteBatch = GameBase.spriteBatch;
-		Camera camera = GameBase.camera;
+		float tintColorBits = GameBase.$().getGameColorBits();
+		SpriteBatch spriteBatch = GameBase.$().getSpriteBatch();
+		Camera camera = GameBase.$().getCamera();
 		if (clearTheScreen) {
 			if (hasAttention.get() instanceof Drawable) {
 				Drawable draw = (Drawable) hasAttention.get();
@@ -225,8 +223,8 @@ public abstract class GameServiceProvider {
 			spriteBatch.begin();
 			float x1 = Math.max(0f, camera.position.x);
 			float y1 = Math.max(0f, camera.position.y);
-			float x2 = x1+Math.min(camera.viewportWidth, GameBase.planeWidth);
-			float y2 = y1+Math.min(camera.viewportHeight, GameBase.planeHeight);
+			float x2 = x1+Math.min(camera.viewportWidth, GameBase.$().getPlaneWidth());
+			float y2 = y1+Math.min(camera.viewportHeight, GameBase.$().getPlaneHeight());
 			if (f==null) f =new BitmapFont();
 			f.setColor(0f,1f,1f,1f);
 			String text = "( "+(int)x1+" / "+(int)y1+" )";
@@ -239,14 +237,14 @@ public abstract class GameServiceProvider {
 			spriteBatch.setProjectionMatrix(camera.view);
 			spriteBatch.begin();
 			x1=Gdx.input.getX();
-			y1=GameBase.screenHeight - Gdx.input.getY();
+			y1=GameBase.$().getScreenHeight() - Gdx.input.getY();
 			text = "( "+(int)x1+" / "+(int)y1+" ) Screen\n";
-			x2 = camera.position.x+x1*camera.viewportWidth/GameBase.screenWidth;
-			y2 = camera.position.y+y1*camera.viewportHeight/GameBase.screenHeight;
+			x2 = camera.position.x+x1*camera.viewportWidth/GameBase.$().getScreenWidth();
+			y2 = camera.position.y+y1*camera.viewportHeight/GameBase.$().getScreenHeight();
 			text += "( "+(int)x2+" / "+(int)y2+" ) Camera";
 			f.setColor(1f,0f,1f,1f);
 			b = f.getMultiLineBounds(text);
-			f.drawMultiLine(spriteBatch, text, Math.max(Math.min(x1+10, GameBase.screenWidth-b.width), 0f), Math.max(Math.min(y1, GameBase.screenHeight), b.height));
+			f.drawMultiLine(spriteBatch, text, Math.max(Math.min(x1+10, GameBase.$().getScreenWidth()-b.width), 0f), Math.max(Math.min(y1, GameBase.$().getScreenHeight()), b.height));
 			text = "Execution order of Computable services";
 			for (Computable c: computables) {
 				text += "\n        "+c.getClass().getName();
@@ -260,9 +258,14 @@ public abstract class GameServiceProvider {
 			}
 			f.setColor(1f,1f,0f,1f);
 			b = f.getMultiLineBounds(text);
-			f.drawMultiLine(spriteBatch, text, (GameBase.screenWidth-b.width)*.5f, GameBase.screenHeight-(GameBase.screenHeight-b.height)*.5f);
+			f.drawMultiLine(spriteBatch, text, (GameBase.$().getScreenWidth()-b.width)*.5f, GameBase.$().getScreenHeight()-(GameBase.$().getScreenHeight()-b.height)*.5f);
 			spriteBatch.end();
 		}
 	}
 	static BitmapFont f = null;
+
+	@Override
+	public boolean isInitialized() {
+		return initializables==null;
+	}
 }
