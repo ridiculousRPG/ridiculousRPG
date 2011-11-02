@@ -31,6 +31,7 @@ import com.madthrax.ridiculousRPG.camera.CameraSimpleOrtho2D;
 import com.madthrax.ridiculousRPG.events.EventObject;
 import com.madthrax.ridiculousRPG.events.Speed;
 import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
+import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 import com.madthrax.ridiculousRPG.ui.DisplayErrorService;
 import com.madthrax.ridiculousRPG.ui.DisplayFPSService;
@@ -76,6 +77,15 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 	public static GameServiceProvider $serviceProvider() {
 		return $().getServiceProvider();
 	}
+	/**
+	 * The {@link GameServiceProvider} from the first GameBase instance
+	 * which has been initialized will be used to manage the service.<br>
+	 * A shortcut for calling {@link GameBase#$serviceProvider()}{@link GameServiceProvider#putService(GameService) .putService(GameService)}
+	 * @see {@link GameServiceProvider#putService(GameService)} 
+	 */
+	public static GameService $putService(GameService service) {
+		return $().getServiceProvider().putService(service);
+	}
 	public GameBase(GameOptions options) {
 		debugMode = options.debug;
 		fullscreen = options.fullscreen;
@@ -97,7 +107,7 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 		camera.viewportWidth =planeWidth =screenWidth =originalWidth =Gdx.graphics.getWidth();
 		camera.viewportHeight=planeHeight=screenHeight=originalHeight=Gdx.graphics.getHeight();
 		// instance != null indicates that GameBase is initialized
-		if (isInitialized()) instance = this;
+		if (!isInitialized()) instance = this;
 
 		try {
 			serviceProvider.init();
