@@ -91,7 +91,7 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	 * @see {@link Color#toFloatBits()}
 	 */
 	public BitmapFontCache addMessage(CharSequence text, float color, Alignment horizontalAlign, Alignment verticalAlign, float padding) {
-		return addMessage(text, defaultColor, horizontalAlign, verticalAlign, padding, 0f, false);
+		return addMessage(text, color, horizontalAlign, verticalAlign, padding, 0f, false);
 	}
 	/**
 	 * Adds a message which will be drawn onto the screen
@@ -104,7 +104,7 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	public BitmapFontCache addMessage(CharSequence text, float color, Alignment horizontalAlign, Alignment verticalAlign, float padding, float wrapWidth, boolean autoRemove) {
 		if (!isInitialized()) return null;
 		float x=padding, y=GameBase.screenHeight-padding;
-		BitmapFontCache bfc = createMsg(text, color, x, y, wrapWidth);
+		BitmapFontCache bfc = createMsg(text, color, 0f, 0f, wrapWidth);
 		TextBounds b = bfc.getBounds();
 
 		if (horizontalAlign==Alignment.CENTER)
@@ -117,7 +117,7 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 		else if (verticalAlign==Alignment.BOTTOM)
 			y = b.height+padding;
 
-		if (wrapWidth==0 && projectionMatrix(GameBase.camera)==GameBase.camera.view) {
+		if (wrapWidth==0f && projectionMatrix(GameBase.camera)==GameBase.camera.view) {
 			if (x < 0f) x = 0f;
 			if (y > GameBase.screenHeight) y = GameBase.screenHeight;
 		}

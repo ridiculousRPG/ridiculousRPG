@@ -55,7 +55,7 @@ public class DisplayErrorService extends DisplayTextService implements Computabl
 			} else {
 				msg = "\nERROR [" + ((int)(displayTime + 1f)) + "]\n\n" + msg;
 			}
-			addMessage(msg, Color.RED.toFloatBits(), Alignment.CENTER, Alignment.CENTER, 0f);
+			fontCache = addMessage(msg, Color.RED.toFloatBits(), Alignment.CENTER, Alignment.CENTER, 0f);
 		}
 	}
 	@Override
