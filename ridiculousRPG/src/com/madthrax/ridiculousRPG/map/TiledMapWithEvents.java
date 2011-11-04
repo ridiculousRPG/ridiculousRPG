@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
@@ -68,6 +69,9 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private Map<String, EventObject> namedRegions = new HashMap<String, EventObject>(30);
 
 	private Computable triggerEventHandler;
+
+	private static final char EVENT_CUSTOM_PROP_KZ = '$';
+	private static final String EVENT_PROP_ID = "ID";
 
 	/**
 	 * Creates a new map with the specified events from a tmx file.<br>
@@ -117,15 +121,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			for (j=0, len_j=group.objects.size(); j<len_j; j++) {
 				TiledObject object = group.objects.get(j);
 				EventObject ev = new EventObject(object, group, atlas, map);
-				prop = object.properties.get("id");
-				if (prop != null) {
-					try {
-						ev.id = Integer.parseInt(prop);
-					} catch (NumberFormatException e) {
-						e.printStackTrace();
-					}
-				}
-				//TODO: Define EventHandler, animation, height, ... as Tiled properties
+				parseProperties(ev, object.properties);
 				put(object.name, ev);
 			}
 		}
@@ -141,6 +137,23 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		ev.touchBound = new Rectangle(width, -1000f, 1000f, height+2000f);
 
 		triggerEventHandler = new TriggerEventHandler(dynamicRegions);
+	}
+	private void parseProperties(EventObject ev, HashMap<String, String> props) {
+		//TODO: Define EventHandler, animation, height, ... as Tiled properties
+		for (Entry<String, String> entry : props.entrySet()) {
+			String key = entry.getKey();
+			if (key.length()==0) continue;
+			String val = entry.getValue();
+			if (entry.getKey().charAt(0)==EVENT_CUSTOM_PROP_KZ) {
+				ev.properties.put(key, val);
+			} else if (EVENT_PROP_ID.equals(key)) {
+				try {
+					ev.id = Integer.parseInt(val);
+				} catch (NumberFormatException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	@Override
 	public EventObject put(String name, EventObject event) {
@@ -248,7 +261,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		int i = 0;
 		EventObject event = dynamicRegions.get(0); // is never empty
 		int dynSize = dynamicRegions.size();
-		// TODO: Only if there are performance problems:
+		// If there are performance problems:
 		// 1) Add only MapRenderRegions with z>0 to staticRegions
 		// 2) Build a new 3-dim array with [row][col][layer] for all MapRenderRegions with z==0
 		// 3) compute firstRow, lastRow, firstCol, lastCol

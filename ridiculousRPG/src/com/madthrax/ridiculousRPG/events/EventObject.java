@@ -18,6 +18,7 @@ package com.madthrax.ridiculousRPG.events;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +41,7 @@ import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.animations.TileAnimation;
 import com.madthrax.ridiculousRPG.map.MapRenderRegion;
+import com.madthrax.ridiculousRPG.map.TiledMapWithEvents;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 import com.madthrax.ridiculousRPG.movement.input.Move4WayAdapter;
@@ -95,6 +97,12 @@ public class EventObject extends Movable implements Comparable<EventObject>, Dis
 	 * All reachable objects which can be pushed at this time are stored in this list
 	 */
 	public Set<EventObject> reachable = new HashSet<EventObject>();
+	/**
+	 * This map holds the local event properties.<br>
+	 * If you use a {@link TiledMapWithEvents}, all object-properties
+	 * starting with the $ sign are considered local event properties.
+	 */
+	public HashMap<String, String> properties = new HashMap<String, String>();
 
 	/**
 	 * Creates an empty new event.
