@@ -138,7 +138,12 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 		triggerEventHandler = new TriggerEventHandler(dynamicRegions);
 	}
-	private void parseProperties(EventObject ev, HashMap<String, String> props) {
+	/**
+	 * Method to parse the object properties input.
+	 * @param ev
+	 * @param props
+	 */
+	protected void parseProperties(EventObject ev, HashMap<String, String> props) {
 		//TODO: Define EventHandler, animation, height, ... as Tiled properties
 		for (Entry<String, String> entry : props.entrySet()) {
 			String key = entry.getKey();
