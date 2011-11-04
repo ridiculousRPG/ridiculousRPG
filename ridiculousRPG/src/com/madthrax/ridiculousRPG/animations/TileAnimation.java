@@ -368,7 +368,7 @@ public class TileAnimation implements Disposable {
 		animationCol = 0;
 		return animationTiles[animationRow][animationCol];
 	}
-	@Override
+	
 	public void dispose() {
 		if (animationTexture!=null) animationTexture.unload();
 	}

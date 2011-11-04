@@ -58,27 +58,27 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 	public ActorsOnStageService() {
 		super(GameBase.$().getScreenWidth(), GameBase.$().getScreenHeight(), true, GameBase.$().getSpriteBatch());
 	}
-	@Override
+	
 	public void init() {
 		if (isInitialized()) return;
 		setViewport(GameBase.$().getScreenWidth(), GameBase.$().getScreenHeight(), true);
 		skinNormal = new Skin(Gdx.files.internal("data/uiskin2.json"), Gdx.files.internal("data/uiskin2.png"));
 		skinFocused = new Skin(Gdx.files.internal("data/uiskin2.json"), Gdx.files.internal("data/uiskin2Focus.png"));
 	}
-	@Override
+	
 	public boolean isInitialized() {
 		return skinNormal!=null;
 	}
-	@Override
+	
 	public void compute(float deltaTime, boolean actionKeyPressed) {
 		act(deltaTime);
 	}
-	@Override
+	
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
 		getCamera().update();
 		super.root.draw(spriteBatch,1f);
 	}
-	@Override
+	
 	public Matrix4 projectionMatrix(Camera camera) {
 		return camera.view;
 	}
@@ -98,6 +98,7 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 			((SplitPane)actor).setStyle(newSikn.getStyle(SplitPaneStyle.class));
 		}
 	}
+	
 	@Override
 	public boolean keyDown(int keycode) {
 		// unfocus if actor is removed
@@ -139,6 +140,7 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 		}
 		return consumed;
 	}
+	
 	@Override
 	public boolean keyUp(int keycode) {
 		// unfocus if actor is removed
@@ -170,6 +172,7 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 		return super.keyUp(keycode);
 	}
 
+	
 	@Override
 	public boolean touchDown(int x, int y, int pointer, int button) {
 		boolean consumed = super.touchDown(x, y, pointer, button);
@@ -178,6 +181,7 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 		}
 		return consumed;
 	}
+	
 	@Override
 	public boolean touchUp(int x, int y, int pointer, int button) {
 		return checkFocusChanged(touchUpIntern(x, y, pointer, button));
@@ -221,10 +225,11 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 		return false;
 	}
 
-	@Override
+	
 	public void freeze() {}
-	@Override
+	
 	public void unfreeze() {}
+	
 	@Override
 	public void dispose() {
 		super.dispose();

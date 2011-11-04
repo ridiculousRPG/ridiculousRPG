@@ -38,6 +38,7 @@ public class TriggerEventHandler extends Thread implements Disposable, Computabl
 		this.events = events;
 		start();
 	}
+	
 	@Override
 	public void run() {
 		while (!disposed) {
@@ -82,7 +83,7 @@ public class TriggerEventHandler extends Thread implements Disposable, Computabl
 	 * Compute collisions and move the events.<br>
 	 * Invoke parallel execution of the {@link EventHandler}.
 	 */
-	@Override
+	
 	public void compute(float deltaTime, boolean actionKeyPressed) {
 		// Load frequently used pointers/variables into register
 		List<EventObject> events = this.events;
@@ -144,7 +145,7 @@ public class TriggerEventHandler extends Thread implements Disposable, Computabl
 		this.deltaTime += deltaTime;
 		this.computationReady = true;
 	}
-	@Override
+	
 	public void dispose() {
 		disposed = true;
 	}

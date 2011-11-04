@@ -35,6 +35,7 @@ public class MainMenuService extends InputAdapter implements GameService, Drawab
 	public void exit() {
 		Gdx.app.exit();
 	}
+	
 	@Override
 	public boolean keyUp(int keycode) {
 		if (keycode==Input.Keys.P) {
@@ -58,18 +59,18 @@ public class MainMenuService extends InputAdapter implements GameService, Drawab
 		}
 		return false;
 	}
-	@Override
+	
 	public void freeze() {}
-	@Override
+	
 	public void unfreeze() {}
-	@Override
+	
 	public void dispose() {}
-	@Override
+	
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
 		//TODO: a lot of work;)
 		//MessageBox.textBoxCentered(spriteBatch, 0);
 	}
-	@Override
+	
 	public Matrix4 projectionMatrix(Camera camera) {
 		return camera.view;
 	}

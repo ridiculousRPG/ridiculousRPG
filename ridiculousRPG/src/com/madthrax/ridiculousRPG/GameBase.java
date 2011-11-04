@@ -99,7 +99,6 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 		}
 	}
 
-	@Override
 	public final void create() {
 		spriteBatch = new SpriteBatch();
 		camera = new CameraSimpleOrtho2D();
@@ -129,7 +128,6 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 		camera.update();
 	}
 
-	@Override
 	public final void render() {
 		try {
 			controlKeyPressed = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)
@@ -185,7 +183,6 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 	public boolean isActionKeyPressed() {
 		return pushActionPressed;
 	}
-	@Override
 	public void resize(int width, int height) {
 		Camera cam = camera;
 		if (resizeView) {
@@ -202,12 +199,10 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 		cam.update();
 	}
 
-	@Override
 	public void pause() {
 		//TODO: save state
 		serviceProvider.requestAttention(this, true, false);
 	}
-	@Override
 	public void resume() {
 		//TODO: load state
 		serviceProvider.releaseAttention(this);
@@ -340,7 +335,6 @@ public class GameBase extends GameServiceDefaultImpl implements ApplicationListe
 	public String getEngineVersion() {
 		return engineVersion;
 	}
-	@Override
 	public void dispose() {
 		if (fullscreen) toggleFullscreen();
 		serviceProvider.dispose();

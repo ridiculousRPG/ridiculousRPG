@@ -40,7 +40,6 @@ public class DisplayErrorService extends DisplayTextService implements Computabl
 	public DisplayErrorService(String msg) {
 		this.msg = msg;
 	}
-	@Override
 	public void compute(float deltaTime, boolean actionKeyPressed) {
 		String msg = this.msg;
 		int oldTime = (int) displayTime;
@@ -58,7 +57,6 @@ public class DisplayErrorService extends DisplayTextService implements Computabl
 			fontCache = addMessage(msg, Color.RED.toFloatBits(), Alignment.CENTER, Alignment.CENTER, 0f);
 		}
 	}
-	@Override
 	public Matrix4 projectionMatrix(Camera camera) {
 		return camera.view;
 	}

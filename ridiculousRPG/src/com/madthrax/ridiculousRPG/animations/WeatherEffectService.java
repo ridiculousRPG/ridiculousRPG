@@ -86,6 +86,7 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 			TextureDict.loadTexture(path);
 		}
 		new Thread() { // For simplicity let's do this in a new thread
+			
 			@Override
 			public void run() {
 				int tmp = (int)waitIntervall * 1000;
@@ -214,6 +215,7 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 	 */
 	public void stop(final float stopTime) {
 		new Thread() { // For simplicity let's do this in a new thread
+			
 			@Override
 			public void run() {
 				int stopIntervall = renderLayers.size();
@@ -246,7 +248,7 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 	/**
 	 * Draws the entire weather effect.
 	 */
-	@Override
+	
 	public void draw(SpriteBatch batch, Camera cam, boolean debug) {
 		for (int i = 0, len = renderLayers.size(); i < len; i++) {
 			renderLayers.get(i).draw(batch, cam);
@@ -267,7 +269,7 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 	 * Stops the effect immediately and unloads all textures.
 	 * @see stop()
 	 */
-	@Override
+	
 	public void dispose() {
 		for (int i = 0, len = renderLayers.size(); i < len; i++) {
 			renderLayers.get(i).dispose();
@@ -280,7 +282,7 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 			renderLayers.get(i).resize(pixelWidth, pixelHeight);
 		}
 	}
-	@Override
+	
 	public Matrix4 projectionMatrix(Camera camera) {
 		return camera.projection;
 	}

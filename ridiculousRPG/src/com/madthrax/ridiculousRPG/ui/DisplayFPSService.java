@@ -52,14 +52,12 @@ public class DisplayFPSService extends DisplayTextService implements Computable 
 		this.horiAlign = horiAlign;
 		this.vertAlign = vertAlign;
 	}
-	@Override
 	public void compute(float deltaTime, boolean actionKeyPressed) {
 		if (oldFPS != Gdx.graphics.getFramesPerSecond()) {
 			if (fontCache!=null) removeMessage(fontCache);
 			fontCache = addMessage("FPS: "+Gdx.graphics.getFramesPerSecond(), colorBits, horiAlign, vertAlign, 5f);
 		}
 	}
-	@Override
 	public Matrix4 projectionMatrix(Camera camera) {
 		return camera.view;
 	}

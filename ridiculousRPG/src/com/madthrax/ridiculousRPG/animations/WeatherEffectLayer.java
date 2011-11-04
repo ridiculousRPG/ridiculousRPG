@@ -211,7 +211,6 @@ public class WeatherEffectLayer implements Disposable {
 		}
 		return row;
 	}
-	@Override
 	public void dispose() {
 		tileLayer = null;
 		tRef.unload();

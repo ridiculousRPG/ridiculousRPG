@@ -160,7 +160,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			}
 		}
 	}
-	@Override
 	public EventObject put(String name, EventObject event) {
 		computeId(event);
 		EventObject old = null;
@@ -173,7 +172,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		dynamicRegions.add(event);
 		return old;
 	}
-	@Override
 	public void put(EventObject event) {
 		computeId(event);
 		dynamicRegions.add(event);
@@ -202,15 +200,12 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		this.idCount = idCount;
 		return idCount;
 	}
-	@Override
 	public EventObject get(String name) {
 		return namedRegions.get(name);
 	}
-	@Override
 	public List<EventObject> getAllEvents() {
 		return dynamicRegions;
 	}
-	@Override
 	public EventObject remove(String name) {
 		EventObject old = namedRegions.remove(name);
 		if (old!=null) {
@@ -218,11 +213,9 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		}
 		return old;
 	}
-	@Override
 	public int getWidth() {
 		return width;
 	}
-	@Override
 	public int getHeight() {
 		return height;
 	}
@@ -244,11 +237,9 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	 * Move all events on the map, animate events, compute reachable events,...
 	 * @param deltaTime
 	 */
-	@Override
 	public void compute(float deltaTime, boolean actionKeyPressed) {
 		triggerEventHandler.compute(deltaTime, actionKeyPressed);
 	}
-	@Override
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
 		List<EventObject> dynamicRegions = this.dynamicRegions;
 		Collections.sort(dynamicRegions);
@@ -331,7 +322,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			spriteBatch.begin();
 		}
 	}
-	@Override
 	public void dispose() {
 		if (triggerEventHandler instanceof Disposable) {
 			((Disposable) triggerEventHandler).dispose();
@@ -341,7 +331,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		dynamicRegions = null;
 		namedRegions = null;
 	}
-	@Override
 	public void dispose(boolean disposeAllEvents) {
 		if (disposeAllEvents) {
 			for (int i=0, size=dynamicRegions.size(); i<size; i++) {

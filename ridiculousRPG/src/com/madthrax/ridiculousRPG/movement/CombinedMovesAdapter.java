@@ -236,14 +236,14 @@ public class CombinedMovesAdapter extends MovementHandler {
 			this.seconds = seconds;
 			this.delegate = delegate;
 		}
-		@Override
-		protected boolean softMoveSegment(Movable event, float deltaTime) {
+			@Override
+			protected boolean softMoveSegment(Movable event, float deltaTime) {
 			if (delegate!=null) delegate.tryMove(event, deltaTime);
 			secondsCount += deltaTime;
 			return secondsCount >= seconds;
 		}
-		@Override
-		protected void reset() {
+			@Override
+			protected void reset() {
 			super.reset();
 			secondsCount = 0f;
 		}		
@@ -257,8 +257,8 @@ public class CombinedMovesAdapter extends MovementHandler {
 			this.delegate = delegate;
 			this.times = times;
 		}
-		@Override
-		protected boolean softMoveSegment(Movable event, float deltaTime) {
+			@Override
+			protected boolean softMoveSegment(Movable event, float deltaTime) {
 			if (delegate!=null) {
 				delegate.tryMove(event, deltaTime);
 				if (delegate.finished) {
@@ -272,8 +272,8 @@ public class CombinedMovesAdapter extends MovementHandler {
 			}
 			return false;
 		}
-		@Override
-		protected void reset() {
+			@Override
+			protected void reset() {
 			super.reset();
 			count = 0;
 		}
@@ -292,8 +292,8 @@ public class CombinedMovesAdapter extends MovementHandler {
 		protected void randomizeSeconds() {
 			seconds = minSeconds + (float)Math.random() * (maxSeconds-minSeconds);
 		}
-		@Override
-		protected void reset() {
+			@Override
+			protected void reset() {
 			super.reset();
 			randomizeSeconds();
 		}

@@ -36,16 +36,16 @@ public final class ActorFocusUtil { private ActorFocusUtil(){} // static contain
 	 */
 	public static final Actor DUMMY_ACTOR = new Actor() {
 		{visible=touchable=false;}
-		@Override
-		public void touchUp(float x, float y, int pointer) {}
-		@Override
-		public void touchDragged(float x, float y, int pointer) {}
-		@Override
-		public boolean touchDown(float x, float y, int pointer) {return false;}
-		@Override
-		public Actor hit(float x, float y) {return null;}
-		@Override
-		public void draw(SpriteBatch batch, float parentAlpha) {}
+			@Override
+			public void touchUp(float x, float y, int pointer) {}
+			@Override
+			public void touchDragged(float x, float y, int pointer) {}
+			@Override
+			public boolean touchDown(float x, float y, int pointer) {return false;}
+			@Override
+			public Actor hit(float x, float y) {return null;}
+			@Override
+			public void draw(SpriteBatch batch, float parentAlpha) {}
 	};
 	public static boolean focusPrev(Actor focused, Actor root, boolean up, boolean left) {
 		if (focused == null) return focus(root, true);

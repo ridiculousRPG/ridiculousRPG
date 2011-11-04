@@ -39,6 +39,7 @@ public class BitmapFontCachePool {
 		Pool<BitmapFontCache> fontCache = pool.get(font);
 		if (fontCache==null) {
 			fontCache = new Pool<BitmapFontCache>(64, 256) {
+				
 				@Override
 				protected BitmapFontCache newObject() {
 					return new BitmapFontCache(font);

@@ -41,7 +41,7 @@ import com.madthrax.ridiculousRPG.service.Initializable;
 public class MapPackerService extends GameServiceDefaultImpl implements Initializable {
 	private boolean initialized = false;
 
-	@Override
+	
 	public void init() {
 		if (isInitialized()) return;
 		File mapDir = new File(GameConfig.get().mapDir);
@@ -113,10 +113,10 @@ public class MapPackerService extends GameServiceDefaultImpl implements Initiali
 		initialized = true;
 	}
 
-	@Override
+	
 	public boolean isInitialized() {
 		return initialized;
 	}
-	@Override
+	
 	public void dispose() {}
 }

@@ -133,8 +133,7 @@ public class EventObject extends Movable implements Comparable<EventObject>, Dis
 		this(name, new TextureRegion(TextureDict.loadTexture(imagePath, TextureFilter.Linear, TextureFilter.Linear, TextureWrap.ClampToEdge, TextureWrap.ClampToEdge).get()), x, y, moveHandler, blockingBehaviour, moveSpeed);
 		// propably not the best solution, but it works :/ refactoring welcome.
 		imageOrAnimationAutoDispose = new Disposable() {
-			@Override
-			public void dispose() {
+					public void dispose() {
 				TextureRef tRef =  TextureDict.loadTexture(imagePath, TextureFilter.Linear, TextureFilter.Linear, TextureWrap.ClampToEdge, TextureWrap.ClampToEdge);
 				tRef.unload(); tRef.unload(); // we loaded it twice
 			}
@@ -410,7 +409,6 @@ public class EventObject extends Movable implements Comparable<EventObject>, Dis
 	 * @return rendering order: 1 if this event is in front of the other
 	 * (it will be rendered later and overwrites the other one).
 	 */
-	@Override
 	public int compareTo(EventObject o) {
 		if (o.z==0) {
 			if (z==0) return 0;
@@ -623,7 +621,6 @@ public class EventObject extends Movable implements Comparable<EventObject>, Dis
 	public EventHandler getEventHandler() {
 		return eventHandler;
 	}
-	@Override
 	public void dispose() {
 		if (imageOrAnimationAutoDispose!=null) imageOrAnimationAutoDispose.dispose();
 		visible = false;

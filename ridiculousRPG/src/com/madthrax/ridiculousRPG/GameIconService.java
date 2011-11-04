@@ -30,7 +30,7 @@ public class GameIconService extends GameServiceDefaultImpl implements Initializ
 	private boolean initialized = false;
 	private Pixmap applIcon;
 
-	@Override
+	
 	public void init() {
 		if (isInitialized()) return;
 		FileHandle applIconFile = Gdx.files.internal("data/icon.png");
@@ -53,11 +53,11 @@ public class GameIconService extends GameServiceDefaultImpl implements Initializ
 		initialized = true;
 	}
 
-	@Override
+	
 	public boolean isInitialized() {
 		return initialized;
 	}
-	@Override
+	
 	public void dispose() {
 		if (applIcon!=null) applIcon.dispose();
 	}

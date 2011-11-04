@@ -54,7 +54,6 @@ public class GameConfig implements Disposable {
 		uiSkin = new Skin(Gdx.files.internal(skinConf), Gdx.files.internal(skinImg));
 	}
 
-	@Override
 	public void dispose() {
 		//TODO: store configuration to config-file
 		uiSkin.dispose();

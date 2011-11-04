@@ -46,14 +46,14 @@ public class MoveSetXYAdapter extends MovementHandler {
 	 */
 	public static MovementHandler $(float x, float y) {
 		Movable mv = new Movable() {
-			@Override
-			public void stop() {}
-			@Override
-			public void offerMove(float x, float y) {}
-			@Override
-			public float offerMove(Direction dir, float deltaTime) {return 0f;}
-			@Override
-			public boolean commitMove() {return false;}
+					@Override
+					public void stop() {}
+					@Override
+					public void offerMove(float x, float y) {}
+					@Override
+					public float offerMove(Direction dir, float deltaTime) {return 0f;}
+					@Override
+					public boolean commitMove() {return false;}
 		};
 		mv.touchBound.x = x;
 		mv.touchBound.y = y;

@@ -42,8 +42,7 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	 * A singleton instance for simply printing messages onto the screen.
 	 */
 	public static final DisplayTextService $screen = new DisplayTextService() {
-		@Override
-		public Matrix4 projectionMatrix(Camera camera) {
+			public Matrix4 projectionMatrix(Camera camera) {
 			return camera.view;
 		}
 	};
@@ -51,8 +50,7 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	 * A singleton instance for simply printing messages onto the map.
 	 */
 	public static final DisplayTextService $map = new DisplayTextService(){
-		@Override
-		public Matrix4 projectionMatrix(Camera camera) {
+			public Matrix4 projectionMatrix(Camera camera) {
 			return camera.projection;
 		}
 	};
@@ -158,7 +156,6 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 	/**
 	 * Don't call this method yourself. It's called by the {@link GameServiceProvider}.
 	 */
-	@Override
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
 		for (int i = msgDisplay.size-1; i>-1; i--)
 			msgDisplay.get(i).draw(spriteBatch);
@@ -174,16 +171,13 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl implemen
 		if (font!=null) font.dispose();
 		this.font = font;
 	}
-	@Override
 	public void init() {
 		if (isInitialized()) return;
 		font = new BitmapFont();
 	}
-	@Override
 	public boolean isInitialized() {
 		return font!=null;
 	}
-	@Override
 	public void dispose() {
 		msgDisplay.clear();
 		msgDisplayOnce.clear();

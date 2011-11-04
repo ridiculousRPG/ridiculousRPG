@@ -35,7 +35,6 @@ public class MapRenderRegion implements Comparable<MapRenderRegion> {
 		this.width = region.getRegionWidth();
 		this.height = region.getRegionHeight();
 	}
-	@Override
 	public int compareTo(MapRenderRegion o) {
 		if (o.z==0) {
 			if (z==0) return 0;

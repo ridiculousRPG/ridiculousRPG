@@ -52,13 +52,10 @@ public class MapRenderService extends GameServiceDefaultImpl implements Computab
 		GameBase.$().getCamera().update();
 		return old;
 	}
-	@Override
 	public void dispose() {}
-	@Override
 	public void compute(float deltaTime, boolean pushButtonPressed) {
 		map.compute(deltaTime, pushButtonPressed);
 	}
-	@Override
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
 		map.draw(spriteBatch, camera, debug);
 	}
@@ -69,7 +66,6 @@ public class MapRenderService extends GameServiceDefaultImpl implements Computab
 			events.get(i).getMoveHandler().freeze();
 		}
 	}
-	@Override
 	public Matrix4 projectionMatrix(Camera camera) {
 		return camera.projection;
 	}

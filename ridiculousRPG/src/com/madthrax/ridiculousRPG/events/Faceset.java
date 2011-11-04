@@ -43,7 +43,6 @@ public class Faceset implements Disposable {
 	public TextureRegion getFace(int row, int col) {
 		return faces[row][col];
 	}
-	@Override
 	public void dispose() {
 		if (faceset!=null) faceset.unload();
 	}

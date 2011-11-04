@@ -31,6 +31,7 @@ public class CameraZoomService extends InputAdapter implements GameService {
 	public float minZoomIn = .5f;
 	public float zoomIntervall = 1.1f;
 
+	
 	@Override
 	public boolean keyDown(int keycode) {
 		if (GameBase.$().isControlKeyPressed()) {
@@ -49,6 +50,7 @@ public class CameraZoomService extends InputAdapter implements GameService {
 		}
 		return false;
 	}
+	
 	@Override
 	public boolean scrolled(int amount) {
 		if (GameBase.$().isControlKeyPressed()) {
@@ -86,10 +88,10 @@ public class CameraZoomService extends InputAdapter implements GameService {
 		cam.update();
 	}
 
-	@Override
+	
 	public void freeze() {}
-	@Override
+	
 	public void unfreeze() {}
-	@Override
+	
 	public void dispose() {}
 }

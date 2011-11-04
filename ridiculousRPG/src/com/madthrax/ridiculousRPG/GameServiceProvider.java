@@ -264,7 +264,7 @@ public class GameServiceProvider implements Initializable {
 	}
 	static BitmapFont f = null;
 
-	@Override
+	
 	public boolean isInitialized() {
 		return initializables==null;
 	}

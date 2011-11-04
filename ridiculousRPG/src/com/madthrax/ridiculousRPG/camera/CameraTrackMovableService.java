@@ -47,7 +47,7 @@ public class CameraTrackMovableService extends GameServiceDefaultImpl implements
 		this.trackObj = trackObj;
 		if (centerIt) centerTrackObj();
 	}
-	@Override
+	
 	public void compute(float deltaTime, boolean pushButtonPressed) {
 		if (trackObj==null) return;
 		float newX = trackObj.getX();
@@ -72,6 +72,6 @@ public class CameraTrackMovableService extends GameServiceDefaultImpl implements
 		oldY = trackObj.getY();
 	}
 
-	@Override
+	
 	public void dispose() {}
 }
