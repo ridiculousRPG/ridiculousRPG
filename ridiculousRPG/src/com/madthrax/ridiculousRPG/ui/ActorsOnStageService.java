@@ -49,8 +49,8 @@ import com.madthrax.ridiculousRPG.service.Initializable;
  */
 public class ActorsOnStageService extends Stage implements GameService,
 		Drawable, Computable, Initializable {
-	public Skin skinNormal, skinFocused;
-	public boolean closeOnAction;
+	private Skin skinNormal, skinFocused;
+	private boolean closeOnAction;
 
 	private boolean awaitingKeyUp;
 	private Actor focusedActor = null;
@@ -59,6 +59,56 @@ public class ActorsOnStageService extends Stage implements GameService,
 	public ActorsOnStageService() {
 		super(GameBase.$().getScreenWidth(), GameBase.$().getScreenHeight(),
 				true, GameBase.$().getSpriteBatch());
+	}
+
+	/**
+	 * @return the normal skin which is used for all objects except the one
+	 *         which holds the keyboard focus
+	 */
+	public Skin getSkinNormal() {
+		return skinNormal;
+	}
+
+	/**
+	 * @param skinNormal
+	 *            normal skin which is used for all objects except the one which
+	 *            holds the keyboard focus
+	 */
+	public void setSkinNormal(Skin skinNormal) {
+		this.skinNormal = skinNormal;
+	}
+
+	/**
+	 * @return the skin which is used for the objects which holds the keyboard
+	 *         focus
+	 */
+	public Skin getSkinFocused() {
+		return skinFocused;
+	}
+
+	/**
+	 * @param skinFocused
+	 *            the skin which is used for the objects which holds the
+	 *            keyboard focus
+	 */
+	public void setSkinFocused(Skin skinFocused) {
+		this.skinFocused = skinFocused;
+	}
+
+	/**
+	 * @return true if all windows will be closed when pressing the action key
+	 */
+	public boolean isCloseOnAction() {
+		return closeOnAction;
+	}
+
+	/**
+	 * @param closeOnAction
+	 *            true if all windows should be closed when pressing the action
+	 *            key
+	 */
+	public void setCloseOnAction(boolean closeOnAction) {
+		this.closeOnAction = closeOnAction;
 	}
 
 	public void init() {

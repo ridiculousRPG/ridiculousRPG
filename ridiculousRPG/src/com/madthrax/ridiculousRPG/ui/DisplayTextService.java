@@ -64,15 +64,28 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 	private final Array<BitmapFontCache> msgDisplayOnce = new Array<BitmapFontCache>(
 			false, 64);
 	private final BitmapFontCachePool fontCachePool = new BitmapFontCachePool();
+	private float defaultColor = Color.WHITE.toFloatBits();
+
+	/**
+	 * @return the actual default colors float bits
+	 * @see {@link Color#toFloatBits()}
+	 */
+	public float getDefaultColor() {
+		return defaultColor;
+	}
 
 	/**
 	 * Changing the default color will effect all messages drawn afterwards. (To
-	 * increase the performance you should not compute the colors floatbits at
+	 * increase the performance you should not compute the colors float bits at
 	 * every iteration)
 	 * 
 	 * @see {@link Color#toFloatBits()}
+	 * @param defaultColor
+	 *            the float bits representing the new default color
 	 */
-	public float defaultColor = Color.WHITE.toFloatBits();
+	public void setDefaultColor(float defaultColor) {
+		this.defaultColor = defaultColor;
+	}
 
 	protected DisplayTextService() {
 	}

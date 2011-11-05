@@ -350,7 +350,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 						.getHeight());
 				if (ev.name != null)
 					DisplayTextService.$map.addMessage(ev.name,
-							DisplayTextService.$map.defaultColor,
+							DisplayTextService.$map.getDefaultColor(),
 							ev.drawBound.x + 2f, ev.drawBound.y
 									+ ev.drawBound.height - 2, 0f, true);
 			}
