@@ -24,12 +24,14 @@ import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 
 /**
- * With this {@link MovementHandler} you are able to let one event move
- * towards an other one, or run away from the other event.
- * One event is attracted (or pushed away) by the other event.<br>
- * The strength of the attraction is defined by the inner enumeration Attraction.<br>
+ * With this {@link MovementHandler} you are able to let one event move towards
+ * an other one, or run away from the other event. One event is attracted (or
+ * pushed away) by the other event.<br>
+ * The strength of the attraction is defined by the inner enumeration
+ * Attraction.<br>
  * Some parameters are equivalent to the parameters of the class
  * {@link MoveRandomAdapter}.
+ * 
  * @see {@link MoveRandomAdapter}
  * @author Alexander Baumgartner
  */
@@ -38,10 +40,12 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 	public enum Attraction {
 		NONE(0), LOW(150), MEDIUM(300), STRONG(500), MAXIMUM(900);
 		private int val;
+
 		Attraction(int val) {
 			this.val = val;
 		}
 	}
+
 	private Movable attractingEvent;
 	private int attractionRadius;
 	private Attraction attraction;
@@ -51,79 +55,106 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 	private Direction alternateDir;
 
 	/**
-	 * If you extend this MovementHandler, you are able to create an inner class which extends
-	 * {@link MagneticEffect} and set your own (more intelligent) MagneticEffect behavior for
-	 * global use.
+	 * If you extend this MovementHandler, you are able to create an inner class
+	 * which extends {@link MagneticEffect} and set your own (more intelligent)
+	 * MagneticEffect behavior for global use.
 	 */
 	protected static MagneticEffect globalMagneticEffect = new MagneticEffect();
 	private MagneticEffect magneticEffect = globalMagneticEffect;
 
-	protected MoveMagneticAdapter(Direction[] allowedDirections, int changeDirectionSlackness, Movable attractingEvent, int attractionRadius, Attraction attraction, boolean repulsive){
+	protected MoveMagneticAdapter(Direction[] allowedDirections,
+			int changeDirectionSlackness, Movable attractingEvent,
+			int attractionRadius, Attraction attraction, boolean repulsive) {
 		super(allowedDirections, changeDirectionSlackness);
 		this.attractingEvent = attractingEvent;
 		this.attractionRadius = attractionRadius;
 		this.attraction = attraction;
 		this.repulsive = repulsive;
-		if (attraction==null) attraction = Attraction.NONE;
+		if (attraction == null)
+			attraction = Attraction.NONE;
 	}
 
 	/**
-	 * This constructor uses a default slackness-value of 128 for direction-changing.<br>
+	 * This constructor uses a default slackness-value of 128 for
+	 * direction-changing.<br>
 	 * Defaultdirections are N, E, S and W<br>
 	 */
-	public static MovementHandler $(Movable attractingEvent, Attraction attraction) {
+	public static MovementHandler $(Movable attractingEvent,
+			Attraction attraction) {
 		return $(attractingEvent, attraction, false);
 	}
+
 	/**
-	 * This constructor uses a default slackness-value of 128 for direction-changing.<br>
+	 * This constructor uses a default slackness-value of 128 for
+	 * direction-changing.<br>
 	 * Defaultdirections are N, E, S and W<br>
 	 */
-	public static MovementHandler $(Movable attractingEvent, Attraction attraction, boolean repulsive) {
+	public static MovementHandler $(Movable attractingEvent,
+			Attraction attraction, boolean repulsive) {
 		return $(128, attractingEvent, attraction, repulsive);
 	}
+
 	/**
 	 * Use this constructor if you want an other slackness.<br>
-	 * The higher the value, the lesser the direction changes.
-	 * Defaultdirections are N, E, S and W<br>
+	 * The higher the value, the lesser the direction changes. Defaultdirections
+	 * are N, E, S and W<br>
+	 * 
 	 * @param changeDirectionSlackness
 	 */
-	public static MovementHandler $(int changeDirectionSlackness, Movable attractingEvent, Attraction attraction, boolean repulsive) {
-		return $(new Direction[] { Direction.N, Direction.E,
-				Direction.S, Direction.W }, changeDirectionSlackness, attractingEvent, attraction.val, attraction, repulsive);
+	public static MovementHandler $(int changeDirectionSlackness,
+			Movable attractingEvent, Attraction attraction, boolean repulsive) {
+		return $(new Direction[] { Direction.N, Direction.E, Direction.S,
+				Direction.W }, changeDirectionSlackness, attractingEvent,
+				attraction.val, attraction, repulsive);
 	}
+
 	/**
 	 * Which directions should be allowed.<br>
-	 * This constructor uses a default slackness-value of 128 for direction-changing.<br>
+	 * This constructor uses a default slackness-value of 128 for
+	 * direction-changing.<br>
+	 * 
 	 * @param allowedDirections
 	 */
-	public static MovementHandler $(Direction[] allowedDirections, Movable attractingEvent, Attraction attraction, boolean repulsive) {
-		return $(allowedDirections, 128, attractingEvent, attraction.val, attraction, repulsive);
+	public static MovementHandler $(Direction[] allowedDirections,
+			Movable attractingEvent, Attraction attraction, boolean repulsive) {
+		return $(allowedDirections, 128, attractingEvent, attraction.val,
+				attraction, repulsive);
 	}
+
 	/**
 	 * Use this constructor if you want an other slackness.<br>
 	 * The higher the value, the lesser the direction changes.<br>
 	 * Which directions should be allowed. Defaultdirections are N, E, S and W
+	 * 
 	 * @param allowedDirections
 	 * @param changeDirectionSlackness
 	 */
-	public static MovementHandler $(Direction[] allowedDirections, int changeDirectionSlackness, Movable attractingEvent, int attractionRadius, Attraction attraction, boolean repulsive) {
-		return new MoveMagneticAdapter(allowedDirections, changeDirectionSlackness, attractingEvent, attractionRadius, attraction, repulsive);
+	public static MovementHandler $(Direction[] allowedDirections,
+			int changeDirectionSlackness, Movable attractingEvent,
+			int attractionRadius, Attraction attraction, boolean repulsive) {
+		return new MoveMagneticAdapter(allowedDirections,
+				changeDirectionSlackness, attractingEvent, attractionRadius,
+				attraction, repulsive);
 	}
 
 	/**
-	 * Disables all magnetic behaviors for all {@link MoveMagneticAdapter}s.
-	 * Use {@link #enableAllMagneticBehaviors()} to enable all magnetic effect.
+	 * Disables all magnetic behaviors for all {@link MoveMagneticAdapter}s. Use
+	 * {@link #enableAllMagneticBehaviors()} to enable all magnetic effect.
 	 */
 	public static void disableAllMagneticBehaviors() {
 		globalMagneticEffect.enabled = false;
 	}
+
 	/**
-	 * Enables all magnetic behaviors which was disabled by {@link #disableAllMagneticBehaviors()}.<br>
-	 * Doesn't enable magnetic behavior which was disabled by {@link #disableMagneticBehavior()}.
+	 * Enables all magnetic behaviors which was disabled by
+	 * {@link #disableAllMagneticBehaviors()}.<br>
+	 * Doesn't enable magnetic behavior which was disabled by
+	 * {@link #disableMagneticBehavior()}.
 	 */
 	public static void enableAllMagneticBehaviors() {
 		globalMagneticEffect.enabled = true;
 	}
+
 	/**
 	 * Disables the magnetic behavior for this {@link MovementHandler}.<br>
 	 * Use {@link #enableMagneticBehavior()} to enable the magnetic effect.
@@ -131,13 +162,17 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 	public void disableMagneticBehavior() {
 		magneticEffect = null;
 	}
+
 	/**
-	 * Enables the magnetic behavior if it was disabled by {@link #disableMagneticBehavior()}.<br>
-	 * Doesn't enable magnetic behavior which was disabled by {@link #disableAllMagneticBehaviors()}.
+	 * Enables the magnetic behavior if it was disabled by
+	 * {@link #disableMagneticBehavior()}.<br>
+	 * Doesn't enable magnetic behavior which was disabled by
+	 * {@link #disableAllMagneticBehaviors()}.
 	 */
 	public void enableMagneticBehavior() {
 		magneticEffect = globalMagneticEffect;
 	}
+
 	@Override
 	public void moveBlocked(Movable event) {
 		if (alternateDir == null) {
@@ -147,9 +182,11 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 			alternateDir = null;
 		}
 	}
+
 	@Override
 	public void tryMove(Movable event, float deltaTime) {
-		if (magneticEffect==null || !magneticEffect.tryMagneticMove(this, event, deltaTime))
+		if (magneticEffect == null
+				|| !magneticEffect.tryMagneticMove(this, event, deltaTime))
 			// fall back to random movement
 			super.tryMove(event, deltaTime);
 	}
@@ -157,30 +194,39 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 	public static class MagneticEffect {
 		boolean enabled = true;
 
-		public boolean tryMagneticMove(MoveMagneticAdapter adapter, Movable event, float deltaTime) {
-			if (enabled && adapter.lastDir==null || adapter.minWidth < 0) {
+		public boolean tryMagneticMove(MoveMagneticAdapter adapter,
+				Movable event, float deltaTime) {
+			if (enabled && adapter.lastDir == null || adapter.minWidth < 0) {
 				adapter.alternateDir = null;
 				Movable attractingEvent = adapter.attractingEvent;
 				int attractionRadius = adapter.attractionRadius;
-				if (attractingEvent!=null && adapter.attraction!=Attraction.NONE && attractionRadius>0) {
-					float distX = attractingEvent.getX()-event.getX();
-					float distY = attractingEvent.getY()-event.getY();
+				if (attractingEvent != null
+						&& adapter.attraction != Attraction.NONE
+						&& attractionRadius > 0) {
+					float distX = attractingEvent.getX() - event.getX();
+					float distY = attractingEvent.getY() - event.getY();
 					if (adapter.repulsive) {
 						distX = -distX;
 						distY = -distY;
 					}
-					float distance = (float) Math.sqrt(distX*distX + distY*distY);
+					float distance = (float) Math.sqrt(distX * distX + distY
+							* distY);
 					if (distance < attractionRadius) {
-						float distanceRelativAttraction = 100-100f*distance/attractionRadius;
-						int totalAttraction = (int)distanceRelativAttraction + adapter.attraction.val;
+						float distanceRelativAttraction = 100 - 100f * distance
+								/ attractionRadius;
+						int totalAttraction = (int) distanceRelativAttraction
+								+ adapter.attraction.val;
 						// random: min=150 max=1000
-						int randNum = randomNumberGenerator.nextInt(totalAttraction);
-						if (randNum>100) {
+						int randNum = randomNumberGenerator
+								.nextInt(totalAttraction);
+						if (randNum > 100) {
 							computeAttractingDirections(adapter, distX, distY);
 							List<Direction> attractingDirections = adapter.attractingDirections;
-							if (randNum<200) adapter.alternateDir = null;
-							adapter.lastDir = attractingDirections.get(randNum % attractingDirections.size());
-							adapter.minWidth = (adapter.changeDirectionSlackness+1000-randNum) / 33;
+							if (randNum < 200)
+								adapter.alternateDir = null;
+							adapter.lastDir = attractingDirections.get(randNum
+									% attractingDirections.size());
+							adapter.minWidth = (adapter.changeDirectionSlackness + 1000 - randNum) / 33;
 							event.offerMove(adapter.lastDir, deltaTime);
 							return true;
 						}
@@ -189,23 +235,27 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 			}
 			return false;
 		}
+
 		/**
-		 * Computes the attracting directions and sets an alternative direction if the move is blocked.<br>
+		 * Computes the attracting directions and sets an alternative direction
+		 * if the move is blocked.<br>
 		 * Override this method if you want a more intelligent behaviour.
+		 * 
 		 * @param distX
 		 * @param distY
 		 */
-		protected void computeAttractingDirections(MoveMagneticAdapter adapter, float distX, float distY) {
+		protected void computeAttractingDirections(MoveMagneticAdapter adapter,
+				float distX, float distY) {
 			List<Direction> attractingDirections = adapter.attractingDirections;
 			attractingDirections.clear();
-			float distXX = distX*distX;
-			float distYY = distY*distY;
-			if (distXX>10) {
+			float distXX = distX * distX;
+			float distYY = distY * distY;
+			if (distXX > 10) {
 				Direction dirX = Direction.fromMovement(distX, 0);
-				if (distYY>10) {
+				if (distYY > 10) {
 					Direction dirY = Direction.fromMovement(0, distY);
 					if (isAllowed(adapter, dirX)) {
-						if (isAllowed(adapter, dirY) && distYY>distXX) {
+						if (isAllowed(adapter, dirY) && distYY > distXX) {
 							attractingDirections.add(dirY);
 							adapter.alternateDir = dirX;
 						} else {
@@ -218,17 +268,22 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 					}
 					// 8 way movement
 					dirX = Direction.fromMovement(distX, distY);
-					if (isAllowed(adapter, dirX)) attractingDirections.add(dirX);
-				} else if (isAllowed(adapter, dirX)) attractingDirections.add(dirX);
+					if (isAllowed(adapter, dirX))
+						attractingDirections.add(dirX);
+				} else if (isAllowed(adapter, dirX))
+					attractingDirections.add(dirX);
 			} else {
 				Direction dir = Direction.fromMovement(0, distY);
-				if (isAllowed(adapter, dir)) attractingDirections.add(dir);
+				if (isAllowed(adapter, dir))
+					attractingDirections.add(dir);
 			}
 		}
+
 		private boolean isAllowed(MoveMagneticAdapter adapter, Direction dir) {
 			Direction[] allowedDirections = adapter.allowedDirections;
 			for (int i = 0, len = allowedDirections.length; i < len; i++) {
-				if (allowedDirections[i]==dir) return true;
+				if (allowedDirections[i] == dir)
+					return true;
 			}
 			return false;
 		}

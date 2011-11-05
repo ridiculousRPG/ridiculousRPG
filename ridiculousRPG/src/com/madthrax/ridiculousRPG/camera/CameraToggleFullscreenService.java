@@ -25,21 +25,26 @@ import com.madthrax.ridiculousRPG.service.GameService;
 /**
  * @author Alexander Baumgartner
  */
-public class CameraToggleFullscreenService extends InputAdapter implements GameService {
-	
+public class CameraToggleFullscreenService extends InputAdapter implements
+		GameService {
+
 	@Override
 	public boolean keyUp(int keycode) {
-		if (GameBase.$().isControlKeyPressed() || Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
-			if (keycode==Input.Keys.F || keycode==Input.Keys.ENTER) {
+		if (GameBase.$().isControlKeyPressed()
+				|| Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
+			if (keycode == Input.Keys.F || keycode == Input.Keys.ENTER) {
 				return GameBase.$().toggleFullscreen();
 			}
 		}
 		return false;
 	}
-	
-	public void freeze() {}
-	
-	public void unfreeze() {}
-	
-	public void dispose() {}
+
+	public void freeze() {
+	}
+
+	public void unfreeze() {
+	}
+
+	public void dispose() {
+	}
 }

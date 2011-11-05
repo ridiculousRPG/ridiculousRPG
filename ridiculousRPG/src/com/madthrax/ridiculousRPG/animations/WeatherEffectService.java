@@ -30,20 +30,21 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 
 /**
  * A container for weather effects. You can add effect-layers into this
- * container. Every effect-layer is simulated by a texture. Use textures
- * which are powers of 2 for your effects.
+ * container. Every effect-layer is simulated by a texture. Use textures which
+ * are powers of 2 for your effects.
+ * 
  * @author Alexander Baumgartner
  */
-public class WeatherEffectService extends GameServiceDefaultImpl implements Computable, Drawable {
+public class WeatherEffectService extends GameServiceDefaultImpl implements
+		Computable, Drawable {
 	private ArrayList<WeatherEffectLayer> renderLayers = new ArrayList<WeatherEffectLayer>();
 	private int width, height;
 
 	/**
 	 * Creates a new container for weather effects.<br>
-	 * Inside this container you can add
-	 * effect-layers by calling the method addLayer(...).<br>
-	 * Add a new layer of the same effect to increase the
-	 * weather effect.
+	 * Inside this container you can add effect-layers by calling the method
+	 * addLayer(...).<br>
+	 * Add a new layer of the same effect to increase the weather effect.
 	 */
 	public WeatherEffectService() {
 		width = GameBase.$().getPlaneWidth();
@@ -54,127 +55,145 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 	 * Applies one effect various times to this container.<br>
 	 * It gives you a more realistic effect if a layer is applied more times.<br>
 	 * The effect will be increased softly by the given interval.<br>
-	 * The layer will be inserted at the end of the layer-list
-	 * and therefore it's rendered at the last time. So it draws in front of
-	 * the other layers.
+	 * The layer will be inserted at the end of the layer-list and therefore
+	 * it's rendered at the last time. So it draws in front of the other layers.
+	 * 
 	 * @param path
-	 * Path to the texture. Width and height should be powers of 2.
+	 *            Path to the texture. Width and height should be powers of 2.
 	 * @param pixelOverlap
-	 * For a smoother effect you can overlap the tiled effect-layer.<br>
-	 * Therefore the texture has to be less dense at the edges. (The bound is defined by pixelOverlap)<br>
-	 * Say 0 if you don't know what to do. (Negative values are allowed but not useful in most cases)
+	 *            For a smoother effect you can overlap the tiled effect-layer.<br>
+	 *            Therefore the texture has to be less dense at the edges. (The
+	 *            bound is defined by pixelOverlap)<br>
+	 *            Say 0 if you don't know what to do. (Negative values are
+	 *            allowed but not useful in most cases)
 	 * @param effectSpeed
-	 * The speed of the effect. Only positive
-	 * values > 0 are useful!<br>
-	 * For most situations the value should be between 0.1 and 5<br>
-	 * (Try 0.5 for snow and 3.0 for rain)
+	 *            The speed of the effect. Only positive values > 0 are useful!<br>
+	 *            For most situations the value should be between 0.1 and 5<br>
+	 *            (Try 0.5 for snow and 3.0 for rain)
 	 * @param windSpeed
-	 * The speed of the wind. Positive values generate
-	 * wind from west to east and negative values from east to west.<br>
-	 * For most situations the value should be between -2.5 and 2.5<br>
-	 * (Try 0.3 (-0.3) for snow and 1.0 for rain)
+	 *            The speed of the wind. Positive values generate wind from west
+	 *            to east and negative values from east to west.<br>
+	 *            For most situations the value should be between -2.5 and 2.5<br>
+	 *            (Try 0.3 (-0.3) for snow and 1.0 for rain)
 	 * @param times
-	 * How many times should this layer be applied?
+	 *            How many times should this layer be applied?
 	 * @param waitIntervall
-	 * The time (in seconds) to wait until adding the next layer.
-	 * Maybe 10 seconds could be a good choice.
+	 *            The time (in seconds) to wait until adding the next layer.
+	 *            Maybe 10 seconds could be a good choice.
 	 * @see addLayer(path, effectSpeed, windSpeed, layerIndex)
 	 */
-	public void addLayerTimes(String path, final int pixelOverlap, final float effectSpeed, final float windSpeed, final int times, final float waitIntervall) {
+	public void addLayerTimes(String path, final int pixelOverlap,
+			final float effectSpeed, final float windSpeed, final int times,
+			final float waitIntervall) {
 		final TextureRef t = TextureDict.loadTexture(path);
 		for (int i = 1; i < times; i++) {
 			TextureDict.loadTexture(path);
 		}
 		new Thread() { // For simplicity let's do this in a new thread
-			
+
 			@Override
 			public void run() {
-				int tmp = (int)waitIntervall * 1000;
+				int tmp = (int) waitIntervall * 1000;
 				for (int i = times; i > 0; i--) {
-					renderLayers.add(new WeatherEffectLayer(t, pixelOverlap, width, height, effectSpeed, windSpeed));
+					renderLayers.add(new WeatherEffectLayer(t, pixelOverlap,
+							width, height, effectSpeed, windSpeed));
 					try {
-						if (i > 1) Thread.sleep(tmp);
-					} catch (InterruptedException e) {}
+						if (i > 1)
+							Thread.sleep(tmp);
+					} catch (InterruptedException e) {
+					}
 				}
 			}
 		}.start();
 	}
+
 	/**
-	 * Adds a new effect-layer to this container.
-	 * The layer will be inserted at the end of the layer-list
-	 * and therefore it's rendered at the last time. So it draws in front of
-	 * the other layers.
+	 * Adds a new effect-layer to this container. The layer will be inserted at
+	 * the end of the layer-list and therefore it's rendered at the last time.
+	 * So it draws in front of the other layers.
+	 * 
 	 * @param path
-	 * Path to the texture. Width and height should be powers of 2.
+	 *            Path to the texture. Width and height should be powers of 2.
 	 * @param effectSpeed
-	 * The speed of the effect. Only positive
-	 * values > 0 are useful!<br>
-	 * For most situations the value should be between 0.1 and 5<br>
-	 * (Try 0.5 for snow and 3.0 for rain)
+	 *            The speed of the effect. Only positive values > 0 are useful!<br>
+	 *            For most situations the value should be between 0.1 and 5<br>
+	 *            (Try 0.5 for snow and 3.0 for rain)
 	 * @param windSpeed
-	 * The speed of the wind. Positive values generate
-	 * wind from west to east and negative values from east to west.<br>
-	 * For most situations the value should be between -2.5 and 2.5<br>
-	 * (Try 0.3 (-0.3) for snow and 1.0 for rain)
+	 *            The speed of the wind. Positive values generate wind from west
+	 *            to east and negative values from east to west.<br>
+	 *            For most situations the value should be between -2.5 and 2.5<br>
+	 *            (Try 0.3 (-0.3) for snow and 1.0 for rain)
 	 * @see addLayer(path, effectSpeed, windSpeed, layerIndex)
 	 */
-	public WeatherEffectLayer addLayer(String path, float effectSpeed, float windSpeed) {
+	public WeatherEffectLayer addLayer(String path, float effectSpeed,
+			float windSpeed) {
 		return addLayer(path, 0, effectSpeed, windSpeed, Integer.MAX_VALUE);
 	}
+
 	/**
-	 * Adds a new effect-layer to this container.
-	 * The layer will be inserted at the end of the layer-list
-	 * and therefore it's rendered at the last time. So it draws in front of
-	 * the other layers.
+	 * Adds a new effect-layer to this container. The layer will be inserted at
+	 * the end of the layer-list and therefore it's rendered at the last time.
+	 * So it draws in front of the other layers.
+	 * 
 	 * @param path
-	 * Path to the texture. Width and height should be powers of 2.
+	 *            Path to the texture. Width and height should be powers of 2.
 	 * @param pixelOverlap
-	 * For a smoother effect you can overlap the tiled effect-layer.<br>
-	 * Therefore the texture has to be less dense at the edges. (The bound is defined by pixelOverlap)<br>
-	 * Say 0 if you don't know what to do. (Negative values are allowed but not useful in most cases)
+	 *            For a smoother effect you can overlap the tiled effect-layer.<br>
+	 *            Therefore the texture has to be less dense at the edges. (The
+	 *            bound is defined by pixelOverlap)<br>
+	 *            Say 0 if you don't know what to do. (Negative values are
+	 *            allowed but not useful in most cases)
 	 * @param effectSpeed
-	 * The speed of the effect. Only positive
-	 * values > 0 are useful!<br>
-	 * For most situations the value should be between 0.1 and 5<br>
-	 * (Try 0.5 for snow and 3.0 for rain)
+	 *            The speed of the effect. Only positive values > 0 are useful!<br>
+	 *            For most situations the value should be between 0.1 and 5<br>
+	 *            (Try 0.5 for snow and 3.0 for rain)
 	 * @param windSpeed
-	 * The speed of the wind. Positive values generate
-	 * wind from west to east and negative values from east to west.<br>
-	 * For most situations the value should be between -2.5 and 2.5<br>
-	 * (Try 0.3 (-0.3) for snow and 1.0 for rain)
+	 *            The speed of the wind. Positive values generate wind from west
+	 *            to east and negative values from east to west.<br>
+	 *            For most situations the value should be between -2.5 and 2.5<br>
+	 *            (Try 0.3 (-0.3) for snow and 1.0 for rain)
 	 * @see addLayer(path, effectSpeed, windSpeed, layerIndex)
 	 */
-	public WeatherEffectLayer addLayer(String path, int pixelOverlap, float effectSpeed, float windSpeed) {
-		return addLayer(path, pixelOverlap, effectSpeed, windSpeed, Integer.MAX_VALUE);
+	public WeatherEffectLayer addLayer(String path, int pixelOverlap,
+			float effectSpeed, float windSpeed) {
+		return addLayer(path, pixelOverlap, effectSpeed, windSpeed,
+				Integer.MAX_VALUE);
 	}
+
 	/**
-	 * Adds a new effect-layer to this container.
-	 * The layer will be inserted at the specified position of the layer-list.<br>
-	 * Note: The last layer in the list is rendered last and
-	 * therefore it's drawn in front of the other layers.
+	 * Adds a new effect-layer to this container. The layer will be inserted at
+	 * the specified position of the layer-list.<br>
+	 * Note: The last layer in the list is rendered last and therefore it's
+	 * drawn in front of the other layers.
+	 * 
 	 * @param path
-	 * Path to the texture. Width and height should be powers of 2.
+	 *            Path to the texture. Width and height should be powers of 2.
 	 * @param pixelOverlap
-	 * For a smoother effect you can overlap the tiled effect-layer.<br>
-	 * Therefore the texture has to be less dense at the edges. (The bound is defined by pixelOverlap)<br>
-	 * Say 0 if you don't know what to do. (Negative values are allowed but not useful in most cases)
+	 *            For a smoother effect you can overlap the tiled effect-layer.<br>
+	 *            Therefore the texture has to be less dense at the edges. (The
+	 *            bound is defined by pixelOverlap)<br>
+	 *            Say 0 if you don't know what to do. (Negative values are
+	 *            allowed but not useful in most cases)
 	 * @param effectSpeed
-	 * The speed of the effect. Only positive
-	 * values > 0 are useful!<br>
-	 * For most situations the value should be between 0.1 and 5<br>
-	 * (Try 0.5 for snow and 3.0 for rain)
+	 *            The speed of the effect. Only positive values > 0 are useful!<br>
+	 *            For most situations the value should be between 0.1 and 5<br>
+	 *            (Try 0.5 for snow and 3.0 for rain)
 	 * @param windSpeed
-	 * The speed of the wind. Positive values generate
-	 * wind from west to east and negative values from east to west.<br>
-	 * For most situations the value should be between -2.5 and 2.5<br>
-	 * (Try 0.3 (-0.3) for snow and 1.0 for rain)
+	 *            The speed of the wind. Positive values generate wind from west
+	 *            to east and negative values from east to west.<br>
+	 *            For most situations the value should be between -2.5 and 2.5<br>
+	 *            (Try 0.3 (-0.3) for snow and 1.0 for rain)
 	 * @param layerIndex
-	 * The position for this layer to be rendered (position in the layer-list).<br>
-	 * Use Integer.MAX_VALUE if you want to append the layer at the end of the list.
+	 *            The position for this layer to be rendered (position in the
+	 *            layer-list).<br>
+	 *            Use Integer.MAX_VALUE if you want to append the layer at the
+	 *            end of the list.
 	 * @see addLayer(path, effectSpeed, windSpeed)
 	 */
-	public WeatherEffectLayer addLayer(String path, int pixelOverlap, float effectSpeed, float windSpeed, int layerIndex) {
-		WeatherEffectLayer newLayer = new WeatherEffectLayer(path, pixelOverlap, width, height, effectSpeed, windSpeed);
+	public WeatherEffectLayer addLayer(String path, int pixelOverlap,
+			float effectSpeed, float windSpeed, int layerIndex) {
+		WeatherEffectLayer newLayer = new WeatherEffectLayer(path,
+				pixelOverlap, width, height, effectSpeed, windSpeed);
 		if (renderLayers.size() > layerIndex) {
 			renderLayers.add(layerIndex, newLayer);
 		} else {
@@ -182,11 +201,13 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 		}
 		return newLayer;
 	}
+
 	/**
 	 * Stops one layer.<br>
-	 * Note that the layer is not removed immediately.
-	 * It takes some time while the last snow flake falls
-	 * from the sky to the ground - like in real nature ;)
+	 * Note that the layer is not removed immediately. It takes some time while
+	 * the last snow flake falls from the sky to the ground - like in real
+	 * nature ;)
+	 * 
 	 * @see disposeLayer(layerIndex)
 	 * @param layerIndex
 	 */
@@ -195,42 +216,49 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 			renderLayers.get(layerIndex).stop();
 		}
 	}
+
 	/**
 	 * The same as stop(20f);
+	 * 
 	 * @see stop(stopTime)
 	 * @see dispose()
 	 */
 	public void stop() {
 		stop(20f);
 	}
+
 	/**
 	 * Stops this weather effect by decreasing the effect, layer by layer.<br>
 	 * You can specify the seconds roughly used for stopping the entire effect.<br>
 	 * Note that the given stopTime cannot be exact because none of the layers
 	 * is stopped immediate. It takes some time while the last snow flake falls
 	 * from the sky to the ground - like in real nature ;)
+	 * 
 	 * @param stopTime
-	 * Time in seconds for stopping the entire weather effect
+	 *            Time in seconds for stopping the entire weather effect
 	 * @see dispose()
 	 */
 	public void stop(final float stopTime) {
 		new Thread() { // For simplicity let's do this in a new thread
-			
+
 			@Override
 			public void run() {
 				int stopIntervall = renderLayers.size();
 				if (stopIntervall > 0) { // avoid division by null
-					stopIntervall = (int) (stopTime*1000f / stopIntervall);
+					stopIntervall = (int) (stopTime * 1000f / stopIntervall);
 				}
-				for (int i = renderLayers.size()-1; i > -1; i--) {
+				for (int i = renderLayers.size() - 1; i > -1; i--) {
 					renderLayers.get(i).stop();
 					try {
-						if (i > 0) Thread.sleep(stopIntervall);
-					} catch (InterruptedException e) {}
+						if (i > 0)
+							Thread.sleep(stopIntervall);
+					} catch (InterruptedException e) {
+					}
 				}
 			}
 		}.start();
 	}
+
 	/**
 	 * Computes the weather effect animation.
 	 */
@@ -245,10 +273,11 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 			}
 		}
 	}
+
 	/**
 	 * Draws the entire weather effect.
 	 */
-	
+
 	public void draw(SpriteBatch batch, Camera cam, boolean debug) {
 		for (int i = 0, len = renderLayers.size(); i < len; i++) {
 			renderLayers.get(i).draw(batch, cam);
@@ -257,6 +286,7 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 
 	/**
 	 * Stops one layer immediately and unloads the texture.
+	 * 
 	 * @param layerIndex
 	 * @see stopLayer(layerIndex)
 	 */
@@ -265,11 +295,13 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 			renderLayers.remove(layerIndex).dispose();
 		}
 	}
+
 	/**
 	 * Stops the effect immediately and unloads all textures.
+	 * 
 	 * @see stop()
 	 */
-	
+
 	public void dispose() {
 		for (int i = 0, len = renderLayers.size(); i < len; i++) {
 			renderLayers.get(i).dispose();
@@ -282,7 +314,7 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements Comp
 			renderLayers.get(i).resize(pixelWidth, pixelHeight);
 		}
 	}
-	
+
 	public Matrix4 projectionMatrix(Camera camera) {
 		return camera.projection;
 	}

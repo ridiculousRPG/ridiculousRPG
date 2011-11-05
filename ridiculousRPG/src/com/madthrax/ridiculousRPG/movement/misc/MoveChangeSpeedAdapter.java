@@ -23,9 +23,10 @@ import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 
 /**
- * This MovementAdapter allows you to change the move speed and
- * the animation speed.<br>
+ * This MovementAdapter allows you to change the move speed and the animation
+ * speed.<br>
  * This move cannot be blocked.
+ * 
  * @author Alexander Baumgartner
  */
 public class MoveChangeSpeedAdapter extends MovementHandler {
@@ -35,6 +36,7 @@ public class MoveChangeSpeedAdapter extends MovementHandler {
 		this.newMoveSpeed = newMoveSpeed;
 		this.newAnimationSpeed = newAnimationSpeed;
 	}
+
 	/**
 	 * If the animationSpeed is set to null, it will automatically be computed
 	 * from the move-distance. (You can always use null if you don't want to
@@ -43,12 +45,15 @@ public class MoveChangeSpeedAdapter extends MovementHandler {
 	public static MovementHandler $(Speed newMoveSpeed, Speed newAnimationSpeed) {
 		return new MoveChangeSpeedAdapter(newMoveSpeed, newAnimationSpeed);
 	}
+
 	@Override
 	public void tryMove(Movable movable, float deltaTime) {
-		if (newMoveSpeed!=null) movable.moveSpeed = newMoveSpeed;
+		if (newMoveSpeed != null)
+			movable.moveSpeed = newMoveSpeed;
 		if (movable instanceof EventObject) {
 			TileAnimation anim = ((EventObject) movable).getAnimation();
-			if (anim != null) anim.animationSpeed = newAnimationSpeed;
+			if (anim != null)
+				anim.animationSpeed = newAnimationSpeed;
 		}
 		finished = true;
 	}

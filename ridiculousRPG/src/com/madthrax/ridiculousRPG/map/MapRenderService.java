@@ -31,12 +31,14 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 /**
  * @author Alexander Baumgartner
  */
-public class MapRenderService extends GameServiceDefaultImpl implements Computable, Drawable {
+public class MapRenderService extends GameServiceDefaultImpl implements
+		Computable, Drawable {
 	private MapWithEvents<?> map;
 
 	/**
-	 * Loads a new map to render and automatically resizes the
-	 * weather effect if there is one running.
+	 * Loads a new map to render and automatically resizes the weather effect if
+	 * there is one running.
+	 * 
 	 * @param map
 	 * @return The old map or null. Don't forget to dispose the old map!
 	 */
@@ -45,27 +47,34 @@ public class MapRenderService extends GameServiceDefaultImpl implements Computab
 		this.map = map;
 		GameBase.$().setPlaneWidth(map.getWidth());
 		GameBase.$().setPlaneHeight(map.getHeight());
-		WeatherEffectService wes = GameBase.$serviceProvider().getService(WeatherEffectService.class);
-		if (wes!=null) {
+		WeatherEffectService wes = GameBase.$serviceProvider().getService(
+				WeatherEffectService.class);
+		if (wes != null) {
 			wes.resize(map.getWidth(), map.getHeight());
 		}
 		GameBase.$().getCamera().update();
 		return old;
 	}
-	public void dispose() {}
+
+	public void dispose() {
+	}
+
 	public void compute(float deltaTime, boolean pushButtonPressed) {
 		map.compute(deltaTime, pushButtonPressed);
 	}
+
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
 		map.draw(spriteBatch, camera, debug);
 	}
+
 	@Override
 	public void freeze() {
 		List<? extends Movable> events = map.getAllEvents();
-		for (int i=0, len=events.size(); i<len; i++) {
+		for (int i = 0, len = events.size(); i < len; i++) {
 			events.get(i).getMoveHandler().freeze();
 		}
 	}
+
 	public Matrix4 projectionMatrix(Camera camera) {
 		return camera.projection;
 	}

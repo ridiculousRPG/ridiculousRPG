@@ -25,6 +25,7 @@ import com.madthrax.ridiculousRPG.service.Computable;
 
 /**
  * Displays the frame rate per second at one corner of the screen.
+ * 
  * @author Alexander Baumgartner
  */
 public class DisplayFPSService extends DisplayTextService implements Computable {
@@ -32,32 +33,42 @@ public class DisplayFPSService extends DisplayTextService implements Computable 
 	private Alignment horiAlign, vertAlign;
 	private int oldFPS;
 	private BitmapFontCache fontCache;
+
 	/**
 	 * Displays the rendering speed in frames per second.
 	 */
 	public DisplayFPSService() {
 		this(Color.WHITE, Alignment.LEFT, Alignment.TOP);
 	}
+
 	/**
 	 * Displays the rendering speed in frames per second.
+	 * 
 	 * @param font
-	 * The font will automatically be disposed when disposing this service.
+	 *            The font will automatically be disposed when disposing this
+	 *            service.
 	 * @param alignRight
-	 * If true the text will be aligned right.
+	 *            If true the text will be aligned right.
 	 * @param valignBottom
-	 * If true the text will be displayed at the bottom of the screen.
+	 *            If true the text will be displayed at the bottom of the
+	 *            screen.
 	 */
-	public DisplayFPSService(Color color, Alignment horiAlign, Alignment vertAlign) {
+	public DisplayFPSService(Color color, Alignment horiAlign,
+			Alignment vertAlign) {
 		this.colorBits = color.toFloatBits();
 		this.horiAlign = horiAlign;
 		this.vertAlign = vertAlign;
 	}
+
 	public void compute(float deltaTime, boolean actionKeyPressed) {
 		if (oldFPS != Gdx.graphics.getFramesPerSecond()) {
-			if (fontCache!=null) removeMessage(fontCache);
-			fontCache = addMessage("FPS: "+Gdx.graphics.getFramesPerSecond(), colorBits, horiAlign, vertAlign, 5f);
+			if (fontCache != null)
+				removeMessage(fontCache);
+			fontCache = addMessage("FPS: " + Gdx.graphics.getFramesPerSecond(),
+					colorBits, horiAlign, vertAlign, 5f);
 		}
 	}
+
 	public Matrix4 projectionMatrix(Camera camera) {
 		return camera.view;
 	}

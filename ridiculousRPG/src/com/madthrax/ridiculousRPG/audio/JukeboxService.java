@@ -33,19 +33,22 @@ public class JukeboxService implements GameService {
 	private boolean freezed;
 
 	public void setVolume(float volume) {
-		this.volume=volume;
-		if (backgroundMusic!=null) {
+		this.volume = volume;
+		if (backgroundMusic != null) {
 			backgroundMusic.setVolume(volume);
 		}
 	}
+
 	public void playBackgroundMusic(String internalPath, boolean fade) {
 		Music newBGM = Gdx.audio.newMusic(Gdx.files.internal(internalPath));
 		new MusicChanger(backgroundMusic, newBGM, volume, fade);
 		backgroundMusic = newBGM;
 	}
+
 	public void stopBackgroundMusic(boolean fade) {
 		new MusicChanger(backgroundMusic, null, volume, fade);
 	}
+
 	public class MusicChanger extends Thread {
 		private Music oldMusic, newMusic;
 		private float volume;
@@ -55,10 +58,14 @@ public class JukeboxService implements GameService {
 		public MusicChanger(Music oldMusic, Music newMusic) {
 			this(oldMusic, newMusic, 1f, true);
 		}
-		public MusicChanger(Music oldMusic, Music newMusic, float volume, boolean fade) {
+
+		public MusicChanger(Music oldMusic, Music newMusic, float volume,
+				boolean fade) {
 			this(oldMusic, newMusic, volume, fade, true, 20);
 		}
-		public MusicChanger(Music oldMusic, Music newMusic, float volume, boolean fade, boolean loop, int speed) {
+
+		public MusicChanger(Music oldMusic, Music newMusic, float volume,
+				boolean fade, boolean loop, int speed) {
 			this.oldMusic = oldMusic;
 			this.newMusic = newMusic;
 			this.volume = volume;
@@ -68,23 +75,24 @@ public class JukeboxService implements GameService {
 			start();
 		}
 
-		
 		@Override
 		public void run() {
 			while (!musicMutex.tryAcquire()) {
 				try {
 					waiting = true;
 					Thread.sleep(speed);
-				} catch (InterruptedException e) {}
+				} catch (InterruptedException e) {
+				}
 			}
 			waiting = false;
 			if (oldMusic != null) {
 				if (oldMusic.isPlaying()) {
-					for(float vol = volume; fade && vol > 0.01f; vol-=0.01f) {
+					for (float vol = volume; fade && vol > 0.01f; vol -= 0.01f) {
 						oldMusic.setVolume(vol);
 						try {
 							Thread.sleep(speed);
-						} catch (InterruptedException e) {}
+						} catch (InterruptedException e) {
+						}
 					}
 					oldMusic.stop();
 				}
@@ -99,10 +107,12 @@ public class JukeboxService implements GameService {
 					playingMusic = true;
 				} else if (!waiting) {
 					newMusic.play();
-					for(float vol = 0.02f; fade && !waiting && vol < volume-0.01f; vol+=0.01f) {
+					for (float vol = 0.02f; fade && !waiting
+							&& vol < volume - 0.01f; vol += 0.01f) {
 						try {
 							Thread.sleep(speed);
-						} catch (InterruptedException e) {}
+						} catch (InterruptedException e) {
+						}
 						newMusic.setVolume(vol);
 					}
 				}
@@ -111,19 +121,24 @@ public class JukeboxService implements GameService {
 			musicMutex.release();
 		}
 	}
+
 	public void freeze() {
 		freezed = true;
-		if (backgroundMusic!=null && backgroundMusic.isPlaying()) {
+		if (backgroundMusic != null && backgroundMusic.isPlaying()) {
 			backgroundMusic.pause();
 		}
 	}
+
 	public void unfreeze() {
 		freezed = false;
-		if (playingMusic) backgroundMusic.play();
+		if (playingMusic)
+			backgroundMusic.play();
 	}
+
 	public void dispose() {
-		if (backgroundMusic!=null) {
-			if (backgroundMusic.isPlaying()) backgroundMusic.stop();
+		if (backgroundMusic != null) {
+			if (backgroundMusic.isPlaying())
+				backgroundMusic.stop();
 			backgroundMusic.dispose();
 			backgroundMusic = null;
 		}

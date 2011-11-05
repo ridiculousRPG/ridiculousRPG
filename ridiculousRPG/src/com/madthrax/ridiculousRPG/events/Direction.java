@@ -20,8 +20,8 @@ package com.madthrax.ridiculousRPG.events;
  * @author Alexander Baumgartner
  */
 public enum Direction {
-	S(0, 0f,-1f),W(1,-1f,0f),E(2,1f,0f),N(3,0f,1f),
-	SW(4,-.7f,-.7f),NW(5,-.7f,.7f),SE(6,.7f,-.7f),NE(7,.7f,.7f);
+	S(0, 0f, -1f), W(1, -1f, 0f), E(2, 1f, 0f), N(3, 0f, 1f), SW(4, -.7f, -.7f), NW(
+			5, -.7f, .7f), SE(6, .7f, -.7f), NE(7, .7f, .7f);
 
 	private float x, y;
 	private int directionIndex;
@@ -33,22 +33,23 @@ public enum Direction {
 	}
 
 	public float getDistanceX(float distance) {
-		return x*distance;
+		return x * distance;
 	}
+
 	public float getDistanceY(float distance) {
-		return y*distance;
+		return y * distance;
 	}
 
 	public int getIndex(int maxDirections) {
-		if (maxDirections>=8) {
+		if (maxDirections >= 8) {
 			// 8 direction movement
 			return directionIndex;
-		} else if (maxDirections>=4) {
+		} else if (maxDirections >= 4) {
 			// 4 direction movement
-			return directionIndex%4;
-		} else if (maxDirections>=2) {
+			return directionIndex % 4;
+		} else if (maxDirections >= 2) {
 			// 2 direction movement
-			return directionIndex%2;
+			return directionIndex % 2;
 		}
 		// direction fixed
 		return 0;
@@ -56,18 +57,19 @@ public enum Direction {
 
 	/**
 	 * Computes the direction from the given (x,y) - movement
+	 * 
 	 * @param x
 	 * @param y
 	 * @return
 	 */
 	public static Direction fromMovement(float x, float y) {
-		if (x==0) {
-			return y<0 ? S : N;
-		} else if (y==0) {
-			return x<0 ? W : E;
-		} else if (x<0) {
-			return y<0 ? SW : NW;
+		if (x == 0) {
+			return y < 0 ? S : N;
+		} else if (y == 0) {
+			return x < 0 ? W : E;
+		} else if (x < 0) {
+			return y < 0 ? SW : NW;
 		}
-		return y<0 ? SE : NE;
+		return y < 0 ? SE : NE;
 	}
 }

@@ -25,46 +25,56 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 /**
  * @author Alexander Baumgartner
  */
-public class CameraTrackMovableService extends GameServiceDefaultImpl implements Computable {
+public class CameraTrackMovableService extends GameServiceDefaultImpl implements
+		Computable {
 	private Movable trackObj;
 	private float oldX, oldY;
 
-	public CameraTrackMovableService() {}
+	public CameraTrackMovableService() {
+	}
+
 	/**
 	 * Defines the object (event) which should be tracked by the camera
+	 * 
 	 * @param trackObj
 	 * @param centerIt
 	 */
 	public CameraTrackMovableService(Movable trackObj, boolean centerIt) {
 		setTrackObj(trackObj, centerIt);
 	}
+
 	/**
 	 * Defines the object (event) which should be tracked by the camera
+	 * 
 	 * @param trackObj
 	 * @param centerIt
 	 */
 	public void setTrackObj(Movable trackObj, boolean centerIt) {
 		this.trackObj = trackObj;
-		if (centerIt) centerTrackObj();
+		if (centerIt)
+			centerTrackObj();
 	}
-	
+
 	public void compute(float deltaTime, boolean pushButtonPressed) {
-		if (trackObj==null) return;
+		if (trackObj == null)
+			return;
 		float newX = trackObj.getX();
 		float newY = trackObj.getY();
 		if (oldX != newX || oldY != newY) {
 			Camera cam = GameBase.$().getCamera();
-			cam.translate(newX -oldX ,newY - oldY, 0f);
+			cam.translate(newX - oldX, newY - oldY, 0f);
 			cam.update();
 			oldX = newX;
 			oldY = newY;
 		}
 	}
+
 	/**
 	 * Centers the camera to the tracked object (event)
 	 */
 	public void centerTrackObj() {
-		if (trackObj==null) return;
+		if (trackObj == null)
+			return;
 		Camera cam = GameBase.$().getCamera();
 		cam.lookAt(trackObj.getCenterX(), trackObj.getCenterY(), 0f);
 		cam.update();
@@ -72,6 +82,6 @@ public class CameraTrackMovableService extends GameServiceDefaultImpl implements
 		oldY = trackObj.getY();
 	}
 
-	
-	public void dispose() {}
+	public void dispose() {
+	}
 }

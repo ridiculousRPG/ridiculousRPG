@@ -27,7 +27,9 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
 public class Move4WayAdapter extends MovementHandler {
 	private static MovementHandler instance = new Move4WayAdapter();
 
-	protected Move4WayAdapter(){}
+	protected Move4WayAdapter() {
+	}
+
 	public static MovementHandler $() {
 		return instance;
 	}
@@ -36,7 +38,10 @@ public class Move4WayAdapter extends MovementHandler {
 	private Direction lastDir;
 
 	@Override
-	public void freeze() {lastDirKey = 0;}
+	public void freeze() {
+		lastDirKey = 0;
+	}
+
 	@Override
 	public void tryMove(Movable movable, float deltaTime) {
 		if (lastDirKey != 0) {
@@ -45,7 +50,8 @@ public class Move4WayAdapter extends MovementHandler {
 			}
 			movable.offerMove(lastDir, deltaTime);
 		} else if (Gdx.input.isTouched(0)) {
-			Direction touchDir = computeDirection(Gdx.input.getX(0), Gdx.input.getY(0), movable);
+			Direction touchDir = computeDirection(Gdx.input.getX(0), Gdx.input
+					.getY(0), movable);
 			movable.offerMove(touchDir, deltaTime);
 		} else {
 			if ((lastDirKey = MovementKeys.isUpKeyPressed()) != 0) {
@@ -65,13 +71,15 @@ public class Move4WayAdapter extends MovementHandler {
 			}
 		}
 	}
-	private Direction computeDirection(int absolutX, int absolutY, Movable movable) {
+
+	private Direction computeDirection(int absolutX, int absolutY,
+			Movable movable) {
 		float x = movable.computeRelativX(absolutX);
 		float y = movable.computeRelativY(absolutY);
-		return Math.abs(x) > Math.abs(y) 
-			? (x>0 ? Direction.E : Direction.W)
-			: (y>0 ? Direction.N : Direction.S);
+		return Math.abs(x) > Math.abs(y) ? (x > 0 ? Direction.E : Direction.W)
+				: (y > 0 ? Direction.N : Direction.S);
 	}
+
 	@Override
 	public void reset() {
 		super.reset();

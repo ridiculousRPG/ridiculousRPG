@@ -19,27 +19,30 @@ package com.madthrax.ridiculousRPG.events;
 import com.madthrax.ridiculousRPG.ObjectState;
 
 /**
+ * This is a default implementation of the interface {@link EventHandler}. Use
+ * this class if you don't want to implement all the stuff yourself.
+ * 
  * @author Alexander Baumgartner
  */
 public class EventAdapter implements EventHandler {
-	public ObjectState myState;
+	private ObjectState myState;
 
-	
 	public boolean touch(EventObject self, EventObject touchedBy) {
 		return false;
 	}
-	
+
 	public boolean push(EventObject self, EventObject pushedBy) {
-		System.out.println("push "+self.name);
+		System.out.println("push " + self.name);
 		return false;
 	}
-	
+
 	public void load(EventObject self, ObjectState parentState) {
 		this.myState = parentState.getChild(self.id);
 		// load position, texture, movehandler ...
 	}
-	
-	public void store(EventObject self, ObjectState parentState, boolean currentlyExecuted) {
+
+	public void store(EventObject self, ObjectState parentState,
+			boolean currentlyExecuted) {
 		if (currentlyExecuted) {
 			// store position, texture, movehandler ...
 		} else {
@@ -47,13 +50,15 @@ public class EventAdapter implements EventHandler {
 		}
 		parentState.setChild(self.id, myState);
 	}
-	
-	public void customTrigger(EventObject self, int triggerId) {}
-	
+
+	public boolean customTrigger(EventObject self, int triggerId) {
+		return false;
+	}
+
 	public boolean timer(EventObject self, float deltaTime) {
 		return false;
 	}
-	
+
 	public ObjectState getActualState() {
 		return myState;
 	}

@@ -47,7 +47,8 @@ import com.madthrax.ridiculousRPG.service.Initializable;
 /**
  * @author Alexander Baumgartner
  */
-public class ActorsOnStageService extends Stage implements GameService, Drawable, Computable, Initializable {
+public class ActorsOnStageService extends Stage implements GameService,
+		Drawable, Computable, Initializable {
 	public Skin skinNormal, skinFocused;
 	public boolean closeOnAction;
 
@@ -56,65 +57,77 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 	private static Vector2 tmpPoint = new Vector2(0f, 0f);
 
 	public ActorsOnStageService() {
-		super(GameBase.$().getScreenWidth(), GameBase.$().getScreenHeight(), true, GameBase.$().getSpriteBatch());
+		super(GameBase.$().getScreenWidth(), GameBase.$().getScreenHeight(),
+				true, GameBase.$().getSpriteBatch());
 	}
-	
+
 	public void init() {
-		if (isInitialized()) return;
-		setViewport(GameBase.$().getScreenWidth(), GameBase.$().getScreenHeight(), true);
-		skinNormal = new Skin(Gdx.files.internal("data/uiskin2.json"), Gdx.files.internal("data/uiskin2.png"));
-		skinFocused = new Skin(Gdx.files.internal("data/uiskin2.json"), Gdx.files.internal("data/uiskin2Focus.png"));
+		if (isInitialized())
+			return;
+		setViewport(GameBase.$().getScreenWidth(), GameBase.$()
+				.getScreenHeight(), true);
+		skinNormal = new Skin(Gdx.files.internal("data/uiskin2.json"),
+				Gdx.files.internal("data/uiskin2.png"));
+		skinFocused = new Skin(Gdx.files.internal("data/uiskin2.json"),
+				Gdx.files.internal("data/uiskin2Focus.png"));
 	}
-	
+
 	public boolean isInitialized() {
-		return skinNormal!=null;
+		return skinNormal != null;
 	}
-	
+
 	public void compute(float deltaTime, boolean actionKeyPressed) {
 		act(deltaTime);
 	}
-	
+
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
 		getCamera().update();
-		super.root.draw(spriteBatch,1f);
+		super.root.draw(spriteBatch, 1f);
 	}
-	
+
 	public Matrix4 projectionMatrix(Camera camera) {
 		return camera.view;
 	}
+
 	public static void changeSkin(Actor actor, Skin newSikn) {
 		if (actor.getClass() == Button.class) {
-			((Button)actor).setStyle(newSikn.getStyle(ButtonStyle.class));
+			((Button) actor).setStyle(newSikn.getStyle(ButtonStyle.class));
 		} else if (actor.getClass() == CheckBox.class
 				|| actor.getClass() == SelectBox.class) {
-			((CheckBox)actor).setStyle(newSikn.getStyle(CheckBoxStyle.class));
+			((CheckBox) actor).setStyle(newSikn.getStyle(CheckBoxStyle.class));
 		} else if (actor.getClass() == TextField.class) {
-			((TextField)actor).setStyle(newSikn.getStyle(TextFieldStyle.class));
+			((TextField) actor)
+					.setStyle(newSikn.getStyle(TextFieldStyle.class));
 		} else if (actor.getClass() == SelectBox.class) {
-			((SelectBox)actor).setStyle(newSikn.getStyle(SelectBoxStyle.class));
+			((SelectBox) actor)
+					.setStyle(newSikn.getStyle(SelectBoxStyle.class));
 		} else if (actor.getClass() == Slider.class) {
-			((Slider)actor).setStyle(newSikn.getStyle(SliderStyle.class));
+			((Slider) actor).setStyle(newSikn.getStyle(SliderStyle.class));
 		} else if (actor.getClass() == SplitPane.class) {
-			((SplitPane)actor).setStyle(newSikn.getStyle(SplitPaneStyle.class));
+			((SplitPane) actor)
+					.setStyle(newSikn.getStyle(SplitPaneStyle.class));
 		}
 	}
-	
+
 	@Override
 	public boolean keyDown(int keycode) {
 		// unfocus if actor is removed
-		if (focusedActor!=null && !ActorFocusUtil.isActorOnStage(focusedActor, root)) {
+		if (focusedActor != null
+				&& !ActorFocusUtil.isActorOnStage(focusedActor, root)) {
 			root.keyboardFocus(null);
 			focusedActor = null;
 			awaitingKeyUp = false;
 		}
 		// consume tab key down
 		if (keycode == Keys.TAB) {
-			if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT)) {
-				return ActorFocusUtil.focusPrev(focusedActor, root, false, false)
-					|| ActorFocusUtil.focusLastChild(root);
+			if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)
+					|| Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT)) {
+				return ActorFocusUtil.focusPrev(focusedActor, root, false,
+						false)
+						|| ActorFocusUtil.focusLastChild(root);
 			}
 			return ActorFocusUtil.focusNext(focusedActor, root, false, false)
-				|| ActorFocusUtil.focusFirstChild(root);
+					|| ActorFocusUtil.focusFirstChild(root);
 		}
 		// alowed childs to consume key down
 		boolean consumed = super.keyDown(keycode);
@@ -124,41 +137,50 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 			case Keys.ENTER:
 				return (awaitingKeyUp = actionKeyPressed(true));
 			case Keys.ESCAPE:
-				if (focusedActor!=null) {
+				if (focusedActor != null) {
 					focusedActor.parent.keyboardFocus(null);
 				}
 				return false;
 			case Keys.UP:
-				return ActorFocusUtil.focusPrev(focusedActor, root, true, false);
+				return ActorFocusUtil
+						.focusPrev(focusedActor, root, true, false);
 			case Keys.DOWN:
-				return ActorFocusUtil.focusNext(focusedActor, root, true, false);
+				return ActorFocusUtil
+						.focusNext(focusedActor, root, true, false);
 			case Keys.LEFT:
-				return ActorFocusUtil.focusPrev(focusedActor, root, false, true);
+				return ActorFocusUtil
+						.focusPrev(focusedActor, root, false, true);
 			case Keys.RIGHT:
-				return ActorFocusUtil.focusNext(focusedActor, root, false, true);
+				return ActorFocusUtil
+						.focusNext(focusedActor, root, false, true);
 			}
 		}
 		return consumed;
 	}
-	
+
 	@Override
 	public boolean keyUp(int keycode) {
 		// unfocus if actor is removed
-		if (focusedActor!=null && !ActorFocusUtil.isActorOnStage(focusedActor, root)) {
+		if (focusedActor != null
+				&& !ActorFocusUtil.isActorOnStage(focusedActor, root)) {
 			root.keyboardFocus(null);
 			focusedActor = null;
 			awaitingKeyUp = false;
 		}
 		return checkFocusChanged(keyUpIntern(keycode));
 	}
+
 	private boolean checkFocusChanged(boolean consumed) {
 		if (focusedActor != root.keyboardFocusedActor) {
-			if (focusedActor!=null) changeSkin(focusedActor, skinNormal);
+			if (focusedActor != null)
+				changeSkin(focusedActor, skinNormal);
 			focusedActor = root.keyboardFocusedActor;
-			if (focusedActor!=null) changeSkin(focusedActor, skinFocused);
+			if (focusedActor != null)
+				changeSkin(focusedActor, skinFocused);
 		}
 		return consumed;
 	}
+
 	private boolean keyUpIntern(int keycode) {
 		if (awaitingKeyUp) {
 			switch (keycode) {
@@ -172,33 +194,36 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 		return super.keyUp(keycode);
 	}
 
-	
 	@Override
 	public boolean touchDown(int x, int y, int pointer, int button) {
 		boolean consumed = super.touchDown(x, y, pointer, button);
-		if (!consumed && !awaitingKeyUp && (pointer==1 || button==Buttons.RIGHT) && focusedActor==null) {
+		if (!consumed && !awaitingKeyUp
+				&& (pointer == 1 || button == Buttons.RIGHT)
+				&& focusedActor == null) {
 			return (awaitingKeyUp = actionKeyPressed(true));
 		}
 		return consumed;
 	}
-	
+
 	@Override
 	public boolean touchUp(int x, int y, int pointer, int button) {
 		return checkFocusChanged(touchUpIntern(x, y, pointer, button));
 	}
+
 	private boolean touchUpIntern(int x, int y, int pointer, int button) {
-		if (awaitingKeyUp && (pointer==1 || button==Buttons.RIGHT)) {
+		if (awaitingKeyUp && (pointer == 1 || button == Buttons.RIGHT)) {
 			awaitingKeyUp = false;
 			actionKeyPressed(false);
 			return true;
 		}
 		return super.touchUp(x, y, pointer, button);
 	}
+
 	private boolean actionKeyPressed(boolean down) {
 		Actor a = focusedActor;
-		if (a==null && closeOnAction) {
+		if (a == null && closeOnAction) {
 			System.out.println("Action key pressed - close requested");
-		} else if (a!=null) {
+		} else if (a != null) {
 			// unfocus if actor is removed
 			if (!ActorFocusUtil.isActorOnStage(a, root)) {
 				root.keyboardFocus(null);
@@ -209,14 +234,17 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 			a.toLocalCoordinates(tmpPoint.set(a.x, a.y));
 			// simulate touch event
 			if (down) {
-				if (GameBase.$serviceProvider().requestAttention(this, false, false)) {
-					root.touchDown(a.x-tmpPoint.x+1, a.y-tmpPoint.y+1, 0);
-					if (a.parent!=null) a.parent.keyboardFocusedActor = a;
+				if (GameBase.$serviceProvider().requestAttention(this, false,
+						false)) {
+					root.touchDown(a.x - tmpPoint.x + 1, a.y - tmpPoint.y + 1,
+							0);
+					if (a.parent != null)
+						a.parent.keyboardFocusedActor = a;
 					return true;
 				}
 			} else {
 				if (GameBase.$serviceProvider().releaseAttention(this)) {
-					root.touchUp(a.x-tmpPoint.x+1, a.y-tmpPoint.y+1, 0);
+					root.touchUp(a.x - tmpPoint.x + 1, a.y - tmpPoint.y + 1, 0);
 				}
 			}
 		} else {
@@ -225,11 +253,12 @@ public class ActorsOnStageService extends Stage implements GameService, Drawable
 		return false;
 	}
 
-	
-	public void freeze() {}
-	
-	public void unfreeze() {}
-	
+	public void freeze() {
+	}
+
+	public void unfreeze() {
+	}
+
 	@Override
 	public void dispose() {
 		super.dispose();

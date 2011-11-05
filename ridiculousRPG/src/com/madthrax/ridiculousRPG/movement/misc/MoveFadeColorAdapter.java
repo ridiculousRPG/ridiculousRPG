@@ -24,14 +24,15 @@ import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 
 /**
- * This MovementAdapter doesn't move the event. It fades the color until
- * the color matches an other (given) color by the given speed.<br>
+ * This MovementAdapter doesn't move the event. It fades the color until the
+ * color matches an other (given) color by the given speed.<br>
  * Simply use the alpha channel to fade in/out an event.<br>
  * It will finish after the color transition completed.<br>
- * You may use this {@link MovementHandler} stand alone without an event (see {@link #tryMove(Movable, float)}).
- * Also you are allowed to concatenate {@link MoveFadeColorAdapter}s inside an {@link CombinedMovesAdapter}
- * and use this concatenation stand alone.
- * Maybe in an day/night service.
+ * You may use this {@link MovementHandler} stand alone without an event (see
+ * {@link #tryMove(Movable, float)}). Also you are allowed to concatenate
+ * {@link MoveFadeColorAdapter}s inside an {@link CombinedMovesAdapter} and use
+ * this concatenation stand alone. Maybe in an day/night service.
+ * 
  * @author Alexander Baumgartner
  */
 public class MoveFadeColorAdapter extends MovementHandler {
@@ -39,43 +40,50 @@ public class MoveFadeColorAdapter extends MovementHandler {
 	private Color to;
 	private boolean tintEntireGame;
 
-	protected MoveFadeColorAdapter(Speed transitionSpeed, Color to, boolean tintEntireGame) {
+	protected MoveFadeColorAdapter(Speed transitionSpeed, Color to,
+			boolean tintEntireGame) {
 		this.transitionSpeed = transitionSpeed;
 		this.to = to;
 		this.tintEntireGame = tintEntireGame;
 	}
+
 	/**
-	 * This MovementAdapter doesn't move the event. It fades the color until
-	 * the color matches an other (given) color by the given speed.<br>
+	 * This MovementAdapter doesn't move the event. It fades the color until the
+	 * color matches an other (given) color by the given speed.<br>
 	 * It will finish after the color transition completed.
+	 * 
 	 * @param transitionSpeed
-	 * The speed for fading the events color to the given color or null if it should jump
-	 * immediately to the given color.
+	 *            The speed for fading the events color to the given color or
+	 *            null if it should jump immediately to the given color.
 	 * @param toColor
-	 * The end color after the transition.
+	 *            The end color after the transition.
 	 * @param tintEntireGame
-	 * If true, the tint will be applied to the entire game.<br>
-	 * If you use the alpha channel on the entire game, all layers of a map
-	 * will become visible. That's probably not what you want.<br>
-	 * If you want to fade
-	 * the entire game out, make a transition to {@link Color#BLACK}.
-	 * If you want to fade the entire game in make a transition from {@link Color#BLACK}
-	 * to {@link Color#WHITE}.
+	 *            If true, the tint will be applied to the entire game.<br>
+	 *            If you use the alpha channel on the entire game, all layers of
+	 *            a map will become visible. That's probably not what you want.<br>
+	 *            If you want to fade the entire game out, make a transition to
+	 *            {@link Color#BLACK}. If you want to fade the entire game in
+	 *            make a transition from {@link Color#BLACK} to
+	 *            {@link Color#WHITE}.
 	 * @see {@link GameBase#setGameColorTint(Color)}
 	 * @see {@link GameBase#getGameColorTint()}
 	 * @return
 	 */
-	public static MovementHandler $(Speed transitionSpeed, Color toColor, boolean tintEntireGame) {
-		return new MoveFadeColorAdapter(transitionSpeed, toColor, tintEntireGame);
+	public static MovementHandler $(Speed transitionSpeed, Color toColor,
+			boolean tintEntireGame) {
+		return new MoveFadeColorAdapter(transitionSpeed, toColor,
+				tintEntireGame);
 	}
+
 	/**
-	 * You may use this {@link MovementHandler} to fade the entire game. If so, the parameter
-	 * movable will not be needed and may be null.
+	 * You may use this {@link MovementHandler} to fade the entire game. If so,
+	 * the parameter movable will not be needed and may be null.
 	 */
 	@Override
 	public void tryMove(Movable movable, float deltaTime) {
 		if (!finished && (tintEntireGame || movable instanceof EventObject)) {
-			float changeSpeed = transitionSpeed==null?1f:transitionSpeed.computeStretch(deltaTime)*.1f;
+			float changeSpeed = transitionSpeed == null ? 1f : transitionSpeed
+					.computeStretch(deltaTime) * .1f;
 			Color from;
 			if (tintEntireGame) {
 				from = GameBase.$().getGameColorTint();
@@ -97,16 +105,17 @@ public class MoveFadeColorAdapter extends MovementHandler {
 			finished = true;
 		}
 	}
+
 	private float transition(float from, float to, float changeSpeed) {
-		if (from<to) {
-			from+=changeSpeed;
-			if (from<to) {
+		if (from < to) {
+			from += changeSpeed;
+			if (from < to) {
 				finished = false;
 				return from;
 			}
-		} else if (from>to) {
-			from-=changeSpeed;
-			if (from>to) {
+		} else if (from > to) {
+			from -= changeSpeed;
+			if (from > to) {
 				finished = false;
 				return from;
 			}

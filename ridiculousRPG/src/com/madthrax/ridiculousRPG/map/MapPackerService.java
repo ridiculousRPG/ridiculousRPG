@@ -38,12 +38,13 @@ import com.madthrax.ridiculousRPG.service.Initializable;
 /**
  * @author Alexander Baumgartner
  */
-public class MapPackerService extends GameServiceDefaultImpl implements Initializable {
+public class MapPackerService extends GameServiceDefaultImpl implements
+		Initializable {
 	private boolean initialized = false;
 
-	
 	public void init() {
-		if (isInitialized()) return;
+		if (isInitialized())
+			return;
 		File mapDir = new File(GameConfig.get().mapDir);
 		File packMapDir = new File(GameConfig.get().mapPackDir);
 		boolean packMaps = false;
@@ -52,7 +53,8 @@ public class MapPackerService extends GameServiceDefaultImpl implements Initiali
 			packMaps = true;
 		} else {
 			try {
-				BufferedReader checkUpdate = new BufferedReader(new FileReader(packMapDir+"check.txt"));
+				BufferedReader checkUpdate = new BufferedReader(new FileReader(
+						packMapDir + "check.txt"));
 				File[] tmxFiles = mapDir.listFiles(new FilenameFilter() {
 					public boolean accept(File dir, String name) {
 						return name.toLowerCase().endsWith(".tmx");
@@ -61,15 +63,22 @@ public class MapPackerService extends GameServiceDefaultImpl implements Initiali
 				Arrays.sort(tmxFiles);
 				for (File tmx : tmxFiles) {
 					String line = checkUpdate.readLine();
-					if (line==null || !line.startsWith(tmx.getName()) || !line.endsWith(String.valueOf(tmx.lastModified()))) {
+					if (line == null
+							|| !line.startsWith(tmx.getName())
+							|| !line.endsWith(String
+									.valueOf(tmx.lastModified()))) {
 						packMaps = true;
 						break;
 					}
-					TiledMap tmxMap = TiledLoader.createMap(Gdx.files.absolute(tmx.getAbsolutePath()));
+					TiledMap tmxMap = TiledLoader.createMap(Gdx.files
+							.absolute(tmx.getAbsolutePath()));
 					for (TileSet tileSet : tmxMap.tileSets) {
-						File img =new File(mapDir, tileSet.imageName);
+						File img = new File(mapDir, tileSet.imageName);
 						line = checkUpdate.readLine();
-						if (line==null || !line.startsWith(img.getName()) || !line.endsWith(String.valueOf(img.lastModified()))) {
+						if (line == null
+								|| !line.startsWith(img.getName())
+								|| !line.endsWith(String.valueOf(img
+										.lastModified()))) {
 							packMaps = true;
 							break;
 						}
@@ -82,16 +91,18 @@ public class MapPackerService extends GameServiceDefaultImpl implements Initiali
 		}
 		if (packMaps) {
 			try {
-				Gdx.files.absolute(packMapDir.getAbsolutePath()).deleteDirectory();
+				Gdx.files.absolute(packMapDir.getAbsolutePath())
+						.deleteDirectory();
 				TexturePacker.Settings settings = new TexturePacker.Settings();
-				settings.defaultFormat=Format.RGBA8888;
-				settings.stripWhitespace=true;
-				settings.incremental=true;
-				settings.alias=true;
+				settings.defaultFormat = Format.RGBA8888;
+				settings.stripWhitespace = true;
+				settings.incremental = true;
+				settings.alias = true;
 				new TiledMapPacker().processMap(mapDir, packMapDir, settings);
 
 				// write info-file
-				PrintWriter checkUpdate = new PrintWriter(packMapDir+"check.txt");
+				PrintWriter checkUpdate = new PrintWriter(packMapDir
+						+ "check.txt");
 				File[] tmxFiles = mapDir.listFiles(new FilenameFilter() {
 					public boolean accept(File dir, String name) {
 						return name.toLowerCase().endsWith(".tmx");
@@ -99,24 +110,28 @@ public class MapPackerService extends GameServiceDefaultImpl implements Initiali
 				});
 				Arrays.sort(tmxFiles);
 				for (File tmx : tmxFiles) {
-					checkUpdate.println(tmx.getName()+" / "+tmx.lastModified());
-					TiledMap tmxMap = TiledLoader.createMap(Gdx.files.absolute(tmx.getAbsolutePath()));
+					checkUpdate.println(tmx.getName() + " / "
+							+ tmx.lastModified());
+					TiledMap tmxMap = TiledLoader.createMap(Gdx.files
+							.absolute(tmx.getAbsolutePath()));
 					for (TileSet tileSet : tmxMap.tileSets) {
-						File img =new File(mapDir, tileSet.imageName);
-						checkUpdate.println(img.getName()+" / "+img.lastModified());
+						File img = new File(mapDir, tileSet.imageName);
+						checkUpdate.println(img.getName() + " / "
+								+ img.lastModified());
 					}
 				}
 				checkUpdate.close();
-			} catch (IOException e) {}
+			} catch (IOException e) {
+			}
 		}
 
 		initialized = true;
 	}
 
-	
 	public boolean isInitialized() {
 		return initialized;
 	}
-	
-	public void dispose() {}
+
+	public void dispose() {
+	}
 }

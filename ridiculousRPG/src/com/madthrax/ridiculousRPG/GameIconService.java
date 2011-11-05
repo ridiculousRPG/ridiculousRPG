@@ -26,20 +26,21 @@ import com.madthrax.ridiculousRPG.service.Initializable;
 /**
  * @author Alexander Baumgartner
  */
-public class GameIconService extends GameServiceDefaultImpl implements Initializable {
+public class GameIconService extends GameServiceDefaultImpl implements
+		Initializable {
 	private boolean initialized = false;
 	private Pixmap applIcon;
 
-	
 	public void init() {
-		if (isInitialized()) return;
+		if (isInitialized())
+			return;
 		FileHandle applIconFile = Gdx.files.internal("data/icon.png");
 		if (applIconFile.exists()) {
 			applIcon = new Pixmap(applIconFile);
-			if (applIcon.getWidth()==applIcon.getHeight() &&
-				MathUtils.isPowerOfTwo(applIcon.getWidth())) {
+			if (applIcon.getWidth() == applIcon.getHeight()
+					&& MathUtils.isPowerOfTwo(applIcon.getWidth())) {
 				try {
-					Gdx.graphics.setIcon(new Pixmap[]{applIcon});
+					Gdx.graphics.setIcon(new Pixmap[] { applIcon });
 				} catch (Throwable notTooBad) {
 					applIcon.dispose();
 					applIcon = null;
@@ -53,12 +54,12 @@ public class GameIconService extends GameServiceDefaultImpl implements Initializ
 		initialized = true;
 	}
 
-	
 	public boolean isInitialized() {
 		return initialized;
 	}
-	
+
 	public void dispose() {
-		if (applIcon!=null) applIcon.dispose();
+		if (applIcon != null)
+			applIcon.dispose();
 	}
 }

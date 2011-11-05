@@ -26,13 +26,14 @@ import com.badlogic.gdx.files.FileHandle;
 /**
  * This class represents the state of one section of the entire game.<br>
  * E.g. one section could be one map.<br>
- * This implementation is optimized for serialization-size and not for performance.
- * All methods are synchronized. The performance is not that important in this class,
- * because state transitions are really rare compared with the frame rendering.<br>
+ * This implementation is optimized for serialization-size and not for
+ * performance. All methods are synchronized. The performance is not that
+ * important in this class, because state transitions are really rare compared
+ * with the frame rendering.<br>
  * ATTENTION: Don't waste space by using high index values.<br>
- * The sizes of the internally used arrays are directly connected
- * to the highest index value as follows:<br>
- * {@code len = ((index+7) >> 3) << 3}
+ * The sizes of the internally used arrays are directly connected to the highest
+ * index value as follows:<br> {@code len = ((index+7) >> 3) << 3}
+ * 
  * @author Alexander Baumgartner
  */
 public class ObjectState implements Serializable {
@@ -46,12 +47,14 @@ public class ObjectState implements Serializable {
 
 	// We don't want to copy the array for every new element
 	// actually increment by 1<<3 = 8
-	private static final int INC_SHIFT = 3; // 1<<1 = 2   1<<2 = 4   1<<3 = 8   1<<4 = 16  ...
- 	private static final int INC_BY = 1<<INC_SHIFT;
- 	private static final int INC_REST = INC_BY-1;
+	private static final int INC_SHIFT = 3; // 1<<1 = 2 1<<2 = 4 1<<3 = 8 1<<4 =
+	// 16 ...
+	private static final int INC_BY = 1 << INC_SHIFT;
+	private static final int INC_REST = INC_BY - 1;
 
 	/**
 	 * Writes the entire state tree with all children to a persistent storage.
+	 * 
 	 * @param file
 	 * @throws IOException
 	 */
@@ -59,39 +62,48 @@ public class ObjectState implements Serializable {
 		file.mkdirs();
 		new ObjectOutputStream(file.write(false)).writeObject(this);
 	}
+
 	/**
 	 * Loads a state tree with all children from a persistent storage.
+	 * 
 	 * @param file
-	 * @return
-	 * The loaded state or an empty new {@link ObjectState} if the file doesn't exist
+	 * @return The loaded state or an empty new {@link ObjectState} if the file
+	 *         doesn't exist
 	 * @throws IOException
 	 */
 	public static ObjectState loadFrom(FileHandle file) throws IOException {
 		try {
-			if (!file.exists()) return new ObjectState();
-			return (ObjectState) new ObjectInputStream(file.read()).readObject();
+			if (!file.exists())
+				return new ObjectState();
+			return (ObjectState) new ObjectInputStream(file.read())
+					.readObject();
 		} catch (ClassNotFoundException e) {
 			throw new IOException("Problem loading saved state! ", e);
 		}
 	}
+
 	/**
 	 * Reads an integer variable
+	 * 
 	 * @param index
 	 * @return
 	 */
 	public synchronized int getInt(int index) {
 		return intVar != null && intVar.length > index ? intVar[index] : 0;
 	}
+
 	/**
 	 * Stores an integer variable
+	 * 
 	 * @param index
 	 * @param value
 	 */
 	public synchronized void setInt(int index, int value) {
 		int[] intVar = this.intVar;
 		if (intVar == null) {
-			if (value==0) return;
-			int newLen = ((index+INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			if (value == 0)
+				return;
+			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
 			intVar = new int[newLen];
 			this.intVar = intVar;
 		}
@@ -99,12 +111,13 @@ public class ObjectState implements Serializable {
 		if (len > index) {
 			intVar[index] = value;
 			// shrink
-			if (value==0 && index >= len-INC_BY) {
+			if (value == 0 && index >= len - INC_BY) {
 				int newLen = len;
-				while (newLen>0 && intVar[newLen-1]==0) newLen--; //remove trailing empty elements
-				newLen = ((newLen+INC_REST) >> INC_SHIFT) << INC_SHIFT;
-				if (newLen<len) {
-					if (newLen==0) {
+				while (newLen > 0 && intVar[newLen - 1] == 0)
+					newLen--; // remove trailing empty elements
+				newLen = ((newLen + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+				if (newLen < len) {
+					if (newLen == 0) {
 						this.intVar = null;
 					} else {
 						this.intVar = new int[newLen];
@@ -114,15 +127,17 @@ public class ObjectState implements Serializable {
 			}
 			return;
 		} else if (value != 0) {
-			int newLen = ((index+INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
 			intVar = new int[newLen];
 			System.arraycopy(this.intVar, 0, intVar, 0, len);
 			intVar[index] = value;
 			this.intVar = intVar;
 		}
 	}
+
 	/**
 	 * Low performance software-implementation of compare and swap
+	 * 
 	 * @param index
 	 * @param oldVal
 	 * @param newVal
@@ -138,22 +153,26 @@ public class ObjectState implements Serializable {
 
 	/**
 	 * Reads a boolean variable
+	 * 
 	 * @param index
 	 * @return
 	 */
 	public synchronized boolean getBool(int index) {
 		return boolVar.length > index && boolVar[index];
 	}
+
 	/**
 	 * Stores a boolean variable
+	 * 
 	 * @param index
 	 * @param value
 	 */
 	public synchronized void setBool(int index, boolean value) {
 		boolean[] boolVar = this.boolVar;
 		if (boolVar == null) {
-			if (!value) return;
-			int newLen = ((index+INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			if (!value)
+				return;
+			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
 			boolVar = new boolean[newLen];
 			this.boolVar = boolVar;
 		}
@@ -161,11 +180,12 @@ public class ObjectState implements Serializable {
 		if (len > index) {
 			boolVar[index] = value;
 			// shrink
-			if (!value && index >= len-INC_BY) {
+			if (!value && index >= len - INC_BY) {
 				int newLen = len;
-				while (newLen>0 && !boolVar[newLen-1]) newLen--; //remove trailing empty elements
-				newLen = ((newLen+INC_REST) >> INC_SHIFT) << INC_SHIFT;
-				if (newLen==0) {
+				while (newLen > 0 && !boolVar[newLen - 1])
+					newLen--; // remove trailing empty elements
+				newLen = ((newLen + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+				if (newLen == 0) {
 					this.boolVar = null;
 				} else {
 					this.boolVar = new boolean[newLen];
@@ -174,21 +194,24 @@ public class ObjectState implements Serializable {
 			}
 			return;
 		} else if (value) {
-			int newLen = ((index+INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
 			boolVar = new boolean[newLen];
 			System.arraycopy(this.boolVar, 0, boolVar, 0, len);
 			boolVar[index] = value;
 			this.boolVar = boolVar;
 		}
 	}
+
 	/**
 	 * Low performance software-implementation of compare and swap
+	 * 
 	 * @param index
 	 * @param oldVal
 	 * @param newVal
 	 * @return the old stored value
 	 */
-	public synchronized boolean casBool(int index, boolean oldVal, boolean newVal) {
+	public synchronized boolean casBool(int index, boolean oldVal,
+			boolean newVal) {
 		boolean actVal = getBool(index);
 		if (oldVal == actVal) {
 			setBool(index, newVal);
@@ -198,22 +221,26 @@ public class ObjectState implements Serializable {
 
 	/**
 	 * Reads a float variable
+	 * 
 	 * @param index
 	 * @return
 	 */
 	public synchronized float getFloat(int index) {
 		return floatVar.length > index ? floatVar[index] : 0f;
 	}
+
 	/**
 	 * Stores a float variable
+	 * 
 	 * @param index
 	 * @param value
 	 */
 	public synchronized void setFloat(int index, float value) {
 		float[] floatVar = this.floatVar;
 		if (floatVar == null) {
-			if (value==0f) return;
-			int newLen = ((index+INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			if (value == 0f)
+				return;
+			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
 			floatVar = new float[newLen];
 			this.floatVar = floatVar;
 		}
@@ -221,11 +248,12 @@ public class ObjectState implements Serializable {
 		if (len > index) {
 			floatVar[index] = value;
 			// shrink
-			if (value==0f && index >= len-INC_BY) {
+			if (value == 0f && index >= len - INC_BY) {
 				int newLen = len;
-				while (newLen>0 && floatVar[newLen-1]==0f) newLen--; //remove trailing empty elements
-				newLen = ((newLen+INC_REST) >> INC_SHIFT) << INC_SHIFT;
-				if (newLen==0) {
+				while (newLen > 0 && floatVar[newLen - 1] == 0f)
+					newLen--; // remove trailing empty elements
+				newLen = ((newLen + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+				if (newLen == 0) {
 					this.floatVar = null;
 				} else {
 					this.floatVar = new float[newLen];
@@ -234,15 +262,17 @@ public class ObjectState implements Serializable {
 			}
 			return;
 		} else if (value != 0f) {
-			int newLen = ((index+INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
 			floatVar = new float[newLen];
 			System.arraycopy(this.floatVar, 0, floatVar, 0, len);
 			floatVar[index] = value;
 			this.floatVar = floatVar;
 		}
 	}
+
 	/**
 	 * Low performance software-implementation of compare and swap
+	 * 
 	 * @param index
 	 * @param oldVal
 	 * @param newVal
@@ -258,22 +288,26 @@ public class ObjectState implements Serializable {
 
 	/**
 	 * Reads a {@link String} variable
+	 * 
 	 * @param index
 	 * @return
 	 */
 	public synchronized String getString(int index) {
 		return stringVar.length > index ? stringVar[index] : null;
 	}
+
 	/**
 	 * Stores a {@link String} variable
+	 * 
 	 * @param index
 	 * @param value
 	 */
 	public synchronized void setString(int index, String value) {
 		String[] stringVar = this.stringVar;
 		if (stringVar == null) {
-			if (value==null) return;
-			int newLen = ((index+INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			if (value == null)
+				return;
+			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
 			stringVar = new String[newLen];
 			this.stringVar = stringVar;
 		}
@@ -281,11 +315,12 @@ public class ObjectState implements Serializable {
 		if (len > index) {
 			stringVar[index] = value;
 			// shrink
-			if (value==null && index >= len-INC_BY) {
+			if (value == null && index >= len - INC_BY) {
 				int newLen = len;
-				while (newLen>0 && stringVar[newLen-1]==null) newLen--; //remove trailing empty elements
-				newLen = ((newLen+INC_REST) >> INC_SHIFT) << INC_SHIFT;
-				if (newLen==0) {
+				while (newLen > 0 && stringVar[newLen - 1] == null)
+					newLen--; // remove trailing empty elements
+				newLen = ((newLen + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+				if (newLen == 0) {
 					this.stringVar = null;
 				} else {
 					this.stringVar = new String[newLen];
@@ -294,15 +329,17 @@ public class ObjectState implements Serializable {
 			}
 			return;
 		} else if (value != null) {
-			int newLen = ((index+INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
 			stringVar = new String[newLen];
 			System.arraycopy(this.stringVar, 0, stringVar, 0, len);
 			stringVar[index] = value;
 			this.stringVar = stringVar;
 		}
 	}
+
 	/**
 	 * Low performance software-implementation of compare and swap
+	 * 
 	 * @param index
 	 * @param oldVal
 	 * @param newVal
@@ -315,11 +352,13 @@ public class ObjectState implements Serializable {
 		}
 		return actVal;
 	}
+
 	/**
-	 * Reads a child by it's index or creates a new {@link ObjectState} if
-	 * no child with the given index exists.
+	 * Reads a child by it's index or creates a new {@link ObjectState} if no
+	 * child with the given index exists.
+	 * 
 	 * @param index
-	 * The index of the child
+	 *            The index of the child
 	 * @return a child's GameStateFragment
 	 */
 	public synchronized ObjectState getChild(int index) {
@@ -328,18 +367,21 @@ public class ObjectState implements Serializable {
 		if (childVar.length > index) {
 			child = childVar[index];
 		}
-		return  child==null ? new ObjectState() : child;
+		return child == null ? new ObjectState() : child;
 	}
+
 	/**
 	 * Stores a child with the given index
+	 * 
 	 * @param index
 	 * @param value
 	 */
 	public synchronized void setChild(int index, ObjectState value) {
 		ObjectState[] childVar = this.childFragment;
 		if (childVar == null) {
-			if (value==null) return;
-			int newLen = ((index+INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			if (value == null)
+				return;
+			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
 			childVar = new ObjectState[newLen];
 			this.childFragment = childVar;
 		}
@@ -347,34 +389,40 @@ public class ObjectState implements Serializable {
 		if (len > index) {
 			childVar[index] = value;
 			// shrink
-			if (value==null && index >= len-INC_BY) {
+			if (value == null && index >= len - INC_BY) {
 				int newLen = len;
-				while (newLen>0 && childVar[newLen-1]==null) newLen--; //remove trailing empty elements
-				newLen = ((newLen+INC_REST) >> INC_SHIFT) << INC_SHIFT;
-				if (newLen==0) {
+				while (newLen > 0 && childVar[newLen - 1] == null)
+					newLen--; // remove trailing empty elements
+				newLen = ((newLen + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+				if (newLen == 0) {
 					this.childFragment = null;
 				} else {
 					this.childFragment = new ObjectState[newLen];
-					System.arraycopy(childVar, 0, this.childFragment, 0, newLen);
+					System
+							.arraycopy(childVar, 0, this.childFragment, 0,
+									newLen);
 				}
 			}
 			return;
 		} else if (value != null) {
-			int newLen = ((index+INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
 			childVar = new ObjectState[newLen];
 			System.arraycopy(this.childFragment, 0, childVar, 0, len);
 			childVar[index] = value;
 			this.childFragment = childVar;
 		}
 	}
+
 	/**
 	 * Low performance software-implementation of compare and swap
+	 * 
 	 * @param index
 	 * @param oldVal
 	 * @param newVal
 	 * @return the old stored value
 	 */
-	public synchronized ObjectState casChild(int index, ObjectState oldVal, ObjectState newVal) {
+	public synchronized ObjectState casChild(int index, ObjectState oldVal,
+			ObjectState newVal) {
 		ObjectState actVal = getChild(index);
 		if (oldVal == actVal) {
 			setChild(index, newVal);

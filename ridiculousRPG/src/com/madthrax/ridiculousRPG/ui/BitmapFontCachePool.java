@@ -24,22 +24,25 @@ import com.badlogic.gdx.utils.Pool;
 
 /**
  * This Class is used for reusing free {@link BitmapFontCache} objects
+ * 
  * @author Alexander Baumgartner
  */
 public class BitmapFontCachePool {
 	private IdentityHashMap<BitmapFont, Pool<BitmapFontCache>> pool = new IdentityHashMap<BitmapFont, Pool<BitmapFontCache>>();
+
 	/**
-	 * Returns an object from this pool. The object may be new or reused (previously
-	 * {@link #free(Object) freed}).<br>
+	 * Returns an object from this pool. The object may be new or reused
+	 * (previously {@link #free(Object) freed}).<br>
 	 * You have to dispose the fonts by yourself.
+	 * 
 	 * @param font
 	 * @return
 	 */
 	public BitmapFontCache obtain(final BitmapFont font) {
 		Pool<BitmapFontCache> fontCache = pool.get(font);
-		if (fontCache==null) {
+		if (fontCache == null) {
 			fontCache = new Pool<BitmapFontCache>(64, 256) {
-				
+
 				@Override
 				protected BitmapFontCache newObject() {
 					return new BitmapFontCache(font);
@@ -49,9 +52,11 @@ public class BitmapFontCachePool {
 		}
 		return fontCache.obtain();
 	}
-	public void free (BitmapFontCache cache) {
+
+	public void free(BitmapFontCache cache) {
 		pool.get(cache.getFont()).free(cache);
 	}
+
 	public void clear() {
 		pool.clear();
 	}

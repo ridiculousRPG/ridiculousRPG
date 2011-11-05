@@ -34,28 +34,31 @@ public class GameConfig implements Disposable {
 	private String skinConf = "data/theme/default/uiskin.json";
 	private String skinImg = "data/theme/default/uiskin.png";
 
-
 	private static GameConfig INSTANCE = null;
 
 	private GameConfig() {
-		//TODO: load configuration from config-file and
+		// TODO: load configuration from config-file and
 		// use defaults if no config-file is found
-		uiSkin = new Skin(Gdx.files.internal(skinConf), Gdx.files.internal(skinImg));
+		uiSkin = new Skin(Gdx.files.internal(skinConf), Gdx.files
+				.internal(skinImg));
 	}
 
 	public static GameConfig get() {
-		if (INSTANCE==null) INSTANCE = new GameConfig();
+		if (INSTANCE == null)
+			INSTANCE = new GameConfig();
 		return INSTANCE;
 	}
+
 	public void setSkin(String skinConf_Path, String skinPNG_Path) {
 		skinConf = skinConf_Path;
 		skinImg = skinPNG_Path;
 		uiSkin.dispose();
-		uiSkin = new Skin(Gdx.files.internal(skinConf), Gdx.files.internal(skinImg));
+		uiSkin = new Skin(Gdx.files.internal(skinConf), Gdx.files
+				.internal(skinImg));
 	}
 
 	public void dispose() {
-		//TODO: store configuration to config-file
+		// TODO: store configuration to config-file
 		uiSkin.dispose();
 	}
 }

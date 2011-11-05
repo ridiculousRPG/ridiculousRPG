@@ -26,22 +26,22 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
 
 /**
  * With this {@link MovementHandler} one event can follow an other event.<br>
- * The following-algorithm works independently from the movement actions,
- * which are performed from the traced event. Therefore any Combination of
+ * The following-algorithm works independently from the movement actions, which
+ * are performed from the traced event. Therefore any Combination of
  * {@link MovementHandler}s can be traced by an other event. Of course you can
  * trace an event which already traces an other event...<br>
- * Feel free to build a chain of events ;)
- * <br><br>
- * This class changes the visibility of Movables. If you don't want this functionality
- * please extend this class and override the method setVisibility(...).
- * Also you can override the method setVisibility(...) if you need this functionality
- * for other Movable objects (other than Movables)<br>
+ * Feel free to build a chain of events ;) <br>
  * <br>
- * <h1>ATTENTION!!!</h1>
- * Use a none-blocking follower otherwise it could be shaken off
- * or the events could block mutually.<br>
- * A defaultdistance for following the other event will be computed from
- * the touch-bounds of both events.
+ * This class changes the visibility of Movables. If you don't want this
+ * functionality please extend this class and override the method
+ * setVisibility(...). Also you can override the method setVisibility(...) if
+ * you need this functionality for other Movable objects (other than Movables)<br>
+ * <br>
+ * <h1>ATTENTION!!!</h1> Use a none-blocking follower otherwise it could be
+ * shaken off or the events could block mutually.<br>
+ * A defaultdistance for following the other event will be computed from the
+ * touch-bounds of both events.
+ * 
  * @author Alexander Baumgartner
  */
 public class MoveTracerAdapter extends MovementHandler {
@@ -52,35 +52,36 @@ public class MoveTracerAdapter extends MovementHandler {
 	private Deque<Rectangle> movementQueue = new LinkedList<Rectangle>();
 	private float distanceCount;
 
-	protected MoveTracerAdapter(Movable eventToTrace, float followDistance){
+	protected MoveTracerAdapter(Movable eventToTrace, float followDistance) {
 		this.eventToTrace = eventToTrace;
 		this.followDistance = followDistance;
 	}
+
 	/**
-	 * <h1>ATTENTION!!!</h1>
-	 * Use a non-blocking eventToTrace otherwise the follower could be shaken off
-	 * or the events could block mutually.<br>
-	 * You can simply set <code>event.blocks=false</code> before installing
-	 * this Movementadapter (and reset <code>event.blocks=true</code>
-	 * after removing this Movementadapter)
+	 * <h1>ATTENTION!!!</h1> Use a non-blocking eventToTrace otherwise the
+	 * follower could be shaken off or the events could block mutually.<br>
+	 * You can simply set <code>event.blocks=false</code> before installing this
+	 * Movementadapter (and reset <code>event.blocks=true</code> after removing
+	 * this Movementadapter)
+	 * 
 	 * @param eventToTrace
 	 * @param followDistance
 	 */
 	public static MovementHandler $(Movable eventToTrace, float followDistance) {
 		return new MoveTracerAdapter(eventToTrace, followDistance);
 	}
+
 	/**
-	 * <h1>ATTENTION!!!</h1>
-	 * Use a none-blocking {@link #eventToTrace} otherwise the follower could be shaken off
-	 * or the events could block mutually.<br>
-	 * A defaultdistance for following the other event will be computed from
-	 * the touch-bounds of both events.
+	 * <h1>ATTENTION!!!</h1> Use a none-blocking {@link #eventToTrace} otherwise
+	 * the follower could be shaken off or the events could block mutually.<br>
+	 * A defaultdistance for following the other event will be computed from the
+	 * touch-bounds of both events.
+	 * 
 	 * @see MoveTracerAdapter(Movable eventToTrace, float followDistance)
 	 */
 	public static MovementHandler $(Movable eventToTrace, Movable followingEvent) {
 		float followDistance = eventToTrace.getWidth()
-				+ eventToTrace.getHeight()
-				+ followingEvent.getWidth()
+				+ eventToTrace.getHeight() + followingEvent.getWidth()
 				+ followingEvent.getHeight();
 		followDistance /= 2.5f;
 
@@ -97,7 +98,7 @@ public class MoveTracerAdapter extends MovementHandler {
 			Rectangle lastMove = movementQueue.peekLast();
 			if (actualMove.x == lastMove.x && actualMove.y == lastMove.y) {
 				// Other event did not move
-				if (movementQueue.size()>1) {
+				if (movementQueue.size() > 1) {
 					consumeMoves(event, 1, deltaTime);
 				} else {
 					setVisibility(event, false);
@@ -106,30 +107,37 @@ public class MoveTracerAdapter extends MovementHandler {
 				// Other event moved
 				produceMove(lastMove, actualMove);
 				if (followDistance < distanceCount) {
-					consumeMoves(event, followDistance*1.2 < distanceCount ? 2 : 1, deltaTime);
+					consumeMoves(event,
+							followDistance * 1.2 < distanceCount ? 2 : 1,
+							deltaTime);
 					setVisibility(event, true);
 				}
 			}
 		}
 	}
+
 	/**
-	 * Override this method if you have other Movable objects to set the visibility
-	 * or you want to disable setting the visibility in general.
+	 * Override this method if you have other Movable objects to set the
+	 * visibility or you want to disable setting the visibility in general.
+	 * 
 	 * @param event
 	 * @param visible
 	 */
 	protected void setVisibility(Movable event, boolean visible) {
-		if (event instanceof EventObject) ((EventObject) event).visible = visible;
+		if (event instanceof EventObject)
+			((EventObject) event).visible = visible;
 	}
+
 	private void produceMove(Rectangle lastMove, Rectangle actualMove) {
 		distanceCount += Math.abs(actualMove.x - lastMove.x);
 		distanceCount += Math.abs(actualMove.y - lastMove.y);
 		movementQueue.offer(new Rectangle(actualMove));
 	}
+
 	private void consumeMoves(Movable event, int steps, float deltaTime) {
 		float x = 0;
 		float y = 0;
-		for (; steps>0 && movementQueue.size()>1; steps--) {
+		for (; steps > 0 && movementQueue.size() > 1; steps--) {
 			Rectangle firstMove = movementQueue.pollFirst();
 			Rectangle secondMove = movementQueue.peekFirst();
 			x += secondMove.x - firstMove.x;
@@ -142,6 +150,7 @@ public class MoveTracerAdapter extends MovementHandler {
 			((EventObject) event).animate(x, y, deltaTime);
 		}
 	}
+
 	@Override
 	public void reset() {
 		super.reset();

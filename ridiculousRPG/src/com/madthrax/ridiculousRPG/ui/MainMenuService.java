@@ -29,48 +29,55 @@ import com.madthrax.ridiculousRPG.service.GameService;
 /**
  * @author Alexander Baumgartner
  */
-public class MainMenuService extends InputAdapter implements GameService, Drawable {
+public class MainMenuService extends InputAdapter implements GameService,
+		Drawable {
 	private boolean paused;
 
 	public void exit() {
 		Gdx.app.exit();
 	}
-	
+
 	@Override
 	public boolean keyUp(int keycode) {
-		if (keycode==Input.Keys.P) {
+		if (keycode == Input.Keys.P) {
 			if (paused) {
-				return !(paused = !GameBase.$serviceProvider().releaseAttention(this));
+				return !(paused = !GameBase.$serviceProvider()
+						.releaseAttention(this));
 			}
-			return (paused = GameBase.$serviceProvider().requestAttention(this, true, false));
+			return (paused = GameBase.$serviceProvider().requestAttention(this,
+					true, false));
 		}
-		if (keycode==Input.Keys.ESCAPE) {
+		if (keycode == Input.Keys.ESCAPE) {
 			exit();
 			return true;
 		}
 		// Ctrl+Alt+9 easter egg function ;)
 		if (GameBase.$().isControlKeyPressed()) {
-			if (keycode==Input.Keys.ALT_LEFT || keycode==Input.Keys.NUM_9) {
+			if (keycode == Input.Keys.ALT_LEFT || keycode == Input.Keys.NUM_9) {
 				try {
 					Gdx.input.setCursorCatched(!Gdx.input.isCursorCatched());
 					return true;
-				} catch (Throwable notTooBad) {}
+				} catch (Throwable notTooBad) {
+				}
 			}
 		}
 		return false;
 	}
-	
-	public void freeze() {}
-	
-	public void unfreeze() {}
-	
-	public void dispose() {}
-	
-	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
-		//TODO: a lot of work;)
-		//MessageBox.textBoxCentered(spriteBatch, 0);
+
+	public void freeze() {
 	}
-	
+
+	public void unfreeze() {
+	}
+
+	public void dispose() {
+	}
+
+	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
+		// TODO: a lot of work;)
+		// MessageBox.textBoxCentered(spriteBatch, 0);
+	}
+
 	public Matrix4 projectionMatrix(Camera camera) {
 		return camera.view;
 	}

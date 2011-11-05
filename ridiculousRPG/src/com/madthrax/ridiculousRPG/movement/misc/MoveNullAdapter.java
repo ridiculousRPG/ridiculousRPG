@@ -20,17 +20,20 @@ import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 
 /**
- * This MovementAdapter never finishes doing nothing.
- * It loops in idle state forever.
+ * This MovementAdapter never finishes doing nothing. It loops in idle state
+ * forever.
+ * 
  * @author Alexander Baumgartner
  */
 public class MoveNullAdapter extends MovementHandler {
 	private static MovementHandler instance = new MoveNullAdapter();
 
-	private MoveNullAdapter(){}
+	private MoveNullAdapter() {
+	}
+
 	/**
-	 * This MovementAdapter never finishes doing nothing.
-	 * It loops in idle state forever.
+	 * This MovementAdapter never finishes doing nothing. It loops in idle state
+	 * forever.
 	 */
 	public static MovementHandler $() {
 		return instance;
@@ -38,6 +41,7 @@ public class MoveNullAdapter extends MovementHandler {
 
 	@Override
 	public void tryMove(Movable event, float deltaTime) {
-		if (event!=null) event.stop();
+		if (event != null)
+			event.stop();
 	}
 }

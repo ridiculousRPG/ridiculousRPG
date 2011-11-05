@@ -27,7 +27,9 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
 public class Move8WayAdapter extends MovementHandler {
 	private static MovementHandler instance = new Move8WayAdapter();
 
-	protected Move8WayAdapter(){}
+	protected Move8WayAdapter() {
+	}
+
 	public static MovementHandler $() {
 		return instance;
 	}
@@ -37,7 +39,10 @@ public class Move8WayAdapter extends MovementHandler {
 	private Direction lastDir;
 
 	@Override
-	public void freeze() {lastDirKey1 = 0;}
+	public void freeze() {
+		lastDirKey1 = 0;
+	}
+
 	@Override
 	public void tryMove(Movable movable, float deltaTime) {
 		if (lastDirKey1 != 0) {
@@ -51,7 +56,8 @@ public class Move8WayAdapter extends MovementHandler {
 				} else {
 					mainLoop: for (int[] keys : MovementKeys.getSupportedKeys())
 						for (int key : keys)
-							if (key!=lastDirKey1 && Gdx.input.isKeyPressed(key)) {
+							if (key != lastDirKey1
+									&& Gdx.input.isKeyPressed(key)) {
 								lastDirKey1 = 0;
 								break mainLoop;
 							}
@@ -59,7 +65,8 @@ public class Move8WayAdapter extends MovementHandler {
 			}
 			movable.offerMove(lastDir, deltaTime);
 		} else if (Gdx.input.isTouched(0)) {
-			Direction touchDir = computeDirection(Gdx.input.getX(0), Gdx.input.getY(0), movable);
+			Direction touchDir = computeDirection(Gdx.input.getX(0), Gdx.input
+					.getY(0), movable);
 			movable.offerMove(touchDir, deltaTime);
 		} else {
 			lastDirKey2 = 0;
@@ -92,19 +99,20 @@ public class Move8WayAdapter extends MovementHandler {
 			}
 		}
 	}
-	private Direction computeDirection(int absolutX, int absolutY, Movable movable) {
+
+	private Direction computeDirection(int absolutX, int absolutY,
+			Movable movable) {
 		float x = movable.computeRelativX(absolutX);
 		float y = movable.computeRelativY(absolutY);
-		float ratio = Math.abs(x/y);
+		float ratio = Math.abs(x / y);
 		if (ratio > .5f && ratio < 2f) {
-			return x > 0
-				? (y>0 ? Direction.NE : Direction.SE)
-				: (y>0 ? Direction.NW : Direction.SW);
+			return x > 0 ? (y > 0 ? Direction.NE : Direction.SE)
+					: (y > 0 ? Direction.NW : Direction.SW);
 		}
-		return Math.abs(x) > Math.abs(y) 
-			? (x>0 ? Direction.E : Direction.W)
-			: (y>0 ? Direction.N : Direction.S);
+		return Math.abs(x) > Math.abs(y) ? (x > 0 ? Direction.E : Direction.W)
+				: (y > 0 ? Direction.N : Direction.S);
 	}
+
 	@Override
 	public void reset() {
 		super.reset();

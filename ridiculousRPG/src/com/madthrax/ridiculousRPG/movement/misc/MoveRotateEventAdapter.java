@@ -22,10 +22,12 @@ import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 
 /**
- * This MovementAdapter doesn't move the event but rotates it by the given speed.<br>
+ * This MovementAdapter doesn't move the event but rotates it by the given
+ * speed.<br>
  * It will finish after rotating the specified angle or loop forever if the
  * given angle to rotate is 0.<br>
  * A negative angle will rotate clockwise.
+ * 
  * @author Alexander Baumgartner
  */
 public class MoveRotateEventAdapter extends MovementHandler {
@@ -37,57 +39,63 @@ public class MoveRotateEventAdapter extends MovementHandler {
 		this.rotationSpeed = rotationSpeed;
 		this.angleInDeg = angleInDeg;
 	}
+
 	/**
-	 * This MovementAdapter doesn't move the event but rotates it by the given speed.<br>
+	 * This MovementAdapter doesn't move the event but rotates it by the given
+	 * speed.<br>
 	 * It will finish after rotating the specified angle or loop forever if the
 	 * given angle to rotate is 0.<br>
 	 * A negative angle will rotate clockwise.
+	 * 
 	 * @param rotationSpeed
-	 * The speed for rotating this event or null if it should jump
-	 * immediately to the given rotation position.
+	 *            The speed for rotating this event or null if it should jump
+	 *            immediately to the given rotation position.
 	 * @param angleInDeg
-	 * The angle in degrees or +-0 if you want to loop forever.
+	 *            The angle in degrees or +-0 if you want to loop forever.
 	 * @return
 	 */
 	public static MovementHandler $(Speed rotationSpeed, float angleInDeg) {
 		return new MoveRotateEventAdapter(rotationSpeed, angleInDeg);
 	}
+
 	@Override
 	public void tryMove(Movable movable, float deltaTime) {
 		if (!finished && movable instanceof EventObject) {
 			EventObject ev = (EventObject) movable;
-			float angle = rotationSpeed==null?360:rotationSpeed.computeStretch(deltaTime);
-			if (angleInDeg<0f) {
+			float angle = rotationSpeed == null ? 360 : rotationSpeed
+					.computeStretch(deltaTime);
+			if (angleInDeg < 0f) {
 				ev.rotation -= angle;
 				rotatedAngle -= angle;
 				if (rotatedAngle <= angleInDeg) {
 					finished = true;
 					// correction to the exact given angle
-					ev.rotation -= rotatedAngle-angleInDeg;
+					ev.rotation -= rotatedAngle - angleInDeg;
 				}
 				ev.rotation %= 360;
-			} else if (angleInDeg>0f) {
+			} else if (angleInDeg > 0f) {
 				ev.rotation += angle;
 				rotatedAngle += angle;
 				if (rotatedAngle >= angleInDeg) {
 					finished = true;
 					// correction to the exact given angle
-					ev.rotation -= rotatedAngle-angleInDeg;
+					ev.rotation -= rotatedAngle - angleInDeg;
 				}
 				ev.rotation %= 360;
 			} else {
 				// positive zero
-				if (Float.floatToRawIntBits(angleInDeg)==0) {
-					ev.rotation = (ev.rotation+angle)%360;
-				// negative zero
+				if (Float.floatToRawIntBits(angleInDeg) == 0) {
+					ev.rotation = (ev.rotation + angle) % 360;
+					// negative zero
 				} else {
-					ev.rotation = (ev.rotation-angle)%360;
+					ev.rotation = (ev.rotation - angle) % 360;
 				}
 			}
 		} else {
 			finished = true;
 		}
 	}
+
 	@Override
 	public void reset() {
 		super.reset();
