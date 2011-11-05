@@ -184,8 +184,9 @@ public class MoveArcAdapter extends MovementHandler {
 			event.offerMoveTo(origin.x + x * radius * stretch.x, origin.y + y
 					* radius * stretch.y);
 			if (fixedSpeed) {
-				lastMoveArc *= Math
-						.pow(x * x * correctX + y * y * correctY, .3);
+				// it's only an approximation but it should be good enough
+				// for most cases
+				lastMoveArc *= Math.cbrt(x * x * correctX + y * y * correctY);
 			}
 			entireMoveArc += lastMoveArc;
 			if (angle == 0f)
