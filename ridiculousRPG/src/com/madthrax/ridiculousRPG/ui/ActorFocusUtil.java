@@ -26,7 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 /**
  * This class offers some static methods to change the keyboard focused actor.<br>
- * It allows to focus next previous actors.
+ * It allows to focus the next/previous actor on the stage.
  * 
  * @author Alexander Baumgartner
  */
