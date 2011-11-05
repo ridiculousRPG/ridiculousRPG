@@ -169,7 +169,7 @@ public class MoveArcAdapter extends MovementHandler {
 			float arc = event.moveSpeed.computeStretch(deltaTime)
 					* arcCorrection;
 			lastMoveArc = arc;
-			// greater zero or poitive zero
+			// greater zero or positive zero
 			if (angle > 0f || Float.floatToRawIntBits(angle) == 0f) {
 				arc += startArc + entireMoveArc;
 				arc %= PI2;
