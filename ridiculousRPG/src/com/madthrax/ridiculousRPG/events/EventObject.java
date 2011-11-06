@@ -40,6 +40,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.animations.TileAnimation;
+import com.madthrax.ridiculousRPG.events.handler.EventHandler;
 import com.madthrax.ridiculousRPG.map.MapRenderRegion;
 import com.madthrax.ridiculousRPG.map.TiledMapWithEvents;
 import com.madthrax.ridiculousRPG.movement.Movable;
@@ -755,6 +756,9 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 
 	public EventHandler getEventHandler() {
 		return eventHandler;
+	}
+	public void setEventHandler(EventHandler eventHandler) {
+		this.eventHandler = eventHandler;
 	}
 
 	public void dispose() {

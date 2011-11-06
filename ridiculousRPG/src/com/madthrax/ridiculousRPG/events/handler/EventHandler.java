@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.madthrax.ridiculousRPG.events;
+package com.madthrax.ridiculousRPG.events.handler;
 
 import com.madthrax.ridiculousRPG.ObjectState;
+import com.madthrax.ridiculousRPG.events.EventObject;
 
 /**
  * This interface defines all callback methods for events.

@@ -19,6 +19,7 @@ package com.madthrax.ridiculousRPG.events;
 import java.util.List;
 
 import com.badlogic.gdx.utils.Disposable;
+import com.madthrax.ridiculousRPG.events.handler.EventHandler;
 import com.madthrax.ridiculousRPG.service.Computable;
 
 /**

@@ -37,9 +37,16 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonReader;
+import com.madthrax.ridiculousRPG.animations.TileAnimation;
 import com.madthrax.ridiculousRPG.events.BlockingBehaviour;
 import com.madthrax.ridiculousRPG.events.EventObject;
 import com.madthrax.ridiculousRPG.events.TriggerEventHandler;
+import com.madthrax.ridiculousRPG.events.handler.EventExecMethodsAdapter;
+import com.madthrax.ridiculousRPG.events.handler.EventHandler;
+import com.madthrax.ridiculousRPG.events.handler.EventSayAdapter;
+import com.madthrax.ridiculousRPG.movement.MovementHandler;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.ui.DisplayTextService;
 
@@ -73,7 +80,17 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private Computable triggerEventHandler;
 
 	private static final char EVENT_CUSTOM_PROP_KZ = '$';
-	private static final String EVENT_PROP_ID = "ID";
+	private static final String EVENT_PROP_ID = "id";
+	private static final String EVENT_PROP_HANDLER = "eventhandler";
+	private static final String EVENT_PROP_PUSH_SAY = "push_say";
+	private static final String EVENT_PROP_TOUCH_SAY = "touch_say";
+	private static final String EVENT_PROP_ONPUSH = "onpush";
+	private static final String EVENT_PROP_ONTOUCH = "ontouch";
+	private static final String EVENT_PROP_MOVEHANDLER = "movehandler";
+	private static final String EVENT_PROP_ANIMATION = "animation";
+	// static references to get better performance
+	private static final JsonReader JSON_R = new JsonReader();
+	private static final Json JSON = new Json();
 
 	/**
 	 * Creates a new map with the specified events from a tmx file.<br>
@@ -161,16 +178,61 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			if (key.length() == 0)
 				continue;
 			String val = entry.getValue();
-			if (entry.getKey().charAt(0) == EVENT_CUSTOM_PROP_KZ) {
+			if (key.charAt(0) == EVENT_CUSTOM_PROP_KZ) {
 				ev.properties.put(key, val);
-			} else if (EVENT_PROP_ID.equals(key)) {
-				try {
-					ev.id = Integer.parseInt(val);
-				} catch (NumberFormatException e) {
-					e.printStackTrace();
-				}
+			} else {
+				parseSingleProperty(ev, key, val);
 			}
 		}
+	}
+
+	private void parseSingleProperty(EventObject ev, String key, String val) {
+		try {
+			if (EVENT_PROP_ID.equals(key)) {
+				ev.id = Integer.parseInt(val);
+			} else if (EVENT_PROP_HANDLER.equals(key)) {
+				ev.setEventHandler(fromJson(EventHandler.class, val));
+			} else if (EVENT_PROP_PUSH_SAY.equals(key)) {
+				// convenience property for events which only want to say something
+				if (ev.getEventHandler()==null)
+					ev.setEventHandler(new EventSayAdapter());
+				if (ev.getEventHandler() instanceof EventSayAdapter) {
+					((EventSayAdapter)ev.getEventHandler()).sayOnPush = val;
+				}
+			} else if (EVENT_PROP_TOUCH_SAY.equals(key)) {
+				// convenience property for events which only want to say something
+				if (ev.getEventHandler()==null)
+					ev.setEventHandler(new EventSayAdapter());
+				if (ev.getEventHandler() instanceof EventSayAdapter) {
+					((EventSayAdapter)ev.getEventHandler()).sayOnTouch = val;
+				}
+			} else if (EVENT_PROP_ONPUSH.equals(key)) {
+				// convenience property for events which only want to say something
+				if (ev.getEventHandler()==null)
+					ev.setEventHandler(new EventExecMethodsAdapter());
+				if (ev.getEventHandler() instanceof EventExecMethodsAdapter) {
+					((EventExecMethodsAdapter)ev.getEventHandler()).execOnPush(/*methodToPerform*/);
+				}
+			} else if (EVENT_PROP_ONTOUCH.equals(key)) {
+				// convenience property for events which only want to say something
+				if (ev.getEventHandler()==null)
+					ev.setEventHandler(new EventExecMethodsAdapter());
+				if (ev.getEventHandler() instanceof EventExecMethodsAdapter) {
+					((EventExecMethodsAdapter)ev.getEventHandler()).execOnTouch(/*methodToPerform*/);
+				}
+			} else if (EVENT_PROP_MOVEHANDLER.equals(key)) {
+				ev.setMoveHandler(fromJson(MovementHandler.class, val));
+			} else if (EVENT_PROP_ANIMATION.equals(key)) {
+				ev.setAnimation(fromJson(TileAnimation.class, val), true);
+			}
+		} catch (Exception e) {
+			// Maybe it would be better to display the error
+			e.printStackTrace();
+		}
+	}
+
+	private <T> T fromJson(Class<T> objType, String val) {
+		return JSON.readValue(objType, null, JSON_R.parse(val));
 	}
 
 	public EventObject put(String name, EventObject event) {
