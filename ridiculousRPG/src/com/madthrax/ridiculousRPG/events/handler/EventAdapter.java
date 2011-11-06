@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.events.handler;
 
+import javax.script.ScriptException;
+
 import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.events.EventObject;
 
@@ -28,35 +30,35 @@ import com.madthrax.ridiculousRPG.events.EventObject;
 public class EventAdapter implements EventHandler {
 	private ObjectState myState;
 
-	public boolean touch(EventObject self, EventObject touchedBy) {
+	public boolean touch(EventObject eventSelf, EventObject eventTrigger) throws ScriptException {
 		return false;
 	}
 
-	public boolean push(EventObject self, EventObject pushedBy) {
-		System.out.println("push " + self.name);
+	public boolean push(EventObject eventSelf, EventObject eventTrigger) throws ScriptException {
+		System.out.println("push " + eventSelf.name);
 		return false;
 	}
 
-	public void load(EventObject self, ObjectState parentState) {
-		this.myState = parentState.getChild(self.id);
+	public void load(EventObject eventSelf, ObjectState parentState) {
+		this.myState = parentState.getChild(eventSelf.id);
 		// load position, texture, movehandler ...
 	}
 
-	public void store(EventObject self, ObjectState parentState,
+	public void store(EventObject eventSelf, ObjectState parentState,
 			boolean currentlyExecuted) {
 		if (currentlyExecuted) {
 			// store position, texture, movehandler ...
 		} else {
 			// clear position, texture, movehandler ... from myState
 		}
-		parentState.setChild(self.id, myState);
+		parentState.setChild(eventSelf.id, myState);
 	}
 
-	public boolean customTrigger(EventObject self, int triggerId) {
+	public boolean customTrigger(EventObject eventSelf, int triggerId) throws ScriptException {
 		return false;
 	}
 
-	public boolean timer(EventObject self, float deltaTime) {
+	public boolean timer(EventObject eventSelf, float deltaTime) throws ScriptException {
 		return false;
 	}
 

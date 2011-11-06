@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.events.handler;
 
+import javax.script.ScriptException;
+
 import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.events.EventObject;
 
@@ -29,52 +31,52 @@ public interface EventHandler {
 	 * This method is called if the event is touchable and an touch event
 	 * occurred.
 	 * 
-	 * @param self
+	 * @param eventSelf
 	 *            The event which has been touched
-	 * @param touchedBy
+	 * @param eventTrigger
 	 *            The event which triggered this touch (most likely the player)
 	 * @return true if the input has been consumed
 	 */
-	public boolean touch(EventObject self, EventObject touchedBy);
+	public boolean touch(EventObject eventSelf, EventObject eventTrigger) throws ScriptException;
 
 	/**
 	 * This method is called if the event is touchable and an push event
 	 * occurred. (The action key was pressed and the event was reachable)
 	 * 
-	 * @param self
+	 * @param eventSelf
 	 *            The event which has been pushed
-	 * @param pushedBy
+	 * @param eventTrigger
 	 *            The event which triggered this push (most likely the player)
 	 * @return true if the input has been consumed
 	 */
-	public boolean push(EventObject self, EventObject pushedBy);
+	public boolean push(EventObject eventSelf, EventObject eventTrigger) throws ScriptException;
 
 	/**
 	 * This method is called if the events timer is running. It's your
 	 * responsibility to add or subtract the deltaTime from an value which
 	 * should be stored inside the {@link ObjectState}
 	 * 
-	 * @param self
+	 * @param eventSelf
 	 *            The event
 	 * @param deltaTime
 	 *            time elapsed since the last call of this method
 	 * @return true if the input has been consumed
 	 * @see #getActualState()
 	 */
-	public boolean timer(EventObject self, float deltaTime);
+	public boolean timer(EventObject eventSelf, float deltaTime) throws ScriptException;
 
 	/**
 	 * This method is not called by the engines default implementation. You can
 	 * use this to handle custom events.
 	 * 
-	 * @param self
+	 * @param eventSelf
 	 *            The event
 	 * @param triggerId
 	 *            This id allows you to specify multiple custom events
 	 * @return true if the custom event ate up this triggerId
 	 * @see #getActualState()
 	 */
-	public boolean customTrigger(EventObject self, int triggerId);
+	public boolean customTrigger(EventObject eventSelf, int triggerId) throws ScriptException;
 
 	/**
 	 * @return the actual state of this object
@@ -85,21 +87,21 @@ public interface EventHandler {
 	 * Load your own state from the parent's child states!<br>
 	 * Make sure that you do not collide with an other event state.
 	 * 
-	 * @param self
+	 * @param eventSelf
 	 * @param parentState
 	 */
-	public void load(EventObject self, ObjectState parentState);
+	public void load(EventObject eventSelf, ObjectState parentState);
 
 	/**
 	 * Save your own state into the parent's child states!<br>
 	 * Make sure that you do not collide with an other event state.
 	 * 
-	 * @param self
+	 * @param eventSelf
 	 * @param parentState
 	 * @param currentlyExecuted
 	 *            true if this event is currently active. E.g. the one map is
 	 *            rendered currently, where this event is placed on.
 	 */
-	public void store(EventObject self, ObjectState parentState,
+	public void store(EventObject eventSelf, ObjectState parentState,
 			boolean currentlyExecuted);
 }

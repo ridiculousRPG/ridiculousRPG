@@ -26,7 +26,7 @@ public class EventSayAdapter extends EventAdapter {
 	public String sayOnTouch;
 	public boolean touchPerformed;
 
-	public boolean push(EventObject self, EventObject pushedBy) {
+	public boolean push(EventObject eventSelf, EventObject pushedBy) {
 		if (sayOnPush!=null) {
 			//TODO: show textbox
 			System.out.println(sayOnPush);
@@ -34,7 +34,7 @@ public class EventSayAdapter extends EventAdapter {
 		}
 		return false;
 	}
-	public boolean touch(EventObject self, EventObject pushedBy) {
+	public boolean touch(EventObject eventSelf, EventObject pushedBy) {
 		if (!touchPerformed && sayOnTouch!=null) {
 			//TODO: show textbox
 			System.out.println(sayOnTouch);

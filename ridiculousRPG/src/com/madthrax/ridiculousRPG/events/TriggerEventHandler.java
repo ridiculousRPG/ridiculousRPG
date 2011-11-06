@@ -18,6 +18,8 @@ package com.madthrax.ridiculousRPG.events;
 
 import java.util.List;
 
+import javax.script.ScriptException;
+
 import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.events.handler.EventHandler;
 import com.madthrax.ridiculousRPG.service.Computable;
@@ -62,7 +64,7 @@ public class TriggerEventHandler extends Thread implements Disposable,
 
 	// Call all event handler
 	private void callEventHandler(float deltaTime,
-			List<EventObject> dynamicRegions, boolean actionKeyPressed) {
+			List<EventObject> dynamicRegions, boolean actionKeyPressed) throws ScriptException {
 		EventObject obj1;
 		EventObject obj2;
 		int i, j;

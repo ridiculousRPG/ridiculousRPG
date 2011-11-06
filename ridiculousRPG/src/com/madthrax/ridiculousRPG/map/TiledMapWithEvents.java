@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.script.ScriptEngineManager;
+
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -43,7 +45,7 @@ import com.madthrax.ridiculousRPG.animations.TileAnimation;
 import com.madthrax.ridiculousRPG.events.BlockingBehaviour;
 import com.madthrax.ridiculousRPG.events.EventObject;
 import com.madthrax.ridiculousRPG.events.TriggerEventHandler;
-import com.madthrax.ridiculousRPG.events.handler.EventExecMethodsAdapter;
+import com.madthrax.ridiculousRPG.events.handler.EventExecScriptAdapter;
 import com.madthrax.ridiculousRPG.events.handler.EventHandler;
 import com.madthrax.ridiculousRPG.events.handler.EventSayAdapter;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
@@ -206,19 +208,24 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				if (ev.getEventHandler() instanceof EventSayAdapter) {
 					((EventSayAdapter)ev.getEventHandler()).sayOnTouch = val;
 				}
-			} else if (EVENT_PROP_ONPUSH.equals(key)) {
+			} else if (key.startsWith(EVENT_PROP_ONPUSH)) {
+				new ScriptEngineManager();
 				// convenience property for events which only want to say something
-				if (ev.getEventHandler()==null)
-					ev.setEventHandler(new EventExecMethodsAdapter());
-				if (ev.getEventHandler() instanceof EventExecMethodsAdapter) {
-					((EventExecMethodsAdapter)ev.getEventHandler()).execOnPush(/*methodToPerform*/);
+				if (ev.getEventHandler()==null) {
+					ev.setEventHandler(new EventExecScriptAdapter());
 				}
-			} else if (EVENT_PROP_ONTOUCH.equals(key)) {
+				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+					String index = key.substring(EVENT_PROP_ONPUSH.length()).trim();
+					((EventExecScriptAdapter)ev.getEventHandler()).execOnPush(val, index.length()==0?-1:Integer.parseInt(index));
+				}
+			} else if (key.startsWith(EVENT_PROP_ONTOUCH)) {
 				// convenience property for events which only want to say something
-				if (ev.getEventHandler()==null)
-					ev.setEventHandler(new EventExecMethodsAdapter());
-				if (ev.getEventHandler() instanceof EventExecMethodsAdapter) {
-					((EventExecMethodsAdapter)ev.getEventHandler()).execOnTouch(/*methodToPerform*/);
+				if (ev.getEventHandler()==null){
+					ev.setEventHandler(new EventExecScriptAdapter());
+				}
+				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+					String index = key.substring(EVENT_PROP_ONTOUCH.length()).trim();
+					((EventExecScriptAdapter)ev.getEventHandler()).execOnTouch(val, index.length()==0?-1:Integer.parseInt(index));
 				}
 			} else if (EVENT_PROP_MOVEHANDLER.equals(key)) {
 				ev.setMoveHandler(fromJson(MovementHandler.class, val));
