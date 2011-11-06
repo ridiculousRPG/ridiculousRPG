@@ -20,13 +20,12 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.utils.ScissorStack;
 
 /**
  * Extends the {@link Window} class and offers a variable sized title box.<br>
@@ -41,6 +40,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.utils.ScissorStack;
  * @author Alexander Baumgartner
  */
 public class WindowWithVariableTitlebox extends Window {
+	private final Rectangle titleBounds = new Rectangle();
 
 	public WindowWithVariableTitlebox(Stage stage, Skin skin) {
 		this("", stage, skin);
@@ -52,50 +52,31 @@ public class WindowWithVariableTitlebox extends Window {
 
 	public WindowWithVariableTitlebox(String title, Stage stage,
 			WindowWithVariableTitleboxStyle style) {
-		this(title, stage, style, 150, 150, null);
+		super(title, stage, style);
 	}
 
 	public WindowWithVariableTitlebox(String title, Stage stage,
 			WindowWithVariableTitleboxStyle style, int prefWidth,
 			int prefHeight, String name) {
-		super(title, stage, style, prefWidth, prefHeight, name);
+		super(title, stage, style, name);
+		height(prefHeight);
+		width(prefWidth);
 	}
 
 	@Override
 	public void setStyle(WindowStyle style) {
-		this.style = style;
-		setBackground(style.background);
+		super.setStyle(style);
 
-		computeTitleBounds((WindowWithVariableTitleboxStyle) style);
-
+		calculateTitleBounds();
 		invalidateHierarchy();
 	}
 
-	private void calculateBoundsAndScissors(Matrix4 transform) {
-		final NinePatch background = style.background;
-		final Rectangle widgetBounds = this.widgetBounds;
-
-		widgetBounds.x = background.getLeftWidth();
-		widgetBounds.y = background.getBottomHeight();
-		widgetBounds.width = width - background.getLeftWidth()
-				- background.getRightWidth();
-		widgetBounds.height = height - background.getTopHeight()
-				- background.getBottomHeight();
-
-		computeTitleBounds((WindowWithVariableTitleboxStyle) style);
-
-		widgetBounds.height -= titleBounds.height;
-
-		ScissorStack.calculateScissors(stage.getCamera(), transform,
-				widgetBounds, scissors);
-	}
-
-	private void computeTitleBounds(WindowWithVariableTitleboxStyle style) {
-		final BitmapFont titleFont = style.titleFont;
+	private void calculateTitleBounds() {
+		WindowWithVariableTitleboxStyle style = (WindowWithVariableTitleboxStyle) getStyle();
 		final NinePatch titleBackground = style.titleBackground;
 		final Rectangle titleBounds = this.titleBounds;
-
-		textBounds.set(titleFont.getMultiLineBounds(title));
+		final TextBounds textBounds = style.titleFont
+				.getMultiLineBounds(getTitle());
 
 		titleBounds.width = textBounds.width;
 		titleBounds.x = titleBackground.getLeftWidth();
@@ -108,7 +89,7 @@ public class WindowWithVariableTitlebox extends Window {
 
 	@Override
 	public void draw(SpriteBatch batch, float parentAlpha) {
-		WindowWithVariableTitleboxStyle style = (WindowWithVariableTitleboxStyle) this.style;
+		WindowWithVariableTitleboxStyle style = (WindowWithVariableTitleboxStyle) getStyle();
 		final NinePatch background = style.background;
 		final NinePatch titleBackground = style.titleBackground;
 		final NinePatch titleBackgroundStretch = style.titleBackgroundStretch;
@@ -118,7 +99,7 @@ public class WindowWithVariableTitlebox extends Window {
 
 		validate();
 		applyTransform(batch);
-		calculateBoundsAndScissors(batch.getTransformMatrix());
+		calculateTitleBounds();
 		batch.setColor(color.r, color.g, color.b, colorA);
 
 		float titleWidth = titleBounds.width + titleBackground.getLeftWidth()
@@ -135,16 +116,21 @@ public class WindowWithVariableTitlebox extends Window {
 		titleFont.setColor(color.r * titleFontColor.r, color.g
 				* titleFontColor.g, color.b * titleFontColor.b, colorA
 				* titleFontColor.a);
-		titleFont.drawMultiLine(batch, title, titleBackground.getLeftWidth(),
-				height - titleBackground.getTopHeight());
+		titleFont.drawMultiLine(batch, getTitle(), titleBackground
+				.getLeftWidth(), height - titleBackground.getTopHeight());
 		batch.flush();
 
-		if (ScissorStack.pushScissors(scissors)) {
-			super.drawChildren(batch, parentAlpha);
-			ScissorStack.popScissors();
-		}
+		super.drawChildren(batch, parentAlpha);
 
 		resetTransform(batch);
+	}
+
+	@Override
+	public boolean touchDown(float x, float y, int pointer) {
+		if (titleBounds.y > y || titleBounds.contains(x, y)) {
+			super.touchDown(x, y, pointer);
+		}
+		return false;
 	}
 
 	/**
@@ -169,5 +155,4 @@ public class WindowWithVariableTitlebox extends Window {
 			this.titleBackgroundStretch = titleBackgroundStretch;
 		}
 	}
-
 }
