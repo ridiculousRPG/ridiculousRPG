@@ -187,6 +187,17 @@ public class GameServiceProvider implements Initializable {
 		return succeed;
 	}
 
+	/**
+	 * If a {@link GameService} holds the attention, this one is returned.
+	 * Otherwise null will be returned.
+	 * 
+	 * @return the service which holds the attention or null if
+	 * no {@link GameService} holds the attention
+	 */
+	public GameService queryAttention() {
+		return hasAttention.get();
+	}
+
 	public void dispose() {
 		for (GameService service : services.values()) {
 			service.dispose();

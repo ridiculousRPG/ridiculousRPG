@@ -17,6 +17,7 @@
 package com.madthrax.ridiculousRPG.movement.input;
 
 import com.badlogic.gdx.Gdx;
+import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.events.Direction;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
@@ -45,6 +46,11 @@ public class Move8WayAdapter extends MovementHandler {
 
 	@Override
 	public void tryMove(Movable movable, float deltaTime) {
+		if (GameBase.$serviceProvider().queryAttention()!=null) {
+			movable.stop();
+			freeze();
+			return;
+		}
 		if (lastDirKey1 != 0) {
 			if (!Gdx.input.isKeyPressed(lastDirKey1)) {
 				lastDirKey1 = 0;

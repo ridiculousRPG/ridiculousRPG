@@ -112,7 +112,6 @@ public class TriggerEventHandler extends Thread implements Disposable,
 			obj1.collision.clear();
 			obj1.getMoveHandler().tryMove(obj1, deltaTime);
 		}
-
 		// move if no collision
 		for (i = 0; i < dynSize; i++) {
 			obj1 = events.get(i);

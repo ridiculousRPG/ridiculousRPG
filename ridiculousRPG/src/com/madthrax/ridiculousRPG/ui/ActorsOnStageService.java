@@ -129,28 +129,6 @@ public class ActorsOnStageService extends Stage implements GameService,
 		return camera.view;
 	}
 
-	public static void changeSkin(Actor actor, Skin newSikn) {
-		try {
-			Class<?> c = actor.getClass().getMethod("getStyle").getReturnType();
-			Method m = estimateStyleSetter(actor.getClass(), c);
-			if (m != null)
-				m.invoke(actor, newSikn.getStyle(c));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private static Method estimateStyleSetter(
-			Class<? extends Actor> actorClass, Class<?> styleClass) {
-		if (styleClass == null)
-			return null;
-		try {
-			return actorClass.getMethod("setStyle", styleClass);
-		} catch (NoSuchMethodException e) {
-			return estimateStyleSetter(actorClass, styleClass.getSuperclass());
-		}
-	}
-
 	@Override
 	public boolean keyDown(int keycode) {
 		// unfocus if actor is removed
@@ -221,6 +199,16 @@ public class ActorsOnStageService extends Stage implements GameService,
 				changeSkin(focusedActor, skinFocused);
 		}
 		return consumed;
+	}
+	public static void changeSkin(Actor actor, Skin newSikn) {
+		try {
+			Class<?> c = ActorFocusUtil.styleGetter(actor.getClass()).getReturnType();
+			Method m = ActorFocusUtil.styleSetter(actor.getClass(), c);
+			if (m != null)
+				m.invoke(actor, newSikn.getStyle(c));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private boolean keyUpIntern(int keycode) {

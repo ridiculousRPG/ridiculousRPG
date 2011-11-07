@@ -16,12 +16,12 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 /**
  * This class offers some static methods to change the keyboard focused actor.<br>
@@ -190,7 +190,25 @@ public final class ActorFocusUtil {
 	}
 
 	private static boolean isFocusable(Actor a) {
-		// Checkbox has a focusable and touchable image
-		return a.touchable && a.visible && !(a instanceof Image);
+		return a.touchable && a.visible && styleGetter(a.getClass()) != null;
+	}
+
+	public static Method styleGetter(Class<? extends Actor> actorClass) {
+		try {
+			return actorClass.getMethod("getStyle");
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public static Method styleSetter(Class<? extends Actor> actorClass,
+			Class<?> styleClass) {
+		if (styleClass == null)
+			return null;
+		try {
+			return actorClass.getMethod("setStyle", styleClass);
+		} catch (Exception e) {
+			return styleSetter(actorClass, styleClass.getSuperclass());
+		}
 	}
 }
