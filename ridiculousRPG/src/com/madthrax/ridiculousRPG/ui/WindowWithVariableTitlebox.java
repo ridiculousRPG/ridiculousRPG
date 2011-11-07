@@ -40,7 +40,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
  * @author Alexander Baumgartner
  */
 public class WindowWithVariableTitlebox extends Window {
-	private final Rectangle titleBounds = new Rectangle();
+	private Rectangle titleBounds = new Rectangle();
 
 	public WindowWithVariableTitlebox(Stage stage, Skin skin) {
 		this("", stage, skin);
@@ -74,7 +74,7 @@ public class WindowWithVariableTitlebox extends Window {
 	private void calculateTitleBounds() {
 		WindowWithVariableTitleboxStyle style = (WindowWithVariableTitleboxStyle) getStyle();
 		final NinePatch titleBackground = style.titleBackground;
-		final Rectangle titleBounds = this.titleBounds;
+		final Rectangle titleBounds = new Rectangle();
 		final TextBounds textBounds = style.titleFont
 				.getMultiLineBounds(getTitle());
 
@@ -85,6 +85,7 @@ public class WindowWithVariableTitlebox extends Window {
 		titleBounds.y = height - titleBounds.height;
 
 		padTop((int) (titleBounds.height + style.background.getTopHeight()));
+		this.titleBounds = titleBounds;
 	}
 
 	@Override
@@ -125,10 +126,13 @@ public class WindowWithVariableTitlebox extends Window {
 		resetTransform(batch);
 	}
 
+	
 	@Override
 	public boolean touchDown(float x, float y, int pointer) {
-		if (titleBounds.y > y || titleBounds.contains(x, y)) {
+		if (titleBounds.y > y) {
 			super.touchDown(x, y, pointer);
+		} else if (titleBounds.contains(x, y)) {
+			super.touchDown(x, titleBounds.y+titleBounds.height, pointer);
 		}
 		return false;
 	}

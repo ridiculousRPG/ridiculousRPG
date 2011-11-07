@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
+import java.lang.reflect.Method;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
@@ -25,19 +27,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
-import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Slider;
-import com.badlogic.gdx.scenes.scene2d.ui.SplitPane;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.CheckBox.CheckBoxStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.SelectBox.SelectBoxStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.Slider.SliderStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.SplitPane.SplitPaneStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
@@ -140,22 +130,24 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	public static void changeSkin(Actor actor, Skin newSikn) {
-		if (actor.getClass() == Button.class) {
-			((Button) actor).setStyle(newSikn.getStyle(ButtonStyle.class));
-		} else if (actor.getClass() == CheckBox.class
-				|| actor.getClass() == SelectBox.class) {
-			((CheckBox) actor).setStyle(newSikn.getStyle(CheckBoxStyle.class));
-		} else if (actor.getClass() == TextField.class) {
-			((TextField) actor)
-					.setStyle(newSikn.getStyle(TextFieldStyle.class));
-		} else if (actor.getClass() == SelectBox.class) {
-			((SelectBox) actor)
-					.setStyle(newSikn.getStyle(SelectBoxStyle.class));
-		} else if (actor.getClass() == Slider.class) {
-			((Slider) actor).setStyle(newSikn.getStyle(SliderStyle.class));
-		} else if (actor.getClass() == SplitPane.class) {
-			((SplitPane) actor)
-					.setStyle(newSikn.getStyle(SplitPaneStyle.class));
+		try {
+			Class<?> c = actor.getClass().getMethod("getStyle").getReturnType();
+			Method m = estimateStyleSetter(actor.getClass(), c);
+			if (m != null)
+				m.invoke(actor, newSikn.getStyle(c));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static Method estimateStyleSetter(
+			Class<? extends Actor> actorClass, Class<?> styleClass) {
+		if (styleClass == null)
+			return null;
+		try {
+			return actorClass.getMethod("setStyle", styleClass);
+		} catch (NoSuchMethodException e) {
+			return estimateStyleSetter(actorClass, styleClass.getSuperclass());
 		}
 	}
 

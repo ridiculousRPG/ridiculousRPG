@@ -18,7 +18,6 @@ package com.madthrax.ridiculousRPG.ui;
 
 import java.util.List;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -35,38 +34,6 @@ public final class ActorFocusUtil {
 	} // static container
 
 	private static Vector2 tmpPoint = new Vector2(0f, 0f);
-	/**
-	 * Adding null as a table cell will produce a new touchable and focusable
-	 * Group (i think this is a strange behavior).<br>
-	 * Use this {@link DUMMY_ACTOR} if you need an empty cell.
-	 */
-	public static final Actor DUMMY_ACTOR = new Actor() {
-		{
-			visible = touchable = false;
-		}
-
-		@Override
-		public void touchUp(float x, float y, int pointer) {
-		}
-
-		@Override
-		public void touchDragged(float x, float y, int pointer) {
-		}
-
-		@Override
-		public boolean touchDown(float x, float y, int pointer) {
-			return false;
-		}
-
-		@Override
-		public Actor hit(float x, float y) {
-			return null;
-		}
-
-		@Override
-		public void draw(SpriteBatch batch, float parentAlpha) {
-		}
-	};
 
 	public static boolean focusPrev(Actor focused, Actor root, boolean up,
 			boolean left) {
