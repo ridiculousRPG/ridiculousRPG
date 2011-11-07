@@ -54,7 +54,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 	private int originalWidth, originalHeight;
 
 	private boolean fullscreen, debugMode, resizeView;
-	private boolean controlKeyPressed, pushActionPressed;
+	private boolean controlKeyPressed, actionKeyPressed;
 
 	private Color gameColorTint = new Color(1f, 1f, 1f, 1f);
 	private float gameColorBits = gameColorTint.toFloatBits();
@@ -148,7 +148,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 			controlKeyPressed = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)
 					|| Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT)
 					|| Gdx.input.isTouched(2);
-			pushActionPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE)
+			actionKeyPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE)
 					|| Gdx.input.isKeyPressed(Input.Keys.ENTER)
 					|| Gdx.input.isTouched(1)
 					|| Gdx.input.isButtonPressed(Buttons.RIGHT);
@@ -203,7 +203,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 	 *         the touchpad (first finger is used for movement)
 	 */
 	public boolean isActionKeyPressed() {
-		return pushActionPressed;
+		return actionKeyPressed;
 	}
 
 	public void resize(int width, int height) {
