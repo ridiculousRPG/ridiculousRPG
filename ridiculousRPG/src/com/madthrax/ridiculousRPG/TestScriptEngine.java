@@ -15,48 +15,143 @@
  */
 package com.madthrax.ridiculousRPG;
 
+import java.io.PrintStream;
+
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 /**
- * This class tests if the Mozilla Rhino based script engine works on your platform.<br>
+ * This class tests if the script engine works poperly and may be used with this
+ * game engine.<br>
  * You should see the following output:<br>
  * <code><pre> madthrax: 5
- * ridiculous: -22</pre></code>
+ * ridiculous: -22
+ * engine1: 5.0
+ * engine2: 15.0
+ * engine1: -5.0
+ * engine2: 5.0 </pre></code>
+ * 
+ * Ladies and Gentlemen, start your engines ;)
+ * 
  * @author Alexander Baumgartner
  */
 public class TestScriptEngine {
+
+	/**
+	 * Defines the language to use. Change this if you want to test an other
+	 * engine.
+	 */
+	public String scriptLanguage = "JavaScript";
+	/**
+	 * Maybe you have to change the test, if it doesn't mach the syntax of your
+	 * script language
+	 */
+	public String testScript1 = "function push(eventSelf, eventPushed) "
+			+ "{ eventSelf.x = 5; eventPushed.setName('ridiculous') }\n"
+			+ "function touch(eventSelf, eventPushed) "
+			+ "{ eventPushed.x = -22; eventSelf.setName('madthrax') }";
+	/**
+	 * Maybe you have to change the test, if it doesn't mach the syntax of your
+	 * script language
+	 */
+	public String testScript2 = "x=5; function f(y) {return x+y;}";
+	/**
+	 * Maybe you have to change the test, if it doesn't mach the syntax of your
+	 * script language
+	 */
+	public String testScript3 = "function g(y) {return f(y)-x;}";
+	/**
+	 * Maybe you have to change the test, if it doesn't mach the syntax of your
+	 * script language
+	 */
+	public String testScript4 = "function g(y) {return f(y)+x;}";
+
+	/**
+	 * The main method
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
-        ScriptEngineManager manager = new ScriptEngineManager();
-        ScriptEngine engine = manager.getEngineByName("JavaScript");
-        TestEventParm eventSelf = new TestEventParm();
-        TestEventParm eventPushed = new TestEventParm();
-
-        // The JavaScript code in a String
-        String script = "function push(eventSelf, eventPushed) { eventSelf.x = 5; eventPushed.setName('ridiculous') }\n" +
-        		"function touch(eventSelf, eventPushed) { eventPushed.x = -22; eventSelf.setName('madthrax') }";
-        engine.eval(script);
-        if (engine instanceof Invocable) {
-            Invocable inv = (Invocable) engine;
-            inv.invokeFunction("push", eventSelf, eventPushed);
-            inv.invokeFunction("touch", eventSelf, eventPushed);
-        } else {
-        	System.out.println("Sorry engine is not invokable :(");
-        }
-
-        // print result
-		eventSelf.print();
-		eventPushed.print();
+		new TestScriptEngine().startEngineTests(System.out);
 	}
+
+	/**
+	 * Before calling this method, maybe you want to change the
+	 * {@link #scriptLanguage}<br>
+	 * <br>
+	 * You should see the following output:<br>
+	 * <code><pre> madthrax: 5
+	 * ridiculous: -22
+	 * engine1: 5.0
+	 * engine2: 15.0
+	 * engine1: -5.0
+	 * engine2: 5.0 </pre></code>
+	 * 
+	 * @throws Exception
+	 */
+	public void startEngineTests(PrintStream out) throws Exception {
+		simpleTest(out);
+		scopeTest(out);
+	}
+
+	private void simpleTest(PrintStream out) throws ScriptException, NoSuchMethodException {
+		ScriptEngineManager manager = new ScriptEngineManager();
+		ScriptEngine engine = manager.getEngineByName(scriptLanguage);
+		TestEventParm eventSelf = new TestEventParm();
+		TestEventParm eventPushed = new TestEventParm();
+
+		// The JavaScript code in a String
+		engine.eval(testScript1);
+		if (engine instanceof Invocable) {
+			Invocable inv = (Invocable) engine;
+			inv.invokeFunction("push", eventSelf, eventPushed);
+			inv.invokeFunction("touch", eventSelf, eventPushed);
+		} else {
+			out.println("Sorry engine is not invokable :(");
+		}
+
+		// print result
+		eventSelf.print(out);
+		eventPushed.print(out);
+	}
+
+	private void scopeTest(PrintStream out) throws ScriptException, NoSuchMethodException {
+		ScriptEngineManager manager = new ScriptEngineManager();
+
+		// should be available in engine 1 and engine 2
+		ScriptEngine global = manager.getEngineByName(scriptLanguage);
+		global.eval(testScript2, manager.getBindings());
+
+		ScriptEngine engine1 = manager.getEngineByName(scriptLanguage);
+		engine1.eval(testScript3);
+		ScriptEngine engine2 = manager.getEngineByName(scriptLanguage);
+		engine2.eval(testScript4);
+
+		if (engine1 instanceof Invocable) {
+			Invocable inv = (Invocable) engine1;
+			Invocable inv2 = (Invocable) engine2;
+			out.println("engine1: " + inv.invokeFunction("g", 5));
+			out.println("engine2: " + inv2.invokeFunction("g", 5));
+			out.println("engine1: " + inv.invokeFunction("g", -5));
+			out.println("engine2: " + inv2.invokeFunction("g", -5));
+		} else {
+			out.println("Sorry engine is not invokable :(");
+		}
+	}
+
 	public static class TestEventParm {
 		public int x;
 		private String name;
+
 		public void setName(String name) {
 			this.name = name;
 		}
-		public void print() {
-			System.out.println(name+": "+x);
+
+		public void print(PrintStream out) {
+			out.println(name + ": " + x);
 		}
 	}
 }

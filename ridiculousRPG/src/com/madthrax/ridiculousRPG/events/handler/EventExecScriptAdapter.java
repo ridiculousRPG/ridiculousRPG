@@ -71,11 +71,7 @@ public class EventExecScriptAdapter extends EventAdapter implements
 	private SortedIntList<String> onStore = new SortedIntList<String>();
 	private SortedIntList<String> onCustomTrigger = new SortedIntList<String>();
 	private static final ScriptEngineManager ENGINE_FACTORY = new ScriptEngineManager();
-
-	public EventExecScriptAdapter() {
-		// TODO initialize some standard script functions
-		// and / or import packages to simplify the scripting process
-	}
+	private static boolean globalInit = false;
 
 	@Override
 	public boolean push(EventObject eventSelf, EventObject eventTrigger)
@@ -140,8 +136,8 @@ public class EventExecScriptAdapter extends EventAdapter implements
 			super.load(eventSelf, parentState);
 		} else {
 			try {
-				engine.invokeFunction("load", eventSelf, parentState,
-						GameBase.$(), getActualState());
+				engine.invokeFunction("load", eventSelf, parentState, GameBase
+						.$(), getActualState());
 			} catch (NoSuchMethodException e) {
 				// this should never happen
 				throw new AssertionError(e);
@@ -343,11 +339,22 @@ public class EventExecScriptAdapter extends EventAdapter implements
 
 	public void init() {
 		try {
+			if (!globalInit)
+				initGlobals();
 			initEngine();
 		} catch (ScriptException e) {
 			throw new RuntimeException(e);
 		}
 		initialized = true;
+	}
+
+	private void initGlobals() throws ScriptException {
+		globalInit = true;
+		// TODO initialize some standard script functions
+		// and / or import packages to simplify the scripting process
+		ScriptEngine engine = ENGINE_FACTORY
+				.getEngineByName(getScriptLanguage());
+		engine.eval("", ENGINE_FACTORY.getBindings());
 	}
 
 	public boolean isInitialized() {
