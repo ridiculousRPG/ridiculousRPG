@@ -43,15 +43,16 @@ public class GameOptions {
 	public boolean resize = false;
 	public boolean vSyncEnabled = false;
 	public boolean debug = false;
-	public GameService initGameService;
+	public GameService[] initGameService;
 
 	/**
-	 * Constructs an option object with the specified game service for
-	 * initializing the game.
+	 * Constructs an option object with the specified game services for
+	 * initializing the game.<br>
+	 * The {@link GameService} will be executed in the specified order.
 	 * 
 	 * @param initGameService
 	 */
-	public GameOptions(GameService initGameService) {
+	public GameOptions(GameService... initGameService) {
 		if (initGameService == null) {
 			throw new NullPointerException(
 					"The argument \"initGameService\" is mandatory.");
@@ -118,21 +119,25 @@ public class GameOptions {
 
 			propTmp = props.getProperty("INITGAMESERVICE");
 			if (propTmp != null && propTmp.trim().length() > 0) {
-				initGameService = (GameService) Class.forName(propTmp.trim())
-						.newInstance();
+				String[] multiPropTmp = propTmp.split("[,\\s]+");
+				initGameService = new GameService[multiPropTmp.length];
+				for (int i = 0; i < multiPropTmp.length; i++) {
+					initGameService[i] = (GameService) Class.forName(
+							multiPropTmp[i].trim()).newInstance();
+				}
 			} else {
-				initGameService = new DisplayErrorService(
+				initGameService = new GameService[] { new DisplayErrorService(
 						"Please specify the startup service for the game.\n"
 								+ "The startup service is specified by the property\n"
-								+ "INITGAMESERVICE inside the File data/game.ini");
+								+ "INITGAMESERVICE inside the File data/game.ini") };
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			StringWriter stackTrace = new StringWriter();
 			e.printStackTrace(new PrintWriter(stackTrace));
-			initGameService = new DisplayErrorService(
+			initGameService = new GameService[] { new DisplayErrorService(
 					"The following error occured while loading the game:\n"
-							+ e.getMessage() + "\n\n" + stackTrace);
+							+ e.getMessage() + "\n\n" + stackTrace) };
 		}
 	}
 }

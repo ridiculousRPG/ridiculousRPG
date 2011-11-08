@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.script.ScriptEngineManager;
-
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -47,7 +45,6 @@ import com.madthrax.ridiculousRPG.events.EventObject;
 import com.madthrax.ridiculousRPG.events.TriggerEventHandler;
 import com.madthrax.ridiculousRPG.events.handler.EventExecScriptAdapter;
 import com.madthrax.ridiculousRPG.events.handler.EventHandler;
-import com.madthrax.ridiculousRPG.events.handler.EventSayAdapter;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.ui.DisplayTextService;
@@ -82,14 +79,20 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private Computable triggerEventHandler;
 
 	private static final char EVENT_CUSTOM_PROP_KZ = '$';
+	// the key is translated to lower case -> we are case insensitive
 	private static final String EVENT_PROP_ID = "id";
-	private static final String EVENT_PROP_HANDLER = "eventhandler";
-	private static final String EVENT_PROP_PUSH_SAY = "push_say";
-	private static final String EVENT_PROP_TOUCH_SAY = "touch_say";
-	private static final String EVENT_PROP_ONPUSH = "onpush";
-	private static final String EVENT_PROP_ONTOUCH = "ontouch";
 	private static final String EVENT_PROP_MOVEHANDLER = "movehandler";
 	private static final String EVENT_PROP_ANIMATION = "animation";
+	private static final String EVENT_PROP_HANDLER = "eventhandler";
+	// the following properties can not be mixed with an eventhandler
+	// which doesn't extend the EventExecScriptAdapter
+	private static final String EVENT_PROP_SCRIPT = "script";
+	private static final String EVENT_PROP_ONPUSH = "onpush";
+	private static final String EVENT_PROP_ONTOUCH = "ontouch";
+	private static final String EVENT_PROP_ONTIMER = "ontimer";
+	private static final String EVENT_PROP_ONCUSTOMEVENT = "oncustomevent";
+	private static final String EVENT_PROP_ONLOAD = "onload";
+	private static final String EVENT_PROP_ONSTORE = "onstore";
 	// static references to get better performance
 	private static final JsonReader JSON_R = new JsonReader();
 	private static final Json JSON = new Json();
@@ -186,46 +189,101 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				parseSingleProperty(ev, key, val);
 			}
 		}
+		ev.init();
 	}
 
 	private void parseSingleProperty(EventObject ev, String key, String val) {
+		// let's be case insensitive
+		key = key.toLowerCase();
 		try {
 			if (EVENT_PROP_ID.equals(key)) {
 				ev.id = Integer.parseInt(val);
 			} else if (EVENT_PROP_HANDLER.equals(key)) {
-				ev.setEventHandler(fromJson(EventHandler.class, val));
-			} else if (EVENT_PROP_PUSH_SAY.equals(key)) {
-				// convenience property for events which only want to say something
-				if (ev.getEventHandler()==null)
-					ev.setEventHandler(new EventSayAdapter());
-				if (ev.getEventHandler() instanceof EventSayAdapter) {
-					((EventSayAdapter)ev.getEventHandler()).sayOnPush = val;
+				EventHandler evHandler = fromJson(EventHandler.class, val);
+				// merge both eventhandler
+				if (evHandler instanceof EventExecScriptAdapter
+						&& ev.getEventHandler() instanceof EventExecScriptAdapter) {
+					((EventExecScriptAdapter) evHandler)
+							.merge((EventExecScriptAdapter) ev
+									.getEventHandler());
 				}
-			} else if (EVENT_PROP_TOUCH_SAY.equals(key)) {
-				// convenience property for events which only want to say something
-				if (ev.getEventHandler()==null)
-					ev.setEventHandler(new EventSayAdapter());
-				if (ev.getEventHandler() instanceof EventSayAdapter) {
-					((EventSayAdapter)ev.getEventHandler()).sayOnTouch = val;
-				}
+				ev.setEventHandler(evHandler);
 			} else if (key.startsWith(EVENT_PROP_ONPUSH)) {
-				new ScriptEngineManager();
-				// convenience property for events which only want to say something
-				if (ev.getEventHandler()==null) {
+				if (ev.getEventHandler() == null) {
 					ev.setEventHandler(new EventExecScriptAdapter());
 				}
 				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_ONPUSH.length()).trim();
-					((EventExecScriptAdapter)ev.getEventHandler()).execOnPush(val, index.length()==0?-1:Integer.parseInt(index));
+					String index = key.substring(EVENT_PROP_ONPUSH.length())
+							.trim();
+					((EventExecScriptAdapter) ev.getEventHandler()).execOnPush(
+							val,
+							index.length() == 0 ? -1 : Integer.parseInt(index));
 				}
 			} else if (key.startsWith(EVENT_PROP_ONTOUCH)) {
-				// convenience property for events which only want to say something
-				if (ev.getEventHandler()==null){
+				if (ev.getEventHandler() == null) {
 					ev.setEventHandler(new EventExecScriptAdapter());
 				}
 				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_ONTOUCH.length()).trim();
-					((EventExecScriptAdapter)ev.getEventHandler()).execOnTouch(val, index.length()==0?-1:Integer.parseInt(index));
+					String index = key.substring(EVENT_PROP_ONTOUCH.length())
+							.trim();
+					((EventExecScriptAdapter) ev.getEventHandler())
+							.execOnTouch(val, index.length() == 0 ? -1
+									: Integer.parseInt(index));
+				}
+			} else if (key.startsWith(EVENT_PROP_ONTIMER)) {
+				if (ev.getEventHandler() == null) {
+					ev.setEventHandler(new EventExecScriptAdapter());
+				}
+				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+					String index = key.substring(EVENT_PROP_ONTIMER.length())
+							.trim();
+					((EventExecScriptAdapter) ev.getEventHandler())
+							.execOnTimer(val, index.length() == 0 ? -1
+									: Integer.parseInt(index));
+				}
+			} else if (key.startsWith(EVENT_PROP_ONCUSTOMEVENT)) {
+				if (ev.getEventHandler() == null) {
+					ev.setEventHandler(new EventExecScriptAdapter());
+				}
+				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+					String index = key.substring(EVENT_PROP_ONCUSTOMEVENT.length())
+							.trim();
+					((EventExecScriptAdapter) ev.getEventHandler())
+							.execOnCustomTrigger(val, index.length() == 0 ? -1
+									: Integer.parseInt(index));
+				}
+			} else if (key.startsWith(EVENT_PROP_ONLOAD)) {
+				if (ev.getEventHandler() == null) {
+					ev.setEventHandler(new EventExecScriptAdapter());
+				}
+				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+					String index = key.substring(EVENT_PROP_ONLOAD.length())
+							.trim();
+					((EventExecScriptAdapter) ev.getEventHandler())
+							.execOnLoad(val, index.length() == 0 ? -1
+									: Integer.parseInt(index));
+				}
+			} else if (key.startsWith(EVENT_PROP_ONSTORE)) {
+				if (ev.getEventHandler() == null) {
+					ev.setEventHandler(new EventExecScriptAdapter());
+				}
+				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+					String index = key.substring(EVENT_PROP_ONSTORE.length())
+							.trim();
+					((EventExecScriptAdapter) ev.getEventHandler())
+							.execOnStore(val, index.length() == 0 ? -1
+									: Integer.parseInt(index));
+				}
+			} else if (key.startsWith(EVENT_PROP_SCRIPT)) {
+				if (ev.getEventHandler() == null) {
+					ev.setEventHandler(new EventExecScriptAdapter());
+				}
+				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+					String index = key.substring(EVENT_PROP_SCRIPT.length())
+							.trim();
+					((EventExecScriptAdapter) ev.getEventHandler())
+							.addScriptCode(val, index.length() == 0 ? -1
+									: Integer.parseInt(index));
 				}
 			} else if (EVENT_PROP_MOVEHANDLER.equals(key)) {
 				ev.setMoveHandler(fromJson(MovementHandler.class, val));
@@ -415,8 +473,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				} else {
 					debugRenderer.setColor(1f, 0f, 0f, 1f);
 				}
-				debugRenderer.rect(ev.getX(), ev.getY(), ev.getWidth(), ev
-						.getHeight());
+				debugRenderer.rect(ev.getX(), ev.getY(), ev.getWidth(),
+						ev.getHeight());
 				if (ev.name != null)
 					DisplayTextService.$map.addMessage(ev.name,
 							DisplayTextService.$map.getDefaultColor(),

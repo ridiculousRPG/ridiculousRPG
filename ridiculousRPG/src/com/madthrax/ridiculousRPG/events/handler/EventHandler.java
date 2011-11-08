@@ -90,7 +90,7 @@ public interface EventHandler {
 	 * @param eventSelf
 	 * @param parentState
 	 */
-	public void load(EventObject eventSelf, ObjectState parentState);
+	public void load(EventObject eventSelf, ObjectState parentState) throws ScriptException;
 
 	/**
 	 * Save your own state into the parent's child states!<br>
@@ -103,5 +103,5 @@ public interface EventHandler {
 	 *            rendered currently, where this event is placed on.
 	 */
 	public void store(EventObject eventSelf, ObjectState parentState,
-			boolean currentlyExecuted);
+			boolean currentlyExecuted) throws ScriptException;
 }

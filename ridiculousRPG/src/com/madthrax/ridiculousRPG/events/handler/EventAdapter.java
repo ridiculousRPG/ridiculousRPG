@@ -39,13 +39,13 @@ public class EventAdapter implements EventHandler {
 		return false;
 	}
 
-	public void load(EventObject eventSelf, ObjectState parentState) {
+	public void load(EventObject eventSelf, ObjectState parentState) throws ScriptException {
 		this.myState = parentState.getChild(eventSelf.id);
 		// load position, texture, movehandler ...
 	}
 
 	public void store(EventObject eventSelf, ObjectState parentState,
-			boolean currentlyExecuted) {
+			boolean currentlyExecuted) throws ScriptException {
 		if (currentlyExecuted) {
 			// store position, texture, movehandler ...
 		} else {

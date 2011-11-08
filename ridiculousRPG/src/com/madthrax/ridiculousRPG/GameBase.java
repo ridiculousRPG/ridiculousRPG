@@ -102,11 +102,11 @@ public class GameBase extends GameServiceDefaultImpl implements
 		resizeView = options.resize;
 
 		serviceProvider = new GameServiceProvider();
-		if (options.initGameService instanceof DisplayErrorService) {
-			serviceProvider.requestAttention(options.initGameService, true,
+		if (options.initGameService[0] instanceof DisplayErrorService) {
+			serviceProvider.requestAttention(options.initGameService[0], true,
 					true);
-		} else {
-			serviceProvider.putService(options.initGameService);
+		} else for (GameService service : options.initGameService) {
+			serviceProvider.putService(service);
 		}
 	}
 

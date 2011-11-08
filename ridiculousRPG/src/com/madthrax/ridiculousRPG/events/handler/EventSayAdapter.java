@@ -26,6 +26,7 @@ public class EventSayAdapter extends EventAdapter {
 	public String sayOnTouch;
 	public boolean touchPerformed;
 
+	@Override
 	public boolean push(EventObject eventSelf, EventObject pushedBy) {
 		if (sayOnPush!=null) {
 			//TODO: show textbox
@@ -34,6 +35,7 @@ public class EventSayAdapter extends EventAdapter {
 		}
 		return false;
 	}
+	@Override
 	public boolean touch(EventObject eventSelf, EventObject pushedBy) {
 		if (!touchPerformed && sayOnTouch!=null) {
 			//TODO: show textbox
