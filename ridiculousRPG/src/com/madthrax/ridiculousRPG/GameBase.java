@@ -19,6 +19,10 @@ package com.madthrax.ridiculousRPG;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
+
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -49,6 +53,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 	private ObjectState globalState;
 	private GameServiceProvider serviceProvider;
 	private ScriptFactory scriptFactory;
+	private ScriptEngine sharedEngine;
 
 	private int screenWidth, screenHeight;
 	private int planeWidth, planeHeight;
@@ -73,6 +78,25 @@ public class GameBase extends GameServiceDefaultImpl implements
 		if (!isInitialized())
 			throw new IllegalStateException("GameBase not initialized!");
 		return instance;
+	}
+
+	/**
+	 * Evaluates the given script term and returns the result.<br>
+	 * The same engine is used for all evaluations!
+	 * @param script
+	 *            The script to evaluate
+	 * @return The result from this evaluation.
+	 * @throws ScriptException
+	 */
+	public Object eval(String script) throws ScriptException {
+		if (sharedEngine==null) {
+			sharedEngine = getScriptFactory().obtainEngine();
+		}
+		Object result = sharedEngine.eval(getScriptFactory().loadScript(script));
+		try {
+			sharedEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
+		} catch (Exception ignored) {}
+		return result;
 	}
 
 	/**

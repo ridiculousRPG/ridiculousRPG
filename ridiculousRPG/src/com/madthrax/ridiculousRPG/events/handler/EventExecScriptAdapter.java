@@ -305,7 +305,10 @@ public class EventExecScriptAdapter extends EventAdapter implements
 	 * specified languages syntax.<br>
 	 * You are also allowed to define variables outside of a function body. This
 	 * variables and all the defined functions are accessible from all the
-	 * script functions inside this {@link EventExecScriptAdapter}.
+	 * script functions inside this {@link EventExecScriptAdapter}.<br>
+	 * <br>
+	 * The script code will be evaluated at the end of the initialization.<br>
+	 * Therefore you can also add some initialization code by this method.
 	 * 
 	 * @param scriptCode
 	 *            One or more well formed script function(s) and/or variables

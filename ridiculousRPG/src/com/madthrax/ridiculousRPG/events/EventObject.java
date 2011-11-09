@@ -726,10 +726,16 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		this.animation = animation;
 		imageOrAnimationAutoDispose = animation;
 		image = animation.getActualTextureRegion();
-		this.drawBound.width = image.getRegionWidth();
-		this.drawBound.height = image.getRegionHeight();
-		if (estimateTouchBound)
+		int width = image.getRegionWidth();
+		int height = image.getRegionHeight();
+		drawBound.width = width;
+		drawBound.height = height;
+		if (estimateTouchBound) {
 			estimateTouchBound();
+		} else {
+			drawBound.x = touchBound.x - (width-getWidth())/2;
+			drawBound.y = touchBound.y;
+		}
 		return old;
 	}
 

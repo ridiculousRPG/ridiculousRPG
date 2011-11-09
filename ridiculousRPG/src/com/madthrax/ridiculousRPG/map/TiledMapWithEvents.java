@@ -23,8 +23,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.TextureDict;
+import com.badlogic.gdx.graphics.TextureRef;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
+import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g2d.tiled.TileAtlas;
@@ -37,8 +43,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntMap;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonReader;
+import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.animations.TileAnimation;
 import com.madthrax.ridiculousRPG.events.BlockingBehaviour;
 import com.madthrax.ridiculousRPG.events.EventObject;
@@ -84,6 +89,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final String EVENT_PROP_BLOCKING = "blocking";
 	private static final String EVENT_PROP_MOVEHANDLER = "movehandler";
 	private static final String EVENT_PROP_ANIMATION = "animation";
+	private static final String EVENT_PROP_ESTIMATETOUCHBOUNDS = "estimatetouchbounds";
 	private static final String EVENT_PROP_HANDLER = "eventhandler";
 	// the following properties can not be mixed with an eventhandler
 	// which doesn't extend the EventExecScriptAdapter
@@ -94,9 +100,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final String EVENT_PROP_ONCUSTOMEVENT = "oncustomevent";
 	private static final String EVENT_PROP_ONLOAD = "onload";
 	private static final String EVENT_PROP_ONSTORE = "onstore";
-	// static references to get better performance
-	private static final JsonReader JSON_R = new JsonReader();
-	private static final Json JSON = new Json();
 
 	/**
 	 * Creates a new map with the specified events from a tmx file.<br>
@@ -185,7 +188,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	 * @param props
 	 */
 	protected void parseProperties(EventObject ev, HashMap<String, String> props) {
-		// TODO: Define EventHandler, animation, height, ... as Tiled properties
 		for (Entry<String, String> entry : props.entrySet()) {
 			String key = entry.getKey();
 			if (key.length() == 0)
@@ -194,12 +196,12 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			if (key.charAt(0) == EVENT_CUSTOM_PROP_KZ) {
 				ev.properties.put(key, val);
 			} else {
-				parseSingleProperty(ev, key, val);
+				parseSingleProperty(ev, key, val, props);
 			}
 		}
 	}
 
-	private void parseSingleProperty(EventObject ev, String key, String val) {
+	private void parseSingleProperty(EventObject ev, String key, String val, HashMap<String, String> props) {
 		// let's be case insensitive
 		key = key.toLowerCase();
 		try {
@@ -216,16 +218,50 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					} catch (IllegalArgumentException e) {
 						e.printStackTrace();
 					}
+			} else if (EVENT_PROP_MOVEHANDLER.equals(key)) {
+				Object evHandler = GameBase.$().eval(val);
+				if (evHandler instanceof Class<?>) {
+					@SuppressWarnings("unchecked")
+					Class<? extends MovementHandler> clazz = (Class<? extends MovementHandler>) evHandler;
+					evHandler = clazz.getMethod("$").invoke(null);
+				}
+				if (evHandler instanceof MovementHandler) {
+					ev.setMoveHandler((MovementHandler) evHandler);
+				}
+			} else if (EVENT_PROP_ANIMATION.equals(key)) {
+				FileHandle fh = Gdx.files.internal(val);
+				if (fh.exists()) {
+					TextureRef tRef = TextureDict.loadTexture(val,
+							TextureFilter.Nearest, TextureFilter.Nearest,
+							TextureWrap.ClampToEdge, TextureWrap.ClampToEdge);
+					Texture t = tRef.get();
+					TileAnimation anim = new TileAnimation(val,
+							t.getWidth() / 4, t.getHeight() / 4, 4, 4);
+					ev.setAnimation(anim, "true".equalsIgnoreCase(props.get(EVENT_PROP_ESTIMATETOUCHBOUNDS)));
+					tRef.unload();
+				} else {
+					Object evHandler = GameBase.$().eval(val);
+					if (evHandler instanceof TileAnimation) {
+						ev.setAnimation((TileAnimation) evHandler, "true".equalsIgnoreCase(props.get(EVENT_PROP_ESTIMATETOUCHBOUNDS)));
+					}
+				}
 			} else if (EVENT_PROP_HANDLER.equals(key)) {
-				EventHandler evHandler = fromJson(EventHandler.class, val);
-				// merge both eventhandler
+				Object evHandler = GameBase.$().eval(val);
+				if (evHandler instanceof Class<?>) {
+					@SuppressWarnings("unchecked")
+					Class<? extends EventHandler> clazz = (Class<? extends EventHandler>) evHandler;
+					evHandler = clazz.newInstance();
+				}
+
+				// merge both event handler
 				if (evHandler instanceof EventExecScriptAdapter
 						&& ev.getEventHandler() instanceof EventExecScriptAdapter) {
 					((EventExecScriptAdapter) evHandler)
 							.merge((EventExecScriptAdapter) ev
 									.getEventHandler());
+				} else if (evHandler instanceof EventHandler) {
+					ev.setEventHandler((EventHandler) evHandler);
 				}
-				ev.setEventHandler(evHandler);
 			} else if (key.startsWith(EVENT_PROP_ONPUSH)) {
 				ev.pushable = true;
 				if (ev.getEventHandler() == null) {
@@ -235,8 +271,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					String index = key.substring(EVENT_PROP_ONPUSH.length())
 							.trim();
 					((EventExecScriptAdapter) ev.getEventHandler()).execOnPush(
-							val,
-							index.length() == 0 ? -1 : Integer.parseInt(index));
+							val, index.length() == 0 ? -1 : Integer
+									.parseInt(index));
 				}
 			} else if (key.startsWith(EVENT_PROP_ONTOUCH)) {
 				ev.touchable = true;
@@ -280,8 +316,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					String index = key.substring(EVENT_PROP_ONLOAD.length())
 							.trim();
 					((EventExecScriptAdapter) ev.getEventHandler()).execOnLoad(
-							val,
-							index.length() == 0 ? -1 : Integer.parseInt(index));
+							val, index.length() == 0 ? -1 : Integer
+									.parseInt(index));
 				}
 			} else if (key.startsWith(EVENT_PROP_ONSTORE)) {
 				if (ev.getEventHandler() == null) {
@@ -305,19 +341,11 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 							.addScriptCode(val, index.length() == 0 ? -1
 									: Integer.parseInt(index));
 				}
-			} else if (EVENT_PROP_MOVEHANDLER.equals(key)) {
-				ev.setMoveHandler(fromJson(MovementHandler.class, val));
-			} else if (EVENT_PROP_ANIMATION.equals(key)) {
-				ev.setAnimation(fromJson(TileAnimation.class, val), true);
 			}
 		} catch (Exception e) {
 			// Maybe it would be better to display the error
 			e.printStackTrace();
 		}
-	}
-
-	private <T> T fromJson(Class<T> objType, String val) {
-		return JSON.readValue(objType, null, JSON_R.parse(val));
 	}
 
 	public EventObject put(String name, EventObject event) {
@@ -493,8 +521,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				} else {
 					debugRenderer.setColor(1f, 0f, 0f, 1f);
 				}
-				debugRenderer.rect(ev.getX(), ev.getY(), ev.getWidth(),
-						ev.getHeight());
+				debugRenderer.rect(ev.getX(), ev.getY(), ev.getWidth(), ev
+						.getHeight());
 				if (ev.name != null)
 					DisplayTextService.$map.addMessage(ev.name,
 							DisplayTextService.$map.getDefaultColor(),

@@ -18,6 +18,7 @@ package com.madthrax.ridiculousRPG.movement.misc;
 
 import com.madthrax.ridiculousRPG.animations.TileAnimation;
 import com.madthrax.ridiculousRPG.events.EventObject;
+import com.madthrax.ridiculousRPG.events.Speed;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 
@@ -36,6 +37,7 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
 public class MoveAnimateEventAdapter extends MovementHandler {
 	private EventObject oldEvent;
 	private TileAnimation oldAnimation;
+	private Speed oldSpeed;
 	private TileAnimation animation;
 	private int animationTextureRow;
 
@@ -46,12 +48,29 @@ public class MoveAnimateEventAdapter extends MovementHandler {
 	}
 
 	/**
+	 * Simply animates the event and uses it's own animation therefore.
+	 * 
+	 * @return
+	 */
+	public static MovementHandler $() {
+		return new MoveAnimateEventAdapter(null, -1);
+	}
+
+	/**
+	 * Simply animates the event and uses it's own animation therefore.
+	 * 
+	 * @param animationTextureRow
+	 *            The row index or -1 if the animation should run over all rows.
+	 * @return
+	 */
+	public static MovementHandler $(int animationTextureRow) {
+		return new MoveAnimateEventAdapter(null, animationTextureRow);
+	}
+
+	/**
 	 * ATTENTION: The TileAnimation will not be disposed by the
 	 * MovementAdapter!!!<br>
 	 * You have to dispose the Animation yourself to avoid memory leaks!!!<br>
-	 * The used {@link TileAnimation} needs an
-	 * {@link TileAnimation#animationSpeed}, because the animationSpeed is
-	 * <code>null</code> per default.
 	 * 
 	 * @param animation
 	 * @param animationTextureRow
@@ -70,12 +89,19 @@ public class MoveAnimateEventAdapter extends MovementHandler {
 			if (newEvent != oldEvent) {
 				// restore the old animation
 				if (oldEvent != null) {
+					oldAnimation.animationSpeed = oldSpeed;
 					oldEvent.setAnimation(oldAnimation, false);
 					oldEvent.stop();
 				}
 				oldEvent = newEvent;
 				oldAnimation = newEvent.getAnimation();
-				newEvent.setAnimation(animation, false);
+				oldSpeed = oldAnimation.animationSpeed;
+				if (animation!=null) {
+					newEvent.setAnimation(animation, false);
+				}
+				if (newEvent.getAnimation().animationSpeed==null) {
+					newEvent.getAnimation().animationSpeed = Speed.S07_NORMAL;
+				}
 			}
 			newEvent.animate(animationTextureRow, null, deltaTime);
 			if (newEvent.getAnimation().animationCycleFinished) {
@@ -91,6 +117,7 @@ public class MoveAnimateEventAdapter extends MovementHandler {
 		super.reset();
 		// restore the old animation
 		if (oldEvent != null) {
+			oldAnimation.animationSpeed = oldSpeed;
 			oldEvent.setAnimation(oldAnimation, false);
 			oldEvent.stop();
 		}
