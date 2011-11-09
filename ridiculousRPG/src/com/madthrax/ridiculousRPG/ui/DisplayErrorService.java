@@ -45,7 +45,7 @@ public class DisplayErrorService extends DisplayTextService implements
 		this.msg = msg;
 	}
 
-	public void compute(float deltaTime, boolean actionKeyPressed) {
+	public void compute(float deltaTime, boolean actionKeyDown) {
 		String msg = this.msg;
 		int oldTime = (int) displayTime;
 		displayTime -= deltaTime;
@@ -53,16 +53,17 @@ public class DisplayErrorService extends DisplayTextService implements
 		if (oldTime != (int) displayTime) {
 			if (fontCache != null)
 				removeMessage(fontCache);
-			if (displayTime < 0) {
+			if (displayTime < 1) {
 				displayTime = 0;
 				msg = "\nPress the action key to exit the game!\n\n" + msg;
-				if (actionKeyPressed)
-					Gdx.app.exit();
 			} else {
-				msg = "\nERROR [" + ((int) (displayTime + 1f)) + "]\n\n" + msg;
+				msg = "\nERROR [" + ((int) displayTime) + "]\n\n" + msg;
 			}
 			fontCache = addMessage(msg, Color.RED.toFloatBits(),
 					Alignment.CENTER, Alignment.CENTER, 0f);
+		}
+		if (displayTime < 1 && actionKeyDown) {
+			Gdx.app.exit();
 		}
 	}
 

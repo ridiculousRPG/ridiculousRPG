@@ -17,15 +17,13 @@ package com.madthrax.ridiculousRPG.events.handler;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.SortedIntList;
 import com.badlogic.gdx.utils.SortedIntList.Node;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.ObjectState;
+import com.madthrax.ridiculousRPG.ScriptFactory;
 import com.madthrax.ridiculousRPG.events.EventObject;
 import com.madthrax.ridiculousRPG.map.TiledMapWithEvents;
 import com.madthrax.ridiculousRPG.service.Initializable;
@@ -37,18 +35,16 @@ import com.madthrax.ridiculousRPG.service.Initializable;
  * All script function names are equivalent to the corresponding method names
  * and also the parameter names are equivalent to the corresponding methods
  * parameter names (see javadoc or java code). Additionally to this parameters,
- * two more parameters are passed to the script.<br>
- * The first one is named with the Dollar sign $ and holds the actual
- * {@link GameBase} object. The second additional parameter is named eventState
- * and holds the corresponding events {@link ObjectState}.<br>
+ * one more parameter is passed to the script.<br>
+ * This additional parameter is named eventState and holds the corresponding
+ * events {@link ObjectState}.<br>
  * <br>
  * 
- * For example, the script function touch has the following 4 parameters:<br>
+ * For example, the script function touch has the following 3 parameters:<br>
  * <ol>
  * <li>eventSelf = This {@link EventObject}</li>
  * <li>eventTrigger = The {@link EventObject} which touched this
  * {@link EventObject}</li>
- * <li>$ = {@link GameBase#$()} - The game instance itself</li>
  * <li>eventState = {@link #getActualState()} - The corresponding events
  * {@link ObjectState}</li>
  * </ol>
@@ -70,8 +66,6 @@ public class EventExecScriptAdapter extends EventAdapter implements
 	private SortedIntList<String> onLoad = new SortedIntList<String>();
 	private SortedIntList<String> onStore = new SortedIntList<String>();
 	private SortedIntList<String> onCustomTrigger = new SortedIntList<String>();
-	private static final ScriptEngineManager ENGINE_FACTORY = new ScriptEngineManager();
-	private static boolean globalInit = false;
 
 	@Override
 	public boolean push(EventObject eventSelf, EventObject eventTrigger)
@@ -80,7 +74,7 @@ public class EventExecScriptAdapter extends EventAdapter implements
 			return false;
 		try {
 			return (Boolean) engine.invokeFunction("push", eventSelf,
-					eventTrigger, GameBase.$(), getActualState());
+					eventTrigger, getActualState());
 		} catch (NoSuchMethodException e) {
 			// this should never happen
 			throw new AssertionError(e);
@@ -94,7 +88,7 @@ public class EventExecScriptAdapter extends EventAdapter implements
 			return false;
 		try {
 			return (Boolean) engine.invokeFunction("touch", eventSelf,
-					eventTrigger, GameBase.$(), getActualState());
+					eventTrigger, getActualState());
 		} catch (NoSuchMethodException e) {
 			// this should never happen
 			throw new AssertionError(e);
@@ -108,7 +102,7 @@ public class EventExecScriptAdapter extends EventAdapter implements
 			return false;
 		try {
 			return (Boolean) engine.invokeFunction("timer", eventSelf,
-					deltaTime, GameBase.$(), getActualState());
+					deltaTime, getActualState());
 		} catch (NoSuchMethodException e) {
 			// this should never happen
 			throw new AssertionError(e);
@@ -122,7 +116,7 @@ public class EventExecScriptAdapter extends EventAdapter implements
 			return false;
 		try {
 			return (Boolean) engine.invokeFunction("customTrigger", eventSelf,
-					triggerId, GameBase.$(), getActualState());
+					triggerId, getActualState());
 		} catch (NoSuchMethodException e) {
 			// this should never happen
 			throw new AssertionError(e);
@@ -136,8 +130,8 @@ public class EventExecScriptAdapter extends EventAdapter implements
 			super.load(eventSelf, parentState);
 		} else {
 			try {
-				engine.invokeFunction("load", eventSelf, parentState, GameBase
-						.$(), getActualState());
+				engine.invokeFunction("load", eventSelf, parentState,
+						getActualState());
 			} catch (NoSuchMethodException e) {
 				// this should never happen
 				throw new AssertionError(e);
@@ -153,7 +147,7 @@ public class EventExecScriptAdapter extends EventAdapter implements
 		} else {
 			try {
 				engine.invokeFunction("store", eventSelf, parentState,
-						currentlyExecuted, GameBase.$(), getActualState());
+						currentlyExecuted, getActualState());
 			} catch (NoSuchMethodException e) {
 				// this should never happen
 				throw new AssertionError(e);
@@ -180,7 +174,7 @@ public class EventExecScriptAdapter extends EventAdapter implements
 	 *            The line index of this script line(s)
 	 */
 	public final void execOnPush(String val, int index) {
-		val = readIfPath(val);
+		val = GameBase.$scriptFactory().loadScript(val);
 		onPush.insert(index, val);
 		push = true;
 	}
@@ -204,7 +198,7 @@ public class EventExecScriptAdapter extends EventAdapter implements
 	 *            The line index of this script line(s)
 	 */
 	public final void execOnTouch(String val, int index) {
-		val = readIfPath(val);
+		val = GameBase.$scriptFactory().loadScript(val);
 		onTouch.insert(index, val);
 		touch = true;
 	}
@@ -228,7 +222,7 @@ public class EventExecScriptAdapter extends EventAdapter implements
 	 *            The line index of this script line(s)
 	 */
 	public final void execOnTimer(String val, int index) {
-		val = readIfPath(val);
+		val = GameBase.$scriptFactory().loadScript(val);
 		onTimer.insert(index, val);
 		timer = true;
 	}
@@ -252,7 +246,7 @@ public class EventExecScriptAdapter extends EventAdapter implements
 	 *            The line index of this script line(s)
 	 */
 	public final void execOnCustomTrigger(String val, int index) {
-		val = readIfPath(val);
+		val = GameBase.$scriptFactory().loadScript(val);
 		onCustomTrigger.insert(index, val);
 		customTrigger = true;
 	}
@@ -276,7 +270,7 @@ public class EventExecScriptAdapter extends EventAdapter implements
 	 *            The line index of this script line(s)
 	 */
 	public final void execOnLoad(String val, int index) {
-		val = readIfPath(val);
+		val = GameBase.$scriptFactory().loadScript(val);
 		onLoad.insert(index, val);
 		load = true;
 	}
@@ -300,7 +294,7 @@ public class EventExecScriptAdapter extends EventAdapter implements
 	 *            The line index of this script line(s)
 	 */
 	public final void execOnStore(String val, int index) {
-		val = readIfPath(val);
+		val = GameBase.$scriptFactory().loadScript(val);
 		onStore.insert(index, val);
 		store = true;
 	}
@@ -321,26 +315,12 @@ public class EventExecScriptAdapter extends EventAdapter implements
 	 *            their index position.
 	 */
 	public final void addScriptCode(String scriptCode, int index) {
-		scriptCode = readIfPath(scriptCode);
+		scriptCode = GameBase.$scriptFactory().loadScript(scriptCode);
 		this.scriptCode.insert(index, scriptCode);
-	}
-
-	private String readIfPath(String scriptCodeOrPath) {
-		try {
-			FileHandle fh = Gdx.files.internal(scriptCodeOrPath);
-			if (fh.exists()) {
-				return fh.readString("UTF-8");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return scriptCodeOrPath;
 	}
 
 	public void init() {
 		try {
-			if (!globalInit)
-				initGlobals();
 			initEngine();
 		} catch (ScriptException e) {
 			throw new RuntimeException(e);
@@ -348,90 +328,38 @@ public class EventExecScriptAdapter extends EventAdapter implements
 		initialized = true;
 	}
 
-	private void initGlobals() throws ScriptException {
-		globalInit = true;
-		// TODO initialize some standard script functions
-		// and / or import packages to simplify the scripting process
-		ScriptEngine engine = ENGINE_FACTORY
-				.getEngineByName(getScriptLanguage());
-		engine.eval("", ENGINE_FACTORY.getBindings());
-	}
-
 	public boolean isInitialized() {
 		return initialized;
 	}
 
 	private void initEngine() throws ScriptException {
+		ScriptFactory factory = GameBase.$scriptFactory();
 		StringBuilder script = new StringBuilder();
 		for (Node<String> code : scriptCode) {
 			script.append(code.value).append('\n');
 		}
 		this.scriptCode.clear();
-		script.append(createFunction(onPush, "push", "eventSelf",
-				"eventTrigger", "$", "eventState"));
-		script.append(createFunction(onTouch, "touch", "eventSelf",
-				"eventTrigger", "$", "eventState"));
-		script.append(createFunction(onTimer, "timer", "eventSelf",
-				"deltaTime", "$", "eventState"));
-		script.append(createFunction(onCustomTrigger, "customTrigger",
-				"eventSelf", "triggerId", "$", "eventState"));
-		script.append(createFunction(onLoad, "load", "eventSelf",
-				"parentState", "$", "eventState"));
-		script.append(createFunction(onStore, "store", "eventSelf",
-				"parentState", "currentlyExecuted", "$", "eventState"));
-		ScriptEngine engine = ENGINE_FACTORY
-				.getEngineByName(getScriptLanguage());
+
+		script.append(factory.createScriptFunction(onPush, "push", true,
+				"eventSelf", "eventTrigger", "eventState"));
+		script.append(factory.createScriptFunction(onTouch, "touch", true,
+				"eventSelf", "eventTrigger", "eventState"));
+		script.append(factory.createScriptFunction(onTimer, "timer", true,
+				"eventSelf", "deltaTime", "eventState"));
+		script.append(factory.createScriptFunction(onCustomTrigger,
+				"customTrigger", true, "eventSelf", "triggerId", "eventState"));
+		script.append(factory.createScriptFunction(onLoad, "load", true,
+				"eventSelf", "parentState", "eventState"));
+		script.append(factory.createScriptFunction(onStore, "store", true,
+				"eventSelf", "parentState", "currentlyExecuted", "eventState"));
+
+		ScriptEngine engine = factory.obtainEngine();
 		engine.eval(script.toString());
 		if (engine instanceof Invocable) {
 			this.engine = (Invocable) engine;
 		} else {
 			throw new ScriptException("Sorry engine is not invokable :(");
 		}
-	}
-
-	/**
-	 * Override this method if you want an other script language.<br>
-	 * The script engine has to support invocation by implementing the interface
-	 * {@link Invocable}<br>
-	 * Maybe you also need to override
-	 * {@link #createFunction(SortedIntList, String, String)}
-	 * 
-	 * @return The script language used by this script interpreter.
-	 */
-	public String getScriptLanguage() {
-		return "JavaScript";
-	}
-
-	/**
-	 * You are able to override this method if you want to generate a function
-	 * for an other script language.<br>
-	 * Don't forget to override {@link #getScriptLanguage()} too.
-	 * 
-	 * @param codeLines
-	 *            The lines of script code sorted by the line number.
-	 * @param fncName
-	 *            The name of the script function.
-	 * @param fncParam
-	 *            All specified parameters.
-	 * @return A {@link String} with the generated script function
-	 */
-	protected String createFunction(SortedIntList<String> codeLines,
-			String fncName, String... fncParam) {
-		StringBuilder script = new StringBuilder();
-		script.append("\nfunction ").append(fncName).append('(');
-		for (int i = 0, len = fncParam.length; i < len; i++) {
-			if (i > 0)
-				script.append(',');
-			script.append(fncParam[i]);
-		}
-		script.append(") {");
-		for (Node<String> line : codeLines) {
-			script.append('\n').append(line.value).append(';');
-		}
-		// let gc do it's work
-		codeLines.clear();
-		script.append("\nreturn true; }");
-		return script.toString();
 	}
 
 	/**

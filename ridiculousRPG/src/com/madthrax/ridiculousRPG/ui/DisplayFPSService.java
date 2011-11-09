@@ -60,7 +60,7 @@ public class DisplayFPSService extends DisplayTextService implements Computable 
 		this.vertAlign = vertAlign;
 	}
 
-	public void compute(float deltaTime, boolean actionKeyPressed) {
+	public void compute(float deltaTime, boolean actionKeyDown) {
 		if (oldFPS != Gdx.graphics.getFramesPerSecond()) {
 			if (fontCache != null)
 				removeMessage(fontCache);

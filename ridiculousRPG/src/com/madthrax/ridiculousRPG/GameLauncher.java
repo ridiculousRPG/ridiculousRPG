@@ -36,6 +36,10 @@ import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 public class GameLauncher extends AndroidApplication {
 	protected static final String BRANDING_NORMAL = " (powered by ridiculousRPG)";
 	protected static final String BRANDING_DEBUG = " (powered by ridiculousRPG - DEBUGMODE)";
+	/**
+	 * Dafault = "data/game.ini"
+	 */
+	protected static final String GAME_OPTIONS_FILE = "data/game.ini";
 
 	/**
 	 * AUTOMATICALLY CALLED BY ANDROID<br>
@@ -48,7 +52,7 @@ public class GameLauncher extends AndroidApplication {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		GameOptions options = new GameOptions(new AndroidFiles(getAssets())
-				.internal("data/game.ini"));
+				.internal(GAME_OPTIONS_FILE));
 		setTitle(options.title
 				+ (options.debug ? BRANDING_DEBUG : BRANDING_NORMAL));
 		initialize(new GameBase(options), options.useGL20);
@@ -65,7 +69,7 @@ public class GameLauncher extends AndroidApplication {
 	 */
 	public static void main(String[] argv) {
 		GameOptions options = new GameOptions(new LwjglFiles()
-				.internal("data/game.ini"));
+				.internal(GAME_OPTIONS_FILE));
 		switch (options.backend) {
 		case LWJGL: {
 			LwjglApplicationConfiguration conf = new LwjglApplicationConfiguration();

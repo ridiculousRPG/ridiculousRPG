@@ -116,7 +116,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 		return skinNormal != null;
 	}
 
-	public void compute(float deltaTime, boolean actionKeyPressed) {
+	public void compute(float deltaTime, boolean actionKeyDown) {
 		act(deltaTime);
 	}
 

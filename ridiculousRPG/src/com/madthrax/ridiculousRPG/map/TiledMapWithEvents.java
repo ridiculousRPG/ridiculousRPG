@@ -81,6 +81,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final char EVENT_CUSTOM_PROP_KZ = '$';
 	// the key is translated to lower case -> we are case insensitive
 	private static final String EVENT_PROP_ID = "id";
+	private static final String EVENT_PROP_BLOCKING = "blocking";
 	private static final String EVENT_PROP_MOVEHANDLER = "movehandler";
 	private static final String EVENT_PROP_ANIMATION = "animation";
 	private static final String EVENT_PROP_HANDLER = "eventhandler";
@@ -114,6 +115,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		int[][] layerTiles;
 		int[] row;
 		String prop;
+		EventObject ev;
 		ArrayList<MapRenderRegion> alTmp = new ArrayList<MapRenderRegion>(1000);
 		for (i = 0, len_i = map.layers.size(); i < len_i; i++) {
 			layerTiles = map.layers.get(i).tiles;
@@ -151,13 +153,19 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			TiledObjectGroup group = map.objectGroups.get(i);
 			for (j = 0, len_j = group.objects.size(); j < len_j; j++) {
 				TiledObject object = group.objects.get(j);
-				EventObject ev = new EventObject(object, group, atlas, map);
+				ev = new EventObject(object, group, atlas, map);
 				parseProperties(ev, object.properties);
 				put(object.name, ev);
 			}
 		}
+		// Compile all scripts after creating the events
+		// because scripts may use other events (for example to initialize the
+		// MoveTraceAdapter).
+		for (i = 0, len_i = dynamicRegions.size(); i < len_i; i++) {
+			dynamicRegions.get(i).init();
+		}
+
 		// insert half-planes around the map
-		EventObject ev;
 		put(null, ev = new EventObject());
 		ev.touchBound = new Rectangle(-1000f, -1000f, width + 2000f, 1000f);
 		put(null, ev = new EventObject());
@@ -182,14 +190,13 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			String key = entry.getKey();
 			if (key.length() == 0)
 				continue;
-			String val = entry.getValue();
+			String val = entry.getValue().replace("&quot;", "\"");
 			if (key.charAt(0) == EVENT_CUSTOM_PROP_KZ) {
 				ev.properties.put(key, val);
 			} else {
 				parseSingleProperty(ev, key, val);
 			}
 		}
-		ev.init();
 	}
 
 	private void parseSingleProperty(EventObject ev, String key, String val) {
@@ -198,6 +205,17 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		try {
 			if (EVENT_PROP_ID.equals(key)) {
 				ev.id = Integer.parseInt(val);
+			} else if (EVENT_PROP_BLOCKING.equals(key)) {
+				if ("true".equalsIgnoreCase(val)) {
+					ev.blockingBehaviour = BlockingBehaviour.BUILDING_LOW;
+				} else if ("false".equalsIgnoreCase(val)) {
+					ev.blockingBehaviour = BlockingBehaviour.FLYING_HIGH;
+				} else
+					try {
+						ev.blockingBehaviour = BlockingBehaviour.valueOf(val);
+					} catch (IllegalArgumentException e) {
+						e.printStackTrace();
+					}
 			} else if (EVENT_PROP_HANDLER.equals(key)) {
 				EventHandler evHandler = fromJson(EventHandler.class, val);
 				// merge both eventhandler
@@ -209,6 +227,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				}
 				ev.setEventHandler(evHandler);
 			} else if (key.startsWith(EVENT_PROP_ONPUSH)) {
+				ev.pushable = true;
 				if (ev.getEventHandler() == null) {
 					ev.setEventHandler(new EventExecScriptAdapter());
 				}
@@ -220,6 +239,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 							index.length() == 0 ? -1 : Integer.parseInt(index));
 				}
 			} else if (key.startsWith(EVENT_PROP_ONTOUCH)) {
+				ev.touchable = true;
 				if (ev.getEventHandler() == null) {
 					ev.setEventHandler(new EventExecScriptAdapter());
 				}
@@ -246,8 +266,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					ev.setEventHandler(new EventExecScriptAdapter());
 				}
 				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_ONCUSTOMEVENT.length())
-							.trim();
+					String index = key.substring(
+							EVENT_PROP_ONCUSTOMEVENT.length()).trim();
 					((EventExecScriptAdapter) ev.getEventHandler())
 							.execOnCustomTrigger(val, index.length() == 0 ? -1
 									: Integer.parseInt(index));
@@ -259,9 +279,9 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
 					String index = key.substring(EVENT_PROP_ONLOAD.length())
 							.trim();
-					((EventExecScriptAdapter) ev.getEventHandler())
-							.execOnLoad(val, index.length() == 0 ? -1
-									: Integer.parseInt(index));
+					((EventExecScriptAdapter) ev.getEventHandler()).execOnLoad(
+							val,
+							index.length() == 0 ? -1 : Integer.parseInt(index));
 				}
 			} else if (key.startsWith(EVENT_PROP_ONSTORE)) {
 				if (ev.getEventHandler() == null) {
@@ -391,8 +411,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	 * 
 	 * @param deltaTime
 	 */
-	public void compute(float deltaTime, boolean actionKeyPressed) {
-		triggerEventHandler.compute(deltaTime, actionKeyPressed);
+	public void compute(float deltaTime, boolean actionKeyDown) {
+		triggerEventHandler.compute(deltaTime, actionKeyDown);
 	}
 
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {

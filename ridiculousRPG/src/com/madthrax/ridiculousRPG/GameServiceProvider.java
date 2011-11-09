@@ -217,7 +217,7 @@ public class GameServiceProvider implements Initializable {
 		// 10 FPS
 		if (deltaTime > .1f)
 			deltaTime = .1f;
-		boolean actionKeyPressed = GameBase.$().isActionKeyPressed();
+		boolean actionKeyPressed = GameBase.$().isActionKeyDown();
 		if (freezeTheWorld) {
 			if (hasAttention.get() instanceof Computable)
 				((Computable) hasAttention.get()).compute(deltaTime,

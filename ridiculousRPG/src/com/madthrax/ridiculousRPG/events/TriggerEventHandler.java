@@ -38,7 +38,7 @@ public class TriggerEventHandler extends Thread implements Disposable,
 	private boolean disposed = false;
 	private float deltaTime;
 	private boolean computationReady = false;
-	private boolean actionKeyPressed = false;
+	private boolean actionKeyDown = false;
 
 	public TriggerEventHandler(List<EventObject> events) {
 		this.events = events;
@@ -53,7 +53,7 @@ public class TriggerEventHandler extends Thread implements Disposable,
 			float deltaTime = this.deltaTime;
 			this.deltaTime = 0f;
 			try {
-				callEventHandler(deltaTime, events, actionKeyPressed);
+				callEventHandler(deltaTime, events, actionKeyDown);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -64,7 +64,7 @@ public class TriggerEventHandler extends Thread implements Disposable,
 
 	// Call all event handler
 	private void callEventHandler(float deltaTime,
-			List<EventObject> dynamicRegions, boolean actionKeyPressed) throws ScriptException {
+			List<EventObject> dynamicRegions, boolean actionKeyDown) throws ScriptException {
 		EventObject obj1;
 		EventObject obj2;
 		int i, j;
@@ -78,12 +78,12 @@ public class TriggerEventHandler extends Thread implements Disposable,
 				int tmpSize = obj1.collision.size();
 				for (j = 0; j < tmpSize && !consumed && !disposed; j++) {
 					obj2 = obj1.collision.get(j);
-					consumed = obj2.getEventHandler() != null
+					consumed = obj2.touchable
 							&& obj2.getEventHandler().touch(obj2, obj1);
 				}
-				if (!consumed && actionKeyPressed) {
+				if (!consumed && actionKeyDown) {
 					for (EventObject pushed : obj1.reachable) {
-						consumed = pushed.getEventHandler() != null
+						consumed = pushed.pushable
 								&& pushed.getEventHandler().push(pushed, obj1);
 						if (consumed || disposed)
 							break;
@@ -98,7 +98,7 @@ public class TriggerEventHandler extends Thread implements Disposable,
 	 * Invoke parallel execution of the {@link EventHandler}.
 	 */
 
-	public void compute(float deltaTime, boolean actionKeyPressed) {
+	public void compute(float deltaTime, boolean actionKeyDown) {
 		// Load frequently used pointers/variables into register
 		List<EventObject> events = this.events;
 		int dynSize = events.size();
@@ -156,7 +156,7 @@ public class TriggerEventHandler extends Thread implements Disposable,
 			obj1.commitMove();
 		}
 		// shared variables for parallel computation
-		this.actionKeyPressed = actionKeyPressed;
+		this.actionKeyDown = actionKeyDown;
 		this.deltaTime += deltaTime;
 		this.computationReady = true;
 	}

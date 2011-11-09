@@ -35,9 +35,9 @@ public interface Computable {
 	 * 
 	 * @param deltaTime
 	 *            time elapsed since last call (in seconds)
-	 * @param actionKeyPressed
+	 * @param actionKeyDown
 	 *            indicates if the player wants an action to be performed
-	 * @see GameBase#isActionKeyPressed()
+	 * @see GameBase#isActionKeyDown()
 	 */
-	public void compute(float deltaTime, boolean actionKeyPressed);
+	public void compute(float deltaTime, boolean actionKeyDown);
 }

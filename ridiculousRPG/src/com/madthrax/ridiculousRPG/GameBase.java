@@ -48,13 +48,15 @@ public class GameBase extends GameServiceDefaultImpl implements
 	private Camera camera;
 	private ObjectState globalState;
 	private GameServiceProvider serviceProvider;
+	private ScriptFactory scriptFactory;
 
 	private int screenWidth, screenHeight;
 	private int planeWidth, planeHeight;
 	private int originalWidth, originalHeight;
 
 	private boolean fullscreen, debugMode, resizeView;
-	private boolean controlKeyPressed, actionKeyPressed;
+	private boolean controlKeyPressedOld, controlKeyPressed,
+			actionKeyPressedOld, actionKeyPressed;
 
 	private Color gameColorTint = new Color(1f, 1f, 1f, 1f);
 	private float gameColorBits = gameColorTint.toFloatBits();
@@ -84,30 +86,30 @@ public class GameBase extends GameServiceDefaultImpl implements
 	}
 
 	/**
-	 * The {@link GameServiceProvider} from the first GameBase instance which
-	 * has been initialized will be used to manage the service.<br>
-	 * A shortcut for calling {@link GameBase#$serviceProvider()}
-	 * {@link GameServiceProvider#putService(GameService)
-	 * .putService(GameService)}
-	 * 
-	 * @see {@link GameServiceProvider#putService(GameService)}
+	 * The {@link ScriptFactory} from the first GameBase instance which has been
+	 * initialized.<br>
+	 * A shortcut for calling {@link GameBase#$()}{@link #getScriptFactory()
+	 * .getScriptFactory()}
 	 */
-	public static GameService $putService(GameService service) {
-		return $().getServiceProvider().putService(service);
+	public static ScriptFactory $scriptFactory() {
+		return $().getScriptFactory();
 	}
 
 	public GameBase(GameOptions options) {
 		debugMode = options.debug;
 		fullscreen = options.fullscreen;
 		resizeView = options.resize;
+		scriptFactory = options.scriptFactory;
 
 		serviceProvider = new GameServiceProvider();
+		serviceProvider.putService(scriptFactory);
 		if (options.initGameService[0] instanceof DisplayErrorService) {
 			serviceProvider.requestAttention(options.initGameService[0], true,
 					true);
-		} else for (GameService service : options.initGameService) {
-			serviceProvider.putService(service);
-		}
+		} else
+			for (GameService service : options.initGameService) {
+				serviceProvider.putService(service);
+			}
 	}
 
 	public final void create() {
@@ -145,9 +147,11 @@ public class GameBase extends GameServiceDefaultImpl implements
 
 	public final void render() {
 		try {
+			controlKeyPressedOld = controlKeyPressed;
 			controlKeyPressed = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)
 					|| Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT)
 					|| Gdx.input.isTouched(2);
+			actionKeyPressedOld = actionKeyPressed;
 			actionKeyPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE)
 					|| Gdx.input.isKeyPressed(Input.Keys.ENTER)
 					|| Gdx.input.isTouched(1)
@@ -184,6 +188,29 @@ public class GameBase extends GameServiceDefaultImpl implements
 	}
 
 	/**
+	 * Signals if the control key is just pressed.<br>
+	 * This method is safe for hiding the keyboard on mobile devices
+	 * 
+	 * @return true if left or right control key is just pressed or the third
+	 *         finger touches the touchpad
+	 */
+	public boolean isControlKeyDown() {
+		return controlKeyPressed && !controlKeyPressedOld;
+	}
+
+	/**
+	 * Signals if the action key is just pressed.<br>
+	 * This method is safe for hiding the keyboard on mobile devices
+	 * 
+	 * @return true if space, enter or the right mouse button is just pressed
+	 *         (left mouse button is used for movement) or the second finger
+	 *         touches the touchpad (first finger is used for movement)
+	 */
+	public boolean isActionKeyDown() {
+		return actionKeyPressed && !actionKeyPressedOld;
+	}
+
+	/**
 	 * Signals if the control key is pressed.<br>
 	 * This method is safe for hiding the keyboard on mobile devices
 	 * 
@@ -191,7 +218,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 	 *         touches the touchpad
 	 */
 	public boolean isControlKeyPressed() {
-		return controlKeyPressed;
+		return controlKeyPressed && controlKeyPressedOld;
 	}
 
 	/**
@@ -203,7 +230,30 @@ public class GameBase extends GameServiceDefaultImpl implements
 	 *         the touchpad (first finger is used for movement)
 	 */
 	public boolean isActionKeyPressed() {
-		return actionKeyPressed;
+		return actionKeyPressed && actionKeyPressedOld;
+	}
+
+	/**
+	 * Signals if the control key is just released.<br>
+	 * This method is safe for hiding the keyboard on mobile devices
+	 * 
+	 * @return true if left or right control key is just released or the third
+	 *         finger released the touchpad
+	 */
+	public boolean isControlKeyUp() {
+		return controlKeyPressedOld && !controlKeyPressed;
+	}
+
+	/**
+	 * Signals if the action key is just released.<br>
+	 * This method is safe for hiding the keyboard on mobile devices
+	 * 
+	 * @return true if space, enter or the right mouse button is just released
+	 *         (left mouse button is used for movement) or the second finger
+	 *         released the touchpad (first finger is used for movement)
+	 */
+	public boolean isActionKeyUp() {
+		return actionKeyPressedOld && !actionKeyPressed;
 	}
 
 	public void resize(int width, int height) {
@@ -370,6 +420,10 @@ public class GameBase extends GameServiceDefaultImpl implements
 
 	public int getOriginalHeight() {
 		return originalHeight;
+	}
+
+	public ScriptFactory getScriptFactory() {
+		return scriptFactory;
 	}
 
 	/**

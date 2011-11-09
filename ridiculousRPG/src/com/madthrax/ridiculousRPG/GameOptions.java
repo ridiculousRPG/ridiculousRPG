@@ -16,6 +16,7 @@
 
 package com.madthrax.ridiculousRPG;
 
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
@@ -44,6 +45,7 @@ public class GameOptions {
 	public boolean vSyncEnabled = false;
 	public boolean debug = false;
 	public GameService[] initGameService;
+	public ScriptFactory scriptFactory;
 
 	/**
 	 * Constructs an option object with the specified game services for
@@ -61,15 +63,15 @@ public class GameOptions {
 	}
 
 	/**
-	 * This constructor parses the options from the command line.
-	 * 
-	 * @param argv
+	 * This constructor parses the options from an properties file.
+	 * The name of the file is specified by {@link GameLauncher#GAME_OPTIONS_FILE}
+	 * @param iniFile
 	 */
 	public GameOptions(FileHandle iniFile) {
 		Properties props = new Properties();
 		String propTmp;
 		try {
-			props.load(iniFile.read());
+			props.load(new InputStreamReader(iniFile.read(), "UTF-8"));
 
 			propTmp = props.getProperty("TITLE");
 			if (propTmp != null && propTmp.trim().length() > 0) {
@@ -115,6 +117,14 @@ public class GameOptions {
 			propTmp = props.getProperty("HEIGHT");
 			if (propTmp != null && propTmp.trim().length() > 0) {
 				height = Integer.parseInt(propTmp.trim());
+			}
+
+			propTmp = props.getProperty("SCRIPT_FACTORY");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				scriptFactory = (ScriptFactory) Class.forName(
+						propTmp.trim()).newInstance();
+			} else {
+				scriptFactory = new ScriptFactory();
 			}
 
 			propTmp = props.getProperty("INITGAMESERVICE");

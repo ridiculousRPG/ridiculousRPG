@@ -79,6 +79,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public Rectangle drawBound = new Rectangle();
 	public boolean visible = false;
 	public boolean pushable = false;
+	public boolean touchable = false;
 	public boolean initialized = false;
 	public float rotation = 0f, scaleX = 1f, scaleY = 1f;
 	/**
@@ -311,19 +312,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			TileAtlas atlas, TiledMap map) {
 		float mapHeight = map.height * map.tileHeight;
 		name = object.name;
-		String blk = object.properties.get("blocking");
-		if (blk != null) {
-			if ("true".equalsIgnoreCase(blk)) {
-				blockingBehaviour = BlockingBehaviour.BUILDING_LOW;
-			} else if ("false".equalsIgnoreCase(blk)) {
-				blockingBehaviour = BlockingBehaviour.FLYING_HIGH;
-			} else
-				try {
-					blockingBehaviour = BlockingBehaviour.valueOf(blk);
-				} catch (IllegalArgumentException e) {
-					e.printStackTrace();
-				}
-		}
 		String prop = layer.properties.get("height");
 		if (prop != null && prop.length() > 0)
 			try {
@@ -769,6 +757,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			imageOrAnimationAutoDispose.dispose();
 		visible = false;
 		pushable = false;
+		touchable = false;
 		moves = false;
 		animation = null;
 		image = null;
