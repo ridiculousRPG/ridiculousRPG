@@ -24,13 +24,13 @@ import java.util.List;
 import java.util.Set;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture.TextureFilter;
-import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.TextureDict;
 import com.badlogic.gdx.graphics.TextureRef;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
+import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g2d.tiled.TileAtlas;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObject;
@@ -55,8 +55,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		Initializable, Disposable {
 	private static final float COLOR_WHITE_BITS = Color.WHITE.toFloatBits();
 
-	//TODO: refactor this!!!
-	private Disposable imageOrAnimationAutoDispose;
 	private TileAnimation animation;
 	private TextureRef imageRef;
 	private TextureRegion image;
@@ -647,7 +645,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		if (animation == null) {
 			animation = new TileAnimation(path, tileWidth, tileHeight, anzCols,
 					anzRows);
-			imageOrAnimationAutoDispose = animation;
 			image = animation.getActualTextureRegion();
 		} else {
 			image = animation.setAnimationTexture(path, tileWidth, tileHeight,
@@ -704,7 +701,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		if (animation == null) {
 			animation = new TileAnimation(path, tileWidth, tileHeight, anzCols,
 					anzRows, isCompressed);
-			imageOrAnimationAutoDispose = animation;
 			image = animation.getActualTextureRegion();
 		} else {
 			image = animation.setAnimationTexture(path, tileWidth, tileHeight,
@@ -737,7 +733,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			boolean estimateTouchBound) {
 		TileAnimation old = this.animation;
 		this.animation = animation;
-		imageOrAnimationAutoDispose = animation;
 		image = animation.getActualTextureRegion();
 		int width = image.getRegionWidth();
 		int height = image.getRegionHeight();
@@ -783,15 +778,18 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	}
 
 	public void dispose() {
-		if (imageOrAnimationAutoDispose != null)
-			imageOrAnimationAutoDispose.dispose();
-		if (imageRef != null)
+		if (animation != null) {
+			animation.dispose();
+			animation = null;
+		}
+		if (imageRef != null) {
 			imageRef.unload();
+			imageRef = null;
+		}
 		visible = false;
 		pushable = false;
 		touchable = false;
 		moves = false;
-		animation = null;
 		image = null;
 		setMoveHandler(null);
 	}
