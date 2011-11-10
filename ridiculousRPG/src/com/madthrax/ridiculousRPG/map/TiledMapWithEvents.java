@@ -27,10 +27,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.TextureDict;
-import com.badlogic.gdx.graphics.TextureRef;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
+import com.badlogic.gdx.graphics.TextureDict;
+import com.badlogic.gdx.graphics.TextureRef;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g2d.tiled.TileAtlas;
@@ -86,6 +86,11 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final char EVENT_CUSTOM_PROP_KZ = '$';
 	// the key is translated to lower case -> we are case insensitive
 	private static final String EVENT_PROP_ID = "id";
+	private static final String EVENT_PROP_OUTREACH = "outreach";
+	private static final String EVENT_PROP_ROTATION = "rotation";
+	private static final String EVENT_PROP_SCALEX = "scalex";
+	private static final String EVENT_PROP_SCALEY = "scaley";
+	private static final String EVENT_PROP_IMAGE = "image";
 	private static final String EVENT_PROP_BLOCKING = "blocking";
 	private static final String EVENT_PROP_MOVEHANDLER = "movehandler";
 	private static final String EVENT_PROP_ANIMATION = "animation";
@@ -189,10 +194,10 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	 */
 	protected void parseProperties(EventObject ev, HashMap<String, String> props) {
 		for (Entry<String, String> entry : props.entrySet()) {
-			String key = entry.getKey();
-			if (key.length() == 0)
+			String key = entry.getKey().trim();
+			String val = entry.getValue().replace("&quot;", "\"").trim();
+			if (key.length() == 0 || val.length()==0)
 				continue;
-			String val = entry.getValue().replace("&quot;", "\"");
 			if (key.charAt(0) == EVENT_CUSTOM_PROP_KZ) {
 				ev.properties.put(key, val);
 			} else {
@@ -227,6 +232,21 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				}
 				if (evHandler instanceof MovementHandler) {
 					ev.setMoveHandler((MovementHandler) evHandler);
+				}
+			} else if (EVENT_PROP_OUTREACH.equals(key)) {
+				ev.outreach = Integer.parseInt(val);
+			} else if (EVENT_PROP_ROTATION.equals(key)) {
+				ev.rotation = Float.parseFloat(val);
+			} else if (EVENT_PROP_SCALEX.equals(key)) {
+				ev.scaleX = Float.parseFloat(val);
+			} else if (EVENT_PROP_SCALEY.equals(key)) {
+				ev.scaleY = Float.parseFloat(val);
+			} else if (EVENT_PROP_IMAGE.equals(key)) {
+				FileHandle fh = Gdx.files.internal(val);
+				if (fh.exists()) {
+					ev.setImage(TextureDict.loadTexture(val,
+							TextureFilter.Nearest, TextureFilter.Nearest,
+							TextureWrap.ClampToEdge, TextureWrap.ClampToEdge));
 				}
 			} else if (EVENT_PROP_ANIMATION.equals(key)) {
 				FileHandle fh = Gdx.files.internal(val);

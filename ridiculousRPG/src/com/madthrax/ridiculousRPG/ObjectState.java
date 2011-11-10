@@ -32,7 +32,8 @@ import com.badlogic.gdx.files.FileHandle;
  * with the frame rendering.<br>
  * ATTENTION: Don't waste space by using high index values.<br>
  * The sizes of the internally used arrays are directly connected to the highest
- * index value as follows:<br> {@code len = ((index+7) >> 3) << 3}
+ * index value as follows:<br>
+ * {@code len = ((index+7) >> 3) << 3}
  * 
  * @author Alexander Baumgartner
  */
@@ -43,12 +44,12 @@ public class ObjectState implements Serializable {
 	private boolean[] boolVar;
 	private float[] floatVar;
 	private String[] stringVar;
+	private byte[][] rawBytesVar;
 	private ObjectState[] childFragment;
 
 	// We don't want to copy the array for every new element
 	// actually increment by 1<<3 = 8
-	private static final int INC_SHIFT = 3; // 1<<1 = 2 1<<2 = 4 1<<3 = 8 1<<4 =
-	// 16 ...
+	private static final int INC_SHIFT = 3; // 1<<1 = 2 1<<2 = 4 1<<3 = 8
 	private static final int INC_BY = 1 << INC_SHIFT;
 	private static final int INC_REST = INC_BY - 1;
 
@@ -354,6 +355,73 @@ public class ObjectState implements Serializable {
 	}
 
 	/**
+	 * Reads a {@link byte} array variable
+	 * 
+	 * @param index
+	 * @return
+	 */
+	public synchronized byte[] getRawBytes(int index) {
+		return rawBytesVar.length > index ? rawBytesVar[index] : null;
+	}
+
+	/**
+	 * Stores a {@link byte} array variable
+	 * 
+	 * @param index
+	 * @param value
+	 */
+	public synchronized void setRawBytes(int index, byte[] value) {
+		byte[][] bytesVar = this.rawBytesVar;
+		if (bytesVar == null) {
+			if (value == null)
+				return;
+			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			bytesVar = new byte[newLen][];
+			this.rawBytesVar = bytesVar;
+		}
+		int len = bytesVar.length;
+		if (len > index) {
+			rawBytesVar[index] = value;
+			// shrink
+			if (value == null && index >= len - INC_BY) {
+				int newLen = len;
+				while (newLen > 0 && bytesVar[newLen - 1] == null)
+					newLen--; // remove trailing empty elements
+				newLen = ((newLen + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+				if (newLen == 0) {
+					this.rawBytesVar = null;
+				} else {
+					this.rawBytesVar = new byte[newLen][];
+					System.arraycopy(bytesVar, 0, this.rawBytesVar, 0, newLen);
+				}
+			}
+			return;
+		} else if (value != null) {
+			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			bytesVar = new byte[newLen][];
+			System.arraycopy(this.rawBytesVar, 0, bytesVar, 0, len);
+			bytesVar[index] = value;
+			this.rawBytesVar = bytesVar;
+		}
+	}
+
+	/**
+	 * Low performance software-implementation of compare and swap
+	 * 
+	 * @param index
+	 * @param oldVal
+	 * @param newVal
+	 * @return the old stored value
+	 */
+	public synchronized byte[] casRawBytes(int index, byte[] oldVal, byte[] newVal) {
+		byte[] actVal = getRawBytes(index);
+		if (oldVal == actVal) {
+			setRawBytes(index, newVal);
+		}
+		return actVal;
+	}
+
+	/**
 	 * Reads a child by it's index or creates a new {@link ObjectState} if no
 	 * child with the given index exists.
 	 * 
@@ -398,9 +466,7 @@ public class ObjectState implements Serializable {
 					this.childFragment = null;
 				} else {
 					this.childFragment = new ObjectState[newLen];
-					System
-							.arraycopy(childVar, 0, this.childFragment, 0,
-									newLen);
+					System.arraycopy(childVar, 0, this.childFragment, 0, newLen);
 				}
 			}
 			return;

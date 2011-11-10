@@ -24,13 +24,13 @@ import java.util.List;
 import java.util.Set;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.TextureDict;
-import com.badlogic.gdx.graphics.TextureRef;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
+import com.badlogic.gdx.graphics.TextureDict;
+import com.badlogic.gdx.graphics.TextureRef;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.tiled.TileAtlas;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObject;
@@ -55,8 +55,10 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		Initializable, Disposable {
 	private static final float COLOR_WHITE_BITS = Color.WHITE.toFloatBits();
 
+	//TODO: refactor this!!!
 	private Disposable imageOrAnimationAutoDispose;
 	private TileAnimation animation;
+	private TextureRef imageRef;
 	private TextureRegion image;
 	private Point2D.Float softMove = new Point2D.Float(0f, 0f);
 	private float z;
@@ -148,20 +150,31 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public EventObject(String name, final String imagePath, int x, int y,
 			MovementHandler moveHandler, BlockingBehaviour blockingBehaviour,
 			Speed moveSpeed) {
-		this(name, new TextureRegion(TextureDict.loadTexture(imagePath,
-				TextureFilter.Linear, TextureFilter.Linear,
-				TextureWrap.ClampToEdge, TextureWrap.ClampToEdge).get()), x, y,
-				moveHandler, blockingBehaviour, moveSpeed);
-		// propably not the best solution, but it works :/ refactoring welcome.
-		imageOrAnimationAutoDispose = new Disposable() {
-			public void dispose() {
-				TextureRef tRef = TextureDict.loadTexture(imagePath,
-						TextureFilter.Linear, TextureFilter.Linear,
-						TextureWrap.ClampToEdge, TextureWrap.ClampToEdge);
-				tRef.unload();
-				tRef.unload(); // we loaded it twice
-			}
-		};
+		this(name, TextureDict.loadTexture(imagePath, TextureFilter.Linear,
+				TextureFilter.Linear, TextureWrap.ClampToEdge,
+				TextureWrap.ClampToEdge), x, y, moveHandler, blockingBehaviour,
+				moveSpeed);
+	}
+
+	/**
+	 * Creates a new event.<br>
+	 * 
+	 * @param name
+	 *            the name of this event. Don't use the name as key. Names may
+	 *            change and they don't need to be unique.
+	 * @param region
+	 *            This region will be disposed automatically!
+	 * @param x
+	 *            the starting x position
+	 * @param y
+	 *            the starting y position
+	 */
+	public EventObject(String name, TextureRef region, int x, int y,
+			MovementHandler moveHandler, BlockingBehaviour blockingBehaviour,
+			Speed moveSpeed) {
+		this(name, new TextureRegion(region.get()), x, y, moveHandler,
+				blockingBehaviour, moveSpeed);
+		imageRef = region;
 	}
 
 	/**
@@ -733,7 +746,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		if (estimateTouchBound) {
 			estimateTouchBound();
 		} else {
-			drawBound.x = touchBound.x - (width-getWidth())/2;
+			drawBound.x = touchBound.x - (width - getWidth()) / 2;
 			drawBound.y = touchBound.y;
 		}
 		return old;
@@ -754,6 +767,17 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		return eventHandler;
 	}
 
+	/**
+	 * This texture reference will automatically be unloaded
+	 * @param tRef
+	 */
+	public void setImage(TextureRef tRef) {
+		if (imageRef != null)
+			imageRef.unload();
+		imageRef = tRef;
+		image = new TextureRegion(tRef.get());
+	}
+
 	public void setEventHandler(EventHandler eventHandler) {
 		this.eventHandler = eventHandler;
 	}
@@ -761,6 +785,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public void dispose() {
 		if (imageOrAnimationAutoDispose != null)
 			imageOrAnimationAutoDispose.dispose();
+		if (imageRef != null)
+			imageRef.unload();
 		visible = false;
 		pushable = false;
 		touchable = false;
