@@ -23,7 +23,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
-import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionCache;
+import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.ui.DisplayTextService.Alignment;
 
 /**
@@ -36,7 +36,7 @@ public class StandardMenuService extends ActorsOnStageService {
 		PAUSED, START_MENU, GAME_MENU, IDLE
 	};
 
-	private TextureRegionCache background;
+	private TextureRegionRef background;
 	private ServiceState serviceState = ServiceState.IDLE;
 
 	/*

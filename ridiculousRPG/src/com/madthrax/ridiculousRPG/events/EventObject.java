@@ -24,10 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.TextureDict;
-import com.badlogic.gdx.graphics.TextureRef;
-import com.badlogic.gdx.graphics.Texture.TextureFilter;
-import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
@@ -39,6 +35,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.ObjectState;
+import com.madthrax.ridiculousRPG.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.animations.TileAnimation;
 import com.madthrax.ridiculousRPG.events.handler.EventHandler;
 import com.madthrax.ridiculousRPG.map.MapRenderRegion;
@@ -56,10 +54,9 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	private static final float COLOR_WHITE_BITS = Color.WHITE.toFloatBits();
 
 	private TileAnimation animation;
-	private TextureRef imageRef;
+	private TextureRegionRef imageRef;
 	private TextureRegion image;
 	private Point2D.Float softMove = new Point2D.Float(0f, 0f);
-	private float z;
 	private EventHandler eventHandler;
 	private Color color = new Color(1f, 1f, 1f, 1f);
 	private float colorFloatBits = color.toFloatBits();
@@ -76,6 +73,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 */
 	public int id = -1;
 	public String name;
+	public float z;
 	public Rectangle drawBound = new Rectangle();
 	public boolean visible = false;
 	public boolean pushable = false;
@@ -148,31 +146,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public EventObject(String name, final String imagePath, int x, int y,
 			MovementHandler moveHandler, BlockingBehaviour blockingBehaviour,
 			Speed moveSpeed) {
-		this(name, TextureDict.loadTexture(imagePath, TextureFilter.Linear,
-				TextureFilter.Linear, TextureWrap.ClampToEdge,
-				TextureWrap.ClampToEdge), x, y, moveHandler, blockingBehaviour,
-				moveSpeed);
-	}
-
-	/**
-	 * Creates a new event.<br>
-	 * 
-	 * @param name
-	 *            the name of this event. Don't use the name as key. Names may
-	 *            change and they don't need to be unique.
-	 * @param region
-	 *            This region will be disposed automatically!
-	 * @param x
-	 *            the starting x position
-	 * @param y
-	 *            the starting y position
-	 */
-	public EventObject(String name, TextureRef region, int x, int y,
-			MovementHandler moveHandler, BlockingBehaviour blockingBehaviour,
-			Speed moveSpeed) {
-		this(name, new TextureRegion(region.get()), x, y, moveHandler,
+		this(name, TextureRegionLoader.load(imagePath), x, y, moveHandler,
 				blockingBehaviour, moveSpeed);
-		imageRef = region;
 	}
 
 	/**
@@ -182,13 +157,13 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 *            the name of this event. Don't use the name as key. Names may
 	 *            change and they don't need to be unique.
 	 * @param region
-	 *            You have to dispose the texture yourself!
+	 *            This texture reference will automatically be unloaded
 	 * @param x
 	 *            the starting x position
 	 * @param y
 	 *            the starting y position
 	 */
-	public EventObject(String name, TextureRegion region, int x, int y,
+	public EventObject(String name, TextureRegionRef region, int x, int y,
 			MovementHandler moveHandler) {
 		this(name, region, x, y, moveHandler, BlockingBehaviour.NONE,
 				Speed.S07_NORMAL);
@@ -201,16 +176,16 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 *            the name of this event. Don't use the name as key. Names may
 	 *            change and they don't need to be unique.
 	 * @param region
-	 *            You have to dispose the texture yourself!
+	 *            This texture reference will automatically be unloaded
 	 * @param x
 	 *            the starting x position
 	 * @param y
 	 *            the starting y position
 	 */
-	public EventObject(String name, TextureRegion region, int x, int y,
+	public EventObject(String name, TextureRegionRef region, int x, int y,
 			MovementHandler moveHandler, BlockingBehaviour blockingBehaviour,
 			Speed moveSpeed) {
-		image = region;
+		image = imageRef = region;
 		visible = true;
 		this.moveSpeed = moveSpeed;
 		addX(x);
@@ -296,8 +271,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		addY(y);
 		z = .1f;
 		setAnimationTexture(animationPath, animationTileWidth,
-				animationTileHeight, anzCols, anzRows, isAnimationCompressed,
-				true);
+				animationTileHeight, anzCols, anzRows, true,
+				isAnimationCompressed);
 		this.image = animation.setAnimationPosition(startDirection);
 		this.visible = true;
 		this.moveSpeed = moveSpeed;
@@ -323,28 +298,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			TileAtlas atlas, TiledMap map) {
 		float mapHeight = map.height * map.tileHeight;
 		name = object.name;
-		String prop = layer.properties.get("height");
-		if (prop != null && prop.length() > 0)
-			try {
-				z = Integer.parseInt(prop);
-			} catch (NumberFormatException e) {
-			}
-		prop = object.properties.get("height");
-		if (prop != null && prop.length() > 0)
-			try {
-				z = +Integer.parseInt(prop);
-			} catch (NumberFormatException e) {
-			}
 		if (object.gid > 0) {
 			AtlasRegion region = (AtlasRegion) atlas.getRegion(object.gid);
-			if (prop == null || prop.length() == 0) {
-				prop = map.getTileProperty(object.gid, "height");
-				if (z == 0 && prop != null && prop.length() > 0)
-					try {
-						z = +Integer.parseInt(prop);
-					} catch (NumberFormatException e) {
-					}
-			}
 			image = region;
 			visible = true;
 			addX(region.offsetX + object.x);
@@ -599,6 +554,17 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	}
 
 	/**
+	 * Uses TileAnimation.stop() to set the image for this event.<br>
+	 * 
+	 * @see {@link TileAnimation#stop()}
+	 */
+	public void resetImage() {
+		stop();
+		if (imageRef != null)
+			image = imageRef;
+	}
+
+	/**
 	 * ATTENTION: The new animation texture must have exactly the same form as
 	 * the old one!<br>
 	 * Image size must be the same, tile (=character) size too,...<br>
@@ -642,18 +608,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 */
 	public void setAnimationTexture(String path, int tileWidth, int tileHeight,
 			int anzCols, int anzRows, boolean estimateTouchBound) {
-		if (animation == null) {
-			animation = new TileAnimation(path, tileWidth, tileHeight, anzCols,
-					anzRows);
-			image = animation.getActualTextureRegion();
-		} else {
-			image = animation.setAnimationTexture(path, tileWidth, tileHeight,
-					anzCols, anzRows, false);
-		}
-		this.drawBound.width = tileWidth;
-		this.drawBound.height = tileHeight;
-		if (estimateTouchBound)
-			estimateTouchBound();
+		setAnimationTexture(path, tileWidth, tileHeight, anzCols, anzRows,
+				estimateTouchBound, false);
 	}
 
 	/**
@@ -677,6 +633,9 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 *            The number of columns (how much tiles are in one row).
 	 * @param anzRows
 	 *            The number of rows.
+	 * @param estimateTouchBound
+	 *            true, if you want to recompute the touchBound from the new
+	 *            tileWidth and tileHeight.
 	 * @param isCompressed
 	 *            true if the animation should be uncompressed. (default=false)
 	 *            <ul>
@@ -691,13 +650,10 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 *            And the fifth row represents the north east direction and will
 	 *            be flipped to the north west.
 	 *            </ul>
-	 * @param estimateTouchBound
-	 *            true, if you want to recompute the touchBound from the new
-	 *            tileWidth and tileHeight.
 	 */
 	public void setAnimationTexture(String path, int tileWidth, int tileHeight,
-			int anzCols, int anzRows, boolean isCompressed,
-			boolean estimateTouchBound) {
+			int anzCols, int anzRows, boolean estimateTouchBound,
+			boolean isCompressed) {
 		if (animation == null) {
 			animation = new TileAnimation(path, tileWidth, tileHeight, anzCols,
 					anzRows, isCompressed);
@@ -767,11 +723,11 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * 
 	 * @param tRef
 	 */
-	public void setImage(TextureRef tRef) {
+	public void setImage(TextureRegionRef texture) {
 		if (imageRef != null)
-			imageRef.unload();
-		imageRef = tRef;
-		image = new TextureRegion(tRef.get());
+			imageRef.dispose();
+		imageRef = texture;
+		image = texture;
 	}
 
 	public void setEventHandler(EventHandler eventHandler) {
@@ -784,7 +740,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			animation = null;
 		}
 		if (imageRef != null) {
-			imageRef.unload();
+			imageRef.dispose();
 			imageRef = null;
 		}
 		visible = false;

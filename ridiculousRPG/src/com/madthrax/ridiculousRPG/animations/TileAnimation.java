@@ -16,12 +16,10 @@
 
 package com.madthrax.ridiculousRPG.animations;
 
-import com.badlogic.gdx.graphics.Texture.TextureFilter;
-import com.badlogic.gdx.graphics.Texture.TextureWrap;
-import com.badlogic.gdx.graphics.TextureDict;
-import com.badlogic.gdx.graphics.TextureRef;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Disposable;
+import com.madthrax.ridiculousRPG.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.events.Direction;
 import com.madthrax.ridiculousRPG.events.Speed;
 
@@ -37,7 +35,7 @@ import com.madthrax.ridiculousRPG.events.Speed;
  * @author Alexander Baumgartner
  */
 public class TileAnimation implements Disposable {
-	private TextureRef animationTexture;
+	private TextureRegionRef animationTexture;
 	private TextureRegion[][] animationTiles; // [row][col]
 	private int animationRow = 0, animationCol = 0;
 	private float animationTimer = 1.001f;
@@ -262,13 +260,10 @@ public class TileAnimation implements Disposable {
 	public TextureRegion setAnimationTexture(String path, int tileWidth,
 			int tileHeight, int anzCols, int anzRows, boolean isCompressed) {
 		if (animationTexture != null)
-			animationTexture.unload();
-		animationTexture = TextureDict.loadTexture(path, TextureFilter.Nearest,
-				TextureFilter.Nearest, TextureWrap.ClampToEdge,
-				TextureWrap.ClampToEdge);
-		TextureRegion region = new TextureRegion(animationTexture.get(), 0, 0,
-				tileWidth * anzCols, tileHeight * anzRows);
-		animationTiles = region.split(tileWidth, tileHeight);
+			animationTexture.dispose();
+		animationTexture = TextureRegionLoader.load(path, 0, 0, tileWidth
+				* anzCols, tileHeight * anzRows);
+		animationTiles = animationTexture.split(tileWidth, tileHeight);
 		if (isCompressed)
 			animationTiles = uncompressAnimation(animationTiles);
 		return animationTiles[animationRow % animationTiles.length][animationCol
@@ -479,6 +474,6 @@ public class TileAnimation implements Disposable {
 
 	public void dispose() {
 		if (animationTexture != null)
-			animationTexture.unload();
+			animationTexture.dispose();
 	}
 }

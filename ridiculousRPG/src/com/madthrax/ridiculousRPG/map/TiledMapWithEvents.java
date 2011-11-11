@@ -27,10 +27,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.Texture.TextureFilter;
-import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.TextureDict;
 import com.badlogic.gdx.graphics.TextureRef;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
+import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g2d.tiled.TileAtlas;
@@ -44,6 +44,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntMap;
 import com.madthrax.ridiculousRPG.GameBase;
+import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.animations.TileAnimation;
 import com.madthrax.ridiculousRPG.events.BlockingBehaviour;
 import com.madthrax.ridiculousRPG.events.EventObject;
@@ -86,6 +87,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final char EVENT_CUSTOM_PROP_KZ = '$';
 	// the key is translated to lower case -> we are case insensitive
 	private static final String EVENT_PROP_ID = "id";
+	private static final String EVENT_PROP_HEIGHT = "height";
 	private static final String EVENT_PROP_OUTREACH = "outreach";
 	private static final String EVENT_PROP_ROTATION = "rotation";
 	private static final String EVENT_PROP_SCALEX = "scalex";
@@ -127,7 +129,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		ArrayList<MapRenderRegion> alTmp = new ArrayList<MapRenderRegion>(1000);
 		for (i = 0, len_i = map.layers.size(); i < len_i; i++) {
 			layerTiles = map.layers.get(i).tiles;
-			prop = map.layers.get(i).properties.get("height");
+			prop = map.layers.get(i).properties.get(EVENT_PROP_HEIGHT);
 			layer_z = 0;
 			if (prop != null && prop.length() > 0)
 				try {
@@ -141,7 +143,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					int tile = row[k];
 					if (tile > 0) {
 						z = layer_z;
-						prop = map.getTileProperty(tile, "height");
+						prop = map.getTileProperty(tile, EVENT_PROP_HEIGHT);
 						if (prop != null && prop.length() > 0)
 							try {
 								z += Integer.parseInt(prop);
@@ -162,6 +164,13 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			for (j = 0, len_j = group.objects.size(); j < len_j; j++) {
 				TiledObject object = group.objects.get(j);
 				ev = new EventObject(object, group, atlas, map);
+				if (object.gid > 0) {
+					prop = map.getTileProperty(object.gid, EVENT_PROP_HEIGHT);
+					if (prop != null && prop.length() > 0) {
+						ev.z += Integer.parseInt(prop);
+					}
+				}
+				parseProperties(ev, group.properties);
 				parseProperties(ev, object.properties);
 				put(object.name, ev);
 			}
@@ -213,6 +222,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		try {
 			if (EVENT_PROP_ID.equals(key)) {
 				ev.id = Integer.parseInt(val);
+			} else if (EVENT_PROP_HEIGHT.equals(key)) {
+				ev.z += Integer.parseInt(val);
 			} else if (EVENT_PROP_BLOCKING.equals(key)) {
 				if ("true".equalsIgnoreCase(val)) {
 					ev.blockingBehaviour = BlockingBehaviour.BUILDING_LOW;
@@ -245,9 +256,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			} else if (EVENT_PROP_IMAGE.equals(key)) {
 				FileHandle fh = Gdx.files.internal(val);
 				if (fh.exists()) {
-					ev.setImage(TextureDict.loadTexture(val,
-							TextureFilter.Nearest, TextureFilter.Nearest,
-							TextureWrap.ClampToEdge, TextureWrap.ClampToEdge));
+					ev.setImage(TextureRegionLoader.load(val));
 				}
 			} else if (EVENT_PROP_ANIMATION.equals(key)) {
 				FileHandle fh = Gdx.files.internal(val);

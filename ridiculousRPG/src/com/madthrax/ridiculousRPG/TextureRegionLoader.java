@@ -45,19 +45,19 @@ public final class TextureRegionLoader {
 			128);
 	static HashMap<TextureCache, String> textureReverseCache = new HashMap<TextureCache, String>(
 			128);
-	static Pool<TextureRegionCache> textureRegionPool = new Pool<TextureRegionCache>(
+	static Pool<TextureRegionRef> textureRegionPool = new Pool<TextureRegionRef>(
 			512, 8192) {
 		@Override
-		protected TextureRegionCache newObject() {
-			return new TextureRegionCache();
+		protected TextureRegionRef newObject() {
+			return new TextureRegionRef();
 		}
 	};
 
 	/**
 	 * This method loads the Pixmap, adds some padding if it's not sized with
 	 * powers of two, creates a {@link TextureCache} and caches the created
-	 * Texture. Then it obtains a {@link TextureRegionCache} from the pool and
-	 * returns the requested {@link TextureRegionCache}
+	 * Texture. Then it obtains a {@link TextureRegionRef} from the pool and
+	 * returns the requested {@link TextureRegionRef}
 	 * 
 	 * @param internalPath
 	 *            The path to the picture
@@ -71,7 +71,7 @@ public final class TextureRegionLoader {
 	 *            the regions height
 	 * @return A TextureRegion matching the given parameters
 	 */
-	public static TextureRegionCache load(String internalPath, int x, int y,
+	public static TextureRegionRef load(String internalPath, int x, int y,
 			int width, int height) {
 		return load(Gdx.files.internal(internalPath), x, y, width, height);
 	}
@@ -79,8 +79,8 @@ public final class TextureRegionLoader {
 	/**
 	 * This method loads the Pixmap, adds some padding if it's not sized with
 	 * powers of two, creates a {@link TextureCache} and caches the created
-	 * Texture. Then it obtains a {@link TextureRegionCache} from the pool and
-	 * returns the requested {@link TextureRegionCache}
+	 * Texture. Then it obtains a {@link TextureRegionRef} from the pool and
+	 * returns the requested {@link TextureRegionRef}
 	 * 
 	 * @param filePath
 	 *            The file to the picture
@@ -94,7 +94,7 @@ public final class TextureRegionLoader {
 	 *            the regions height
 	 * @return A TextureRegion matching the given parameters
 	 */
-	public static TextureRegionCache load(FileHandle filePath, int x, int y,
+	public static TextureRegionRef load(FileHandle filePath, int x, int y,
 			int width, int height) {
 		return obtainCache(filePath).obtainRegion(x, y, width, height);
 	}
@@ -102,30 +102,30 @@ public final class TextureRegionLoader {
 	/**
 	 * This method loads the Pixmap, adds some padding if it's not sized with
 	 * powers of two, creates a {@link TextureCache} and caches the created
-	 * Texture. Then it obtains a {@link TextureRegionCache} from the pool and
-	 * returns the {@link TextureRegionCache}, which is cropped to the size of
+	 * Texture. Then it obtains a {@link TextureRegionRef} from the pool and
+	 * returns the {@link TextureRegionRef}, which is cropped to the size of
 	 * the Pixmap.
 	 * 
 	 * @param internalPath
 	 *            The path to the picture
 	 * @return A TextureRegion matching the given parameters
 	 */
-	public static TextureRegionCache load(String internalPath) {
+	public static TextureRegionRef load(String internalPath) {
 		return load(Gdx.files.internal(internalPath));
 	}
 
 	/**
 	 * This method loads the Pixmap, adds some padding if it's not sized with
 	 * powers of two, creates a {@link TextureCache} and caches the created
-	 * Texture. Then it obtains a {@link TextureRegionCache} from the pool and
-	 * returns the {@link TextureRegionCache}, which is cropped to the size of
+	 * Texture. Then it obtains a {@link TextureRegionRef} from the pool and
+	 * returns the {@link TextureRegionRef}, which is cropped to the size of
 	 * the Pixmap.
 	 * 
 	 * @param filePath
 	 *            The file to the picture
 	 * @return A TextureRegion matching the given parameters
 	 */
-	public static TextureRegionCache load(FileHandle filePath) {
+	public static TextureRegionRef load(FileHandle filePath) {
 		return obtainCache(filePath).obtainRegion();
 	}
 
@@ -154,7 +154,7 @@ public final class TextureRegionLoader {
 	 * Use {@link TextureRegionLoader#load} if possible
 	 * @author Alexander Baumgartner
 	 */
-	public static class TextureRegionCache extends TextureRegion implements
+	public static class TextureRegionRef extends TextureRegion implements
 			Disposable {
 		@Override
 		public void dispose() {
@@ -191,18 +191,18 @@ public final class TextureRegionLoader {
 			super(width, height, format);
 		}
 
-		public TextureRegionCache obtainRegion() {
+		public TextureRegionRef obtainRegion() {
 			count++;
-			TextureRegionCache c = textureRegionPool.obtain();
+			TextureRegionRef c = textureRegionPool.obtain();
 			c.setTexture(this);
 			c.setRegion(0, 0, width, height);
 			return c;
 		}
 
-		public TextureRegionCache obtainRegion(int x, int y, int width,
+		public TextureRegionRef obtainRegion(int x, int y, int width,
 				int height) {
 			count++;
-			TextureRegionCache c = textureRegionPool.obtain();
+			TextureRegionRef c = textureRegionPool.obtain();
 			c.setTexture(this);
 			c.setRegion(x, y, width, height);
 			return c;
