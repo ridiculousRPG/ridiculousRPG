@@ -22,6 +22,8 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.madthrax.ridiculousRPG.GameBase;
+import com.madthrax.ridiculousRPG.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionCache;
 import com.madthrax.ridiculousRPG.ui.DisplayTextService.Alignment;
 
 /**
@@ -34,6 +36,7 @@ public class StandardMenuService extends ActorsOnStageService {
 		PAUSED, START_MENU, GAME_MENU, IDLE
 	};
 
+	private TextureRegionCache background;
 	private ServiceState serviceState = ServiceState.IDLE;
 
 	/*
@@ -45,6 +48,9 @@ public class StandardMenuService extends ActorsOnStageService {
 	public void init() {
 		super.init();
 		changeState(ServiceState.START_MENU);
+		if (GameBase.$().getOptions().titleBackground != null) {
+			setBackground(GameBase.$().getOptions().titleBackground);
+		}
 	}
 
 	public static void exit() {
@@ -53,6 +59,12 @@ public class StandardMenuService extends ActorsOnStageService {
 
 	public static void toggleCursor() {
 		Gdx.input.setCursorCatched(!Gdx.input.isCursorCatched());
+	}
+
+	public void setBackground(String path) {
+		if (background != null)
+			background.dispose();
+		background = TextureRegionLoader.load(path);
 	}
 
 	@Override
@@ -136,6 +148,8 @@ public class StandardMenuService extends ActorsOnStageService {
 
 	@Override
 	public void dispose() {
+		if (background != null)
+			background.dispose();
 	}
 
 	@Override
@@ -146,6 +160,10 @@ public class StandardMenuService extends ActorsOnStageService {
 					Alignment.CENTER, true);
 			break;
 		case START_MENU:
+			if (background != null) {
+				spriteBatch.draw(background, 0, 0, GameBase.$()
+						.getScreenWidth(), GameBase.$().getScreenHeight());
+			}
 			DisplayTextService.$screen.addMessage(
 					"START MENU\nEsc to exit\nEnter to continue",
 					Alignment.CENTER, Alignment.CENTER, true);

@@ -260,6 +260,15 @@ public class GameBase extends GameServiceDefaultImpl implements
 	}
 
 	/**
+	 * The start up options for the game
+	 * 
+	 * @return start up options
+	 */
+	public GameOptions getOptions() {
+		return options;
+	}
+
+	/**
 	 * Signals if the control key is just released.<br>
 	 * This method is safe for hiding the keyboard on mobile devices
 	 * 

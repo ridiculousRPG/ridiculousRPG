@@ -44,6 +44,7 @@ public class GameOptions {
 	public boolean resize = false;
 	public boolean vSyncEnabled = false;
 	public boolean debug = false;
+	public String titleBackground;
 	public Constructor<GameService>[] initGameService;
 	public Constructor<ScriptFactory> scriptFactory;
 
@@ -99,6 +100,11 @@ public class GameOptions {
 			propTmp = props.getProperty("RESIZE");
 			if (propTmp != null && propTmp.trim().length() > 0) {
 				resize = "true".equalsIgnoreCase(propTmp.trim());
+			}
+
+			propTmp = props.getProperty("TITLE_BACKGROUND");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				titleBackground = propTmp.trim();
 			}
 
 			propTmp = props.getProperty("USEGL20");

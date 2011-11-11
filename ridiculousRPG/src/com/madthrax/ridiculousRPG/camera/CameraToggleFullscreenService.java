@@ -46,7 +46,7 @@ public class CameraToggleFullscreenService extends InputAdapter implements
 	}
 
 	public boolean essential() {
-		return false;
+		return true;
 	}
 
 	public void dispose() {

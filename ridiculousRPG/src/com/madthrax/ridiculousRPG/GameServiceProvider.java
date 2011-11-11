@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Camera;
@@ -44,7 +43,6 @@ import com.madthrax.ridiculousRPG.service.Initializable;
  * @author Alexander Baumgartner
  */
 public class GameServiceProvider implements Initializable {
-	private InputAdapter nullInputAdapter = new InputAdapter();
 	private Map<Class<? extends GameService>, GameService> services = new HashMap<Class<? extends GameService>, GameService>();
 	private AtomicReference<GameService> hasAttention = new AtomicReference<GameService>();
 	private boolean freezeTheWorld = false;
@@ -52,6 +50,7 @@ public class GameServiceProvider implements Initializable {
 
 	private List<Initializable> initializables = new ArrayList<Initializable>();
 	private InputMultiplexer inputMultiplexer = new InputMultiplexer();
+	private InputMultiplexer attentionInputMultiplexer = new InputMultiplexer();
 	private List<Computable> computables = new ArrayList<Computable>();
 	private List<Drawable> drawables = new ArrayList<Drawable>();
 
@@ -160,11 +159,19 @@ public class GameServiceProvider implements Initializable {
 			}
 			this.freezeTheWorld = freezeTheWorld;
 			this.clearTheScreen = clearTheScreen;
-			if (service instanceof InputProcessor) {
-				Gdx.input.setInputProcessor((InputProcessor) service);
-			} else {
-				Gdx.input.setInputProcessor(nullInputAdapter);
+			attentionInputMultiplexer.clear();
+			for (InputProcessor in : inputMultiplexer.getProcessors()) {
+				if (in == service) {
+					attentionInputMultiplexer.addProcessor(in);
+					service = null;
+				} else if (((GameService)in).essential()) {
+					attentionInputMultiplexer.addProcessor(in);
+				}
 			}
+			if (service instanceof InputProcessor) {
+				attentionInputMultiplexer.addProcessor((InputProcessor) service);
+			}
+			Gdx.input.setInputProcessor(attentionInputMultiplexer);
 		}
 		return succeed;
 	}
