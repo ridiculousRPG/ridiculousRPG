@@ -20,6 +20,9 @@ import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.audio.JukeboxService;
 
 /**
+ * Interface for all services
+ * 
+ * @see GameServiceDefaultImpl
  * @author Alexander Baumgartner
  */
 public interface GameService extends Disposable {
@@ -41,4 +44,10 @@ public interface GameService extends Disposable {
 	 * ).
 	 */
 	public void unfreeze();
+
+	/**
+	 * An essential {@link GameService} cannot be freezed. It will always run no
+	 * matter if an other {@link GameService} has frozen the world.
+	 */
+	public boolean essential();
 }

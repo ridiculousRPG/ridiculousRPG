@@ -46,8 +46,8 @@ public class ScriptFactory extends GameServiceDefaultImpl implements
 			FileHandle[] files = Gdx.files.internal("data/scripts/global/")
 					.list();
 			for (FileHandle scriptFile : files) {
-				engine.eval(scriptFile.readString("UTF-8"),
-						ENGINE_FACTORY.getBindings());
+				engine.eval(scriptFile.readString("UTF-8"), ENGINE_FACTORY
+						.getBindings());
 			}
 		} catch (ScriptException e) {
 			throw new RuntimeException(e);

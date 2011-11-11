@@ -200,9 +200,11 @@ public class ActorsOnStageService extends Stage implements GameService,
 		}
 		return consumed;
 	}
+
 	public static void changeSkin(Actor actor, Skin newSikn) {
 		try {
-			Class<?> c = ActorFocusUtil.styleGetter(actor.getClass()).getReturnType();
+			Class<?> c = ActorFocusUtil.styleGetter(actor.getClass())
+					.getReturnType();
 			Method m = ActorFocusUtil.styleSetter(actor.getClass(), c);
 			if (m != null)
 				m.invoke(actor, newSikn.getStyle(c));
@@ -287,6 +289,10 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	public void unfreeze() {
+	}
+
+	public boolean essential() {
+		return false;
 	}
 
 	@Override

@@ -27,6 +27,7 @@ import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.GameServiceProvider;
 import com.madthrax.ridiculousRPG.service.Drawable;
+import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 import com.madthrax.ridiculousRPG.service.Initializable;
 
@@ -104,6 +105,16 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 			Alignment horizontalAlign, Alignment verticalAlign, float padding) {
 		return addMessage(text, defaultColor, horizontalAlign, verticalAlign,
 				padding);
+	}
+
+	/**
+	 * Adds a message which will be drawn onto the screen
+	 */
+	public BitmapFontCache addMessage(CharSequence text,
+			Alignment horizontalAlign, Alignment verticalAlign,
+			boolean forceRemove) {
+		return addMessage(text, defaultColor, horizontalAlign, verticalAlign,
+				0f, 0f, forceRemove);
 	}
 
 	/**
@@ -240,6 +251,19 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 
 	public boolean isInitialized() {
 		return font != null;
+	}
+
+	/**
+	 * The {@link DisplayTextService} (an per default also it's successors) is
+	 * essential and will always be drawn. No matter if an other
+	 * {@link GameService} has frozen the world.
+	 * 
+	 * @return true
+	 * @see GameService#essential()
+	 */
+	@Override
+	public boolean essential() {
+		return true;
 	}
 
 	public void dispose() {

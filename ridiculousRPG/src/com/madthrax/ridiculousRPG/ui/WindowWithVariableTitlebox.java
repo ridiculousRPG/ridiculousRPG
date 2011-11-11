@@ -126,13 +126,12 @@ public class WindowWithVariableTitlebox extends Window {
 		resetTransform(batch);
 	}
 
-	
 	@Override
 	public boolean touchDown(float x, float y, int pointer) {
 		if (titleBounds.y > y) {
 			super.touchDown(x, y, pointer);
 		} else if (titleBounds.contains(x, y)) {
-			super.touchDown(x, titleBounds.y+titleBounds.height, pointer);
+			super.touchDown(x, titleBounds.y + titleBounds.height, pointer);
 		}
 		return false;
 	}

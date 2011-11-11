@@ -45,6 +45,10 @@ public class CameraToggleFullscreenService extends InputAdapter implements
 	public void unfreeze() {
 	}
 
+	public boolean essential() {
+		return false;
+	}
+
 	public void dispose() {
 	}
 }

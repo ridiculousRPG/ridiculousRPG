@@ -32,8 +32,7 @@ import com.badlogic.gdx.files.FileHandle;
  * with the frame rendering.<br>
  * ATTENTION: Don't waste space by using high index values.<br>
  * The sizes of the internally used arrays are directly connected to the highest
- * index value as follows:<br>
- * {@code len = ((index+7) >> 3) << 3}
+ * index value as follows:<br> {@code len = ((index+7) >> 3) << 3}
  * 
  * @author Alexander Baumgartner
  */
@@ -413,7 +412,8 @@ public class ObjectState implements Serializable {
 	 * @param newVal
 	 * @return the old stored value
 	 */
-	public synchronized byte[] casRawBytes(int index, byte[] oldVal, byte[] newVal) {
+	public synchronized byte[] casRawBytes(int index, byte[] oldVal,
+			byte[] newVal) {
 		byte[] actVal = getRawBytes(index);
 		if (oldVal == actVal) {
 			setRawBytes(index, newVal);
@@ -466,7 +466,9 @@ public class ObjectState implements Serializable {
 					this.childFragment = null;
 				} else {
 					this.childFragment = new ObjectState[newLen];
-					System.arraycopy(childVar, 0, this.childFragment, 0, newLen);
+					System
+							.arraycopy(childVar, 0, this.childFragment, 0,
+									newLen);
 				}
 			}
 			return;

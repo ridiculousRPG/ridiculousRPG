@@ -764,6 +764,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 
 	/**
 	 * This texture reference will automatically be unloaded
+	 * 
 	 * @param tRef
 	 */
 	public void setImage(TextureRef tRef) {

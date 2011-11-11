@@ -20,12 +20,12 @@ import java.util.concurrent.Semaphore;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
-import com.madthrax.ridiculousRPG.service.GameService;
+import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 
 /**
  * @author Alexander Baumgartner
  */
-public class JukeboxService implements GameService {
+public class JukeboxService extends GameServiceDefaultImpl {
 	private Semaphore musicMutex = new Semaphore(1, true);
 	private boolean playingMusic, waiting;
 	private Music backgroundMusic = null;
@@ -122,6 +122,7 @@ public class JukeboxService implements GameService {
 		}
 	}
 
+	@Override
 	public void freeze() {
 		freezed = true;
 		if (backgroundMusic != null && backgroundMusic.isPlaying()) {
@@ -129,6 +130,7 @@ public class JukeboxService implements GameService {
 		}
 	}
 
+	@Override
 	public void unfreeze() {
 		freezed = false;
 		if (playingMusic)

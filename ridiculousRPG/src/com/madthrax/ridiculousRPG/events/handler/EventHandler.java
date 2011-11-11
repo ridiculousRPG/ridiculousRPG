@@ -37,7 +37,8 @@ public interface EventHandler {
 	 *            The event which triggered this touch (most likely the player)
 	 * @return true if the input has been consumed
 	 */
-	public boolean touch(EventObject eventSelf, EventObject eventTrigger) throws ScriptException;
+	public boolean touch(EventObject eventSelf, EventObject eventTrigger)
+			throws ScriptException;
 
 	/**
 	 * This method is called if the event is touchable and an push event
@@ -49,7 +50,8 @@ public interface EventHandler {
 	 *            The event which triggered this push (most likely the player)
 	 * @return true if the input has been consumed
 	 */
-	public boolean push(EventObject eventSelf, EventObject eventTrigger) throws ScriptException;
+	public boolean push(EventObject eventSelf, EventObject eventTrigger)
+			throws ScriptException;
 
 	/**
 	 * This method is called if the events timer is running. It's your
@@ -63,7 +65,8 @@ public interface EventHandler {
 	 * @return true if the input has been consumed
 	 * @see #getActualState()
 	 */
-	public boolean timer(EventObject eventSelf, float deltaTime) throws ScriptException;
+	public boolean timer(EventObject eventSelf, float deltaTime)
+			throws ScriptException;
 
 	/**
 	 * This method is not called by the engines default implementation. You can
@@ -76,7 +79,8 @@ public interface EventHandler {
 	 * @return true if the custom event ate up this triggerId
 	 * @see #getActualState()
 	 */
-	public boolean customTrigger(EventObject eventSelf, int triggerId) throws ScriptException;
+	public boolean customTrigger(EventObject eventSelf, int triggerId)
+			throws ScriptException;
 
 	/**
 	 * @return the actual state of this object
@@ -90,7 +94,8 @@ public interface EventHandler {
 	 * @param eventSelf
 	 * @param parentState
 	 */
-	public void load(EventObject eventSelf, ObjectState parentState) throws ScriptException;
+	public void load(EventObject eventSelf, ObjectState parentState)
+			throws ScriptException;
 
 	/**
 	 * Save your own state into the parent's child states!<br>

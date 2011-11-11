@@ -64,7 +64,8 @@ public class TriggerEventHandler extends Thread implements Disposable,
 
 	// Call all event handler
 	private void callEventHandler(float deltaTime,
-			List<EventObject> dynamicRegions, boolean actionKeyDown) throws ScriptException {
+			List<EventObject> dynamicRegions, boolean actionKeyDown)
+			throws ScriptException {
 		EventObject obj1;
 		EventObject obj2;
 		int i, j;
@@ -97,7 +98,7 @@ public class TriggerEventHandler extends Thread implements Disposable,
 	 * Compute collisions and move the events.<br>
 	 * Invoke parallel execution of the {@link EventHandler}.
 	 */
-
+	@Override
 	public void compute(float deltaTime, boolean actionKeyDown) {
 		// Load frequently used pointers/variables into register
 		List<EventObject> events = this.events;

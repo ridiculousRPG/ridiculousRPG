@@ -30,6 +30,7 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 
 /**
  * This service renders (tiled) maps with events on them.
+ * 
  * @see {@link MapWithEvents}
  * @author Alexander Baumgartner
  */

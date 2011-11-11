@@ -18,6 +18,7 @@ package com.madthrax.ridiculousRPG;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -27,9 +28,7 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL10;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.math.Matrix4;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
@@ -51,13 +50,13 @@ public class GameServiceProvider implements Initializable {
 	private boolean freezeTheWorld = false;
 	private boolean clearTheScreen = false;
 
-	private ArrayList<Initializable> initializables = new ArrayList<Initializable>();
+	private List<Initializable> initializables = new ArrayList<Initializable>();
 	private InputMultiplexer inputMultiplexer = new InputMultiplexer();
-	private ArrayList<Computable> computables = new ArrayList<Computable>();
-	private ArrayList<Drawable> drawables = new ArrayList<Drawable>();
+	private List<Computable> computables = new ArrayList<Computable>();
+	private List<Drawable> drawables = new ArrayList<Drawable>();
 
 	public void init() {
-		ArrayList<Initializable> initializables = this.initializables;
+		List<Initializable> initializables = this.initializables;
 		this.initializables = null;
 		Gdx.input.setInputProcessor(inputMultiplexer);
 		for (Initializable service : initializables)
@@ -191,8 +190,8 @@ public class GameServiceProvider implements Initializable {
 	 * If a {@link GameService} holds the attention, this one is returned.
 	 * Otherwise null will be returned.
 	 * 
-	 * @return the service which holds the attention or null if
-	 * no {@link GameService} holds the attention
+	 * @return the service which holds the attention or null if no
+	 *         {@link GameService} holds the attention
 	 */
 	public GameService queryAttention() {
 		return hasAttention.get();
@@ -218,14 +217,29 @@ public class GameServiceProvider implements Initializable {
 		if (deltaTime > .1f)
 			deltaTime = .1f;
 		boolean actionKeyPressed = GameBase.$().isActionKeyDown();
+		GameService holdsAttention = hasAttention.get();
 		if (freezeTheWorld) {
-			if (hasAttention.get() instanceof Computable)
-				((Computable) hasAttention.get()).compute(deltaTime,
-						actionKeyPressed);
-		} else
-			for (int i = 0; i < computables.size(); i++) {
-				computables.get(i).compute(deltaTime, actionKeyPressed);
+			for (int i = 0, len = computables.size(); i < len; i++) {
+				Computable c = computables.get(i);
+				if (c == holdsAttention) {
+					holdsAttention = null;
+					c.compute(deltaTime, actionKeyPressed);
+				} else if (((GameService) c).essential()) {
+					c.compute(deltaTime, actionKeyPressed);
+				}
 			}
+		} else {
+			for (int i = 0, len = computables.size(); i < len; i++) {
+				Computable c = computables.get(i);
+				if (c == holdsAttention) {
+					holdsAttention = null;
+				}
+				c.compute(deltaTime, actionKeyPressed);
+			}
+		}
+		if (holdsAttention instanceof Computable) {
+			((Computable) holdsAttention).compute(deltaTime, actionKeyPressed);
+		}
 	}
 
 	void drawAll(boolean debug) {
@@ -234,93 +248,60 @@ public class GameServiceProvider implements Initializable {
 		float tintColorBits = GameBase.$().getGameColorBits();
 		SpriteBatch spriteBatch = GameBase.$().getSpriteBatch();
 		Camera camera = GameBase.$().getCamera();
+		GameService holdsAttention = hasAttention.get();
+		Matrix4 proj = null;
 		if (clearTheScreen) {
-			if (hasAttention.get() instanceof Drawable) {
-				Drawable draw = (Drawable) hasAttention.get();
-				spriteBatch.setProjectionMatrix(draw.projectionMatrix(camera));
-				spriteBatch.begin();
-				spriteBatch.setColor(tintColorBits);
-				draw.draw(spriteBatch, camera, debug);
-				spriteBatch.end();
+			for (int i = 0, len = drawables.size(); i < len; i++) {
+				Drawable d = drawables.get(i);
+				if (d == holdsAttention) {
+					holdsAttention = null;
+					proj = drawWithMatrix(debug, spriteBatch, camera, proj, d,
+							tintColorBits);
+				} else if (((GameService) d).essential()) {
+					proj = drawWithMatrix(debug, spriteBatch, camera, proj, d,
+							tintColorBits);
+				}
 			}
 		} else {
-			Matrix4 old = null;
-			for (int i = 0; i < drawables.size(); i++) {
+			for (int i = 0, len = drawables.size(); i < len; i++) {
 				Drawable d = drawables.get(i);
-				if (d.projectionMatrix(camera) != old) {
-					old = d.projectionMatrix(camera);
-					if (i != 0)
-						spriteBatch.end();
-					spriteBatch.setProjectionMatrix(old);
-					spriteBatch.begin();
+				if (d == holdsAttention) {
+					holdsAttention = null;
 				}
-				spriteBatch.setColor(tintColorBits);
-				drawables.get(i).draw(spriteBatch, camera, debug);
-			}
-			if (drawables.size() > 0) {
-				spriteBatch.end();
+				proj = drawWithMatrix(debug, spriteBatch, camera, proj, d,
+						tintColorBits);
 			}
 		}
+		if (holdsAttention instanceof Drawable) {
+			Drawable d = (Drawable) holdsAttention;
+			proj = drawWithMatrix(debug, spriteBatch, camera, proj, d,
+					tintColorBits);
+		}
+		if (proj != null) {
+			spriteBatch.end();
+		}
 		if (debug) {
-			spriteBatch.setProjectionMatrix(camera.projection);
-			spriteBatch.begin();
-			float x1 = Math.max(0f, camera.position.x);
-			float y1 = Math.max(0f, camera.position.y);
-			float x2 = x1
-					+ Math.min(camera.viewportWidth, GameBase.$()
-							.getPlaneWidth());
-			float y2 = y1
-					+ Math.min(camera.viewportHeight, GameBase.$()
-							.getPlaneHeight());
-			if (f == null)
-				f = new BitmapFont();
-			f.setColor(0f, 1f, 1f, 1f);
-			String text = "( " + (int) x1 + " / " + (int) y1 + " )";
-			f.draw(spriteBatch, text, x1, y1 + f.getLineHeight());
-			text = "( " + (int) x2 + " / " + (int) y2 + " )";
-			TextBounds b = f.getBounds(text);
-			f.draw(spriteBatch, text, x2 - b.width, y2);
-			spriteBatch.end();
-
-			spriteBatch.setProjectionMatrix(camera.view);
-			spriteBatch.begin();
-			x1 = Gdx.input.getX();
-			y1 = GameBase.$().getScreenHeight() - Gdx.input.getY();
-			text = "( " + (int) x1 + " / " + (int) y1 + " ) Screen\n";
-			x2 = camera.position.x + x1 * camera.viewportWidth
-					/ GameBase.$().getScreenWidth();
-			y2 = camera.position.y + y1 * camera.viewportHeight
-					/ GameBase.$().getScreenHeight();
-			text += "( " + (int) x2 + " / " + (int) y2 + " ) Camera";
-			f.setColor(1f, 0f, 1f, 1f);
-			b = f.getMultiLineBounds(text);
-			f.drawMultiLine(spriteBatch, text, Math.max(Math.min(x1 + 10,
-					GameBase.$().getScreenWidth() - b.width), 0f), Math.max(
-					Math.min(y1, GameBase.$().getScreenHeight()), b.height));
-			text = "Execution order of Computable services";
-			for (Computable c : computables) {
-				text += "\n        " + c.getClass().getName();
-			}
-			text += "\n\nExecution order of Drawable services";
-			for (Drawable d : drawables) {
-				text += "\n        " + d.getClass().getName();
-			}
-			if (hasAttention.get() != null) {
-				text += "\n\n" + hasAttention.get().getClass().getName()
-						+ " holds attention!";
-			}
-			f.setColor(1f, 1f, 0f, 1f);
-			b = f.getMultiLineBounds(text);
-			f
-					.drawMultiLine(spriteBatch, text, (GameBase.$()
-							.getScreenWidth() - b.width) * .5f, GameBase.$()
-							.getScreenHeight()
-							- (GameBase.$().getScreenHeight() - b.height) * .5f);
-			spriteBatch.end();
+			DebugHelper.drawViewportCorners(spriteBatch, camera);
+			DebugHelper.drawMousePosition(spriteBatch, camera);
+			DebugHelper.drawServiceExecutionOrder(spriteBatch, camera,
+					computables, drawables, hasAttention.get());
 		}
 	}
 
-	static BitmapFont f = null;
+	private Matrix4 drawWithMatrix(boolean debug, SpriteBatch spriteBatch,
+			Camera camera, Matrix4 old, Drawable d, float tintColorBits) {
+		if (d.projectionMatrix(camera) != old) {
+			if (old != null) {
+				spriteBatch.end();
+			}
+			old = d.projectionMatrix(camera);
+			spriteBatch.setProjectionMatrix(old);
+			spriteBatch.begin();
+		}
+		spriteBatch.setColor(tintColorBits);
+		d.draw(spriteBatch, camera, debug);
+		return old;
+	}
 
 	public boolean isInitialized() {
 		return initializables == null;

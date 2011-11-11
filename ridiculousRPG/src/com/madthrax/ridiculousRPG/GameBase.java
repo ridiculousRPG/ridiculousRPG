@@ -18,6 +18,7 @@ package com.madthrax.ridiculousRPG;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Constructor;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -38,7 +39,6 @@ import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 import com.madthrax.ridiculousRPG.ui.DisplayErrorService;
-import com.madthrax.ridiculousRPG.ui.DisplayFPSService;
 import com.madthrax.ridiculousRPG.ui.DisplayTextService;
 
 /**
@@ -54,6 +54,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 	private GameServiceProvider serviceProvider;
 	private ScriptFactory scriptFactory;
 	private ScriptEngine sharedEngine;
+	private GameOptions options;
 
 	private int screenWidth, screenHeight;
 	private int planeWidth, planeHeight;
@@ -68,6 +69,53 @@ public class GameBase extends GameServiceDefaultImpl implements
 
 	private final String engineVersion = "0.3 prealpha (incomplete)";
 
+	public GameBase(GameOptions options) {
+		this.options = options;
+	}
+
+	public final void create() {
+		debugMode = options.debug;
+		fullscreen = options.fullscreen;
+		resizeView = options.resize;
+		spriteBatch = new SpriteBatch();
+		camera = new CameraSimpleOrtho2D();
+		globalState = new ObjectState();
+		camera.viewportWidth = planeWidth = screenWidth = originalWidth = Gdx.graphics
+				.getWidth();
+		camera.viewportHeight = planeHeight = screenHeight = originalHeight = Gdx.graphics
+				.getHeight();
+		// instance != null indicates that GameBase is initialized
+		if (!isInitialized())
+			instance = this;
+
+		try {
+			scriptFactory = options.scriptFactory.newInstance();
+			serviceProvider = new GameServiceProvider();
+			serviceProvider.init();
+			// offer some essential services
+			serviceProvider.putService(scriptFactory);
+			serviceProvider.putService(DisplayTextService.$map);
+			serviceProvider.putService(DisplayTextService.$screen);
+			for (Constructor<GameService> service : options.initGameService) {
+				serviceProvider.putService(service.newInstance());
+			}
+			// reorder text services to avoid painting over them
+			serviceProvider.putService(DisplayTextService.$map);
+			serviceProvider.putService(DisplayTextService.$screen);
+		} catch (Exception e) {
+			e.printStackTrace();
+			StringWriter stackTrace = new StringWriter();
+			e.printStackTrace(new PrintWriter(stackTrace));
+			serviceProvider.dispose();
+			String msg = "The following error occured while initializing the services:\n"
+					+ e.getMessage() + "\n\n" + stackTrace;
+			serviceProvider.requestAttention(new DisplayErrorService(msg),
+					true, true);
+		}
+
+		camera.update();
+	}
+
 	/**
 	 * Returns the FIRST GameBase instance which has been initialized to
 	 * simplify the access
@@ -78,25 +126,6 @@ public class GameBase extends GameServiceDefaultImpl implements
 		if (!isInitialized())
 			throw new IllegalStateException("GameBase not initialized!");
 		return instance;
-	}
-
-	/**
-	 * Evaluates the given script term and returns the result.<br>
-	 * The same engine is used for all evaluations!
-	 * @param script
-	 *            The script to evaluate
-	 * @return The result from this evaluation.
-	 * @throws ScriptException
-	 */
-	public Object eval(String script) throws ScriptException {
-		if (sharedEngine==null) {
-			sharedEngine = getScriptFactory().obtainEngine();
-		}
-		Object result = sharedEngine.eval(getScriptFactory().loadScript(script));
-		try {
-			sharedEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
-		} catch (Exception ignored) {}
-		return result;
 	}
 
 	/**
@@ -117,56 +146,6 @@ public class GameBase extends GameServiceDefaultImpl implements
 	 */
 	public static ScriptFactory $scriptFactory() {
 		return $().getScriptFactory();
-	}
-
-	public GameBase(GameOptions options) {
-		debugMode = options.debug;
-		fullscreen = options.fullscreen;
-		resizeView = options.resize;
-		scriptFactory = options.scriptFactory;
-
-		serviceProvider = new GameServiceProvider();
-		serviceProvider.putService(scriptFactory);
-		if (options.initGameService[0] instanceof DisplayErrorService) {
-			serviceProvider.requestAttention(options.initGameService[0], true,
-					true);
-		} else
-			for (GameService service : options.initGameService) {
-				serviceProvider.putService(service);
-			}
-	}
-
-	public final void create() {
-		spriteBatch = new SpriteBatch();
-		camera = new CameraSimpleOrtho2D();
-		globalState = new ObjectState();
-		camera.viewportWidth = planeWidth = screenWidth = originalWidth = Gdx.graphics
-				.getWidth();
-		camera.viewportHeight = planeHeight = screenHeight = originalHeight = Gdx.graphics
-				.getHeight();
-		// instance != null indicates that GameBase is initialized
-		if (!isInitialized())
-			instance = this;
-
-		try {
-			serviceProvider.init();
-			serviceProvider.putService(DisplayTextService.$map);
-			serviceProvider.putService(DisplayTextService.$screen);
-			if (debugMode) {
-				serviceProvider.putService(new DisplayFPSService());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			StringWriter stackTrace = new StringWriter();
-			e.printStackTrace(new PrintWriter(stackTrace));
-			serviceProvider.dispose();
-			String msg = "The following error occured while initializing the services:\n"
-					+ e.getMessage() + "\n\n" + stackTrace;
-			serviceProvider.requestAttention(new DisplayErrorService(msg),
-					true, true);
-		}
-
-		camera.update();
 	}
 
 	public final void render() {
@@ -220,6 +199,29 @@ public class GameBase extends GameServiceDefaultImpl implements
 	 */
 	public boolean isControlKeyDown() {
 		return controlKeyPressed && !controlKeyPressedOld;
+	}
+
+	/**
+	 * Evaluates the given script term and returns the result.<br>
+	 * The same engine is used for all evaluations!
+	 * 
+	 * @param script
+	 *            The script to evaluate
+	 * @return The result from this evaluation.
+	 * @throws ScriptException
+	 */
+	public Object eval(String script) throws ScriptException {
+		if (sharedEngine == null) {
+			sharedEngine = getScriptFactory().obtainEngine();
+		}
+		Object result = sharedEngine
+				.eval(getScriptFactory().loadScript(script));
+		try {
+			sharedEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
+					.clear();
+		} catch (Exception ignored) {
+		}
+		return result;
 	}
 
 	/**

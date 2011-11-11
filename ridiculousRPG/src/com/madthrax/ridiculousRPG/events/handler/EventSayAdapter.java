@@ -19,6 +19,7 @@ import com.madthrax.ridiculousRPG.events.EventObject;
 
 /**
  * This is a convenience class for events wich only want to say something
+ * 
  * @author Alexander Baumgartner
  */
 public class EventSayAdapter extends EventAdapter {
@@ -28,17 +29,18 @@ public class EventSayAdapter extends EventAdapter {
 
 	@Override
 	public boolean push(EventObject eventSelf, EventObject pushedBy) {
-		if (sayOnPush!=null) {
-			//TODO: show textbox
+		if (sayOnPush != null) {
+			// TODO: show textbox
 			System.out.println(sayOnPush);
 			return true;
 		}
 		return false;
 	}
+
 	@Override
 	public boolean touch(EventObject eventSelf, EventObject pushedBy) {
-		if (!touchPerformed && sayOnTouch!=null) {
-			//TODO: show textbox
+		if (!touchPerformed && sayOnTouch != null) {
+			// TODO: show textbox
 			System.out.println(sayOnTouch);
 			touchPerformed = true;
 			return true;

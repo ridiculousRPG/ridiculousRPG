@@ -196,7 +196,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		for (Entry<String, String> entry : props.entrySet()) {
 			String key = entry.getKey().trim();
 			String val = entry.getValue().replace("&quot;", "\"").trim();
-			if (key.length() == 0 || val.length()==0)
+			if (key.length() == 0 || val.length() == 0)
 				continue;
 			if (key.charAt(0) == EVENT_CUSTOM_PROP_KZ) {
 				ev.properties.put(key, val);
@@ -206,7 +206,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		}
 	}
 
-	private void parseSingleProperty(EventObject ev, String key, String val, HashMap<String, String> props) {
+	private void parseSingleProperty(EventObject ev, String key, String val,
+			HashMap<String, String> props) {
 		// let's be case insensitive
 		key = key.toLowerCase();
 		try {
@@ -257,12 +258,15 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					Texture t = tRef.get();
 					TileAnimation anim = new TileAnimation(val,
 							t.getWidth() / 4, t.getHeight() / 4, 4, 4);
-					ev.setAnimation(anim, "true".equalsIgnoreCase(props.get(EVENT_PROP_ESTIMATETOUCHBOUNDS)));
+					ev.setAnimation(anim, "true".equalsIgnoreCase(props
+							.get(EVENT_PROP_ESTIMATETOUCHBOUNDS)));
 					tRef.unload();
 				} else {
 					Object evHandler = GameBase.$().eval(val);
 					if (evHandler instanceof TileAnimation) {
-						ev.setAnimation((TileAnimation) evHandler, "true".equalsIgnoreCase(props.get(EVENT_PROP_ESTIMATETOUCHBOUNDS)));
+						ev.setAnimation((TileAnimation) evHandler, "true"
+								.equalsIgnoreCase(props
+										.get(EVENT_PROP_ESTIMATETOUCHBOUNDS)));
 					}
 				}
 			} else if (EVENT_PROP_HANDLER.equals(key)) {

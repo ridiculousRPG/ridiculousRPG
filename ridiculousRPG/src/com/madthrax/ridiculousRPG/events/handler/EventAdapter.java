@@ -30,16 +30,19 @@ import com.madthrax.ridiculousRPG.events.EventObject;
 public class EventAdapter implements EventHandler {
 	private ObjectState myState;
 
-	public boolean touch(EventObject eventSelf, EventObject eventTrigger) throws ScriptException {
+	public boolean touch(EventObject eventSelf, EventObject eventTrigger)
+			throws ScriptException {
 		return false;
 	}
 
-	public boolean push(EventObject eventSelf, EventObject eventTrigger) throws ScriptException {
+	public boolean push(EventObject eventSelf, EventObject eventTrigger)
+			throws ScriptException {
 		System.out.println("push " + eventSelf.name);
 		return false;
 	}
 
-	public void load(EventObject eventSelf, ObjectState parentState) throws ScriptException {
+	public void load(EventObject eventSelf, ObjectState parentState)
+			throws ScriptException {
 		this.myState = parentState.getChild(eventSelf.id);
 		// load position, texture, movehandler ...
 	}
@@ -54,11 +57,13 @@ public class EventAdapter implements EventHandler {
 		parentState.setChild(eventSelf.id, myState);
 	}
 
-	public boolean customTrigger(EventObject eventSelf, int triggerId) throws ScriptException {
+	public boolean customTrigger(EventObject eventSelf, int triggerId)
+			throws ScriptException {
 		return false;
 	}
 
-	public boolean timer(EventObject eventSelf, float deltaTime) throws ScriptException {
+	public boolean timer(EventObject eventSelf, float deltaTime)
+			throws ScriptException {
 		return false;
 	}
 

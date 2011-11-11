@@ -19,11 +19,11 @@ package com.madthrax.ridiculousRPG;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Constructor;
 import java.util.Properties;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.madthrax.ridiculousRPG.service.GameService;
-import com.madthrax.ridiculousRPG.ui.DisplayErrorService;
 
 /**
  * This class is used to define the initial values for your game
@@ -44,8 +44,8 @@ public class GameOptions {
 	public boolean resize = false;
 	public boolean vSyncEnabled = false;
 	public boolean debug = false;
-	public GameService[] initGameService;
-	public ScriptFactory scriptFactory;
+	public Constructor<GameService>[] initGameService;
+	public Constructor<ScriptFactory> scriptFactory;
 
 	/**
 	 * Constructs an option object with the specified game services for
@@ -54,7 +54,7 @@ public class GameOptions {
 	 * 
 	 * @param initGameService
 	 */
-	public GameOptions(GameService... initGameService) {
+	public GameOptions(Constructor<GameService>... initGameService) {
 		if (initGameService == null) {
 			throw new NullPointerException(
 					"The argument \"initGameService\" is mandatory.");
@@ -63,10 +63,12 @@ public class GameOptions {
 	}
 
 	/**
-	 * This constructor parses the options from an properties file.
-	 * The name of the file is specified by {@link GameLauncher#GAME_OPTIONS_FILE}
+	 * This constructor parses the options from an properties file. The name of
+	 * the file is specified by {@link GameLauncher#GAME_OPTIONS_FILE}
+	 * 
 	 * @param iniFile
 	 */
+	@SuppressWarnings("unchecked")
 	public GameOptions(FileHandle iniFile) {
 		Properties props = new Properties();
 		String propTmp;
@@ -121,33 +123,25 @@ public class GameOptions {
 
 			propTmp = props.getProperty("SCRIPT_FACTORY");
 			if (propTmp != null && propTmp.trim().length() > 0) {
-				scriptFactory = (ScriptFactory) Class.forName(
-						propTmp.trim()).newInstance();
+				scriptFactory = (Constructor<ScriptFactory>) Class.forName(
+						propTmp.trim()).getConstructor();
 			} else {
-				scriptFactory = new ScriptFactory();
+				scriptFactory = ScriptFactory.class.getConstructor();
 			}
 
 			propTmp = props.getProperty("INITGAMESERVICE");
 			if (propTmp != null && propTmp.trim().length() > 0) {
 				String[] multiPropTmp = propTmp.split("[,\\s]+");
-				initGameService = new GameService[multiPropTmp.length];
+				initGameService = new Constructor[multiPropTmp.length];
 				for (int i = 0; i < multiPropTmp.length; i++) {
-					initGameService[i] = (GameService) Class.forName(
-							multiPropTmp[i].trim()).newInstance();
+					initGameService[i] = (Constructor<GameService>) Class
+							.forName(multiPropTmp[i].trim()).getConstructor();
 				}
-			} else {
-				initGameService = new GameService[] { new DisplayErrorService(
-						"Please specify the startup service for the game.\n"
-								+ "The startup service is specified by the property\n"
-								+ "INITGAMESERVICE inside the File data/game.ini") };
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			StringWriter stackTrace = new StringWriter();
 			e.printStackTrace(new PrintWriter(stackTrace));
-			initGameService = new GameService[] { new DisplayErrorService(
-					"The following error occured while loading the game:\n"
-							+ e.getMessage() + "\n\n" + stackTrace) };
 		}
 	}
 }

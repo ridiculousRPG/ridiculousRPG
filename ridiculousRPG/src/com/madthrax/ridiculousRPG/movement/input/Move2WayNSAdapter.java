@@ -45,7 +45,7 @@ public class Move2WayNSAdapter extends MovementHandler {
 
 	@Override
 	public void tryMove(Movable movable, float deltaTime) {
-		if (GameBase.$serviceProvider().queryAttention()!=null) {
+		if (GameBase.$serviceProvider().queryAttention() != null) {
 			movable.stop();
 			freeze();
 			return;

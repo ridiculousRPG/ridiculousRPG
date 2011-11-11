@@ -186,6 +186,10 @@ public class CameraZoomService extends InputAdapter implements GameService {
 	public void unfreeze() {
 	}
 
+	public boolean essential() {
+		return false;
+	}
+
 	public void dispose() {
 	}
 }

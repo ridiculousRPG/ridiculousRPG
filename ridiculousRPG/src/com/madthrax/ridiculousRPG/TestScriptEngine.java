@@ -97,7 +97,8 @@ public class TestScriptEngine {
 		scopeTest(out);
 	}
 
-	private void simpleTest(PrintStream out) throws ScriptException, NoSuchMethodException {
+	private void simpleTest(PrintStream out) throws ScriptException,
+			NoSuchMethodException {
 		ScriptEngineManager manager = new ScriptEngineManager();
 		ScriptEngine engine = manager.getEngineByName(scriptLanguage);
 		TestEventParm eventSelf = new TestEventParm();
@@ -118,7 +119,8 @@ public class TestScriptEngine {
 		eventPushed.print(out);
 	}
 
-	private void scopeTest(PrintStream out) throws ScriptException, NoSuchMethodException {
+	private void scopeTest(PrintStream out) throws ScriptException,
+			NoSuchMethodException {
 		ScriptEngineManager manager = new ScriptEngineManager();
 
 		// should be available in engine 1 and engine 2
