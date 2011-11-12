@@ -23,17 +23,41 @@ import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.GameService;
 
 /**
+ * This service allows to toggle between fullscreen mode and windowed mode.<br>
+ * Toggling is performed if either the Alt or the Ctrl key is pressed and Enter
+ * or F is pressed.<br>
+ * <br>
+ * This is an {@link GameService#essential()} service and therefore the toggling
+ * will always succeed. No matter if an other service has the attention or not.
+ * 
  * @author Alexander Baumgartner
  */
 public class CameraToggleFullscreenService extends InputAdapter implements
 		GameService {
 
+	/**
+	 * Performs toggling between fullscreen and windowed mode.
+	 */
+	@Override
+	public boolean keyDown(int keycode) {
+		if (GameBase.$().isControlKeyPressed()
+				|| Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
+			if (keycode == Input.Keys.F || keycode == Input.Keys.ENTER) {
+				return GameBase.$().toggleFullscreen();
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Consumes corresponding key up event.
+	 */
 	@Override
 	public boolean keyUp(int keycode) {
 		if (GameBase.$().isControlKeyPressed()
 				|| Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
 			if (keycode == Input.Keys.F || keycode == Input.Keys.ENTER) {
-				return GameBase.$().toggleFullscreen();
+				return true;
 			}
 		}
 		return false;

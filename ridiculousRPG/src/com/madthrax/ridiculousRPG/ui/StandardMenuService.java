@@ -18,13 +18,21 @@ package com.madthrax.ridiculousRPG.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.actions.Delay;
+import com.badlogic.gdx.scenes.scene2d.actions.FadeIn;
+import com.badlogic.gdx.scenes.scene2d.actions.FadeOut;
+import com.badlogic.gdx.scenes.scene2d.actions.Remove;
+import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
+import com.badlogic.gdx.scenes.scene2d.ui.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
-import com.madthrax.ridiculousRPG.ui.DisplayTextService.Alignment;
 
 /**
  * This class provides a standard menu for the game.<br>
@@ -32,7 +40,7 @@ import com.madthrax.ridiculousRPG.ui.DisplayTextService.Alignment;
  * @author Alexander Baumgartner
  */
 public class StandardMenuService extends ActorsOnStageService {
-	private enum ServiceState {
+	protected enum ServiceState {
 		PAUSED, START_MENU, GAME_MENU, IDLE
 	};
 
@@ -47,10 +55,10 @@ public class StandardMenuService extends ActorsOnStageService {
 	@Override
 	public void init() {
 		super.init();
-		changeState(ServiceState.START_MENU);
 		if (GameBase.$().getOptions().titleBackground != null) {
 			setBackground(GameBase.$().getOptions().titleBackground);
 		}
+		changeState(ServiceState.START_MENU);
 	}
 
 	public static void exit() {
@@ -87,9 +95,6 @@ public class StandardMenuService extends ActorsOnStageService {
 	}
 
 	private boolean processStartMenuState(int keycode) {
-		if (keycode == Input.Keys.ENTER) {
-			return changeState(ServiceState.IDLE);
-		}
 		if (keycode == Input.Keys.ESCAPE) {
 			exit();
 			return true;
@@ -100,9 +105,6 @@ public class StandardMenuService extends ActorsOnStageService {
 	private boolean processGameMenuState(int keycode) {
 		if (keycode == Input.Keys.ESCAPE) {
 			return changeState(ServiceState.IDLE);
-		}
-		if (keycode == Input.Keys.ENTER) {
-			return changeState(ServiceState.START_MENU);
 		}
 		return false;
 	}
@@ -134,8 +136,178 @@ public class StandardMenuService extends ActorsOnStageService {
 					newState == ServiceState.START_MENU)
 					| consumed;
 		}
+		if (serviceState != newState) {
+			clear();
+			switch (newState) {
+			case PAUSED:
+				createPauseMenu();
+				break;
+			case GAME_MENU:
+				createGameMenu();
+				break;
+			case START_MENU:
+				createStartMenu();
+				break;
+			}
+		}
 		serviceState = newState;
 		return consumed;
+	}
+
+	private void createGameMenu() {
+		final Skin skin = getSkinNormal();
+		Window w = new Window("Game menu", this, skin);
+		w.height = height();
+		w.width = width() * .3f;
+
+		TextButton resume = new TextButton("Resume (Esc)", skin);
+		resume.setClickListener(new ClickListener() {
+			@Override
+			public void click(Actor actor, float x, float y) {
+				changeState(ServiceState.IDLE);
+			}
+		});
+		w.row().fill(true, true).expand(true, false);
+		w.add(resume);
+
+		TextButton bag = new TextButton("Open bag", skin);
+		bag.setClickListener(new ClickListener() {
+			@Override
+			public void click(Actor actor, float x, float y) {
+				showInfo(getSkinFocused(), "Bag is not implemented yet.\n"
+						+ "This is an early alpha release!");
+			}
+		});
+		w.row().fill(true, true).expand(true, false);
+		w.add(bag);
+
+		TextButton save = new TextButton("Save", skin);
+		save.setClickListener(new ClickListener() {
+			@Override
+			public void click(Actor actor, float x, float y) {
+				showInfo(getSkinFocused(), "Save is not implemented yet.\n"
+						+ "This is an early alpha release!");
+			}
+		});
+		w.row().fill(true, true).expand(true, false);
+		w.add(save);
+
+		TextButton load = new TextButton("Load", skin);
+		load.setClickListener(new ClickListener() {
+			@Override
+			public void click(Actor actor, float x, float y) {
+				showInfo(getSkinFocused(), "Load is not implemented yet.\n"
+						+ "This is an early alpha release!");
+			}
+		});
+		w.row().fill(true, true).expand(true, false);
+		w.add(load);
+
+		TextButton toTitle = new TextButton("Return to title", skin);
+		toTitle.setClickListener(new ClickListener() {
+			@Override
+			public void click(Actor actor, float x, float y) {
+				changeState(ServiceState.START_MENU);
+			}
+		});
+		w.row().fill(true, true).expand(true, false);
+		w.add(toTitle);
+
+		TextButton exit = new TextButton("Exit game", skin);
+		exit.setClickListener(new ClickListener() {
+			@Override
+			public void click(Actor actor, float x, float y) {
+				exit();
+			}
+		});
+		w.row().fill(true, true).expand(true, false);
+		w.add(exit);
+
+		addActor(w);
+		focus(resume);
+	}
+
+	private void createStartMenu() {
+		if (background != null) {
+			addActor(new Image(background));
+		}
+		final Skin skin = getSkinNormal();
+		Window w = new Window("Start menu", this, skin);
+
+		TextButton resume = new TextButton("Continue at last save point", skin);
+		resume.setClickListener(new ClickListener() {
+			@Override
+			public void click(Actor actor, float x, float y) {
+				changeState(ServiceState.IDLE);
+			}
+		});
+		w.row().fill(true, true).expand(true, false);
+		w.add(resume);
+
+		TextButton load = new TextButton("Load game", skin);
+		load.setClickListener(new ClickListener() {
+			@Override
+			public void click(Actor actor, float x, float y) {
+				showInfo(getSkinFocused(), "Load is not implemented yet.\n"
+						+ "This is an early alpha release!");
+			}
+		});
+		w.row().fill(true, true).expand(true, false);
+		w.add(load);
+
+		TextButton start = new TextButton("Start new game", skin);
+		start.setClickListener(new ClickListener() {
+			@Override
+			public void click(Actor actor, float x, float y) {
+				changeState(ServiceState.IDLE);
+			}
+		});
+		w.row().fill(true, true).expand(true, false);
+		w.add(start);
+
+		TextButton exit = new TextButton("Exit game (Esc)", skin);
+		exit.setClickListener(new ClickListener() {
+			@Override
+			public void click(Actor actor, float x, float y) {
+				exit();
+			}
+		});
+		w.row().fill(true, true).expand(true, false);
+		w.add(exit);
+
+		w.pack();
+		w.x = centerX() - w.width * .5f;
+		w.y = centerY() - w.height * .5f;
+		addActor(w);
+		focus(resume);
+	}
+
+	protected void createPauseMenu() {
+		Skin skin = getSkinNormal();
+		Window w = new Window("PAUSE", this, skin);
+		TextButton resume = new TextButton("Resume (P)", skin);
+		resume.setClickListener(new ClickListener() {
+			@Override
+			public void click(Actor actor, float x, float y) {
+				changeState(ServiceState.IDLE);
+			}
+		});
+		w.row().fill(true, true).expand(true, false);
+		w.add(resume);
+		TextButton exit = new TextButton("Return to title", skin);
+		exit.setClickListener(new ClickListener() {
+			@Override
+			public void click(Actor actor, float x, float y) {
+				changeState(ServiceState.START_MENU);
+			}
+		});
+		w.row().fill(true, true).expand(true, false);
+		w.add(exit);
+		w.pack();
+		w.x = centerX() - w.width * .5f;
+		w.y = centerY() - w.height * .5f;
+		addActor(w);
+		focus(resume);
 	}
 
 	@Override
@@ -152,32 +324,16 @@ public class StandardMenuService extends ActorsOnStageService {
 			background.dispose();
 	}
 
-	@Override
-	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
-		switch (serviceState) {
-		case PAUSED:
-			DisplayTextService.$screen.addMessage("PAUSE", Alignment.CENTER,
-					Alignment.CENTER, true);
-			break;
-		case START_MENU:
-			if (background != null) {
-				spriteBatch.draw(background, 0, 0, GameBase.$()
-						.getScreenWidth(), GameBase.$().getScreenHeight());
-			}
-			DisplayTextService.$screen.addMessage(
-					"START MENU\nEsc to exit\nEnter to continue",
-					Alignment.CENTER, Alignment.CENTER, true);
-			break;
-		case GAME_MENU:
-			DisplayTextService.$screen.addMessage(
-					"GAME MENU\nEsc to exit\nEnter for start menu",
-					Alignment.CENTER, Alignment.CENTER, true);
-			break;
-		}
-	}
-
-	@Override
-	public Matrix4 projectionMatrix(Camera camera) {
-		return camera.view;
+	private void showInfo(final Skin skin, String info) {
+		final Window w = new Window(this, skin);
+		w.touchable = false;
+		w.color.a = .1f;
+		w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f),
+				Remove.$()));
+		w.add(new Label(info, skin));
+		w.pack();
+		w.x = centerX() - w.width * .5f;
+		w.y = centerY() - w.height * .5f;
+		addActor(w);
 	}
 }

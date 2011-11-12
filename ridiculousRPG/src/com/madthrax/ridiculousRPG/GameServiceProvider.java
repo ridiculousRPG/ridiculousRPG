@@ -45,6 +45,7 @@ import com.madthrax.ridiculousRPG.service.Initializable;
 public class GameServiceProvider implements Initializable {
 	private Map<Class<? extends GameService>, GameService> services = new HashMap<Class<? extends GameService>, GameService>();
 	private AtomicReference<GameService> hasAttention = new AtomicReference<GameService>();
+	private int attentionCount = 0;
 	private boolean freezeTheWorld = false;
 	private boolean clearTheScreen = false;
 
@@ -151,8 +152,15 @@ public class GameServiceProvider implements Initializable {
 	 */
 	public boolean requestAttention(GameService service,
 			boolean freezeTheWorld, boolean clearTheScreen) {
+		// we have already attention
+		if (hasAttention.get() == service) {
+			attentionCount++;
+			return true;
+		}
+		// try to grab the attention
 		boolean succeed = hasAttention.compareAndSet(null, service);
 		if (succeed) {
+			attentionCount++;
 			if (service instanceof Initializable
 					&& !((Initializable) service).isInitialized()) {
 				((Initializable) service).init();
@@ -164,12 +172,13 @@ public class GameServiceProvider implements Initializable {
 				if (in == service) {
 					attentionInputMultiplexer.addProcessor(in);
 					service = null;
-				} else if (((GameService)in).essential()) {
+				} else if (((GameService) in).essential()) {
 					attentionInputMultiplexer.addProcessor(in);
 				}
 			}
 			if (service instanceof InputProcessor) {
-				attentionInputMultiplexer.addProcessor((InputProcessor) service);
+				attentionInputMultiplexer
+						.addProcessor((InputProcessor) service);
 			}
 			Gdx.input.setInputProcessor(attentionInputMultiplexer);
 		}
@@ -184,8 +193,13 @@ public class GameServiceProvider implements Initializable {
 	 * @return true on succeed, otherwise false
 	 */
 	public boolean releaseAttention(GameService service) {
+		if (attentionCount > 1 && service == hasAttention.get()) {
+			attentionCount--;
+			return true;
+		}
 		boolean succeed = hasAttention.compareAndSet(service, null);
 		if (succeed) {
+			attentionCount--;
 			freezeTheWorld = false;
 			clearTheScreen = false;
 			Gdx.input.setInputProcessor(inputMultiplexer);

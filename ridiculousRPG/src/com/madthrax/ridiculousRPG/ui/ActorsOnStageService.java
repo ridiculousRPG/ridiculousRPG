@@ -190,6 +190,10 @@ public class ActorsOnStageService extends Stage implements GameService,
 		return checkFocusChanged(keyUpIntern(keycode));
 	}
 
+	public void focus(Actor actor) {
+		ActorFocusUtil.focus(actor, false);
+		checkFocusChanged(false);
+	}
 	private boolean checkFocusChanged(boolean consumed) {
 		if (focusedActor != root.keyboardFocusedActor) {
 			if (focusedActor != null)
