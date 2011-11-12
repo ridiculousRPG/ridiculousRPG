@@ -323,6 +323,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 		screenWidth = Gdx.graphics.getWidth();
 		screenHeight = Gdx.graphics.getHeight();
 		cam.update();
+		serviceProvider.resize(width, height);
 	}
 
 	public void pause() {
@@ -498,5 +499,12 @@ public class GameBase extends GameServiceDefaultImpl implements
 		if (spriteBatch != null)
 			spriteBatch.dispose();
 		GameConfig.get().dispose();
+	}
+
+	/**
+	 * Exits the running game
+	 */
+	public static void exit() {
+		Gdx.app.exit();
 	}
 }

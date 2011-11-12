@@ -33,13 +33,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
+import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
  * This class provides a standard menu for the game.<br>
  * 
  * @author Alexander Baumgartner
  */
-public class StandardMenuService extends ActorsOnStageService {
+public class StandardMenuService extends ActorsOnStageService implements ResizeListener {
 	protected enum ServiceState {
 		PAUSED, START_MENU, GAME_MENU, IDLE
 	};
@@ -59,10 +60,6 @@ public class StandardMenuService extends ActorsOnStageService {
 			setBackground(GameBase.$().getOptions().titleBackground);
 		}
 		changeState(ServiceState.START_MENU);
-	}
-
-	public static void exit() {
-		Gdx.app.exit();
 	}
 
 	public static void toggleCursor() {
@@ -96,7 +93,7 @@ public class StandardMenuService extends ActorsOnStageService {
 
 	private boolean processStartMenuState(int keycode) {
 		if (keycode == Input.Keys.ESCAPE) {
-			exit();
+			GameBase.exit();
 			return true;
 		}
 		return false;
@@ -126,6 +123,13 @@ public class StandardMenuService extends ActorsOnStageService {
 		return false;
 	}
 
+	/**
+	 * Refresh the menu
+	 */
+	public void refreshMenu() {
+		changeState(serviceState);
+	}
+
 	public boolean changeState(ServiceState newState) {
 		boolean consumed = false;
 		if (serviceState != ServiceState.IDLE) {
@@ -136,20 +140,20 @@ public class StandardMenuService extends ActorsOnStageService {
 					newState == ServiceState.START_MENU)
 					| consumed;
 		}
-		if (serviceState != newState) {
-			clear();
-			switch (newState) {
-			case PAUSED:
-				createPauseMenu();
-				break;
-			case GAME_MENU:
-				createGameMenu();
-				break;
-			case START_MENU:
-				createStartMenu();
-				break;
-			}
+
+		clear();
+		switch (newState) {
+		case PAUSED:
+			createPauseMenu();
+			break;
+		case GAME_MENU:
+			createGameMenu();
+			break;
+		case START_MENU:
+			createStartMenu();
+			break;
 		}
+
 		serviceState = newState;
 		return consumed;
 	}
@@ -217,7 +221,7 @@ public class StandardMenuService extends ActorsOnStageService {
 		exit.setClickListener(new ClickListener() {
 			@Override
 			public void click(Actor actor, float x, float y) {
-				exit();
+				GameBase.exit();
 			}
 		});
 		w.row().fill(true, true).expand(true, false);
@@ -265,11 +269,23 @@ public class StandardMenuService extends ActorsOnStageService {
 		w.row().fill(true, true).expand(true, false);
 		w.add(start);
 
+		TextButton toggleFull = new TextButton(
+				GameBase.$().isFullscreen() ? "Window mode" : "Fullscreen mode",
+				skin);
+		toggleFull.setClickListener(new ClickListener() {
+			@Override
+			public void click(Actor actor, float x, float y) {
+				GameBase.$().toggleFullscreen();
+			}
+		});
+		w.row().fill(true, true).expand(true, false);
+		w.add(toggleFull);
+
 		TextButton exit = new TextButton("Exit game (Esc)", skin);
 		exit.setClickListener(new ClickListener() {
 			@Override
 			public void click(Actor actor, float x, float y) {
-				exit();
+				GameBase.exit();
 			}
 		});
 		w.row().fill(true, true).expand(true, false);
@@ -311,6 +327,11 @@ public class StandardMenuService extends ActorsOnStageService {
 	}
 
 	@Override
+	public void resize(int width, int height) {
+		refreshMenu();
+	}
+
+	@Override
 	public void freeze() {
 	}
 
@@ -328,8 +349,8 @@ public class StandardMenuService extends ActorsOnStageService {
 		final Window w = new Window(this, skin);
 		w.touchable = false;
 		w.color.a = .1f;
-		w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f),
-				Remove.$()));
+		w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f), Remove
+				.$()));
 		w.add(new Label(info, skin));
 		w.pack();
 		w.x = centerX() - w.width * .5f;

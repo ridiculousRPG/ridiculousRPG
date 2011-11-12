@@ -33,6 +33,7 @@ import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.Initializable;
+import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
  * This class handles the GameServices. The services are executed in the same
@@ -54,6 +55,7 @@ public class GameServiceProvider implements Initializable {
 	private InputMultiplexer attentionInputMultiplexer = new InputMultiplexer();
 	private List<Computable> computables = new ArrayList<Computable>();
 	private List<Drawable> drawables = new ArrayList<Drawable>();
+	private List<ResizeListener> resizeListener = new ArrayList<ResizeListener>();
 
 	public void init() {
 		List<Initializable> initializables = this.initializables;
@@ -101,6 +103,11 @@ public class GameServiceProvider implements Initializable {
 				computables.remove(old);
 			computables.add((Computable) service);
 		}
+		if (service instanceof ResizeListener) {
+			if (old != null)
+				resizeListener.remove(old);
+			resizeListener.add((ResizeListener) service);
+		}
 		if (service instanceof InputProcessor) {
 			if (old != null)
 				inputMultiplexer.removeProcessor((InputProcessor) old);
@@ -126,6 +133,8 @@ public class GameServiceProvider implements Initializable {
 			computables.remove(old);
 		if (old instanceof Drawable)
 			drawables.remove(old);
+		if (old instanceof ResizeListener)
+			resizeListener.remove(old);
 		return old;
 	}
 
@@ -320,6 +329,11 @@ public class GameServiceProvider implements Initializable {
 			DebugHelper.drawMousePosition(spriteBatch, camera);
 			DebugHelper.drawServiceExecutionOrder(spriteBatch, camera,
 					computables, drawables, hasAttention.get());
+		}
+	}
+	void resize(int width, int height) {
+		for (int i = resizeListener.size() - 1; i > -1; i--) {
+			resizeListener.get(i).resize(width, height);
 		}
 	}
 
