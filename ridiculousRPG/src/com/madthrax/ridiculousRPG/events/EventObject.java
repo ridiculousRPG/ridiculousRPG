@@ -17,11 +17,7 @@
 package com.madthrax.ridiculousRPG.events;
 
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -32,6 +28,7 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObject;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObjectGroup;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.ObjectState;
@@ -73,6 +70,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 */
 	public int id = -1;
 	public String name;
+	public String type;
 	public float z;
 	public Rectangle drawBound = new Rectangle();
 	public boolean visible = false;
@@ -94,14 +92,18 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public int outreach = 10;
 
 	/**
-	 * All actual colisions for this object are stored in this list
+	 * All actual collisions for this object are stored in this list
 	 */
-	public List<EventObject> collision = new ArrayList<EventObject>();
+	public Array<EventObject> collision = new Array<EventObject>(false, 4);
+	/**
+	 * Touching events which have just triggered a touch event
+	 */
+	public Array<EventObject> justTouching = new Array<EventObject>(false, 4);
 	/**
 	 * All reachable objects which can be pushed at this time are stored in this
 	 * list
 	 */
-	public Set<EventObject> reachable = new HashSet<EventObject>();
+	public Array<EventObject> reachable = new Array<EventObject>(false, 4);
 	/**
 	 * This map holds the local event properties.<br>
 	 * If you use a {@link TiledMapWithEvents}, all object-properties starting
@@ -298,6 +300,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			TileAtlas atlas, TiledMap map) {
 		float mapHeight = map.height * map.tileHeight;
 		name = object.name;
+		type = object.type;
 		if (object.gid > 0) {
 			AtlasRegion region = (AtlasRegion) atlas.getRegion(object.gid);
 			image = region;

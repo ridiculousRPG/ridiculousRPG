@@ -60,4 +60,14 @@ public enum BlockingBehaviour {
 	public boolean blocks(BlockingBehaviour other) {
 		return value + other.value > 99;
 	}
+
+	public static BlockingBehaviour parse(String val) {
+		if ("true".equalsIgnoreCase(val)) {
+			return BlockingBehaviour.BUILDING_LOW;
+		} else if ("false".equalsIgnoreCase(val)) {
+			return BlockingBehaviour.FLYING_HIGH;
+		} else {
+			return BlockingBehaviour.valueOf(val);
+		}
+	}
 }

@@ -99,9 +99,6 @@ public class GameBase extends GameServiceDefaultImpl implements
 			for (Constructor<GameService> service : options.initGameService) {
 				serviceProvider.putService(service.newInstance());
 			}
-			// reorder text services to avoid painting over them
-			serviceProvider.putService(DisplayTextService.$map);
-			serviceProvider.putService(DisplayTextService.$screen);
 		} catch (Exception e) {
 			e.printStackTrace();
 			StringWriter stackTrace = new StringWriter();
@@ -130,9 +127,26 @@ public class GameBase extends GameServiceDefaultImpl implements
 
 	/**
 	 * The {@link GameServiceProvider} from the first GameBase instance which
+	 * has been initialized is used to obtain the requested service.<br>
+	 * A shortcut for calling {@link #$serviceProvider()}{@link 
+	 * GameServiceProvider#getService(Class)
+	 * .getService(Class)}
+	 * 
+	 * @return The requested service or null if no service matches.
+	 */
+	public static <T extends GameService> T $service(Class<T> serviceType) {
+		if (!isInitialized())
+			throw new IllegalStateException("GameBase not initialized!");
+		return $serviceProvider().getService(serviceType);
+	}
+
+	/**
+	 * The {@link GameServiceProvider} from the first GameBase instance which
 	 * has been initialized.<br>
 	 * A shortcut for calling {@link GameBase#$()}{@link #getServiceProvider()
 	 * .getServiceProvider()}
+	 * 
+	 * @return The standard game service provider
 	 */
 	public static GameServiceProvider $serviceProvider() {
 		return $().getServiceProvider();
@@ -143,6 +157,8 @@ public class GameBase extends GameServiceDefaultImpl implements
 	 * initialized.<br>
 	 * A shortcut for calling {@link GameBase#$()}{@link #getScriptFactory()
 	 * .getScriptFactory()}
+	 * 
+	 * @return The standard script factory
 	 */
 	public static ScriptFactory $scriptFactory() {
 		return $().getScriptFactory();

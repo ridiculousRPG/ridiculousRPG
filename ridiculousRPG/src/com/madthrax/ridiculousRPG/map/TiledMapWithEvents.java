@@ -48,6 +48,7 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.animations.TileAnimation;
 import com.madthrax.ridiculousRPG.events.BlockingBehaviour;
 import com.madthrax.ridiculousRPG.events.EventObject;
+import com.madthrax.ridiculousRPG.events.Speed;
 import com.madthrax.ridiculousRPG.events.TriggerEventHandler;
 import com.madthrax.ridiculousRPG.events.handler.EventExecScriptAdapter;
 import com.madthrax.ridiculousRPG.events.handler.EventHandler;
@@ -95,6 +96,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final String EVENT_PROP_IMAGE = "image";
 	private static final String EVENT_PROP_BLOCKING = "blocking";
 	private static final String EVENT_PROP_MOVEHANDLER = "movehandler";
+	private static final String EVENT_PROP_SPEED = "speed";
 	private static final String EVENT_PROP_ANIMATION = "animation";
 	private static final String EVENT_PROP_ESTIMATETOUCHBOUNDS = "estimatetouchbounds";
 	private static final String EVENT_PROP_HANDLER = "eventhandler";
@@ -225,16 +227,9 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			} else if (EVENT_PROP_HEIGHT.equals(key)) {
 				ev.z += Integer.parseInt(val);
 			} else if (EVENT_PROP_BLOCKING.equals(key)) {
-				if ("true".equalsIgnoreCase(val)) {
-					ev.blockingBehaviour = BlockingBehaviour.BUILDING_LOW;
-				} else if ("false".equalsIgnoreCase(val)) {
-					ev.blockingBehaviour = BlockingBehaviour.FLYING_HIGH;
-				} else
-					try {
-						ev.blockingBehaviour = BlockingBehaviour.valueOf(val);
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					}
+				ev.blockingBehaviour = BlockingBehaviour.parse(val);
+			} else if (EVENT_PROP_SPEED.equals(key)) {
+				ev.moveSpeed = Speed.parse(val);
 			} else if (EVENT_PROP_MOVEHANDLER.equals(key)) {
 				Object evHandler = GameBase.$().eval(val);
 				if (evHandler instanceof Class<?>) {

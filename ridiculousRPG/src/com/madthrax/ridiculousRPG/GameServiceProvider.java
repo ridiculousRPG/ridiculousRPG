@@ -180,6 +180,13 @@ public class GameServiceProvider implements Initializable {
 				attentionInputMultiplexer
 						.addProcessor((InputProcessor) service);
 			}
+			if (freezeTheWorld) {
+				for (int i = 0, len = computables.size(); i < len; i++) {
+					GameService s = (GameService) computables.get(i);
+					if (s != service && !s.essential())
+						s.freeze();
+				}
+			}
 			Gdx.input.setInputProcessor(attentionInputMultiplexer);
 		}
 		return succeed;
@@ -202,6 +209,13 @@ public class GameServiceProvider implements Initializable {
 			attentionCount--;
 			freezeTheWorld = false;
 			clearTheScreen = false;
+			if (freezeTheWorld) {
+				for (int i = 0, len = computables.size(); i < len; i++) {
+					GameService s = (GameService) computables.get(i);
+					if (s != service && !s.essential())
+						s.unfreeze();
+				}
+			}
 			Gdx.input.setInputProcessor(inputMultiplexer);
 		}
 		return succeed;
@@ -272,7 +286,7 @@ public class GameServiceProvider implements Initializable {
 		GameService holdsAttention = hasAttention.get();
 		Matrix4 proj = null;
 		if (clearTheScreen) {
-			for (int i = 0, len = drawables.size(); i < len; i++) {
+			for (int i = drawables.size() - 1; i > -1; i--) {
 				Drawable d = drawables.get(i);
 				if (d == holdsAttention) {
 					holdsAttention = null;
@@ -284,7 +298,7 @@ public class GameServiceProvider implements Initializable {
 				}
 			}
 		} else {
-			for (int i = 0, len = drawables.size(); i < len; i++) {
+			for (int i = drawables.size() - 1; i > -1; i--) {
 				Drawable d = drawables.get(i);
 				if (d == holdsAttention) {
 					holdsAttention = null;

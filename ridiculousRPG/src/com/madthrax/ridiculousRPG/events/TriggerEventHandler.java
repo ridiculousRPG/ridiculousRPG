@@ -48,8 +48,11 @@ public class TriggerEventHandler extends Thread implements Disposable,
 	@Override
 	public void run() {
 		while (!disposed) {
-			while (!computationReady)
+			while (!computationReady) {
 				yield();
+				if (disposed)
+					return;
+			}
 			float deltaTime = this.deltaTime;
 			this.deltaTime = 0f;
 			try {
@@ -76,11 +79,16 @@ public class TriggerEventHandler extends Thread implements Disposable,
 			consumed = obj1.getEventHandler() != null
 					&& obj1.getEventHandler().timer(obj1, deltaTime);
 			if (!consumed && obj1.consumeInput) {
-				int tmpSize = obj1.collision.size();
+				int tmpSize = obj1.collision.size;
 				for (j = 0; j < tmpSize && !consumed && !disposed; j++) {
 					obj2 = obj1.collision.get(j);
-					consumed = obj2.touchable
-							&& obj2.getEventHandler().touch(obj2, obj1);
+					if (obj2.touchable
+							&& !obj1.justTouching.contains(obj2, true)) {
+						consumed = obj2.getEventHandler().touch(obj2, obj1);
+						if (consumed) {
+							obj1.justTouching.add(obj2);
+						}
+					}
 				}
 				if (!consumed && actionKeyDown) {
 					for (EventObject pushed : obj1.reachable) {
@@ -117,7 +125,7 @@ public class TriggerEventHandler extends Thread implements Disposable,
 		for (i = 0; i < dynSize; i++) {
 			obj1 = events.get(i);
 			// increase performance by only computing this once
-			checkReachability = obj1.pushable || !obj1.reachable.isEmpty();
+			checkReachability = obj1.pushable || obj1.reachable.size > 0;
 			for (j = i + 1; j < dynSize; j++) {
 				obj2 = events.get(j);
 				if (obj1.overlaps(obj2)) {
@@ -146,11 +154,15 @@ public class TriggerEventHandler extends Thread implements Disposable,
 							obj2.getMoveHandler().moveBlocked(obj2);
 						}
 					}
-				} else if (checkReachability
-						&& (obj2.pushable || !obj2.reachable.isEmpty())) {
-					if (!obj1.reaches(obj2)) {
-						obj1.reachable.remove(obj2);
-						obj2.reachable.remove(obj1);
+				} else {
+					obj1.justTouching.removeValue(obj2, true);
+					obj2.justTouching.removeValue(obj1, true);
+					if (checkReachability
+							&& (obj2.pushable || obj2.reachable.size > 0)) {
+						if (!obj1.reaches(obj2)) {
+							obj1.reachable.removeValue(obj2, true);
+							obj2.reachable.removeValue(obj1, true);
+						}
 					}
 				}
 			}
