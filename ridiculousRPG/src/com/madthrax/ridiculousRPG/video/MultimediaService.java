@@ -28,14 +28,19 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 
 /**
  * This service is capable to play video files.<br>
+ * It's a wrapper for the Cortado video player.<br>
  * The following formats are supported:<br>
  * <ul>
- * <li>mp4</li>
+ * <li>Ogg Theora</li>
+ * <li>Ogg Vorbis</li>
+ * <li>Mulaw audio</li>
+ * <li>MJPEG</li>
+ * <li>Smoke codec</li>
  * </ul>
  * 
+ * @see http://www.theora.org/cortado/
  * @author Alexander Baumgartner
  */
-
 public class MultimediaService extends GameServiceDefaultImpl {
 
 	static String f1 = "file:///home/alex/ridiculousRPG.mpeg";
