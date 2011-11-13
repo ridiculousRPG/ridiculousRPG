@@ -16,15 +16,11 @@
 
 package com.madthrax.ridiculousRPG.video;
 
-import java.awt.Component;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
+import java.awt.Rectangle;
 import java.net.URL;
 
-import javax.media.Manager;
-import javax.media.Player;
-
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
+import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
  * This service is capable to play video files.<br>
@@ -41,11 +37,13 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
  * @see http://www.theora.org/cortado/
  * @author Alexander Baumgartner
  */
-public class MultimediaService extends GameServiceDefaultImpl {
+public class MultimediaService extends GameServiceDefaultImpl implements ResizeListener {
 
 	static String f1 = "file:///home/alex/ridiculousRPG.mpeg";
 	static String f2 = "file:///media/EXTERN_200/movies/test.avi";
-	static String toPlay = f2;
+	static String f3 = "file:///home/alex/Desktop/JMF-2.1.1e/test.ogv";
+	static String f4 = "file:///home/alex/Desktop/JMF-2.1.1e/test2.ogg";
+	static String toPlay = f3;
 
 	public void play() {
 	}
@@ -56,37 +54,27 @@ public class MultimediaService extends GameServiceDefaultImpl {
 
 	public static void main(String[] args) {
 		try {
-			URL mediaURL = new URL(toPlay);
-			Player player = Manager.createRealizedPlayer(mediaURL);
-			Component c = player.getVisualComponent();
-			if (c==null) {
-				System.out.println("No visual comp available!!");
-				return;
-			}
-			c.addComponentListener(new ComponentListener() {
-				@Override
-				public void componentShown(ComponentEvent e) {
-					System.out.println(e);
-				}
-
-				@Override
-				public void componentResized(ComponentEvent e) {
-					System.out.println(e);
-				}
-
-				@Override
-				public void componentMoved(ComponentEvent e) {
-					System.out.println(e);
-				}
-
-				@Override
-				public void componentHidden(ComponentEvent e) {
-					System.out.println(e);
-				}
-			});
-			player.start();
+			VideoPlayerAppletWrapper p ;
+			p  = VideoPlayerAppletWrapper.obtainPlayer(new URL(f3),
+					new Rectangle(0, 0, 900, 400), true);
+			Thread.sleep(2000);
+			p.play();
+			Thread.sleep(1000);
+			p.stop();
+			Thread.sleep(1000);
+			p = VideoPlayerAppletWrapper.obtainPlayer(new URL(f4),
+					new Rectangle(0, 0, 900, 400), true);
+			p.play();
+			Thread.sleep(3000);
+			p.dispose();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void resize(int width, int height) {
+		// TODO Auto-generated method stub
+		
 	}
 }

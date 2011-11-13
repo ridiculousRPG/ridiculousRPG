@@ -22,9 +22,9 @@ import java.applet.AppletStub;
 import java.awt.Color;
 import java.awt.Frame;
 import java.awt.Rectangle;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.net.URL;
+
+import com.badlogic.gdx.utils.Disposable;
 
 /**
  * This class wraps the Cortado video player {@link Applet} inside an
@@ -43,7 +43,7 @@ import java.net.URL;
  * @see http://www.theora.org/cortado/
  * @author Alexander Baumgartner
  */
-public class VideoPlayerAppletWrapper implements AppletStub {
+public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 	private static VideoPlayerAppletWrapper instance;
 	private VideoPlayerApplet player;
 	private URL url;
@@ -54,22 +54,17 @@ public class VideoPlayerAppletWrapper implements AppletStub {
 		player = VideoPlayerApplet.obtainPlayerApplet(url, withAudio);
 		this.url = url;
 		frame = new Frame();
-		frame.setBounds(screenBounds);
+		frame.setSize(0, 0);
 		frame.setBackground(Color.BLACK);
+		frame.setEnabled(false);
 		frame.setAlwaysOnTop(true);
 		frame.setResizable(false);
 		frame.setUndecorated(true);
-		frame.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent event) {
-				player.stop();
-				player.destroy();
-				System.exit(0);
-			}
-		});
-		frame.add("Center", player);
+		frame.add(player);
 		player.setStub(this);
 		player.init();
 		player.start();
+		resize(screenBounds);
 	}
 
 	public static VideoPlayerAppletWrapper obtainPlayer(URL url,
@@ -79,9 +74,9 @@ public class VideoPlayerAppletWrapper implements AppletStub {
 					withAudio);
 		} else {
 			if (!url.sameFile(instance.url)) {
-				instance.player.doStop();
 				instance.player.setParam("url", url.toString());
 				instance.player.setParam("audio", String.valueOf(withAudio));
+				instance.player.restart();
 			}
 			instance.frame.setBounds(screenBounds);
 		}
@@ -92,6 +87,7 @@ public class VideoPlayerAppletWrapper implements AppletStub {
 	 * Starts the video (and audio) playback
 	 */
 	public void play() {
+		instance.player.restart();
 		frame.setVisible(true);
 		player.doPlay();
 	}
@@ -147,6 +143,7 @@ public class VideoPlayerAppletWrapper implements AppletStub {
 	 * @return void
 	 */
 	public void appletResize(int width, int height) {
+		frame.setSize(width, height);
 		player.resize(width, height);
 	}
 
@@ -197,5 +194,26 @@ public class VideoPlayerAppletWrapper implements AppletStub {
 	 */
 	public boolean isActive() {
 		return true;
+	}
+
+	@Override
+	public void dispose() {
+		stop();
+		player.stop();
+		player.destroy();
+		frame.remove(player);
+		if (player.isActive()) {
+			// force exit
+			final Thread current = Thread.currentThread();
+			new Thread() {
+				@Override
+				public void run() {
+					while (current.isAlive()) try {
+						sleep(2000);
+					} catch (InterruptedException e) {}
+					System.exit(0);
+				}
+			}.start();
+		}
 	}
 }

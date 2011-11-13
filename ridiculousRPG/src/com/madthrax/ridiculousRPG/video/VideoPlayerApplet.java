@@ -17,8 +17,6 @@
 package com.madthrax.ridiculousRPG.video;
 
 import java.applet.Applet;
-import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.net.URL;
 
@@ -26,8 +24,8 @@ import com.fluendo.player.Cortado;
 
 /**
  * This class extends the Cortado video player {@link Applet}.<br>
- * It hides some features like context menu and sets the used
- * default parameters.<br>
+ * It hides some features like context menu and sets the used default
+ * parameters.<br>
  * <ul>
  * <li>Ogg Theora</li>
  * <li>Ogg Vorbis</li>
@@ -40,9 +38,25 @@ import com.fluendo.player.Cortado;
  * @author Alexander Baumgartner
  */
 public class VideoPlayerApplet extends Cortado {
+	/**
+	 * This is an applet! You should NEVER use this constructor manually!<br>
+	 * Use
+	 * {@link VideoPlayerAppletWrapper#obtainPlayer(URL, java.awt.Rectangle, boolean)}
+	 * instead!
+	 */
+	@Deprecated
+	public VideoPlayerApplet() {
+	}
+
 	private static final long serialVersionUID = 1L;
 
-	public static VideoPlayerApplet obtainPlayerApplet(URL url, boolean withAudio) {
+	/**
+	 * If possible, use
+	 * {@link VideoPlayerAppletWrapper#obtainPlayer(URL, java.awt.Rectangle, boolean)}
+	 * instead!
+	 */
+	protected static VideoPlayerApplet obtainPlayerApplet(URL url,
+			boolean withAudio) {
 		VideoPlayerApplet player = new VideoPlayerApplet();
 		player.setParam("url", url.toString());
 		player.setParam("bufferSize", "200");
@@ -52,26 +66,6 @@ public class VideoPlayerApplet extends Cortado {
 		player.setParam("autoPlay", String.valueOf(withAudio));
 		player.setParam("debug", "0");
 		return player;
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent arg0) {
-	}
-
-	@Override
-	public void componentHidden(ComponentEvent arg0) {
-	}
-
-	@Override
-	public void componentMoved(ComponentEvent arg0) {
-	}
-
-	@Override
-	public void componentResized(ComponentEvent arg0) {
-	}
-
-	@Override
-	public void componentShown(ComponentEvent arg0) {
 	}
 
 	@Override
