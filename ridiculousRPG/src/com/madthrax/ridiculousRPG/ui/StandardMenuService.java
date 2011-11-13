@@ -332,19 +332,17 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 	}
 
 	@Override
-	public void freeze() {
-	}
-
-	@Override
-	public void unfreeze() {
-	}
-
-	@Override
 	public void dispose() {
 		if (background != null)
 			background.dispose();
 	}
 
+	public void showInfoNormal(String info) {
+		showInfo(getSkinNormal(), info);
+	}
+	public void showInfoFocused(String info) {
+		showInfo(getSkinFocused(), info);
+	}
 	private void showInfo(final Skin skin, String info) {
 		final Window w = new Window(this, skin);
 		w.touchable = false;

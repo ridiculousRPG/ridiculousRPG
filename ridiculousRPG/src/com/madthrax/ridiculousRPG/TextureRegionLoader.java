@@ -103,8 +103,8 @@ public final class TextureRegionLoader {
 	 * This method loads the Pixmap, adds some padding if it's not sized with
 	 * powers of two, creates a {@link TextureCache} and caches the created
 	 * Texture. Then it obtains a {@link TextureRegionRef} from the pool and
-	 * returns the {@link TextureRegionRef}, which is cropped to the size of
-	 * the Pixmap.
+	 * returns the {@link TextureRegionRef}, which is cropped to the size of the
+	 * Pixmap.
 	 * 
 	 * @param internalPath
 	 *            The path to the picture
@@ -118,8 +118,8 @@ public final class TextureRegionLoader {
 	 * This method loads the Pixmap, adds some padding if it's not sized with
 	 * powers of two, creates a {@link TextureCache} and caches the created
 	 * Texture. Then it obtains a {@link TextureRegionRef} from the pool and
-	 * returns the {@link TextureRegionRef}, which is cropped to the size of
-	 * the Pixmap.
+	 * returns the {@link TextureRegionRef}, which is cropped to the size of the
+	 * Pixmap.
 	 * 
 	 * @param filePath
 	 *            The file to the picture
@@ -127,6 +127,28 @@ public final class TextureRegionLoader {
 	 */
 	public static TextureRegionRef load(FileHandle filePath) {
 		return obtainCache(filePath).obtainRegion();
+	}
+
+	/**
+	 * Obtains a texture region for drawing {@link Pixmap}s on it.<br>
+	 * This method creates a texture region with an underlying texture (which is
+	 * sized with the next powers of two) for drawing.
+	 * 
+	 * @param width
+	 *            the width of the texture region
+	 * @param height
+	 *            the height of the texture region
+	 * @param format
+	 *            the format for drawing {@link Pixmap}s onto this TextureRegion
+	 * @return A texture region with the specified width and height for drawing
+	 *         on it.
+	 */
+	public static TextureRegionRef obtainEmptyRegion(int width, int height,
+			Format format) {
+		int safeWidth = MathUtils.nextPowerOfTwo(width);
+		int safeHeight = MathUtils.nextPowerOfTwo(height);
+		return new TextureCache(safeWidth, safeHeight, format).obtainRegion(0,
+				0, width, height);
 	}
 
 	private static TextureCache obtainCache(FileHandle filePath) {
@@ -151,11 +173,42 @@ public final class TextureRegionLoader {
 	}
 
 	/**
-	 * Use {@link TextureRegionLoader#load} if possible
+	 * Use {@link TextureRegionLoader#load} or
+	 * {@link TextureRegionLoader#obtainEmptyRegion(int, int, Format)} to obtain
+	 * a texture region.
+	 * 
 	 * @author Alexander Baumgartner
 	 */
 	public static class TextureRegionRef extends TextureRegion implements
 			Disposable {
+		/**
+		 * Use {@link TextureRegionLoader#load} or
+		 * {@link TextureRegionLoader#obtainEmptyRegion(int, int, Format)} to obtain
+		 * a texture region.
+		 */
+		protected TextureRegionRef() {
+		}
+
+		/**
+		 * Draws the {@link Pixmap} at position (0,0)
+		 * 
+		 * @param pm
+		 *            The {@link Pixmap} to draw.
+		 */
+		public void draw(Pixmap pm) {
+			getTexture().draw(pm, 0, 0);
+		}
+
+		/**
+		 * Draws the {@link Pixmap} at position (x,y)
+		 * 
+		 * @param pm
+		 *            The {@link Pixmap} to draw.
+		 */
+		public void draw(Pixmap pm, int x, int y) {
+			getTexture().draw(pm, x, y);
+		}
+
 		@Override
 		public void dispose() {
 			getTexture().dispose();
@@ -165,9 +218,10 @@ public final class TextureRegionLoader {
 
 	/**
 	 * Use {@link TextureRegionLoader#load} if possible
+	 * 
 	 * @author Alexander Baumgartner
 	 */
-	public static class TextureCache extends Texture {
+	protected static class TextureCache extends Texture {
 		// reference count
 		private int count;
 		// width of the pixmap
@@ -178,7 +232,7 @@ public final class TextureRegionLoader {
 		/**
 		 * Use {@link TextureRegionLoader#load} if possible
 		 */
-		public TextureCache(Pixmap pm) {
+		protected TextureCache(Pixmap pm) {
 			super(pm);
 			width = pm.getWidth();
 			height = pm.getHeight();
@@ -187,20 +241,15 @@ public final class TextureRegionLoader {
 		/**
 		 * Use {@link TextureRegionLoader#load} if possible
 		 */
-		public TextureCache(int width, int height, Format format) {
+		protected TextureCache(int width, int height, Format format) {
 			super(width, height, format);
 		}
 
 		public TextureRegionRef obtainRegion() {
-			count++;
-			TextureRegionRef c = textureRegionPool.obtain();
-			c.setTexture(this);
-			c.setRegion(0, 0, width, height);
-			return c;
+			return obtainRegion(0, 0, width, height);
 		}
 
-		public TextureRegionRef obtainRegion(int x, int y, int width,
-				int height) {
+		public TextureRegionRef obtainRegion(int x, int y, int width, int height) {
 			count++;
 			TextureRegionRef c = textureRegionPool.obtain();
 			c.setTexture(this);
@@ -216,7 +265,8 @@ public final class TextureRegionLoader {
 
 		@Override
 		public void dispose() {
-			if (--count == 0) {
+			count--;
+			if (count == 0) {
 				textureCache.remove(textureReverseCache.remove(this));
 				super.dispose();
 			}
