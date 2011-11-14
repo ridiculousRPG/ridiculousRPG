@@ -22,9 +22,11 @@ import java.applet.AppletStub;
 import java.awt.Color;
 import java.awt.Frame;
 import java.awt.Rectangle;
+import java.awt.event.ComponentEvent;
 import java.net.URL;
 
 import com.badlogic.gdx.utils.Disposable;
+import com.fluendo.jst.Message;
 
 /**
  * This class wraps the Cortado video player {@link Applet} inside an
@@ -48,48 +50,133 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 	private VideoPlayerApplet player;
 	private URL url;
 	private Frame frame;
+	private boolean playing;
 
-	protected VideoPlayerAppletWrapper(URL url, Rectangle screenBounds,
-			boolean withAudio) {
-		player = VideoPlayerApplet.obtainPlayerApplet(url, withAudio);
+	/**
+	 * Instantiates a new video player. Use {@link #$(URL, Rectangle, boolean)}
+	 * if you don't need to play more than one video at the same time!
+	 * 
+	 * @param url
+	 *            url to ogg / ogv file
+	 * @param screenBounds
+	 *            the screen position, width and height
+	 * @param withAudio
+	 *            if false, the audio channel will be disabled.
+	 * @param autoClose
+	 *            if true, the player will close automatically after reaching
+	 *            the end of the stream/file or if an error occurred. BUT: You
+	 *            have to dispose the player yourself!
+	 */
+	public VideoPlayerAppletWrapper(URL url, Rectangle screenBounds,
+			boolean withAudio, final boolean autoClose) {
 		this.url = url;
+		player = new VideoPlayerApplet() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void handleMessage(Message msg) {
+				super.handleMessage(msg);
+				if (autoClose
+						&& (msg.getType() == Message.EOS || msg.getType() == Message.ERROR)) {
+					VideoPlayerAppletWrapper.this.stop();
+				}
+			}
+
+			@Override
+			public void componentResized(ComponentEvent e) {
+				super.componentResized(e);
+			}
+
+		};
 		frame = new Frame();
-		frame.setSize(0, 0);
-		frame.setBackground(Color.BLACK);
-		frame.setEnabled(false);
-		frame.setAlwaysOnTop(true);
-		frame.setResizable(false);
-		frame.setUndecorated(true);
+		initFrame();
+		frame.setBounds(screenBounds);
 		frame.add(player);
+		initPlayer();
+		player.setParam("url", url.toString());
+		player.setParam("audio", String.valueOf(withAudio));
 		player.setStub(this);
 		player.init();
 		player.start();
-		resize(screenBounds);
 	}
 
-	public static VideoPlayerAppletWrapper obtainPlayer(URL url,
-			Rectangle screenBounds, boolean withAudio) {
+	/**
+	 * Initializes the frame. Override if you want a window wit borders
+	 */
+	protected void initFrame() {
+		frame.setBackground(Color.BLACK);
+		frame.setEnabled(false);
+		frame.setAlwaysOnTop(true);
+		// frame.setResizable(false);
+		frame.setUndecorated(true);
+	}
+
+	/**
+	 * Initializes the player. Override if you want a status bar, an other
+	 * buffer size,...
+	 */
+	protected void initPlayer() {
+		player.setParam("bufferSize", "200");
+		player.setParam("showStatus", "hide");
+		player.setParam("showSpeaker", "false");
+		player.setParam("showSubtitles", "false");
+		player.setParam("autoPlay", "false");
+		player.setParam("debug", "0");
+	}
+
+	/**
+	 * Returns the default instance. If it's the first call, the default
+	 * instance will be allocated.
+	 * 
+	 * @param url
+	 *            url to ogg / ogv file
+	 * @param screenBounds
+	 *            the screen position, width and height
+	 * @param withAudio
+	 *            if false, the audio channel will be disabled.
+	 * @param autoClose
+	 *            if true, the player will close automatically after reaching
+	 *            the end of the stream/file or if an error occurred.
+	 * @return
+	 */
+	public static VideoPlayerAppletWrapper $(URL url, Rectangle screenBounds,
+			boolean withAudio, boolean autoClose) {
 		if (instance == null) {
 			instance = new VideoPlayerAppletWrapper(url, screenBounds,
-					withAudio);
+					withAudio, autoClose);
 		} else {
 			if (!url.sameFile(instance.url)) {
-				instance.player.setParam("url", url.toString());
-				instance.player.setParam("audio", String.valueOf(withAudio));
-				instance.player.restart();
+				instance.changeMedia(url, withAudio);
 			}
-			instance.frame.setBounds(screenBounds);
+			instance.resize(screenBounds);
 		}
 		return instance;
+	}
+
+	/**
+	 * Changes the media file (ogg / ogv)<br>
+	 * If you change the media and resize the screen, always
+	 * first change the media and than resize the screen. 
+	 */
+	public void changeMedia(URL url, boolean withAudio) {
+		player.setParam("audio", String.valueOf(withAudio));
+		player.setParam("url", url.toString());
+		player.restart();
+		if (playing)
+			play();
 	}
 
 	/**
 	 * Starts the video (and audio) playback
 	 */
 	public void play() {
-		instance.player.restart();
 		frame.setVisible(true);
 		player.doPlay();
+		playing = true;
+	}
+
+	public boolean isPlaying() {
+		return playing;
 	}
 
 	/**
@@ -109,6 +196,7 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 	 * Stops the video (and audio) playback
 	 */
 	public void stop() {
+		playing = false;
 		player.doStop();
 		frame.setVisible(false);
 	}
@@ -132,7 +220,9 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 	 */
 	public void resize(Rectangle screenBounds) {
 		frame.setBounds(screenBounds);
-		player.resize(screenBounds.width, screenBounds.height);
+		while (player.getWidth() != screenBounds.width
+				|| player.getHeight() != screenBounds.height)
+			Thread.yield();
 	}
 
 	/**
@@ -144,7 +234,8 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 	 */
 	public void appletResize(int width, int height) {
 		frame.setSize(width, height);
-		player.resize(width, height);
+		while (player.getWidth() != width || player.getHeight() != height)
+			Thread.yield();
 	}
 
 	/**
@@ -196,6 +287,18 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 		return true;
 	}
 
+	/**
+	 * Disposes the default instance. this method is automatically when the
+	 * {@link MultimediaService} is disposed. Normally you don't need to call
+	 * this.
+	 */
+	public static void dispose$() {
+		if (instance != null) {
+			instance.dispose();
+			instance = null;
+		}
+	}
+
 	@Override
 	public void dispose() {
 		stop();
@@ -208,9 +311,12 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 			new Thread() {
 				@Override
 				public void run() {
-					while (current.isAlive()) try {
-						sleep(2000);
-					} catch (InterruptedException e) {}
+					do
+						try {
+							sleep(2000);
+						} catch (InterruptedException e) {
+						}
+					while (current.isAlive());
 					System.exit(0);
 				}
 			}.start();

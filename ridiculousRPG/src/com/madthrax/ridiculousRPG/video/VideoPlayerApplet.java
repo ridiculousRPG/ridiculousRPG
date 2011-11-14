@@ -40,33 +40,15 @@ import com.fluendo.player.Cortado;
 public class VideoPlayerApplet extends Cortado {
 	/**
 	 * This is an applet! You should NEVER use this constructor manually!<br>
-	 * Use
-	 * {@link VideoPlayerAppletWrapper#obtainPlayer(URL, java.awt.Rectangle, boolean)}
+	 * Use {@link VideoPlayerAppletWrapper#$(URL, java.awt.Rectangle, boolean)}
+	 * or
+	 * {@link VideoPlayerAppletWrapper#VideoPlayerAppletWrapper(URL, java.awt.Rectangle, boolean)}
 	 * instead!
 	 */
-	@Deprecated
 	public VideoPlayerApplet() {
 	}
 
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * If possible, use
-	 * {@link VideoPlayerAppletWrapper#obtainPlayer(URL, java.awt.Rectangle, boolean)}
-	 * instead!
-	 */
-	protected static VideoPlayerApplet obtainPlayerApplet(URL url,
-			boolean withAudio) {
-		VideoPlayerApplet player = new VideoPlayerApplet();
-		player.setParam("url", url.toString());
-		player.setParam("bufferSize", "200");
-		player.setParam("showStatus", "hide");
-		player.setParam("showSpeaker", "false");
-		player.setParam("showSubtitles", "false");
-		player.setParam("autoPlay", String.valueOf(withAudio));
-		player.setParam("debug", "0");
-		return player;
-	}
 
 	@Override
 	public void mouseClicked(MouseEvent arg0) {

@@ -37,7 +37,8 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
  * @see http://www.theora.org/cortado/
  * @author Alexander Baumgartner
  */
-public class MultimediaService extends GameServiceDefaultImpl implements ResizeListener {
+public class MultimediaService extends GameServiceDefaultImpl implements
+		ResizeListener {
 
 	static String f1 = "file:///home/alex/ridiculousRPG.mpeg";
 	static String f2 = "file:///media/EXTERN_200/movies/test.avi";
@@ -54,17 +55,15 @@ public class MultimediaService extends GameServiceDefaultImpl implements ResizeL
 
 	public static void main(String[] args) {
 		try {
-			VideoPlayerAppletWrapper p ;
-			p  = VideoPlayerAppletWrapper.obtainPlayer(new URL(f3),
-					new Rectangle(0, 0, 900, 400), true);
-			Thread.sleep(2000);
+			VideoPlayerAppletWrapper p;
+			p = VideoPlayerAppletWrapper.$(new URL(f3), new Rectangle(0, 0,
+					900, 400), true, false);
 			p.play();
-			Thread.sleep(1000);
-			p.stop();
-			Thread.sleep(1000);
-			p = VideoPlayerAppletWrapper.obtainPlayer(new URL(f4),
-					new Rectangle(0, 0, 900, 400), true);
-			p.play();
+			Thread.sleep(3000);
+			p.appletResize(200,200);
+			Thread.sleep(3000);
+			p = VideoPlayerAppletWrapper.$(new URL(f4), new Rectangle(200, 50,
+					600, 600), true, false);
 			Thread.sleep(3000);
 			p.dispose();
 		} catch (Exception e) {
@@ -75,6 +74,6 @@ public class MultimediaService extends GameServiceDefaultImpl implements ResizeL
 	@Override
 	public void resize(int width, int height) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }
