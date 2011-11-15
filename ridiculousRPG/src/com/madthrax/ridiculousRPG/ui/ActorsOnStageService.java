@@ -134,7 +134,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 		// unfocus if actor is removed
 		if (focusedActor != null
 				&& !ActorFocusUtil.isActorOnStage(focusedActor, root)) {
-			root.keyboardFocus(null);
+			setKeyboardFocus(null);
 			focusedActor = null;
 			awaitingKeyUp = false;
 		}
@@ -158,7 +158,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 				return (awaitingKeyUp = actionKeyPressed(true));
 			case Keys.ESCAPE:
 				if (focusedActor != null) {
-					focusedActor.parent.keyboardFocus(null);
+					setKeyboardFocus(null);
 				}
 				return false;
 			case Keys.UP:
@@ -183,7 +183,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 		// unfocus if actor is removed
 		if (focusedActor != null
 				&& !ActorFocusUtil.isActorOnStage(focusedActor, root)) {
-			root.keyboardFocus(null);
+			setKeyboardFocus(null);
 			focusedActor = null;
 			awaitingKeyUp = false;
 		}
@@ -195,10 +195,10 @@ public class ActorsOnStageService extends Stage implements GameService,
 		checkFocusChanged(false);
 	}
 	private boolean checkFocusChanged(boolean consumed) {
-		if (focusedActor != root.keyboardFocusedActor) {
+		if (focusedActor != getKeyboardFocus()) {
 			if (focusedActor != null)
 				changeSkin(focusedActor, skinNormal);
-			focusedActor = root.keyboardFocusedActor;
+			focusedActor = getKeyboardFocus();
 			if (focusedActor != null)
 				changeSkin(focusedActor, skinFocused);
 		}
@@ -262,7 +262,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 		} else if (a != null) {
 			// unfocus if actor is removed
 			if (!ActorFocusUtil.isActorOnStage(a, root)) {
-				root.keyboardFocus(null);
+				setKeyboardFocus(null);
 				focusedActor = null;
 				awaitingKeyUp = false;
 				return actionKeyPressed(down);
@@ -275,7 +275,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 					root.touchDown(a.x - tmpPoint.x + 1, a.y - tmpPoint.y + 1,
 							0);
 					if (a.parent != null)
-						a.parent.keyboardFocusedActor = a;
+						setKeyboardFocus(a);
 					return true;
 				}
 			} else {

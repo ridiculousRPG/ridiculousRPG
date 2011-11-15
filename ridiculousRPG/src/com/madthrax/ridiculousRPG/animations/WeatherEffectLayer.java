@@ -21,11 +21,11 @@ import java.util.Random;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.TextureDict;
-import com.badlogic.gdx.graphics.TextureRef;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
+import com.madthrax.ridiculousRPG.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 
 /**
  * A Layer for a weather effect. Every effect layer is simulated by a texture.
@@ -38,7 +38,7 @@ import com.badlogic.gdx.utils.Disposable;
 public class WeatherEffectLayer implements Disposable {
 	private static final Random randomNumberGenerator = new Random();
 
-	private TextureRef tRef;
+	private TextureRegionRef tRef;
 	private int width, height;
 	private int tileWidth, tileHeight;
 	private ArrayList<ArrayList<Rectangle>> tileLayer = new ArrayList<ArrayList<Rectangle>>();
@@ -90,7 +90,7 @@ public class WeatherEffectLayer implements Disposable {
 	 */
 	public WeatherEffectLayer(String path, int pixelOverlap, int pixelWidth,
 			int pixelHeight, float effectSpeed, float windSpeed) {
-		this(TextureDict.loadTexture(path), pixelOverlap, pixelWidth,
+		this(TextureRegionLoader.load(path), pixelOverlap, pixelWidth,
 				pixelHeight, effectSpeed, windSpeed);
 	}
 
@@ -104,14 +104,14 @@ public class WeatherEffectLayer implements Disposable {
 	 * @see TextureDict.loadTexture(...)
 	 * @see public WeatherEffectLayer(String path, ...)
 	 */
-	protected WeatherEffectLayer(TextureRef tRef, int pixelOverlap,
+	protected WeatherEffectLayer(TextureRegionRef tRef, int pixelOverlap,
 			int pixelWidth, int pixelHeight, float effectSpeed, float windSpeed) {
 		if (effectSpeed < .01)
 			throw new IllegalArgumentException(
 					"The effectSpeed has to be greater or equal 0.01");
 		this.tRef = tRef;
-		tileWidth = tRef.get().getWidth() - pixelOverlap;
-		tileHeight = tRef.get().getHeight() - pixelOverlap;
+		tileWidth = tRef.getRegionWidth() - pixelOverlap;
+		tileHeight = tRef.getRegionHeight() - pixelOverlap;
 		width = pixelWidth;
 		height = pixelHeight;
 
@@ -399,9 +399,9 @@ public class WeatherEffectLayer implements Disposable {
 	 */
 	public void draw(SpriteBatch batch, Camera cam) {
 		// load frequently used variables into registers
-		Texture t = tRef.get();
-		int tWidth = t.getWidth();
-		int tHeight = t.getHeight();
+		Texture t = tRef.getTexture();
+		int tWidth = tRef.getRegionWidth();
+		int tHeight = tRef.getRegionHeight();
 		float x1 = Math.max(0f, cam.position.x);
 		float y1 = Math.max(0f, cam.position.y);
 		float x2 = Math.min(width, x1 + cam.viewportWidth);
@@ -445,6 +445,6 @@ public class WeatherEffectLayer implements Disposable {
 
 	public void dispose() {
 		tileLayer = null;
-		tRef.unload();
+		tRef.dispose();
 	}
 }

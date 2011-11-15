@@ -26,11 +26,6 @@ import java.util.Map.Entry;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.TextureDict;
-import com.badlogic.gdx.graphics.TextureRef;
-import com.badlogic.gdx.graphics.Texture.TextureFilter;
-import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g2d.tiled.TileAtlas;
@@ -45,6 +40,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntMap;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.animations.TileAnimation;
 import com.madthrax.ridiculousRPG.events.BlockingBehaviour;
 import com.madthrax.ridiculousRPG.events.EventObject;
@@ -256,15 +252,12 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			} else if (EVENT_PROP_ANIMATION.equals(key)) {
 				FileHandle fh = Gdx.files.internal(val);
 				if (fh.exists()) {
-					TextureRef tRef = TextureDict.loadTexture(val,
-							TextureFilter.Nearest, TextureFilter.Nearest,
-							TextureWrap.ClampToEdge, TextureWrap.ClampToEdge);
-					Texture t = tRef.get();
+					TextureRegionRef t = TextureRegionLoader.load(val);
 					TileAnimation anim = new TileAnimation(val,
-							t.getWidth() / 4, t.getHeight() / 4, 4, 4);
+							t.getRegionWidth() / 4, t.getRegionHeight() / 4, 4, 4);
 					ev.setAnimation(anim, "true".equalsIgnoreCase(props
 							.get(EVENT_PROP_ESTIMATETOUCHBOUNDS)));
-					tRef.unload();
+					t.dispose();
 				} else {
 					Object evHandler = GameBase.$().eval(val);
 					if (evHandler instanceof TileAnimation) {

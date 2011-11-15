@@ -19,11 +19,11 @@ package com.madthrax.ridiculousRPG.animations;
 import java.util.ArrayList;
 
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.TextureDict;
-import com.badlogic.gdx.graphics.TextureRef;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.madthrax.ridiculousRPG.GameBase;
+import com.madthrax.ridiculousRPG.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
@@ -85,9 +85,9 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	public void addLayerTimes(String path, final int pixelOverlap,
 			final float effectSpeed, final float windSpeed, final int times,
 			final float waitIntervall) {
-		final TextureRef t = TextureDict.loadTexture(path);
+		final TextureRegionRef t = TextureRegionLoader.load(path);
 		for (int i = 1; i < times; i++) {
-			TextureDict.loadTexture(path);
+			TextureRegionLoader.load(path);
 		}
 		new Thread() { // For simplicity let's do this in a new thread
 

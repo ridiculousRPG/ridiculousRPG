@@ -22,7 +22,6 @@ import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
@@ -42,23 +41,23 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
 public class WindowWithVariableTitlebox extends Window {
 	private Rectangle titleBounds = new Rectangle();
 
-	public WindowWithVariableTitlebox(Stage stage, Skin skin) {
-		this("", stage, skin);
+	public WindowWithVariableTitlebox(Skin skin) {
+		this("", skin);
 	}
 
-	public WindowWithVariableTitlebox(String title, Stage stage, Skin skin) {
-		this(title, stage, skin.getStyle(WindowWithVariableTitleboxStyle.class));
+	public WindowWithVariableTitlebox(String title, Skin skin) {
+		this(title, skin.getStyle(WindowWithVariableTitleboxStyle.class));
 	}
 
-	public WindowWithVariableTitlebox(String title, Stage stage,
+	public WindowWithVariableTitlebox(String title,
 			WindowWithVariableTitleboxStyle style) {
-		super(title, stage, style);
+		super(title, style);
 	}
 
-	public WindowWithVariableTitlebox(String title, Stage stage,
+	public WindowWithVariableTitlebox(String title,
 			WindowWithVariableTitleboxStyle style, int prefWidth,
 			int prefHeight, String name) {
-		super(title, stage, style, name);
+		super(title, style, name);
 		height(prefHeight);
 		width(prefWidth);
 	}

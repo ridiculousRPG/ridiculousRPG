@@ -160,7 +160,8 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 
 	private void createGameMenu() {
 		final Skin skin = getSkinNormal();
-		Window w = new Window("Game menu", this, skin);
+		Window w = new Window("Game menu", skin);
+		addActor(w);
 		w.height = height();
 		w.width = width() * .3f;
 
@@ -236,7 +237,8 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 			addActor(new Image(background));
 		}
 		final Skin skin = getSkinNormal();
-		Window w = new Window("Start menu", this, skin);
+		Window w = new Window("Start menu", skin);
+		addActor(w);
 
 		TextButton resume = new TextButton("Continue at last save point", skin);
 		resume.setClickListener(new ClickListener() {
@@ -300,7 +302,8 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 
 	protected void createPauseMenu() {
 		Skin skin = getSkinNormal();
-		Window w = new Window("PAUSE", this, skin);
+		Window w = new Window("PAUSE", skin);
+		addActor(w);
 		TextButton resume = new TextButton("Resume (P)", skin);
 		resume.setClickListener(new ClickListener() {
 			@Override
@@ -344,7 +347,8 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 		showInfo(getSkinFocused(), info);
 	}
 	private void showInfo(final Skin skin, String info) {
-		final Window w = new Window(this, skin);
+		final Window w = new Window(skin);
+		addActor(w);
 		w.touchable = false;
 		w.color.a = .1f;
 		w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f), Remove

@@ -166,7 +166,7 @@ public final class ActorFocusUtil {
 		// focus self
 		if (actor == null || actor.parent == null)
 			return false;
-		actor.parent.keyboardFocus(actor);
+		actor.getStage().setKeyboardFocus(actor);
 		return true;
 	}
 
