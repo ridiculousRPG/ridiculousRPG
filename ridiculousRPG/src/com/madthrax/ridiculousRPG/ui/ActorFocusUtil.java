@@ -22,6 +22,7 @@ import java.util.List;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 
 /**
  * This class offers some static methods to change the keyboard focused actor.<br>
@@ -36,14 +37,14 @@ public final class ActorFocusUtil {
 	private static Vector2 tmpPoint = new Vector2(0f, 0f);
 
 	public static boolean focusPrev(Actor focused, Actor root, boolean up,
-			boolean left) {
+			boolean left, Stage stage) {
 		if (focused == null)
-			return focus(root, true);
-		return focusPrevIntern(focused, up, left);
+			return focus(root, true, stage);
+		return focusPrevIntern(focused, up, left, stage);
 	}
 
 	private static boolean focusPrevIntern(Actor focused, boolean up,
-			boolean left) {
+			boolean left, Stage stage) {
 		if (focused.parent == null)
 			return false;
 
@@ -66,27 +67,27 @@ public final class ActorFocusUtil {
 			if (isFocusable(a)) {
 				if (up) {
 					if (aY1 >= fY2 && aX2 > fX1 && aX1 < fX2)
-						return focus(a, true);
+						return focus(a, true, stage);
 				} else if (left) {
 					if (aX2 <= fX1 && aY1 < fY2 && aY2 > fY1)
-						return focus(a, true);
+						return focus(a, true, stage);
 				} else if (aY1 >= fY2 || (aX2 <= fX1 && aY1 < fY2 && aY2 > fY1))
-					return focus(a, true);
+					return focus(a, true, stage);
 			}
 		}
 
-		return focusPrevIntern(focused.parent, up, left);
+		return focusPrevIntern(focused.parent, up, left, stage);
 	}
 
 	public static boolean focusNext(Actor focused, Actor root, boolean down,
-			boolean right) {
+			boolean right, Stage stage) {
 		if (focused == null)
-			return focus(root, false);
-		return focusNextIntern(focused, down, right);
+			return focus(root, false, stage);
+		return focusNextIntern(focused, down, right, stage);
 	}
 
 	private static boolean focusNextIntern(Actor focused, boolean down,
-			boolean right) {
+			boolean right, Stage stage) {
 		if (focused.parent == null)
 			return false;
 
@@ -109,34 +110,34 @@ public final class ActorFocusUtil {
 			if (isFocusable(a)) {
 				if (down) {
 					if (aY2 <= fY1 && aX2 > fX1 && aX1 < fX2)
-						return focus(a, false);
+						return focus(a, false, stage);
 				} else if (right) {
 					if (aX1 >= fX2 && aY1 < fY2 && aY2 > fY1)
-						return focus(a, false);
+						return focus(a, false, stage);
 				} else if (aY2 <= fY1 || (aX1 >= fX2 && aY1 < fY2 && aY2 > fY1))
-					return focus(a, false);
+					return focus(a, false, stage);
 			}
 		}
 
-		return focusNextIntern(focused.parent, down, right);
+		return focusNextIntern(focused.parent, down, right, stage);
 	}
 
-	public static boolean focusFirstChild(Group actorGrp) {
+	public static boolean focusFirstChild(Group actorGrp, Stage stage) {
 		List<Actor> allActors = actorGrp.getActors();
 		for (int i = 0, len = allActors.size(); i < len; i++) {
 			Actor a = allActors.get(i);
 			if (isFocusable(a))
-				return focus(a, false);
+				return focus(a, false, stage);
 		}
 		return false;
 	}
 
-	public static boolean focusLastChild(Group actorGrp) {
+	public static boolean focusLastChild(Group actorGrp, Stage stage) {
 		List<Actor> allActors = actorGrp.getActors();
 		for (int i = allActors.size() - 1; i > -1; i--) {
 			Actor a = allActors.get(i);
 			if (isFocusable(a))
-				return focus(a, true);
+				return focus(a, true, stage);
 		}
 		return false;
 	}
@@ -150,23 +151,25 @@ public final class ActorFocusUtil {
 	 * @param focusLastIfGroup
 	 *            If true and actor is a group the last child of the group gets
 	 *            the focus.
+	 * @param stage
 	 * @return true if succeeded, false if the actor is not focusable
 	 */
-	public static boolean focus(Actor actor, boolean focusLastIfGroup) {
+	public static boolean focus(Actor actor, boolean focusLastIfGroup,
+			Stage stage) {
 		// focus child
 		if (actor instanceof Group) {
 			if (focusLastIfGroup) {
-				if (focusLastChild((Group) actor))
+				if (focusLastChild((Group) actor, stage))
 					return true;
 			} else {
-				if (focusFirstChild((Group) actor))
+				if (focusFirstChild((Group) actor, stage))
 					return true;
 			}
 		}
 		// focus self
 		if (actor == null || actor.parent == null)
 			return false;
-		actor.getStage().setKeyboardFocus(actor);
+		stage.setKeyboardFocus(actor);
 		return true;
 	}
 

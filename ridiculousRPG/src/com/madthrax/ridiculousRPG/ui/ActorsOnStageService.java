@@ -143,11 +143,12 @@ public class ActorsOnStageService extends Stage implements GameService,
 			if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)
 					|| Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT)) {
 				return ActorFocusUtil.focusPrev(focusedActor, root, false,
-						false)
-						|| ActorFocusUtil.focusLastChild(root);
+						false, this)
+						|| ActorFocusUtil.focusLastChild(root, this);
 			}
-			return ActorFocusUtil.focusNext(focusedActor, root, false, false)
-					|| ActorFocusUtil.focusFirstChild(root);
+			return ActorFocusUtil.focusNext(focusedActor, root, false, false,
+					this)
+					|| ActorFocusUtil.focusFirstChild(root, this);
 		}
 		// alowed childs to consume key down
 		boolean consumed = super.keyDown(keycode);
@@ -162,17 +163,17 @@ public class ActorsOnStageService extends Stage implements GameService,
 				}
 				return false;
 			case Keys.UP:
-				return ActorFocusUtil
-						.focusPrev(focusedActor, root, true, false);
+				return ActorFocusUtil.focusPrev(focusedActor, root, true,
+						false, this);
 			case Keys.DOWN:
-				return ActorFocusUtil
-						.focusNext(focusedActor, root, true, false);
+				return ActorFocusUtil.focusNext(focusedActor, root, true,
+						false, this);
 			case Keys.LEFT:
-				return ActorFocusUtil
-						.focusPrev(focusedActor, root, false, true);
+				return ActorFocusUtil.focusPrev(focusedActor, root, false,
+						true, this);
 			case Keys.RIGHT:
-				return ActorFocusUtil
-						.focusNext(focusedActor, root, false, true);
+				return ActorFocusUtil.focusNext(focusedActor, root, false,
+						true, this);
 			}
 		}
 		return consumed;
@@ -191,9 +192,10 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	public void focus(Actor actor) {
-		ActorFocusUtil.focus(actor, false);
+		ActorFocusUtil.focus(actor, false, this);
 		checkFocusChanged(false);
 	}
+
 	private boolean checkFocusChanged(boolean consumed) {
 		if (focusedActor != getKeyboardFocus()) {
 			if (focusedActor != null)
