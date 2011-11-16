@@ -72,6 +72,7 @@ public class MapRenderService extends GameServiceDefaultImpl implements
 
 	@Override
 	public void freeze() {
+		if (map==null) return;
 		List<? extends Movable> events = map.getAllEvents();
 		for (int i = 0, len = events.size(); i < len; i++) {
 			events.get(i).getMoveHandler().freeze();
