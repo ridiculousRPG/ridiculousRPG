@@ -16,10 +16,16 @@
 
 package com.madthrax.ridiculousRPG.video;
 
+import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
+import java.awt.Window;
+import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
+import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
@@ -37,43 +43,70 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
  * @see http://www.theora.org/cortado/
  * @author Alexander Baumgartner
  */
-public class MultimediaService extends GameServiceDefaultImpl implements
-		ResizeListener {
+public class MultimediaService implements
+		ResizeListener, GameService {
 
-	static String f1 = "file:///home/alex/ridiculousRPG.mpeg";
-	static String f2 = "file:///media/EXTERN_200/movies/test.avi";
-	static String f3 = "file:///home/alex/Desktop/JMF-2.1.1e/test.ogv";
-	static String f4 = "file:///home/alex/Desktop/JMF-2.1.1e/test2.ogg";
-	static String toPlay = f3;
+	private VideoPlayerAppletWrapper p;
 
-	public void play() {
+	public void play(FileHandle file) {
+		try {
+			play(new File(file.path()).toURI().toURL());
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void play(URL url) {
+		Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+		if (w==null) w = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+		int x = 0;
+		int y = 0;
+		if (w==null) {
+			System.out.println("NULL");
+		} else {
+			x = w.getX();
+			y = w.getY();
+			System.out.println("X="+x);
+			System.out.println("Y="+y);
+		}
+		Rectangle bounds = new Rectangle(x, y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		p = VideoPlayerAppletWrapper.$(url, bounds, true, true);
+		p.play();
+		while (p.isPlaying()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {}
+		}
+	}
+	public void stop() {
+		if (p!=null) p.stop();
 	}
 
 	@Override
 	public void dispose() {
-	}
-
-	public static void main(String[] args) {
-		try {
-			VideoPlayerAppletWrapper p;
-			p = VideoPlayerAppletWrapper.$(new URL(f3), new Rectangle(0, 0,
-					900, 400), true, false);
-			p.play();
-			Thread.sleep(3000);
-			p.appletResize(200,200);
-			Thread.sleep(3000);
-			p = VideoPlayerAppletWrapper.$(new URL(f4), new Rectangle(200, 50,
-					600, 600), true, false);
-			Thread.sleep(3000);
-			p.dispose();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		if (p!=null) p.dispose();
 	}
 
 	@Override
 	public void resize(int width, int height) {
-		// TODO Auto-generated method stub
+		// TODO resize
 
+	}
+
+	@Override
+	public void freeze() {
+		// TODO stop playing
+		
+	}
+
+	@Override
+	public void unfreeze() {
+		// TODO restart playing
+		
+	}
+
+	@Override
+	public boolean essential() {
+		return false;
 	}
 }
