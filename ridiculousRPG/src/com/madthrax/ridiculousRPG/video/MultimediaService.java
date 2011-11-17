@@ -25,6 +25,7 @@ import java.net.URL;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.ResizeListener;
 
@@ -69,13 +70,16 @@ public class MultimediaService implements
 			System.out.println("X="+x);
 			System.out.println("Y="+y);
 		}
-		Rectangle bounds = new Rectangle(x, y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		p = VideoPlayerAppletWrapper.$(url, bounds, true, true);
-		p.play();
-		while (p.isPlaying()) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {}
+		if (GameBase.$serviceProvider().requestAttention(this, true, true)) {
+			Rectangle bounds = new Rectangle(x, y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+			p = VideoPlayerAppletWrapper.$(url, bounds, true, true);
+			p.play();
+			while (p.isPlaying()) {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {}
+			}
+			GameBase.$serviceProvider().releaseAttention(this);
 		}
 	}
 	public void stop() {
