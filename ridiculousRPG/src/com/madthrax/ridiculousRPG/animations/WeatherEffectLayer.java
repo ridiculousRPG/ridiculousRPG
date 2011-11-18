@@ -42,7 +42,9 @@ public class WeatherEffectLayer implements Disposable {
 	private int width, height;
 	private int tileWidth, tileHeight;
 	private ArrayList<ArrayList<Rectangle>> tileLayer = new ArrayList<ArrayList<Rectangle>>();
-	private boolean play = true, initializeEffect = true;
+	private boolean play = true;
+	private boolean initializeEffect = true;
+	private boolean stopRequested = false;
 
 	// Initialization of new tiles
 	private float newRowWindSpeed;
@@ -150,6 +152,7 @@ public class WeatherEffectLayer implements Disposable {
 	 * @see dispose()
 	 */
 	public void stop() {
+		stopRequested = true;
 		play = false;
 	}
 
@@ -172,11 +175,18 @@ public class WeatherEffectLayer implements Disposable {
 
 		// refill the layer
 		tileLayer.clear();
-		recycleRow = null;
-		for (int i = -tileHeight / 2; i < height; i += tileHeight) {
-			tileLayer.add(newRow(i));
+		if (initializeEffect) {
+			// generate first row of tiles
+			tileLayer.add(newRow(height));
+		} else {
+			// generate all rows of tiles
+			// (that's a best effort solution - not perfect)
+			recycleRow = null;
+			for (int i = -tileHeight / 2; i < height; i += tileHeight) {
+				tileLayer.add(newRow(i));
+			}
+			initializeEffect = true;
 		}
-		initializeEffect = true;
 	}
 
 	/**
@@ -329,6 +339,14 @@ public class WeatherEffectLayer implements Disposable {
 		this.windSpeedMax = windSpeedMax;
 	}
 
+	public boolean isStopRequested() {
+		return stopRequested;
+	}
+
+	public void setStopRequested(boolean stopRequested) {
+		this.stopRequested = stopRequested;
+	}
+
 	/**
 	 * Computes the animation for this layer.
 	 */
@@ -372,8 +390,7 @@ public class WeatherEffectLayer implements Disposable {
 				else if (clip.width > windSpeedMax)
 					clip.width = windSpeedMax;
 				clip.y -= (effectSpeed + (newRowWindSpeed < 0 ? -clip.width
-						: clip.width) * .4)
-						* deltaSpeed;
+						: clip.width) * .4) * deltaSpeed;
 				clip.x += clip.width * deltaSpeed;
 				yPos += clip.y;
 			}

@@ -38,7 +38,12 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 public class WeatherEffectService extends GameServiceDefaultImpl implements
 		Computable, Drawable {
 	private ArrayList<WeatherEffectLayer> renderLayers = new ArrayList<WeatherEffectLayer>();
-	private int width, height;
+	private WeatherEffectLayer[] addLayer = new WeatherEffectLayer[10];
+	private WeatherEffectLayer[] removeLayer = new WeatherEffectLayer[10];
+	private float[] addLayerWait = new float[10];
+	private float[] removeLayerWait = new float[10];
+	int removePointer = 0;
+	int addPointer = 0;
 
 	/**
 	 * Creates a new container for weather effects.<br>
@@ -47,8 +52,6 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	 * Add a new layer of the same effect to increase the weather effect.
 	 */
 	public WeatherEffectService() {
-		width = GameBase.$().getPlaneWidth();
-		height = GameBase.$().getPlaneHeight();
 	}
 
 	/**
@@ -82,29 +85,47 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	 *            Maybe 10 seconds could be a good choice.
 	 * @see addLayer(path, effectSpeed, windSpeed, layerIndex)
 	 */
-	public void addLayerTimes(String path, final int pixelOverlap,
-			final float effectSpeed, final float windSpeed, final int times,
-			final float waitIntervall) {
-		final TextureRegionRef t = TextureRegionLoader.load(path);
-		for (int i = 1; i < times; i++) {
-			TextureRegionLoader.load(path);
+	public void addLayerTimes(String path, int pixelOverlap, float effectSpeed,
+			float windSpeed, int times, float waitIntervall) {
+		int width = GameBase.$().getPlaneWidth();
+		int height = GameBase.$().getPlaneHeight();
+		if (times > 0) {
+			TextureRegionRef t = TextureRegionLoader.load(path);
+			renderLayers.add(new WeatherEffectLayer(t, pixelOverlap, width,
+					height, effectSpeed, windSpeed));
 		}
-		new Thread() { // For simplicity let's do this in a new thread
+		ensureAddCapacity(times - 1);
+		for (int i = 1; i < times; i++, addPointer++) {
+			TextureRegionRef t = TextureRegionLoader.load(path);
+			addLayer[addPointer] = new WeatherEffectLayer(t, pixelOverlap,
+					width, height, effectSpeed, windSpeed);
+			addLayerWait[addPointer] = waitIntervall;
+		}
+	}
 
-			@Override
-			public void run() {
-				int tmp = (int) waitIntervall * 1000;
-				for (int i = times; i > 0; i--) {
-					renderLayers.add(new WeatherEffectLayer(t, pixelOverlap,
-							width, height, effectSpeed, windSpeed));
-					try {
-						if (i > 1)
-							Thread.sleep(tmp);
-					} catch (InterruptedException e) {
-					}
-				}
-			}
-		}.start();
+	private void ensureAddCapacity(int increment) {
+		int maxLen = addLayer.length;
+		int newLen = addPointer + increment;
+		if (newLen > maxLen) {
+			newLen = Math.max(newLen, maxLen + 10);
+			WeatherEffectLayer[] addLayer = new WeatherEffectLayer[newLen];
+			float[] addLayerWait = new float[newLen];
+			System.arraycopy(this.addLayer, 0, addLayer, 0, maxLen);
+			System.arraycopy(this.addLayerWait, 0, addLayerWait, 0, maxLen);
+		}
+	}
+
+	private void ensureRemoveCapacity(int increment) {
+		int maxLen = removeLayer.length;
+		int newLen = removePointer + increment;
+		if (newLen > maxLen) {
+			newLen = Math.max(newLen, maxLen + 10);
+			WeatherEffectLayer[] removeLayer = new WeatherEffectLayer[newLen];
+			float[] removeLayerWait = new float[newLen];
+			System.arraycopy(this.removeLayer, 0, removeLayer, 0, maxLen);
+			System.arraycopy(this.removeLayerWait, 0, removeLayerWait, 0,
+					maxLen);
+		}
 	}
 
 	/**
@@ -193,7 +214,8 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	public WeatherEffectLayer addLayer(String path, int pixelOverlap,
 			float effectSpeed, float windSpeed, int layerIndex) {
 		WeatherEffectLayer newLayer = new WeatherEffectLayer(path,
-				pixelOverlap, width, height, effectSpeed, windSpeed);
+				pixelOverlap, GameBase.$().getPlaneWidth(), GameBase.$()
+						.getPlaneHeight(), effectSpeed, windSpeed);
 		if (renderLayers.size() > layerIndex) {
 			renderLayers.add(layerIndex, newLayer);
 		} else {
@@ -218,13 +240,13 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	}
 
 	/**
-	 * The same as stop(20f);
+	 * The same as stop(5f);
 	 * 
 	 * @see stop(stopTime)
 	 * @see dispose()
 	 */
 	public void stop() {
-		stop(20f);
+		stop(5f);
 	}
 
 	/**
@@ -234,35 +256,47 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	 * is stopped immediate. It takes some time while the last snow flake falls
 	 * from the sky to the ground - like in real nature ;)
 	 * 
-	 * @param stopTime
-	 *            Time in seconds for stopping the entire weather effect
+	 * @param waitIntervall
+	 *            The time (in seconds) to wait until stopping the next layer.
+	 *            Maybe 5 seconds could be a good choice.
 	 * @see dispose()
 	 */
-	public void stop(final float stopTime) {
-		new Thread() { // For simplicity let's do this in a new thread
-
-			@Override
-			public void run() {
-				int stopIntervall = renderLayers.size();
-				if (stopIntervall > 0) { // avoid division by null
-					stopIntervall = (int) (stopTime * 1000f / stopIntervall);
-				}
-				for (int i = renderLayers.size() - 1; i > -1; i--) {
-					renderLayers.get(i).stop();
-					try {
-						if (i > 0)
-							Thread.sleep(stopIntervall);
-					} catch (InterruptedException e) {
-					}
-				}
-			}
-		}.start();
+	public void stop(float waitIntervall) {
+		int len = renderLayers.size();
+		if (len > 0)
+			renderLayers.get(len - 1).stop();
+		ensureRemoveCapacity(len - 1);
+		for (int i = 1; i < len; i++) {
+			WeatherEffectLayer layer = renderLayers.get(i);
+			if (layer.isStopRequested())
+				continue;
+			layer.setStopRequested(true);
+			removeLayer[removePointer] = layer;
+			removeLayerWait[removePointer] = waitIntervall;
+			removePointer++;
+		}
 	}
 
 	/**
 	 * Computes the weather effect animation.
 	 */
 	public void compute(float deltaTime, boolean pushButtonPressed) {
+		if (addPointer > 0) {
+			addLayerWait[addPointer - 1] -= deltaTime;
+			if (addLayerWait[addPointer - 1] <= 0) {
+				addPointer--;
+				renderLayers.add(addLayer[addPointer]);
+				addLayer[addPointer] = null;
+			}
+		}
+		if (removePointer > 0) {
+			removeLayerWait[removePointer - 1] -= deltaTime;
+			if (removeLayerWait[removePointer - 1] <= 0) {
+				removePointer--;
+				removeLayer[removePointer].stop();
+				removeLayer[removePointer] = null;
+			}
+		}
 		for (int i = 0, len = renderLayers.size(); i < len;) {
 			WeatherEffectLayer layer = renderLayers.get(i);
 			if (layer.isEmpty()) {
@@ -312,6 +346,9 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	public void resize(int pixelWidth, int pixelHeight) {
 		for (int i = 0, len = renderLayers.size(); i < len; i++) {
 			renderLayers.get(i).resize(pixelWidth, pixelHeight);
+		}
+		for (int i = addPointer - 1; i > -1; i--) {
+			addLayer[i].resize(pixelWidth, pixelHeight);
 		}
 	}
 
