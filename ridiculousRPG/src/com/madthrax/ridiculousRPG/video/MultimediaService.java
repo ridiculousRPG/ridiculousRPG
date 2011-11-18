@@ -16,16 +16,20 @@
 
 package com.madthrax.ridiculousRPG.video;
 
-import java.awt.KeyboardFocusManager;
+import java.awt.MouseInfo;
+import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Window;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Matrix4;
 import com.madthrax.ridiculousRPG.GameBase;
+import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.ResizeListener;
 
@@ -44,10 +48,10 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
  * @see http://www.theora.org/cortado/
  * @author Alexander Baumgartner
  */
-public class MultimediaService implements
-		ResizeListener, GameService {
+public class MultimediaService implements ResizeListener, GameService, Drawable {
 
 	private VideoPlayerAppletWrapper p;
+	private boolean playing;
 
 	public void play(FileHandle file) {
 		try {
@@ -58,37 +62,34 @@ public class MultimediaService implements
 	}
 
 	public void play(URL url) {
-		Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
-		if (w==null) w = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
 		int x = 0;
 		int y = 0;
-		if (w==null) {
-			System.out.println("NULL");
-		} else {
-			x = w.getX();
-			y = w.getY();
-			System.out.println("X="+x);
-			System.out.println("Y="+y);
+		try { // compute window position
+			if (!GameBase.$().isFullscreen()) {
+				Point p = MouseInfo.getPointerInfo().getLocation();
+				x = p.x - Gdx.input.getX(0);
+				y = p.y - Gdx.input.getY(0);
+			}
+		} catch (Exception ignored) {
 		}
 		if (GameBase.$serviceProvider().requestAttention(this, true, true)) {
-			Rectangle bounds = new Rectangle(x, y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-			p = VideoPlayerAppletWrapper.$(url, bounds, true, true);
+			Rectangle bounds = new Rectangle(x, y, Gdx.graphics.getWidth(),
+					Gdx.graphics.getHeight());
+			p = VideoPlayerAppletWrapper.$(url, bounds, true, true, GameBase.$().isFullscreen());
 			p.play();
-			while (p.isPlaying()) {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {}
-			}
-			GameBase.$serviceProvider().releaseAttention(this);
+			playing = true;
 		}
 	}
+
 	public void stop() {
-		if (p!=null) p.stop();
+		if (p != null)
+			p.stop();
 	}
 
 	@Override
 	public void dispose() {
-		if (p!=null) p.dispose();
+		if (p != null)
+			p.dispose();
 	}
 
 	@Override
@@ -100,17 +101,33 @@ public class MultimediaService implements
 	@Override
 	public void freeze() {
 		// TODO stop playing
-		
+
 	}
 
 	@Override
 	public void unfreeze() {
 		// TODO restart playing
-		
+
 	}
 
 	@Override
 	public boolean essential() {
 		return false;
+	}
+
+	@Override
+	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
+		if (!playing) return;
+		if (p.isPlaying()) {
+			p.draw(spriteBatch, debug);
+		} else {
+			GameBase.$serviceProvider().releaseAttention(this);
+			playing = false;
+		}
+	}
+
+	@Override
+	public Matrix4 projectionMatrix(Camera camera) {
+		return camera.view;
 	}
 }

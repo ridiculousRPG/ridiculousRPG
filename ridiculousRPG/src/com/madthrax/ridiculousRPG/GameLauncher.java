@@ -53,6 +53,7 @@ public class GameLauncher extends AndroidApplication {
 		super.onCreate(savedInstanceState);
 		GameOptions options = new GameOptions(new AndroidFiles(getAssets())
 				.internal(GAME_OPTIONS_FILE));
+		options.fullscreen = true;
 		setTitle(options.title
 				+ (options.debug ? BRANDING_DEBUG : BRANDING_NORMAL));
 		initialize(new GameBase(options), options.useGL20);
