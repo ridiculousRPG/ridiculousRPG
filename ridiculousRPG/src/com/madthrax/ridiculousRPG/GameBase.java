@@ -452,11 +452,12 @@ public class GameBase extends GameServiceDefaultImpl implements
 	 */
 	public boolean toggleFullscreen() {
 		try {
-			fullscreen = !fullscreen;
 			// resize is called
-			Gdx.graphics.setDisplayMode(originalWidth, originalHeight,
-					fullscreen);
-			return true;
+			if (Gdx.graphics.setDisplayMode(originalWidth, originalHeight,
+					!fullscreen)) {
+				fullscreen = !fullscreen;
+				return true;
+			}
 		} catch (Throwable notTooBad) {
 		}
 		return false;
