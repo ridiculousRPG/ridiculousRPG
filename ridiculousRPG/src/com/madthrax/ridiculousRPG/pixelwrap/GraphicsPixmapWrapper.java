@@ -37,18 +37,20 @@ import com.badlogic.gdx.utils.Disposable;
 
 /**
  * This class implements the interface {@link Graphics} and draws onto a
- * {@link Pixmap}. All drawings are performed via a buffered image with custom
- * {@link DataBuffer}, {@link Raster},... and so on.<br>
+ * {@link Pixmap}. Drawings may be performed via a {@link PixelGrabber} or via a
+ * {@link BufferedImage} with a custom {@link DataBuffer} and {@link Raster}.<br>
  * The performance is bad because every pixel will be grabbed and drawn onto the
- * {@link Pixmap} by hand.
+ * {@link Pixmap} by hand. To slightly increase the performance you may specify
+ * a number of workers. This workers will perform the data conversion.
  * 
  * @author Alexander Baumgartner
  */
 public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 		Runnable {
 	private Graphics rasterImageGraphics;
-	// for normal (not optimized) drawings
+	// for normal (not optimized) drawing
 	private PixmapDataBuffer rasterDataBuffer;
+	// for optimized drawing
 	private boolean hasWorker;
 	private boolean running = true;
 	private int bufferSize;
@@ -94,7 +96,7 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 	}
 
 	public GraphicsPixmapWrapper(int width, int height) {
-		this(width, height, 4);
+		this(width, height, 0);
 	}
 
 	public GraphicsPixmapWrapper(int width, int height, int spawnWorker) {
@@ -143,6 +145,7 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 			synchronized (this) {
 				// wait for data producer and/or pixmap consumer
 				while (!consumerDataBuffer.ready || producerPixmapBuffer.ready) {
+					if (!running) return;
 					// System.out.println("worker waiting");
 					Thread.yield();
 				}
@@ -242,6 +245,7 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 
 	@Override
 	public void dispose() {
+		running = false;
 		rasterImageGraphics.dispose();
 	}
 

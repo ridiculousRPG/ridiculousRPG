@@ -20,12 +20,12 @@ import java.applet.Applet;
 import java.applet.AppletContext;
 import java.applet.AppletStub;
 import java.awt.Graphics;
-import java.awt.Rectangle;
 import java.net.URL;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
 import com.fluendo.jst.Message;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
@@ -50,11 +50,11 @@ import com.madthrax.ridiculousRPG.pixelwrap.GraphicsPixmapWrapper;
  * @author Alexander Baumgartner
  */
 public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
-	private static VideoPlayerAppletWrapper instance;
 	private VideoPlayerApplet player;
 	private URL url;
 	private boolean playing;
-	private int width, height;
+	private boolean relativeBounds;
+	private Rectangle screenBounds;
 	private GraphicsPixmapWrapper graphicsPixmap;
 	private TextureRegionRef textureRef;
 
@@ -67,28 +67,35 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 	 *            the screen position, width and height
 	 * @param withAudio
 	 *            if false, the audio channel will be disabled.
-	 * @param autoClose
-	 *            if true, the player will close automatically after reaching
-	 *            the end of the stream/file or if an error occurred. BUT: You
-	 *            have to dispose the player yourself!
 	 * @param fullscreen
+	 * @param relativeBounds
+	 *            if the bounds are relative, the video will automatically be
+	 *            stretched on resize
 	 */
 	public VideoPlayerAppletWrapper(URL url, Rectangle screenBounds,
-			boolean withAudio, final boolean autoClose) {
+			boolean withAudio, boolean relativeBounds) {
 		this.url = url;
-		this.width = screenBounds.width;
-		this.height = screenBounds.height;
+		this.screenBounds = new Rectangle(screenBounds);
+		this.relativeBounds = relativeBounds;
+		if (relativeBounds) {
+			this.screenBounds.width /= Gdx.graphics.getWidth();
+			this.screenBounds.height /= Gdx.graphics.getHeight();
+			this.screenBounds.x /= Gdx.graphics.getWidth();
+			this.screenBounds.y /= Gdx.graphics.getHeight();
+		}
+		int width = (int) screenBounds.width;
+		int height = (int) screenBounds.height;
 
 		textureRef = TextureRegionLoader.obtainEmptyRegion(width, height,
 				Format.RGBA8888);
-		graphicsPixmap = new GraphicsPixmapWrapper(width, height);
+		graphicsPixmap = new GraphicsPixmapWrapper(width, height, 4);
 		player = new VideoPlayerApplet() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
 			public void handleMessage(Message msg) {
-				if (autoClose
-						&& (msg.getType() == Message.EOS || msg.getType() == Message.ERROR)) {
+				if (msg.getType() == Message.EOS
+						|| msg.getType() == Message.ERROR) {
 					VideoPlayerAppletWrapper.this.stop();
 				}
 				super.handleMessage(msg);
@@ -119,49 +126,6 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 		player.setParam("showSubtitles", "false");
 		player.setParam("autoPlay", "false");
 		player.setParam("debug", "0");
-	}
-
-	/**
-	 * Returns the default instance. If it's the first call, the default
-	 * instance will be allocated.
-	 * 
-	 * @param url
-	 *            url to ogg / ogv file
-	 * @param screenBounds
-	 *            the screen position, width and height
-	 * @param withAudio
-	 *            if false, the audio channel will be disabled.
-	 * @param autoClose
-	 *            if true, the player will close automatically after reaching
-	 *            the end of the stream/file or if an error occurred.
-	 * @param fullscreen
-	 * @return
-	 */
-	public static VideoPlayerAppletWrapper $(URL url, Rectangle screenBounds,
-			boolean withAudio, boolean autoClose, boolean fullscreen) {
-		if (instance == null) {
-			instance = new VideoPlayerAppletWrapper(url, screenBounds,
-					withAudio, autoClose);
-		} else {
-			if (!url.sameFile(instance.url)) {
-				instance.changeMedia(url, withAudio, fullscreen);
-			}
-			instance.resize(screenBounds);
-		}
-		return instance;
-	}
-
-	/**
-	 * Changes the media file (ogg / ogv)<br>
-	 * If you change the media and resize the screen, always first change the
-	 * media and than resize the screen.
-	 */
-	public void changeMedia(URL url, boolean withAudio, boolean fullscreen) {
-		player.setParam("audio", String.valueOf(withAudio));
-		player.setParam("url", url.toString());
-		player.restart();
-		if (playing)
-			play();
 	}
 
 	/**
@@ -272,30 +236,42 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 
 	public void draw(SpriteBatch spriteBatch, boolean debug) {
 		textureRef.draw(graphicsPixmap.getPixmap());
-		spriteBatch.draw(textureRef, 0, 0, Gdx.graphics.getWidth(),
-				Gdx.graphics.getHeight());
-	}
-
-	/**
-	 * Disposes the default instance. this method is automatically when the
-	 * {@link MultimediaService} is disposed. Normally you don't need to call
-	 * this.
-	 */
-	public static void $dispose() {
-		if (instance != null) {
-			instance.dispose();
-			instance = null;
+		if (relativeBounds) {
+			spriteBatch.draw(textureRef, screenBounds.x
+					* Gdx.graphics.getWidth(), screenBounds.y
+					* Gdx.graphics.getHeight(), screenBounds.width
+					* Gdx.graphics.getWidth(), screenBounds.height
+					* Gdx.graphics.getHeight());
+		} else {
+			spriteBatch.draw(textureRef, screenBounds.x, screenBounds.y,
+					screenBounds.width, screenBounds.height);
 		}
 	}
 
 	@Override
 	public void dispose() {
-		stop();
-		player.stop();
-		player.destroy();
-		graphicsPixmap.dispose();
+		// Cortado strikes to release it's resourecs,
+		// thats why we have to do a lot of crazy stuff below
+		try {
+			stop();
+			player.stop();
+			player.destroy();
+			player.setStub(null);
+			graphicsPixmap.dispose();
+			textureRef.dispose();
+			screenBounds = null;
+			graphicsPixmap = null;
+			textureRef = null;
+			if (player.isActive()) {
+				player.shutDown(null);
+				player.removeAll();
+				// crash it
+				player.doPlay();
+			}
+		} catch (Throwable ignored) {
+		}
+		// spawn thread to force jvm exit
 		if (player.isActive()) {
-			// force exit
 			final Thread current = Thread.currentThread();
 			new Thread() {
 				@Override
@@ -310,5 +286,6 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 				}
 			}.start();
 		}
+		player = null;
 	}
 }

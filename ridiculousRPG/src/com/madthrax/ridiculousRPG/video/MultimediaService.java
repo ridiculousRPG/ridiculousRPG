@@ -16,7 +16,6 @@
 
 package com.madthrax.ridiculousRPG.video;
 
-import java.awt.Rectangle;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -26,10 +25,10 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
-import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
  * This service is capable to play video files.<br>
@@ -46,7 +45,7 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
  * @see http://www.theora.org/cortado/
  * @author Alexander Baumgartner
  */
-public class MultimediaService implements ResizeListener, GameService, Drawable {
+public class MultimediaService implements GameService, Drawable {
 
 	private VideoPlayerAppletWrapper p;
 	private boolean playing;
@@ -59,11 +58,30 @@ public class MultimediaService implements ResizeListener, GameService, Drawable 
 		}
 	}
 
+	public void play(FileHandle file, Rectangle screenBounds,
+			boolean relativeBounds, boolean withAudio, boolean freezeTheWorld) {
+		try {
+			play(new File(file.path()).toURI().toURL(), screenBounds,
+					relativeBounds, withAudio, freezeTheWorld);
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public void play(URL url) {
-		if (GameBase.$serviceProvider().requestAttention(this, true, true)) {
-			Rectangle bounds = new Rectangle(0, 0, Gdx.graphics.getWidth(),
-					Gdx.graphics.getHeight());
-			p = VideoPlayerAppletWrapper.$(url, bounds, true, true, GameBase.$().isFullscreen());
+		play(url, new Rectangle(0, 0, Gdx.graphics.getWidth(), Gdx.graphics
+				.getHeight()), true, true, true);
+	}
+
+	public void play(URL url, Rectangle screenBounds, boolean relativeBounds,
+			boolean withAudio, boolean freezeTheWorld) {
+		if (!freezeTheWorld
+				|| GameBase.$serviceProvider().requestAttention(this, true,
+						true)) {
+			if (playing)
+				p.dispose();
+			p = new VideoPlayerAppletWrapper(url, screenBounds, withAudio,
+					relativeBounds);
 			p.play();
 			playing = true;
 		}
@@ -81,24 +99,15 @@ public class MultimediaService implements ResizeListener, GameService, Drawable 
 	}
 
 	@Override
-	public void resize(int width, int height) {
-		if (p != null && p.isPlaying()) {
-			Rectangle bounds = new Rectangle(0, 0, Gdx.graphics.getWidth(),
-					Gdx.graphics.getHeight());
-			p.resize(bounds);
-		}
-	}
-
-	@Override
 	public void freeze() {
-		// TODO stop playing
-
+		if (playing)
+			p.stop();
 	}
 
 	@Override
 	public void unfreeze() {
-		// TODO restart playing
-
+		if (playing)
+			p.play();
 	}
 
 	@Override
@@ -108,12 +117,15 @@ public class MultimediaService implements ResizeListener, GameService, Drawable 
 
 	@Override
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
-		if (!playing) return;
+		if (!playing)
+			return;
 		if (p.isPlaying()) {
 			p.draw(spriteBatch, debug);
 		} else {
 			GameBase.$serviceProvider().releaseAttention(this);
 			playing = false;
+			p.dispose();
+			p = null;
 		}
 	}
 
