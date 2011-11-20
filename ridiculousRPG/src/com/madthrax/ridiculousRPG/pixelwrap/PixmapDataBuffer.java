@@ -17,6 +17,10 @@ public class PixmapDataBuffer extends DataBuffer {
 		return pixmap;
 	}
 
+	public Pixmap setPixmap(Pixmap pixmap) {
+		return this.pixmap = pixmap;
+	}
+
 	@Override
 	public int getElem(int bank, int i) {
 		int width = pixmap.getWidth();

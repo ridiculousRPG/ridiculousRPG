@@ -16,8 +16,6 @@
 
 package com.madthrax.ridiculousRPG.video;
 
-import java.awt.MouseInfo;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -62,18 +60,8 @@ public class MultimediaService implements ResizeListener, GameService, Drawable 
 	}
 
 	public void play(URL url) {
-		int x = 0;
-		int y = 0;
-		try { // compute window position
-			if (!GameBase.$().isFullscreen()) {
-				Point p = MouseInfo.getPointerInfo().getLocation();
-				x = p.x - Gdx.input.getX(0);
-				y = p.y - Gdx.input.getY(0);
-			}
-		} catch (Exception ignored) {
-		}
 		if (GameBase.$serviceProvider().requestAttention(this, true, true)) {
-			Rectangle bounds = new Rectangle(x, y, Gdx.graphics.getWidth(),
+			Rectangle bounds = new Rectangle(0, 0, Gdx.graphics.getWidth(),
 					Gdx.graphics.getHeight());
 			p = VideoPlayerAppletWrapper.$(url, bounds, true, true, GameBase.$().isFullscreen());
 			p.play();
@@ -94,8 +82,11 @@ public class MultimediaService implements ResizeListener, GameService, Drawable 
 
 	@Override
 	public void resize(int width, int height) {
-		// TODO resize
-
+		if (p != null && p.isPlaying()) {
+			Rectangle bounds = new Rectangle(0, 0, Gdx.graphics.getWidth(),
+					Gdx.graphics.getHeight());
+			p.resize(bounds);
+		}
 	}
 
 	@Override

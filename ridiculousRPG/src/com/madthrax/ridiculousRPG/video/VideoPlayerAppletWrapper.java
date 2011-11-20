@@ -23,6 +23,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.net.URL;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Disposable;
@@ -58,8 +59,7 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 	private TextureRegionRef textureRef;
 
 	/**
-	 * Instantiates a new video player. Use {@link #$(URL, Rectangle, boolean)}
-	 * if you don't need to play more than one video at the same time!
+	 * Instantiates a new video player. Don't forget to dispose the player!
 	 * 
 	 * @param url
 	 *            url to ogg / ogv file
@@ -209,9 +209,6 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 	 * @return void
 	 */
 	public void resize(Rectangle screenBounds) {
-		while (player.getWidth() != screenBounds.width
-				|| player.getHeight() != screenBounds.height)
-			Thread.yield();
 	}
 
 	/**
@@ -222,8 +219,6 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 	 * @return void
 	 */
 	public void appletResize(int width, int height) {
-		while (player.getWidth() != width || player.getHeight() != height)
-			Thread.yield();
 	}
 
 	/**
@@ -277,7 +272,8 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 
 	public void draw(SpriteBatch spriteBatch, boolean debug) {
 		textureRef.draw(graphicsPixmap.getPixmap());
-		spriteBatch.draw(textureRef, 0, 0, width, height);
+		spriteBatch.draw(textureRef, 0, 0, Gdx.graphics.getWidth(),
+				Gdx.graphics.getHeight());
 	}
 
 	/**

@@ -30,9 +30,9 @@ import java.awt.image.PixelGrabber;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.text.AttributedCharacterIterator;
-import java.util.ArrayDeque;
 
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.utils.Disposable;
 
 /**
@@ -46,119 +46,202 @@ import com.badlogic.gdx.utils.Disposable;
  */
 public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 		Runnable {
-	private Pixmap pixmap;
 	private Graphics rasterImageGraphics;
-	private boolean drawImmediately;
-	private boolean forceRaster;
+	// for normal (not optimized) drawings
+	private PixmapDataBuffer rasterDataBuffer;
+	private boolean hasWorker;
 	private boolean running = true;
-	private ArrayDeque<BufferElement> buffer = new ArrayDeque<BufferElement>();
+	private int bufferSize;
+	private DataBufferElement producerDataBuffer;
+	private DataBufferElement consumerDataBuffer;
+	private PixmapBufferElement producerPixmapBuffer;
+	private PixmapBufferElement consumerPixmapBuffer;
 
-	public class BufferElement {
+	public class DataBufferElement {
+		private PixelGrabber grabber;
 		int[] buf;
 		int x, y, w, h;
+		boolean ready;
+		DataBufferElement next;
 
-		public BufferElement(int width, int height, int x, int y) {
-			this.x = x;
-			this.y = y;
-			this.w = width;
-			this.h = height;
-			this.buf = new int[width * height];
+		public DataBufferElement(int width, int height) {
+			buf = new int[width * height];
+		}
+
+		class DataPixelGrabber extends PixelGrabber {
+			public DataPixelGrabber(Image img, int x, int y, int w, int h,
+					int[] pix, int off, int scansize) {
+				super(img, x, y, w, h, pix, off, scansize);
+			}
+
+			@Override
+			public void setDimensions(int width, int height) {
+				w = width;
+				h = height;
+				super.setDimensions(width, height);
+			}
+		}
+	}
+
+	public class PixmapBufferElement {
+		Pixmap buf;
+		boolean ready;
+		PixmapBufferElement next;
+
+		public PixmapBufferElement(int width, int height) {
+			buf = new Pixmap(width, height, Format.RGBA8888);
 		}
 	}
 
 	public GraphicsPixmapWrapper(int width, int height) {
-		this(width, height, false, false);
+		this(width, height, 4);
 	}
 
-	public GraphicsPixmapWrapper(int width, int height,
-			boolean drawImmediately, boolean forceRaster) {
-		this.forceRaster = forceRaster;
+	public GraphicsPixmapWrapper(int width, int height, int spawnWorker) {
+		this.hasWorker = spawnWorker > 0;
+		this.bufferSize = Math.max(8, spawnWorker*2);
 		resize(width, height);
-		if (!drawImmediately) {
-			spawnWorker();
-			spawnWorker();
+		for (int i = 0; i < spawnWorker; i++) {
+			new Thread(this).start();
 		}
+	}
+
+	private PixmapBufferElement createPixmapBuffer(int capacity, int width,
+			int height) {
+		PixmapBufferElement first = new PixmapBufferElement(width, height);
+		first.next = first;
+		PixmapBufferElement last = first;
+		for (int i = 1; i < capacity; i++) {
+			PixmapBufferElement newLast = new PixmapBufferElement(width, height);
+			last.next = newLast;
+			newLast.next = first;
+			last = newLast;
+		}
+		return first;
+	}
+
+	private DataBufferElement createDataBuffer(int capacity, int width,
+			int height) {
+		DataBufferElement first = new DataBufferElement(width, height);
+		first.next = first;
+		DataBufferElement last = first;
+		for (int i = 1; i < capacity; i++) {
+			DataBufferElement newLast = new DataBufferElement(width, height);
+			last.next = newLast;
+			newLast.next = first;
+			last = newLast;
+		}
+		return first;
 	}
 
 	@Override
 	public void run() {
-		BufferElement imgData;
+		DataBufferElement workingDataBuffer;
+		PixmapBufferElement workingPixmapBuffer;
 		while (running) {
+			// wait until other thread got the ticket
 			synchronized (this) {
-				Thread.yield();
-				imgData = buffer.poll();
+				// wait for data producer and/or pixmap consumer
+				while (!consumerDataBuffer.ready || producerPixmapBuffer.ready) {
+					// System.out.println("worker waiting");
+					Thread.yield();
+				}
+				// grab next ticket
+				workingDataBuffer = consumerDataBuffer;
+				workingPixmapBuffer = producerPixmapBuffer;
+				// shift shared buffer pointers
+				consumerDataBuffer = consumerDataBuffer.next;
+				producerPixmapBuffer = producerPixmapBuffer.next;
 			}
-			if (imgData != null) {
-				draw(imgData, pixmap);
-			}
+			// shift data from data buffer to pixmap - asynchron
+			shiftData(workingDataBuffer, workingPixmapBuffer.buf);
+			// mark buffers
+			workingDataBuffer.ready = false;
+			workingPixmapBuffer.ready = true;
 		}
 	}
 
-	private void draw(BufferElement imgData, Pixmap pixmap) {
+	/**
+	 * this method scales the image linear
+	 * @param imgData
+	 * @param pixmap
+	 */
+	protected void shiftData(DataBufferElement imgData, Pixmap pixmap) {
 		int[] pixels = imgData.buf;
-		int w = imgData.w;
-		int x = imgData.x;
-		int y = imgData.y;
-		for (int i = 0; i < pixels.length; i++) {
-			int val = pixels[i];
-			pixmap.drawPixel(x + i % w, y + i / w, val >>> 24 | val << 8);
+		int w = pixmap.getWidth();
+		int h = pixmap.getHeight();
+		float scaleFactor = ((float) w) / ((float) imgData.w);
+		int x = (int) (imgData.x * scaleFactor);
+		int y = (int) (imgData.y * scaleFactor);
+
+		for (int i = 0; i < h; i++) {
+			int scaledLine = ((int) (i / scaleFactor)) * w;
+			int iy = i + y;
+			for (int j = 0; j < w; j++) {
+				int val = pixels[scaledLine + (int) (j / scaleFactor)];
+				pixmap.drawPixel(j + x, iy, val >>> 24 | val << 8);
+			}
 		}
 	}
 
-	private boolean push(Image img, int x, int y, int width, int height,
+	private boolean pushImg(Image img, int x, int y, int width, int height,
 			Color bgcolor, ImageObserver observer) throws RuntimeException {
-		boolean needRaster = forceRaster || bgcolor != null
-				|| img.getWidth(null) != width || img.getHeight(null) != height;
-		if (needRaster) {
-			return rasterImageGraphics.drawImage(img, x, y, width, height,
-					bgcolor, observer);
+		if (!hasWorker) {
+			rasterDataBuffer.setPixmap(consumerPixmapBuffer.next.buf);
+			boolean ret = rasterImageGraphics.drawImage(img, x, y, width,
+					height, bgcolor, observer);
+			consumerPixmapBuffer = consumerPixmapBuffer.next;
+			return ret;
 		}
 
-		BufferElement imgData = new BufferElement(width, height, x, y);
-		try {
-			PixelGrabber pg = new PixelGrabber(img, 0, 0, width, height,
-					imgData.buf, 0, width);
-			pg.grabPixels();
-			if ((pg.getStatus() & ImageObserver.ABORT) != 0) {
-				return rasterImageGraphics.drawImage(img, x, y, width, height,
-						bgcolor, observer);
-			}
-		} catch (InterruptedException e) {
-			return rasterImageGraphics.drawImage(img, x, y, width, height,
-					bgcolor, observer);
+		// register image consumer
+		if (producerDataBuffer.grabber == null) {
+			producerDataBuffer.grabber = producerDataBuffer.new DataPixelGrabber(
+					img, x, y, -1, -1, producerDataBuffer.buf, 0, width);
+			img.getSource().addConsumer(producerDataBuffer.grabber);
 		}
-		if (drawImmediately) {
-			draw(imgData, pixmap);
-			return true;
+		// wait for consumer
+		while (producerDataBuffer.ready) {
+			// System.out.println("producer waiting");
+			Thread.yield();
 		}
-		if (buffer.size() == 10) {
-			spawnWorker();
-		} else {
-			synchronized (this) {
-				buffer.offer(imgData);
-			}
-		}
+
+		img.getSource().startProduction(producerDataBuffer.grabber);
+		producerDataBuffer.x = x;
+		producerDataBuffer.y = y;
+		producerDataBuffer.ready = true;
+		// shift ring buffer pointer
+		producerDataBuffer = producerDataBuffer.next;
+
 		return true;
 	}
 
-	private void spawnWorker() {
-		new Thread(this).start();
-	}
-
 	public Pixmap getPixmap() {
-		return pixmap;
+		if (consumerPixmapBuffer.next.ready) {
+			// shift buffer pointer
+			consumerPixmapBuffer.ready = false;
+			consumerPixmapBuffer = consumerPixmapBuffer.next;
+		}
+		return consumerPixmapBuffer.buf;
 	}
 
 	public void resize(int width, int height) {
 		WritableRaster raster = new PixmapRaster(width, height);
 		rasterImageGraphics = new BufferedImage(new PixmapColorModel(), raster,
 				false, null).createGraphics();
-		this.pixmap = ((PixmapDataBuffer) raster.getDataBuffer()).getPixmap();
+
+		producerPixmapBuffer = createPixmapBuffer(bufferSize, width, height);
+		consumerPixmapBuffer = producerPixmapBuffer;
+		if (hasWorker) {
+			producerDataBuffer = createDataBuffer(bufferSize, width, height);
+			consumerDataBuffer = producerDataBuffer;
+		}
+		rasterDataBuffer = (PixmapDataBuffer) raster.getDataBuffer();
+		rasterDataBuffer.setPixmap(consumerPixmapBuffer.buf);
 	}
 
 	@Override
 	public void dispose() {
-		running = false;
 		rasterImageGraphics.dispose();
 	}
 
@@ -224,7 +307,7 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 	@Override
 	public boolean drawImage(Image img, int x, int y, int width, int height,
 			Color bgcolor, ImageObserver observer) {
-		return push(img, x, y, width, height, bgcolor, observer);
+		return pushImg(img, x, y, width, height, bgcolor, observer);
 	}
 
 	@Override
@@ -350,15 +433,5 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 	@Override
 	public void setXORMode(Color c1) {
 		rasterImageGraphics.setXORMode(c1);
-	}
-
-	public class ImgWithProps {
-		Image img;
-		int x;
-		int y;
-		int width;
-		int height;
-		Color bgcolor;
-		ImageObserver observer;
 	}
 }
