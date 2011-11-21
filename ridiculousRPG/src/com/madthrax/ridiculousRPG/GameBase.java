@@ -128,9 +128,8 @@ public class GameBase extends GameServiceDefaultImpl implements
 	/**
 	 * The {@link GameServiceProvider} from the first GameBase instance which
 	 * has been initialized is used to obtain the requested service.<br>
-	 * A shortcut for calling {@link #$serviceProvider()}{@link 
-	 * GameServiceProvider#getService(Class)
-	 * .getService(Class)}
+	 * A shortcut for calling {@link #$serviceProvider()}
+	 * {@link GameServiceProvider#getService(Class) .getService(Class)}
 	 * 
 	 * @return The requested service or null if no service matches.
 	 */
@@ -453,11 +452,12 @@ public class GameBase extends GameServiceDefaultImpl implements
 	public boolean toggleFullscreen() {
 		try {
 			// resize is called
-			if (Gdx.graphics.setDisplayMode(originalWidth, originalHeight,
-					!fullscreen)) {
-				fullscreen = !fullscreen;
-				return true;
-			}
+			Gdx.graphics.setDisplayMode(originalWidth, originalHeight,
+					!fullscreen);
+			// In Linux setDisplayMode returns false even though it succeeds
+			// ==> DON'T make an if statement!
+			fullscreen = !fullscreen;
+			return true;
 		} catch (Throwable notTooBad) {
 		}
 		return false;

@@ -88,7 +88,7 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 
 		textureRef = TextureRegionLoader.obtainEmptyRegion(width, height,
 				Format.RGBA8888);
-		graphicsPixmap = new GraphicsPixmapWrapper(width, height, 4);
+		graphicsPixmap = new GraphicsPixmapWrapper(width, height, 4, 1700);
 		player = new VideoPlayerApplet() {
 			private static final long serialVersionUID = 1L;
 
@@ -245,6 +245,9 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 		} else {
 			spriteBatch.draw(textureRef, screenBounds.x, screenBounds.y,
 					screenBounds.width, screenBounds.height);
+		}
+		if (graphicsPixmap.isWorkerIdle()) {
+			stop();
 		}
 	}
 

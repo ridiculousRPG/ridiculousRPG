@@ -24,6 +24,7 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.ImageObserver;
 import java.awt.image.PixelGrabber;
@@ -53,6 +54,9 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 	// for optimized drawing
 	private boolean hasWorker;
 	private boolean running = true;
+	private boolean workerIdle;
+	private int workerIdleTimeout;
+	private long workerIdleTimeMark;
 	private int bufferSize;
 	private DataBufferElement producerDataBuffer;
 	private DataBufferElement consumerDataBuffer;
@@ -65,24 +69,6 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 		int x, y, w, h;
 		boolean ready;
 		DataBufferElement next;
-
-		public DataBufferElement(int width, int height) {
-			buf = new int[width * height];
-		}
-
-		class DataPixelGrabber extends PixelGrabber {
-			public DataPixelGrabber(Image img, int x, int y, int w, int h,
-					int[] pix, int off, int scansize) {
-				super(img, x, y, w, h, pix, off, scansize);
-			}
-
-			@Override
-			public void setDimensions(int width, int height) {
-				w = width;
-				h = height;
-				super.setDimensions(width, height);
-			}
-		}
 	}
 
 	public class PixmapBufferElement {
@@ -96,13 +82,18 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 	}
 
 	public GraphicsPixmapWrapper(int width, int height) {
-		this(width, height, 0);
+		this(width, height, 0, 0);
 	}
 
-	public GraphicsPixmapWrapper(int width, int height, int spawnWorker) {
+	public GraphicsPixmapWrapper(int width, int height, int spawnWorker,
+			int workerIdleTimeout) {
 		this.hasWorker = spawnWorker > 0;
-		this.bufferSize = Math.max(8, spawnWorker*2);
+		this.workerIdleTimeout = workerIdleTimeout;
+		this.bufferSize = Math.max(8, spawnWorker * 2);
 		resize(width, height);
+		// allow startup to consume 3 times normal timeout
+		this.workerIdleTimeMark = System.currentTimeMillis() + 2
+				* workerIdleTimeout;
 		for (int i = 0; i < spawnWorker; i++) {
 			new Thread(this).start();
 		}
@@ -124,11 +115,11 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 
 	private DataBufferElement createDataBuffer(int capacity, int width,
 			int height) {
-		DataBufferElement first = new DataBufferElement(width, height);
+		DataBufferElement first = new DataBufferElement();
 		first.next = first;
 		DataBufferElement last = first;
 		for (int i = 1; i < capacity; i++) {
-			DataBufferElement newLast = new DataBufferElement(width, height);
+			DataBufferElement newLast = new DataBufferElement();
 			last.next = newLast;
 			newLast.next = first;
 			last = newLast;
@@ -143,9 +134,22 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 		while (running) {
 			// wait until other thread got the ticket
 			synchronized (this) {
+				if (!running)
+					return;
 				// wait for data producer and/or pixmap consumer
 				while (!consumerDataBuffer.ready || producerPixmapBuffer.ready) {
-					if (!running) return;
+					if (workerIdleTimeMark + workerIdleTimeout < System
+							.currentTimeMillis()) {
+						workerIdle = true;
+						try {
+							wait(); // stop spinning
+						} catch (InterruptedException e) {
+						}
+						// set new time mark
+						workerIdleTimeMark = System.currentTimeMillis();
+					}
+					if (!running)
+						return;
 					// System.out.println("worker waiting");
 					Thread.yield();
 				}
@@ -161,26 +165,37 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 			// mark buffers
 			workingDataBuffer.ready = false;
 			workingPixmapBuffer.ready = true;
+			// set new time mark
+			workerIdleTimeMark = System.currentTimeMillis();
 		}
 	}
 
 	/**
 	 * this method scales the image linear
+	 * 
 	 * @param imgData
 	 * @param pixmap
 	 */
 	protected void shiftData(DataBufferElement imgData, Pixmap pixmap) {
 		int[] pixels = imgData.buf;
-		int w = pixmap.getWidth();
-		int h = pixmap.getHeight();
-		float scaleFactor = ((float) w) / ((float) imgData.w);
-		int x = (int) (imgData.x * scaleFactor);
-		int y = (int) (imgData.y * scaleFactor);
+		int w1 = pixmap.getWidth();
+		int h1 = pixmap.getHeight();
+		int w2 = imgData.w;
+		int h2 = imgData.h;
+		// assert w2 + 2 * imgData.x == h2 + 2 * imgData.y;
+		float scaleFactor = Math.min(((float) w1) / ((float) w2), ((float) h1)
+				/ ((float) h2));
+		int x = (int) (w1 - w2 * scaleFactor);
+		int y = (int) (h1 - h2 * scaleFactor);
+		h1 -= y;
+		w1 -= x;
+		x /= 2;
+		y /= 2;
 
-		for (int i = 0; i < h; i++) {
-			int scaledLine = ((int) (i / scaleFactor)) * w;
+		for (int i = 0; i < h1; i++) {
+			int scaledLine = ((int) (i / scaleFactor)) * w2;
 			int iy = i + y;
-			for (int j = 0; j < w; j++) {
+			for (int j = 0; j < w1; j++) {
 				int val = pixels[scaledLine + (int) (j / scaleFactor)];
 				pixmap.drawPixel(j + x, iy, val >>> 24 | val << 8);
 			}
@@ -199,8 +214,26 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 
 		// register image consumer
 		if (producerDataBuffer.grabber == null) {
-			producerDataBuffer.grabber = producerDataBuffer.new DataPixelGrabber(
-					img, x, y, -1, -1, producerDataBuffer.buf, 0, width);
+			// not very dressy but it works :/
+			new PixelGrabber(img, x, y, -1, -1, false) {
+				@Override
+				public void setDimensions(int width, int height) {
+					producerDataBuffer.w = width;
+					producerDataBuffer.h = height;
+					producerDataBuffer.buf = new int[width * height];
+					abortGrabbing();
+				}
+
+				@Override
+				public void setPixels(int srcX, int srcY, int srcW, int srcH,
+						ColorModel model, int[] pixels, int srcOff, int srcScan) {
+				}
+			}.startGrabbing();
+			while (producerDataBuffer.buf == null)
+				Thread.yield();
+			producerDataBuffer.grabber = new PixelGrabber(img, x, y,
+					producerDataBuffer.w, producerDataBuffer.h,
+					producerDataBuffer.buf, 0, producerDataBuffer.w);
 			img.getSource().addConsumer(producerDataBuffer.grabber);
 		}
 		// wait for consumer
@@ -215,7 +248,10 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 		producerDataBuffer.ready = true;
 		// shift ring buffer pointer
 		producerDataBuffer = producerDataBuffer.next;
-
+		if (workerIdle)
+			synchronized (this) {
+				notify();
+			}
 		return true;
 	}
 
@@ -243,9 +279,17 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 		rasterDataBuffer.setPixmap(consumerPixmapBuffer.buf);
 	}
 
+	public boolean isWorkerIdle() {
+		return workerIdle;
+	}
+
 	@Override
 	public void dispose() {
 		running = false;
+		if (workerIdle)
+			synchronized (this) {
+				notify();
+			}
 		rasterImageGraphics.dispose();
 	}
 
