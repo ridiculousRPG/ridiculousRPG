@@ -30,7 +30,6 @@ import com.badlogic.gdx.utils.Disposable;
 import com.fluendo.jst.Message;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
-import com.madthrax.ridiculousRPG.pixelwrap.GraphicsPixmapWrapper;
 
 /**
  * This class wraps the Cortado video player {@link Applet} inside an
@@ -86,9 +85,9 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 		int width = (int) screenBounds.width;
 		int height = (int) screenBounds.height;
 
-		textureRef = TextureRegionLoader.obtainEmptyRegion(width, height,
+		textureRef = TextureRegionLoader.obtainEmptyRegion(640, 340,
 				Format.RGBA8888);
-		graphicsPixmap = new GraphicsPixmapWrapper(width, height, 4, 1700);
+		graphicsPixmap = new GraphicsPixmapWrapper();
 		player = new VideoPlayerApplet() {
 			private static final long serialVersionUID = 1L;
 
@@ -126,6 +125,7 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 		player.setParam("showSubtitles", "false");
 		player.setParam("autoPlay", "false");
 		player.setParam("debug", "0");
+		player.setParam("keepAspect", "false");
 	}
 
 	/**
@@ -235,6 +235,7 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 	}
 
 	public void draw(SpriteBatch spriteBatch, boolean debug) {
+		if (!graphicsPixmap.isReady()) return;
 		textureRef.draw(graphicsPixmap.getPixmap());
 		if (relativeBounds) {
 			spriteBatch.draw(textureRef, screenBounds.x
@@ -245,10 +246,10 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 		} else {
 			spriteBatch.draw(textureRef, screenBounds.x, screenBounds.y,
 					screenBounds.width, screenBounds.height);
-		}
+		}/*
 		if (graphicsPixmap.isWorkerIdle()) {
 			stop();
-		}
+		}*/
 	}
 
 	@Override

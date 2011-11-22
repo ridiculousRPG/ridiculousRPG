@@ -85,6 +85,13 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 		this(width, height, 0, 0);
 	}
 
+	/**
+	 * Don't use this constructor for simple drawings, it's only for optimized video rendering.
+	 * @param width
+	 * @param height
+	 * @param spawnWorker
+	 * @param workerIdleTimeout
+	 */
 	public GraphicsPixmapWrapper(int width, int height, int spawnWorker,
 			int workerIdleTimeout) {
 		this.hasWorker = spawnWorker > 0;
@@ -182,20 +189,18 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 		int h1 = pixmap.getHeight();
 		int w2 = imgData.w;
 		int h2 = imgData.h;
-		// assert w2 + 2 * imgData.x == h2 + 2 * imgData.y;
 		float scaleFactor = Math.min(((float) w1) / ((float) w2), ((float) h1)
 				/ ((float) h2));
-		int x = (int) (w1 - w2 * scaleFactor);
-		int y = (int) (h1 - h2 * scaleFactor);
-		h1 -= y;
-		w1 -= x;
-		x /= 2;
-		y /= 2;
+		w2 *= scaleFactor;
+		h2 *= scaleFactor;
+		int x = (w1 - w2) / 2;
+		int y = (h1 - h2) / 2;
+		w1 = imgData.w;
 
-		for (int i = 0; i < h1; i++) {
-			int scaledLine = ((int) (i / scaleFactor)) * w2;
+		for (int i = 0; i < h2; i++) {
+			int scaledLine = ((int) (i / scaleFactor)) * w1;
 			int iy = i + y;
-			for (int j = 0; j < w1; j++) {
+			for (int j = 0; j < w2; j++) {
 				int val = pixels[scaledLine + (int) (j / scaleFactor)];
 				pixmap.drawPixel(j + x, iy, val >>> 24 | val << 8);
 			}
@@ -348,8 +353,8 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 	@Override
 	public boolean drawImage(Image img, int x, int y, Color bgcolor,
 			ImageObserver observer) {
-		return drawImage(img, x, y, img.getWidth(observer), img
-				.getHeight(observer), bgcolor, observer);
+		return drawImage(img, x, y, img.getWidth(observer),
+				img.getHeight(observer), bgcolor, observer);
 	}
 
 	@Override
