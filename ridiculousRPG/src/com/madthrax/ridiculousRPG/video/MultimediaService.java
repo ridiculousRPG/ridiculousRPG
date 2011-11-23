@@ -47,8 +47,9 @@ import com.madthrax.ridiculousRPG.service.GameService;
  */
 public class MultimediaService implements GameService, Drawable {
 
-	private VideoPlayerAppletWrapper p;
+	private CortadoPlayerAppletWrapper p;
 	private boolean playing;
+	private boolean projectToMap;
 
 	public void play(FileHandle file) {
 		try {
@@ -80,7 +81,7 @@ public class MultimediaService implements GameService, Drawable {
 						true)) {
 			if (playing)
 				p.dispose();
-			p = new VideoPlayerAppletWrapper(url, screenBounds, withAudio,
+			p = new CortadoPlayerAppletWrapper(url, screenBounds, withAudio,
 					relativeBounds);
 			p.play();
 			playing = true;
@@ -129,8 +130,16 @@ public class MultimediaService implements GameService, Drawable {
 		}
 	}
 
+	public void setProjectToMap(boolean projectToMap) {
+		this.projectToMap = projectToMap;
+	}
+
+	public boolean isProjectToMap() {
+		return projectToMap;
+	}
+
 	@Override
 	public Matrix4 projectionMatrix(Camera camera) {
-		return camera.view;
+		return projectToMap ? camera.projection : camera.view;
 	}
 }

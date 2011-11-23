@@ -37,15 +37,15 @@ import com.fluendo.player.Cortado;
  * @see http://www.theora.org/cortado/
  * @author Alexander Baumgartner
  */
-public class VideoPlayerApplet extends Cortado {
+public class CortadoPlayerApplet extends Cortado {
 	/**
 	 * This is an applet! You should NEVER use this constructor manually!<br>
-	 * Use {@link VideoPlayerAppletWrapper#$(URL, java.awt.Rectangle, boolean)}
+	 * Use {@link CortadoPlayerAppletWrapper#$(URL, java.awt.Rectangle, boolean)}
 	 * or
-	 * {@link VideoPlayerAppletWrapper#VideoPlayerAppletWrapper(URL, java.awt.Rectangle, boolean)}
+	 * {@link CortadoPlayerAppletWrapper#VideoPlayerAppletWrapper(URL, java.awt.Rectangle, boolean)}
 	 * instead!
 	 */
-	public VideoPlayerApplet() {
+	public CortadoPlayerApplet() {
 	}
 
 	private static final long serialVersionUID = 1L;

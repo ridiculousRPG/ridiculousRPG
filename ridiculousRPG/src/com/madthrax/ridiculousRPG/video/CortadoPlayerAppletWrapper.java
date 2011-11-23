@@ -49,13 +49,13 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
  * @see http://www.theora.org/cortado/
  * @author Alexander Baumgartner
  */
-public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
-	private VideoPlayerApplet player;
+public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
+	private CortadoPlayerApplet player;
 	private URL url;
 	private boolean playing;
 	private boolean relativeBounds;
 	private Rectangle screenBounds;
-	private GraphicsPixmapWrapper graphicsPixmap;
+	private CortadoPixmapWrapper graphicsPixmap;
 	private TextureRegionRef textureRef;
 
 	/**
@@ -72,7 +72,7 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 	 *            if the bounds are relative, the video will automatically be
 	 *            stretched on resize
 	 */
-	public VideoPlayerAppletWrapper(URL url, Rectangle screenBounds,
+	public CortadoPlayerAppletWrapper(URL url, Rectangle screenBounds,
 			boolean withAudio, boolean relativeBounds) {
 		this.url = url;
 		this.screenBounds = new Rectangle(screenBounds);
@@ -86,17 +86,17 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 		int width = (int) screenBounds.width;
 		int height = (int) screenBounds.height;
 
-		textureRef = TextureRegionLoader.obtainEmptyRegion(640, 340,
+		textureRef = TextureRegionLoader.obtainEmptyRegion(width, height,
 				Format.RGBA8888);
-		graphicsPixmap = new GraphicsPixmapWrapper();
-		player = new VideoPlayerApplet() {
+		graphicsPixmap = new CortadoPixmapWrapper();
+		player = new CortadoPlayerApplet() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
 			public void handleMessage(Message msg) {
 				if (msg.getType() == Message.EOS
 						|| msg.getType() == Message.ERROR) {
-					VideoPlayerAppletWrapper.this.stop();
+					CortadoPlayerAppletWrapper.this.stop();
 				}
 				super.handleMessage(msg);
 			}
@@ -236,10 +236,25 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 	}
 
 	public void draw(SpriteBatch spriteBatch, boolean debug) {
-		if (!graphicsPixmap.isReady())
+		if (graphicsPixmap.streamStoped()) {
+			stop();
 			return;
+		}
+		if (!graphicsPixmap.isReady()) {
+			return;
+		}
+
 		Pixmap toDraw = graphicsPixmap.getPixmap();
+		int width, height;
 		synchronized (toDraw) {
+			width = toDraw.getWidth();
+			height = toDraw.getHeight();
+			if (textureRef.getRegionWidth() != width
+					|| textureRef.getRegionHeight() != height) {
+				textureRef.dispose();
+				textureRef = TextureRegionLoader.obtainEmptyRegion(width,
+						height, Format.RGBA8888);
+			}
 			textureRef.draw(toDraw);
 		}
 		if (relativeBounds) {
@@ -252,9 +267,6 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 			spriteBatch.draw(textureRef, screenBounds.x, screenBounds.y,
 					screenBounds.width, screenBounds.height);
 		}
-		/*
-		 * if (graphicsPixmap.isWorkerIdle()) { stop(); }
-		 */
 	}
 
 	@Override
