@@ -23,6 +23,7 @@ import java.awt.Graphics;
 import java.net.URL;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
@@ -235,8 +236,12 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 	}
 
 	public void draw(SpriteBatch spriteBatch, boolean debug) {
-		if (!graphicsPixmap.isReady()) return;
-		textureRef.draw(graphicsPixmap.getPixmap());
+		if (!graphicsPixmap.isReady())
+			return;
+		Pixmap toDraw = graphicsPixmap.getPixmap();
+		synchronized (toDraw) {
+			textureRef.draw(toDraw);
+		}
 		if (relativeBounds) {
 			spriteBatch.draw(textureRef, screenBounds.x
 					* Gdx.graphics.getWidth(), screenBounds.y
@@ -246,10 +251,10 @@ public class VideoPlayerAppletWrapper implements AppletStub, Disposable {
 		} else {
 			spriteBatch.draw(textureRef, screenBounds.x, screenBounds.y,
 					screenBounds.width, screenBounds.height);
-		}/*
-		if (graphicsPixmap.isWorkerIdle()) {
-			stop();
-		}*/
+		}
+		/*
+		 * if (graphicsPixmap.isWorkerIdle()) { stop(); }
+		 */
 	}
 
 	@Override

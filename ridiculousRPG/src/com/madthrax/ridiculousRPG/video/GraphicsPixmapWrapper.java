@@ -36,7 +36,6 @@ import java.text.AttributedCharacterIterator;
 import java.util.Hashtable;
 
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.utils.Disposable;
 
 /**
@@ -52,9 +51,7 @@ import com.badlogic.gdx.utils.Disposable;
 public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 		ImageConsumer {
 	private Graphics rasterImageGraphics;
-	private int w, h;
-	private Pixmap pm;
-	private ByteBuffer bb;
+	private CortadoPixmap pm;
 	private IntBuffer ib;
 	private boolean ready = false;
 
@@ -66,9 +63,11 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 		img.getSource().startProduction(this);
 		return true;
 	}
+
 	public Pixmap getPixmap() {
 		return pm;
 	}
+
 	public boolean isReady() {
 		return ready;
 	}
@@ -132,8 +131,8 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 	@Override
 	public boolean drawImage(Image img, int x, int y, Color bgcolor,
 			ImageObserver observer) {
-		return drawImage(img, x, y, img.getWidth(observer),
-				img.getHeight(observer), bgcolor, observer);
+		return drawImage(img, x, y, img.getWidth(observer), img
+				.getHeight(observer), bgcolor, observer);
 	}
 
 	@Override
@@ -269,12 +268,10 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 
 	@Override
 	public void setDimensions(int width, int height) {
-		w = width;
-		h = height;
-		if (bb == null || pm.getWidth() != width || pm.getHeight() != height) {
-			bb = ByteBuffer.allocate(width * height * 4);
-			ib = bb.asIntBuffer();
-			pm = new Pixmap(width, height, Format.RGBA8888);
+		if (pm == null || pm.getWidth() != width || pm.getHeight() != height) {
+			pm = new CortadoPixmap(width, height);
+			ib = pm.getPixels().asIntBuffer();
+			ready = true;
 		}
 	}
 
@@ -299,19 +296,11 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 	public void setPixels(int x, int y, int w, int h, ColorModel model,
 			int[] pixels, int off, int scansize) {
 		try {
-			ib.position(0);
-		ib.put(pixels, off, w*h);
-		byte[] ba = bb.array();
-		byte b = ba[0];
-		System.arraycopy(ba, 1, ba, 0, ba.length-1);
-		ba[ba.length-1] = b;
-		ByteBuffer pixelBuf = pm.getPixels();
-		pixelBuf.position(0);
-		pixelBuf.limit(pixelBuf.capacity());
-		pixelBuf.put(ba, 0, ba.length);
-		pixelBuf.position(0);
-		pixelBuf.limit(pixelBuf.capacity());
-		ready = true;
+			synchronized (pm) {
+				ib.position(0);
+				ib.put(pixels, off, w * h);
+				pm.shiftARGBtoRGBA();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -319,5 +308,30 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable,
 
 	@Override
 	public void imageComplete(int status) {
+	}
+
+	public class CortadoPixmap extends Pixmap {
+		int lastAlphaAfterShift;
+
+		public CortadoPixmap(int width, int height) {
+			super(Math.max(width, 1), height + 1, Format.RGBA8888);
+			lastAlphaAfterShift = width * height * 4;
+		}
+
+		/**
+		 * Of course this causes an pixel error at transparent pixels. Every
+		 * pixel gets the alpha value of it's neighbour. But i think this
+		 * shouldn't matter in our case and it's brutally fast ;)
+		 */
+		public void shiftARGBtoRGBA() {
+			ByteBuffer bb = getPixels();
+			bb.put(lastAlphaAfterShift, bb.get(0));
+			bb.position(1);
+		}
+
+		@Override
+		public int getHeight() {
+			return super.getHeight() - 1;
+		}
 	}
 }
