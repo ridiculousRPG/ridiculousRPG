@@ -21,12 +21,12 @@ import java.applet.AppletContext;
 import java.applet.AppletStub;
 import java.net.URL;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
+import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 
@@ -50,7 +50,7 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 	private CortadoPlayerApplet player;
 	private boolean playing;
-	private boolean relativeBounds;
+	private boolean projectToMap;
 	private Rectangle screenBounds;
 	private CortadoPixmapWrapper graphicsPixmap;
 	private TextureRegionRef textureRef;
@@ -62,22 +62,22 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 	 *            url to ogg / ogv file
 	 * @param screenBounds
 	 *            the screen position, width and height
+	 * @param projectToMap
+	 *            Defines whether to project the video onto the map or onto the
+	 *            screen coordinates
 	 * @param withAudio
 	 *            if false, the audio channel will be disabled.
-	 * @param fullscreen
-	 * @param relativeBounds
-	 *            if the bounds are relative, the video will automatically be
-	 *            stretched on resize
 	 */
 	public CortadoPlayerAppletWrapper(URL url, Rectangle screenBounds,
-			boolean withAudio, boolean relativeBounds) {
+			boolean projectToMap, boolean withAudio) {
 		this.screenBounds = new Rectangle(screenBounds);
-		this.relativeBounds = relativeBounds;
-		if (relativeBounds) {
-			this.screenBounds.width /= Gdx.graphics.getWidth();
-			this.screenBounds.height /= Gdx.graphics.getHeight();
-			this.screenBounds.x /= Gdx.graphics.getWidth();
-			this.screenBounds.y /= Gdx.graphics.getHeight();
+		this.projectToMap = projectToMap;
+		if (!projectToMap) {
+			GameBase gb = GameBase.$();
+			this.screenBounds.width /= gb.getScreenWidth();
+			this.screenBounds.height /= gb.getScreenHeight();
+			this.screenBounds.x /= gb.getScreenWidth();
+			this.screenBounds.y /= gb.getScreenHeight();
 		}
 		int width = (int) screenBounds.width;
 		int height = (int) screenBounds.height;
@@ -88,14 +88,15 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 		placeholder.setColor(0, 0, 0, 1);
 		placeholder.fillRectangle(0, 0, width, height);
 		placeholder.setColor(.7f, .7f, .7f, 1);
-		placeholder.fillCircle(width/2, height/2, Math.min(width, height)/3);
+		placeholder.fillCircle(width / 2, height / 2,
+				Math.min(width, height) / 3);
 		placeholder.setColor(.4f, .4f, .4f, 1);
 		placeholder.drawRectangle(0, 0, width, height);
-		placeholder.drawRectangle(2, 2, width-4, height-4);
-		placeholder.drawLine(1, 0, width, height-1);
-		placeholder.drawLine(0, 1, width-1, height);
+		placeholder.drawRectangle(2, 2, width - 4, height - 4);
+		placeholder.drawLine(1, 0, width, height - 1);
+		placeholder.drawLine(0, 1, width - 1, height);
 		placeholder.drawLine(1, height, width, 1);
-		placeholder.drawLine(0, height-1, width-1, 0);
+		placeholder.drawLine(0, height - 1, width - 1, 0);
 		textureRef.draw(placeholder);
 		placeholder.dispose();
 		graphicsPixmap = new CortadoPixmapWrapper();
@@ -253,16 +254,19 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 	}
 
 	private void drawTexture(SpriteBatch spriteBatch, TextureRegionRef tRef) {
-		if (relativeBounds) {
-			spriteBatch.draw(tRef, screenBounds.x
-					* Gdx.graphics.getWidth(), screenBounds.y
-					* Gdx.graphics.getHeight(), screenBounds.width
-					* Gdx.graphics.getWidth(), screenBounds.height
-					* Gdx.graphics.getHeight());
-		} else {
-			spriteBatch.draw(tRef, screenBounds.x, screenBounds.y,
-					screenBounds.width, screenBounds.height);
+		float x = screenBounds.x;
+		float y = screenBounds.y;
+		float w = screenBounds.width;
+		float h = screenBounds.height;
+		if (!projectToMap) {
+			// auto stretch on window resize
+			GameBase gb = GameBase.$();
+			x *= gb.getScreenWidth();
+			y *= gb.getScreenHeight();
+			w *= gb.getScreenWidth();
+			h *= gb.getScreenHeight();
 		}
+		spriteBatch.draw(tRef, x,y,w,h);
 	}
 
 	@Override

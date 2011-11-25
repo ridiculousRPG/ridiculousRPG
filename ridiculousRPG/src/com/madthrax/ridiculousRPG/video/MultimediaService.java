@@ -47,10 +47,17 @@ import com.madthrax.ridiculousRPG.service.GameService;
  */
 public class MultimediaService implements GameService, Drawable {
 
-	private CortadoPlayerAppletWrapper p;
+	private CortadoPlayerAppletWrapper player;
 	private boolean playing;
 	private boolean projectToMap;
 
+	/**
+	 * Plays the (ogg-theora) video in full screen exclusive mode.<br>
+	 * The game is paused while the video is running.
+	 * 
+	 * @param file
+	 *            The ogg theora video file
+	 */
 	public void play(FileHandle file) {
 		try {
 			play(new File(file.path()).toURI().toURL());
@@ -59,56 +66,132 @@ public class MultimediaService implements GameService, Drawable {
 		}
 	}
 
-	public void play(FileHandle file, Rectangle screenBounds,
-			boolean relativeBounds, boolean withAudio, boolean freezeTheWorld) {
+	/**
+	 * Plays the (ogg-theora) video in embedded mode.<br>
+	 * The video is embedded into the games world. The game is not stopped. The
+	 * video integrates smoothly into the game.
+	 * 
+	 * @param file
+	 *            The ogg theora video file
+	 * @param bounds
+	 *            The position, width and height for embedding the video into
+	 *            the games world coordinates
+	 */
+	public void play(FileHandle file, Rectangle bounds) {
 		try {
-			play(new File(file.path()).toURI().toURL(), screenBounds,
-					relativeBounds, withAudio, freezeTheWorld);
+			play(new File(file.path()).toURI().toURL(), bounds);
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public void play(URL url) {
-		play(url, new Rectangle(0, 0, Gdx.graphics.getWidth(), Gdx.graphics
-				.getHeight()), true, true, true);
+	/**
+	 * Plays an ogg theora video
+	 * 
+	 * @param file
+	 *            The file for streaming the ogg theora video
+	 * @param bounds
+	 *            The position, width and height for embedding the video
+	 * @param projectToMap
+	 *            Defines whether to project the video onto the map or onto the
+	 *            screen coordinates
+	 * @param withAudio
+	 *            Defines if the audio output should be muted or not.
+	 * @param freezeTheWorld
+	 *            If true, the game will be frozen.
+	 */
+	public void play(FileHandle file, Rectangle bounds, boolean projectToMap,
+			boolean withAudio, boolean freezeTheWorld) {
+		try {
+			play(new File(file.path()).toURI().toURL(), bounds, projectToMap,
+					withAudio, freezeTheWorld);
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	public void play(URL url, Rectangle screenBounds, boolean relativeBounds,
+	/**
+	 * Plays the (ogg-theora) video in full screen exclusive mode.<br>
+	 * The game is paused while the video is running.
+	 * 
+	 * @param url
+	 *            The url for streaming the ogg theora video
+	 */
+	public void play(URL url) {
+		play(url, new Rectangle(0, 0, Gdx.graphics.getWidth(), Gdx.graphics
+				.getHeight()), false, true, true);
+	}
+
+	/**
+	 * Plays the (ogg-theora) video in embedded mode.<br>
+	 * The video is embedded into the games world. The game is not stopped. The
+	 * video integrates smoothly into the game.
+	 * 
+	 * @param url
+	 *            The url for streaming the ogg theora video
+	 * @param bounds
+	 *            The position, width and height for embedding the video into
+	 *            the games world coordinates
+	 */
+	public void play(URL url, Rectangle bounds) {
+		play(url, bounds, true, true, false);
+	}
+
+	/**
+	 * Streams an ogg theora video
+	 * 
+	 * @param url
+	 *            The url for streaming the ogg theora video
+	 * @param bounds
+	 *            The position, width and height for embedding the video
+	 * @param projectToMap
+	 *            Defines whether to project the video onto the map or onto the
+	 *            screen coordinates
+	 * @param withAudio
+	 *            Defines if the audio output should be muted or not.
+	 * @param freezeTheWorld
+	 *            If true, the game will be frozen.
+	 */
+	public void play(URL url, Rectangle bounds, boolean projectToMap,
 			boolean withAudio, boolean freezeTheWorld) {
 		if (!freezeTheWorld
 				|| GameBase.$serviceProvider().requestAttention(this, true,
 						true)) {
 			if (playing)
-				p.dispose();
-			p = new CortadoPlayerAppletWrapper(url, screenBounds, withAudio,
-					relativeBounds);
-			p.play();
+				player.dispose();
+			player = new CortadoPlayerAppletWrapper(url, bounds, projectToMap,
+					withAudio);
+			player.play();
 			playing = true;
+			this.projectToMap = projectToMap;
 		}
 	}
 
+	/**
+	 * Stops the video playback
+	 */
 	public void stop() {
-		if (p != null)
-			p.stop();
+		if (player != null)
+			player.stop();
 	}
 
 	@Override
 	public void dispose() {
-		if (p != null)
-			p.dispose();
+		if (player != null)
+			player.dispose();
+		player = null;
 	}
 
 	@Override
 	public void freeze() {
 		if (playing)
-			p.stop();
+			player.pause();
 	}
 
 	@Override
 	public void unfreeze() {
 		if (playing)
-			p.play();
+			player.play();
 	}
 
 	@Override
@@ -120,22 +203,14 @@ public class MultimediaService implements GameService, Drawable {
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
 		if (!playing)
 			return;
-		if (p.isPlaying()) {
-			p.draw(spriteBatch, debug);
+		if (player.isPlaying()) {
+			player.draw(spriteBatch, debug);
 		} else {
 			GameBase.$serviceProvider().releaseAttention(this);
 			playing = false;
-			p.dispose();
-			p = null;
+			player.dispose();
+			player = null;
 		}
-	}
-
-	public void setProjectToMap(boolean projectToMap) {
-		this.projectToMap = projectToMap;
-	}
-
-	public boolean isProjectToMap() {
-		return projectToMap;
 	}
 
 	@Override
