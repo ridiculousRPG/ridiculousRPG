@@ -49,7 +49,6 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
  */
 public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 	private CortadoPlayerApplet player;
-	private URL url;
 	private boolean playing;
 	private boolean relativeBounds;
 	private Rectangle screenBounds;
@@ -72,7 +71,6 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 	 */
 	public CortadoPlayerAppletWrapper(URL url, Rectangle screenBounds,
 			boolean withAudio, boolean relativeBounds) {
-		this.url = url;
 		this.screenBounds = new Rectangle(screenBounds);
 		this.relativeBounds = relativeBounds;
 		if (relativeBounds) {
@@ -201,7 +199,7 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 	 * @return URL
 	 */
 	public URL getCodeBase() {
-		return url;
+		return null;
 	}
 
 	/**
@@ -210,7 +208,7 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 	 * @return URL
 	 */
 	public URL getDocumentBase() {
-		return getCodeBase();
+		return null;
 	}
 
 	/**
