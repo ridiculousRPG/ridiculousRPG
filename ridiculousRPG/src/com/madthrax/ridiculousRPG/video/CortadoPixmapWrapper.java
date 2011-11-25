@@ -105,7 +105,7 @@ public class CortadoPixmapWrapper extends GraphicsPixmapWrapper implements
 			pixmap = new CortadoPixmap(width, height);
 			// Yeah - it's ridiculous, but we are able to draw some other stuff
 			// onto the rendered picture before pushing it onto the screen ;)
-			rasterDataBuffer.setPixmap(pixmap);
+			rasterDataBuffer.setPixmap(pixmap).dispose();
 			intPixelBuffer = pixmap.getPixels().asIntBuffer();
 			ready = true;
 		}
@@ -144,6 +144,13 @@ public class CortadoPixmapWrapper extends GraphicsPixmapWrapper implements
 
 	@Override
 	public void imageComplete(int status) {
+	}
+
+	@Override
+	public void dispose() {
+		// pixmap.dispose is called by PixmapDataBuffer
+		pixmap = null;
+		intPixelBuffer = null;
 	}
 
 	public class CortadoPixmap extends Pixmap {

@@ -17,9 +17,11 @@
 package com.madthrax.ridiculousRPG.video;
 
 import java.applet.Applet;
+import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.net.URL;
 
+import com.fluendo.jst.Message;
 import com.fluendo.player.Cortado;
 
 /**
@@ -38,17 +40,78 @@ import com.fluendo.player.Cortado;
  * @author Alexander Baumgartner
  */
 public class CortadoPlayerApplet extends Cortado {
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * You may set this to false on startup if there are problems with this
+	 * creepy shutdown hack.
+	 */
+	public static boolean shutdownCortadoHook = true;
+	private Graphics graphics;
+	private CortadoPlayerAppletWrapper stub;
+
 	/**
 	 * This is an applet! You should NEVER use this constructor manually!<br>
-	 * Use {@link CortadoPlayerAppletWrapper#$(URL, java.awt.Rectangle, boolean)}
-	 * or
-	 * {@link CortadoPlayerAppletWrapper#VideoPlayerAppletWrapper(URL, java.awt.Rectangle, boolean)}
+	 * Use
+	 * {@link CortadoPlayerAppletWrapper#CortadoPlayerAppletWrapper(URL, com.badlogic.gdx.math.Rectangle, boolean, boolean)
 	 * instead!
 	 */
-	public CortadoPlayerApplet() {
+	public CortadoPlayerApplet(CortadoPlayerAppletWrapper stub,
+			Graphics graphics) {
+		this.stub = stub;
+		this.graphics = graphics;
 	}
 
-	private static final long serialVersionUID = 1L;
+	@Override
+	public void handleMessage(Message msg) {
+		if (msg.getType() == Message.EOS || msg.getType() == Message.ERROR) {
+			stub.stop();
+		}
+		super.handleMessage(msg);
+	}
+
+	@Override
+	public Graphics getGraphics() {
+		return graphics;
+	}
+
+	@Override
+	public void destroy() {
+		// Cortado strikes to release it's resourecs,
+		// thats why we have to do a lot of crazy stuff below
+		try {
+			stop();
+			setStub(null);
+			stub = null;
+			graphics = null;
+			super.destroy();
+			if (isActive()) {
+				shutDown(null);
+				removeAll();
+				// try to crash it
+				doPlay();
+			}
+		} catch (Throwable ignored) {
+		}
+		// spawn thread to force jvm exit
+		if (isActive() && shutdownCortadoHook) {
+			shutdownCortadoHook = false;
+			System.out.println("Cortado shutdown hook thread started");
+			final Thread current = Thread.currentThread();
+			new Thread() {
+				@Override
+				public void run() {
+					do
+						try {
+							sleep(2000);
+						} catch (InterruptedException e) {
+						}
+					while (current.isAlive());
+					System.exit(0);
+				}
+			}.start();
+		}
+	}
 
 	@Override
 	public void mouseClicked(MouseEvent arg0) {

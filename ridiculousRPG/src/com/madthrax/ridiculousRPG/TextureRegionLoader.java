@@ -162,9 +162,9 @@ public final class TextureRegionLoader {
 			int safeHeight = MathUtils.nextPowerOfTwo(height);
 			if (width != safeWidth || height != safeHeight) {
 				tCache = new TextureCache(safeWidth, safeHeight, pm.getFormat());
-				tCache.draw(pm, 0, 0);
+				tCache.setPixmap(pm, true);
 			} else {
-				tCache = new TextureCache(pm);
+				tCache = new TextureCache(pm, true);
 			}
 			textureCache.put(fileName, tCache);
 			textureReverseCache.put(tCache, fileName);
@@ -183,8 +183,8 @@ public final class TextureRegionLoader {
 			Disposable {
 		/**
 		 * Use {@link TextureRegionLoader#load} or
-		 * {@link TextureRegionLoader#obtainEmptyRegion(int, int, Format)} to obtain
-		 * a texture region.
+		 * {@link TextureRegionLoader#obtainEmptyRegion(int, int, Format)} to
+		 * obtain a texture region.
 		 */
 		protected TextureRegionRef() {
 		}
@@ -228,14 +228,36 @@ public final class TextureRegionLoader {
 		private int width;
 		// height of the pixmap
 		private int height;
+		// The pixmap can automatically be disposed
+		private Pixmap pixmap;
 
 		/**
 		 * Use {@link TextureRegionLoader#load} if possible
 		 */
-		protected TextureCache(Pixmap pm) {
+		protected TextureCache(Pixmap pm, boolean autoDisposePixmap) {
 			super(pm);
 			width = pm.getWidth();
 			height = pm.getHeight();
+			if (autoDisposePixmap)
+				pixmap = pm;
+		}
+
+		/**
+		 * Sets the specified {@link Pixmap} for this {@link TextureCache}. This
+		 * method shouldn't be used outside of the implementation, because it
+		 * effects all {@link TextureRegionRef}s which are already instantiaded
+		 * from this {@link TextureCache}.
+		 * 
+		 * @param pm
+		 * @param autoDisposePixmap
+		 */
+		protected void setPixmap(Pixmap pm, boolean autoDisposePixmap) {
+			draw(pm, 0, 0);
+			if (autoDisposePixmap) {
+				if (pixmap != null)
+					pixmap.dispose();
+				pixmap = pm;
+			}
 		}
 
 		/**
@@ -245,10 +267,26 @@ public final class TextureRegionLoader {
 			super(width, height, format);
 		}
 
+		/**
+		 * Returns the entire region, which is sized by the loaded
+		 * {@link Pixmap}'s size. Normally this should be the entire picture
+		 * represented by this {@link TextureCache}
+		 * 
+		 * @return
+		 */
 		public TextureRegionRef obtainRegion() {
 			return obtainRegion(0, 0, width, height);
 		}
 
+		/**
+		 * Retuns the specified region of this texture.
+		 * 
+		 * @param x
+		 * @param y
+		 * @param width
+		 * @param height
+		 * @return
+		 */
 		public TextureRegionRef obtainRegion(int x, int y, int width, int height) {
 			count++;
 			TextureRegionRef c = textureRegionPool.obtain();
@@ -257,6 +295,7 @@ public final class TextureRegionLoader {
 			return c;
 		}
 
+		@Override
 		public void draw(Pixmap pm, int x, int y) {
 			super.draw(pm, x, y);
 			width = pm.getWidth();
@@ -269,6 +308,9 @@ public final class TextureRegionLoader {
 			if (count == 0) {
 				textureCache.remove(textureReverseCache.remove(this));
 				super.dispose();
+				if (pixmap != null)
+					pixmap.dispose();
+				pixmap = null;
 			}
 		}
 	}

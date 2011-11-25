@@ -75,6 +75,7 @@ public class GraphicsPixmapWrapper extends Graphics implements Disposable {
 	@Override
 	public void dispose() {
 		rasterImageGraphics.dispose();
+		rasterDataBuffer.dispose();
 	}
 
 	@Override

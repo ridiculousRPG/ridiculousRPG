@@ -19,7 +19,6 @@ package com.madthrax.ridiculousRPG.video;
 import java.applet.Applet;
 import java.applet.AppletContext;
 import java.applet.AppletStub;
-import java.awt.Graphics;
 import java.net.URL;
 
 import com.badlogic.gdx.Gdx;
@@ -28,7 +27,6 @@ import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
-import com.fluendo.jst.Message;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 
@@ -46,7 +44,7 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
  * <li>Smoke codec</li>
  * </ul>
  * 
- * @see http://www.theora.org/cortado/
+ * @see {@link CortadoPlayerApplet}
  * @author Alexander Baumgartner
  */
 public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
@@ -88,24 +86,22 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 
 		textureRef = TextureRegionLoader.obtainEmptyRegion(width, height,
 				Format.RGBA8888);
+		Pixmap placeholder = new Pixmap(width, height, Format.RGBA8888);
+		placeholder.setColor(0, 0, 0, 1);
+		placeholder.fillRectangle(0, 0, width, height);
+		placeholder.setColor(.7f, .7f, .7f, 1);
+		placeholder.fillCircle(width/2, height/2, Math.min(width, height)/3);
+		placeholder.setColor(.4f, .4f, .4f, 1);
+		placeholder.drawRectangle(0, 0, width, height);
+		placeholder.drawRectangle(2, 2, width-4, height-4);
+		placeholder.drawLine(1, 0, width, height-1);
+		placeholder.drawLine(0, 1, width-1, height);
+		placeholder.drawLine(1, height, width, 1);
+		placeholder.drawLine(0, height-1, width-1, 0);
+		textureRef.draw(placeholder);
+		placeholder.dispose();
 		graphicsPixmap = new CortadoPixmapWrapper();
-		player = new CortadoPlayerApplet() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public void handleMessage(Message msg) {
-				if (msg.getType() == Message.EOS
-						|| msg.getType() == Message.ERROR) {
-					CortadoPlayerAppletWrapper.this.stop();
-				}
-				super.handleMessage(msg);
-			}
-
-			@Override
-			public Graphics getGraphics() {
-				return graphicsPixmap;
-			}
-		};
+		player = new CortadoPlayerApplet(this, graphicsPixmap);
 		initPlayer();
 		player.setParam("url", url.toString());
 		player.setParam("audio", String.valueOf(withAudio));
@@ -125,7 +121,7 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 		player.setParam("showSpeaker", "false");
 		player.setParam("showSubtitles", "false");
 		player.setParam("autoPlay", "false");
-		player.setParam("debug", "0");
+		player.setParam("debug", "1");
 		player.setParam("keepAspect", "false");
 	}
 
@@ -240,73 +236,45 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 			stop();
 			return;
 		}
-		if (!graphicsPixmap.isReady()) {
-			return;
-		}
-
-		Pixmap toDraw = graphicsPixmap.getPixmap();
-		int width, height;
-		synchronized (toDraw) {
-			width = toDraw.getWidth();
-			height = toDraw.getHeight();
-			if (textureRef.getRegionWidth() != width
-					|| textureRef.getRegionHeight() != height) {
-				textureRef.dispose();
-				textureRef = TextureRegionLoader.obtainEmptyRegion(width,
-						height, Format.RGBA8888);
+		if (graphicsPixmap.isReady()) {
+			Pixmap toDraw = graphicsPixmap.getPixmap();
+			int width, height;
+			synchronized (toDraw) {
+				width = toDraw.getWidth();
+				height = toDraw.getHeight();
+				if (textureRef.getRegionWidth() != width
+						|| textureRef.getRegionHeight() != height) {
+					textureRef.dispose();
+					textureRef = TextureRegionLoader.obtainEmptyRegion(width,
+							height, Format.RGBA8888);
+				}
+				textureRef.draw(toDraw);
 			}
-			textureRef.draw(toDraw);
 		}
+		drawTexture(spriteBatch, textureRef);
+	}
+
+	private void drawTexture(SpriteBatch spriteBatch, TextureRegionRef tRef) {
 		if (relativeBounds) {
-			spriteBatch.draw(textureRef, screenBounds.x
+			spriteBatch.draw(tRef, screenBounds.x
 					* Gdx.graphics.getWidth(), screenBounds.y
 					* Gdx.graphics.getHeight(), screenBounds.width
 					* Gdx.graphics.getWidth(), screenBounds.height
 					* Gdx.graphics.getHeight());
 		} else {
-			spriteBatch.draw(textureRef, screenBounds.x, screenBounds.y,
+			spriteBatch.draw(tRef, screenBounds.x, screenBounds.y,
 					screenBounds.width, screenBounds.height);
 		}
 	}
 
 	@Override
 	public void dispose() {
-		// Cortado strikes to release it's resourecs,
-		// thats why we have to do a lot of crazy stuff below
-		try {
-			stop();
-			player.stop();
-			player.destroy();
-			player.setStub(null);
-			graphicsPixmap.dispose();
-			textureRef.dispose();
-			screenBounds = null;
-			graphicsPixmap = null;
-			textureRef = null;
-			if (player.isActive()) {
-				player.shutDown(null);
-				player.removeAll();
-				// crash it
-				player.doPlay();
-			}
-		} catch (Throwable ignored) {
-		}
-		// spawn thread to force jvm exit
-		if (player.isActive()) {
-			final Thread current = Thread.currentThread();
-			new Thread() {
-				@Override
-				public void run() {
-					do
-						try {
-							sleep(2000);
-						} catch (InterruptedException e) {
-						}
-					while (current.isAlive());
-					System.exit(0);
-				}
-			}.start();
-		}
+		player.destroy();
+		graphicsPixmap.dispose();
+		textureRef.dispose();
+		screenBounds = null;
+		graphicsPixmap = null;
+		textureRef = null;
 		player = null;
 	}
 }
