@@ -23,10 +23,12 @@ import com.badlogic.gdx.audio.Music;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 
 /**
- * This service is used to play background music.
+ * This service is used to play background music.<br>
+ * NEEDS REFACTORING!
+ * 
  * @author Alexander Baumgartner
  */
-//TODO: NEEDS REFACTORING
+// TODO: NEEDS REFACTORING
 public class JukeboxService extends GameServiceDefaultImpl {
 	private Semaphore musicMutex = new Semaphore(1, true);
 	private boolean playingMusic, waiting;
