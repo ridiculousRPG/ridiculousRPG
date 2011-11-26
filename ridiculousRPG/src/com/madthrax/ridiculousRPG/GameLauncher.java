@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG;
 
+import java.io.File;
+
 import android.os.Bundle;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
@@ -24,7 +26,6 @@ import com.badlogic.gdx.backends.jogl.JoglApplication;
 import com.badlogic.gdx.backends.jogl.JoglApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 /**
  * Launches the game from either an android handy or a desktop pc.<br>
@@ -52,7 +53,7 @@ public class GameLauncher extends AndroidApplication {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		GameOptions options = new GameOptions(new AndroidFiles(getAssets())
-				.internal(GAME_OPTIONS_FILE));
+				.internal(GAME_OPTIONS_FILE).file());
 		options.fullscreen = true;
 		setTitle(options.title
 				+ (options.debug ? BRANDING_DEBUG : BRANDING_NORMAL));
@@ -69,8 +70,7 @@ public class GameLauncher extends AndroidApplication {
 	 * @param argv
 	 */
 	public static void main(String[] argv) {
-		GameOptions options = new GameOptions(new LwjglFiles()
-				.internal(GAME_OPTIONS_FILE));
+		GameOptions options = new GameOptions(new File(GAME_OPTIONS_FILE));
 		switch (options.backend) {
 		case LWJGL: {
 			LwjglApplicationConfiguration conf = new LwjglApplicationConfiguration();

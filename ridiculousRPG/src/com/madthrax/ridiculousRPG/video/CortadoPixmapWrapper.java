@@ -66,10 +66,16 @@ public class CortadoPixmapWrapper extends GraphicsPixmapWrapper implements
 	 * send a frame for more than one second.<br>
 	 * (This should only happen if the stream is broken or ended unexpected)
 	 * 
+	 * @param paused
+	 *            indicates if the player is paused
+	 * 
 	 * @return true if<br>
 	 *         <code>ready && lastFrameReceived + 1000 < System.currentTimeMillis()</code>
 	 */
-	public boolean streamStoped() {
+	public boolean streamStoped(boolean paused) {
+		if (paused) {
+			lastFrameReceived = System.currentTimeMillis();
+		}
 		return ready && lastFrameReceived + 1000 < System.currentTimeMillis();
 	}
 

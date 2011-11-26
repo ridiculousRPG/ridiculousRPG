@@ -231,7 +231,7 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 	}
 
 	public void draw(SpriteBatch spriteBatch, boolean debug) {
-		if (graphicsPixmap.streamStoped()) {
+		if (graphicsPixmap.streamStoped(player.paused)) {
 			stop();
 			return;
 		}

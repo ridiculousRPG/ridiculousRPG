@@ -16,13 +16,13 @@
 
 package com.madthrax.ridiculousRPG;
 
-import java.io.InputStreamReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.util.Properties;
 
-import com.badlogic.gdx.files.FileHandle;
 import com.madthrax.ridiculousRPG.service.GameService;
 
 /**
@@ -70,11 +70,11 @@ public class GameOptions {
 	 * @param iniFile
 	 */
 	@SuppressWarnings("unchecked")
-	public GameOptions(FileHandle iniFile) {
+	public GameOptions(File iniFile) {
 		Properties props = new Properties();
 		String propTmp;
 		try {
-			props.load(new InputStreamReader(iniFile.read(), "UTF-8"));
+			props.load(new FileReader(iniFile));
 
 			propTmp = props.getProperty("TITLE");
 			if (propTmp != null && propTmp.trim().length() > 0) {

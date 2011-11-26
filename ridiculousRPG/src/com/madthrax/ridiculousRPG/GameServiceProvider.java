@@ -190,8 +190,7 @@ public class GameServiceProvider implements Initializable {
 						.addProcessor((InputProcessor) service);
 			}
 			if (freezeTheWorld) {
-				for (int i = 0, len = computables.size(); i < len; i++) {
-					GameService s = (GameService) computables.get(i);
+				for (GameService s : services.values()) {
 					if (s != service && !s.essential())
 						s.freeze();
 				}
@@ -216,11 +215,10 @@ public class GameServiceProvider implements Initializable {
 		boolean succeed = hasAttention.compareAndSet(service, null);
 		if (succeed) {
 			attentionCount--;
-			freezeTheWorld = false;
 			clearTheScreen = false;
 			if (freezeTheWorld) {
-				for (int i = 0, len = computables.size(); i < len; i++) {
-					GameService s = (GameService) computables.get(i);
+				freezeTheWorld = false;
+				for (GameService s : services.values()) {
 					if (s != service && !s.essential())
 						s.unfreeze();
 				}
