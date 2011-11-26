@@ -23,7 +23,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 /**
- * This class tests if the script engine works poperly and may be used with this
+ * This class tests if the script engine works properly and may be used with this
  * game engine.<br>
  * You should see the following output:<br>
  * <code><pre> madthrax: 5
@@ -45,7 +45,7 @@ public class TestScriptEngine {
 	 */
 	public String scriptLanguage = "JavaScript";
 	/**
-	 * Maybe you have to change the test, if it doesn't mach the syntax of your
+	 * Maybe you have to change the test, if it doesn't match the syntax of your
 	 * script language
 	 */
 	public String testScript1 = "function push(eventSelf, eventPushed) "
@@ -53,17 +53,17 @@ public class TestScriptEngine {
 			+ "function touch(eventSelf, eventPushed) "
 			+ "{ eventPushed.x = -22; eventSelf.setName('madthrax') }";
 	/**
-	 * Maybe you have to change the test, if it doesn't mach the syntax of your
+	 * Maybe you have to change the test, if it doesn't match the syntax of your
 	 * script language
 	 */
 	public String testScript2 = "x=5; function f(y) {return x+y;}";
 	/**
-	 * Maybe you have to change the test, if it doesn't mach the syntax of your
+	 * Maybe you have to change the test, if it doesn't match the syntax of your
 	 * script language
 	 */
 	public String testScript3 = "function g(y) {return f(y)-x;}";
 	/**
-	 * Maybe you have to change the test, if it doesn't mach the syntax of your
+	 * Maybe you have to change the test, if it doesn't match the syntax of your
 	 * script language
 	 */
 	public String testScript4 = "function g(y) {return f(y)+x;}";
