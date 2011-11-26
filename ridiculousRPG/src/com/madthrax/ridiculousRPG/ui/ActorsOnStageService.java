@@ -47,8 +47,9 @@ public class ActorsOnStageService extends Stage implements GameService,
 	private static Vector2 tmpPoint = new Vector2(0f, 0f);
 
 	public ActorsOnStageService() {
+		//TODO: uncomment after libgdx bugfix :/
 		super(GameBase.$().getScreenWidth(), GameBase.$().getScreenHeight(),
-				true, GameBase.$().getSpriteBatch());
+				true/*, GameBase.$().getSpriteBatch()*/);
 	}
 
 	/**
@@ -121,8 +122,10 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
-		getCamera().update();
-		super.root.draw(spriteBatch, 1f);
+		//TODO: uncomment after libgdx bugfix :/
+		//getCamera().update();
+		//super.root.draw(spriteBatch, 1f);
+		super.draw();
 	}
 
 	public Matrix4 projectionMatrix(Camera camera) {

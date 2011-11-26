@@ -62,9 +62,10 @@ public class DisplayFPSService extends DisplayTextService implements Computable 
 
 	public void compute(float deltaTime, boolean actionKeyDown) {
 		if (oldFPS != Gdx.graphics.getFramesPerSecond()) {
+			oldFPS = Gdx.graphics.getFramesPerSecond();
 			if (fontCache != null)
 				removeMessage(fontCache);
-			fontCache = addMessage("FPS: " + Gdx.graphics.getFramesPerSecond(),
+			fontCache = addMessage("FPS: " + oldFPS,
 					colorBits, horiAlign, vertAlign, 5f);
 		}
 	}
