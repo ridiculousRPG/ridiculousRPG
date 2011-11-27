@@ -53,7 +53,7 @@ public class BoundedImage {
 			// TODO: change Gamebase.screenWidth, Gamebase.planeWidth,
 			// Gamebase.originalWidth
 			// to Rectangles for easier usage.
-			scrollReference = GameBase.$().getPlane();
+			//scrollReference = GameBase.$().getPlane();
 		}
 	}
 
