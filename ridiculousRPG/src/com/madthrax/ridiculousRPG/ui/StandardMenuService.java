@@ -18,6 +18,7 @@ package com.madthrax.ridiculousRPG.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Delay;
 import com.badlogic.gdx.scenes.scene2d.actions.FadeIn;
@@ -25,7 +26,6 @@ import com.badlogic.gdx.scenes.scene2d.actions.FadeOut;
 import com.badlogic.gdx.scenes.scene2d.actions.Remove;
 import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
 import com.badlogic.gdx.scenes.scene2d.ui.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -33,6 +33,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
+import com.madthrax.ridiculousRPG.animations.BoundedImage;
+import com.madthrax.ridiculousRPG.animations.ImageProjectionService;
 import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
@@ -234,7 +236,7 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 
 	private void createStartMenu() {
 		if (background != null) {
-			addActor(new Image(background));
+			ImageProjectionService.$background.getImages().add(new BoundedImage(background, new Rectangle(0,0,350,350)));
 		}
 		final Skin skin = getSkinNormal();
 		Window w = new Window("Start menu", skin);

@@ -21,8 +21,8 @@ import java.util.List;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
@@ -58,9 +58,9 @@ public final class DebugHelper {
 		f.setColor(1f, 1f, 0f, 1f);
 		TextBounds b = f.getMultiLineBounds(text);
 		f.drawMultiLine(spriteBatch, text,
-				(GameBase.$().getScreenWidth() - b.width) * .5f, GameBase.$()
-						.getScreenHeight()
-						- (GameBase.$().getScreenHeight() - b.height) * .5f);
+				(GameBase.$().getScreen().width - b.width) * .5f, GameBase.$()
+						.getScreen().height
+						- (GameBase.$().getScreen().height - b.height) * .5f);
 		spriteBatch.end();
 	}
 
@@ -68,19 +68,19 @@ public final class DebugHelper {
 		spriteBatch.setProjectionMatrix(camera.view);
 		spriteBatch.begin();
 		float x1 = Gdx.input.getX();
-		float y1 = GameBase.$().getScreenHeight() - Gdx.input.getY();
+		float y1 = GameBase.$().getScreen().height - Gdx.input.getY();
 		String text = "( " + (int) x1 + " / " + (int) y1 + " ) Screen\n";
 		float x2 = camera.position.x + x1 * camera.viewportWidth
-				/ GameBase.$().getScreenWidth();
+				/ GameBase.$().getScreen().width;
 		float y2 = camera.position.y + y1 * camera.viewportHeight
-				/ GameBase.$().getScreenHeight();
+				/ GameBase.$().getScreen().height;
 		text += "( " + (int) x2 + " / " + (int) y2 + " ) Camera";
 		f.setColor(1f, 0f, 1f, 1f);
 		TextBounds b = f.getMultiLineBounds(text);
 		f.drawMultiLine(spriteBatch, text, Math.max(Math.min(x1 + 10, GameBase
-				.$().getScreenWidth()
+				.$().getScreen().width
 				- b.width), 0f), Math.max(Math.min(y1, GameBase.$()
-				.getScreenHeight()), b.height));
+				.getScreen().height), b.height));
 		spriteBatch.end();
 	}
 

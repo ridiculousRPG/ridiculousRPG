@@ -19,9 +19,9 @@ package com.madthrax.ridiculousRPG.ui;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.GameBase;
@@ -148,18 +148,18 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 			float wrapWidth, boolean forceRemove) {
 		if (!isInitialized())
 			return null;
-		float x = padding, y = GameBase.$().getScreenHeight() - padding;
+		float x = padding, y = GameBase.$().getScreen().height - padding;
 		BitmapFontCache bfc = createMsg(text, color, 0f, 0f, wrapWidth);
 		TextBounds b = bfc.getBounds();
 
 		if (horizontalAlign == Alignment.CENTER)
-			x = (GameBase.$().getScreenWidth() - b.width) * .5f;
+			x = (GameBase.$().getScreen().width - b.width) * .5f;
 		else if (horizontalAlign == Alignment.RIGHT)
-			x = GameBase.$().getScreenWidth() - b.width - padding;
+			x = GameBase.$().getScreen().width - b.width - padding;
 
 		if (verticalAlign == Alignment.CENTER)
-			y = GameBase.$().getScreenHeight()
-					- (GameBase.$().getScreenHeight() - b.height) * .5f;
+			y = GameBase.$().getScreen().height
+					- (GameBase.$().getScreen().height - b.height) * .5f;
 		else if (verticalAlign == Alignment.BOTTOM)
 			y = b.height + padding;
 
@@ -168,8 +168,8 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 						.getCamera().view) {
 			if (x < 0f)
 				x = 0f;
-			if (y > GameBase.$().getScreenHeight())
-				y = GameBase.$().getScreenHeight();
+			if (y > GameBase.$().getScreen().height)
+				y = GameBase.$().getScreen().height;
 		}
 
 		bfc.setPosition(x, y);

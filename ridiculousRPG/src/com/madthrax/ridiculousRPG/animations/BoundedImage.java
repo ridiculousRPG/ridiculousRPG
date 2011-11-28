@@ -3,10 +3,11 @@ package com.madthrax.ridiculousRPG.animations;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 
-public class BoundedImage {
+public class BoundedImage implements Disposable {
 	private TextureRegionRef image;
 	private Rectangle bounds;
 	private Vector2 scale;
@@ -14,6 +15,16 @@ public class BoundedImage {
 	private float rotation;
 	private boolean scroll;
 	private Rectangle scrollReference;
+
+	/**
+	 * Scales the image to fill the screen
+	 * 
+	 * @param image
+	 *            the image to draw
+	 */
+	public BoundedImage(TextureRegionRef image) {
+		this(image, GameBase.$().getScreen());
+	}
 
 	/**
 	 * Scales the image to fit into the bounds
@@ -181,11 +192,37 @@ public class BoundedImage {
 		float w = bounds.width;
 		float h = bounds.height;
 		if (scroll) {
-			// spriteBatch.draw(image.getTexture(), x, y, origin.x, origin.x, w, h, scale.x, scale.y, rotation, srcX, srcY, srcWidth, srcHeight, false, false);
-			// TODO: scroll in bounds relative depending on scrollReference
+			int x2 = image.getRegionX();
+			int y2 = image.getRegionY();
+			float w2 = image.getRegionWidth() * scale.x;
+			float h2 = image.getRegionHeight() * scale.y;
+			if (w2 > w) {
+				if (scrollReference.x > 0) {
+					// 0 - 1
+					float relScroll = x
+							/ (scrollReference.width - GameBase.$().getCamera().viewportWidth);
+					// scrollX
+					x2 += (w2 - w) * relScroll;
+				}
+			}
+			if (h2 > h) {
+				if (scrollReference.y > 0) {
+					// 0 - 1
+					float relScroll = y
+							/ (scrollReference.height - GameBase.$()
+									.getCamera().viewportHeight);
+					// scrollY
+					y2 += (h2 - h) * relScroll;
+				}
+			}
+			spriteBatch.draw(image.getTexture(), x, y, image.getRegionWidth()
+					* .5f + origin.x, image.getRegionHeight() * .5f + origin.y,
+					w, h, 1f, 1f, rotation, x2, y2, (int) (w / scale.x),
+					(int) (h / scale.y), false, false);
 		} else {
-			spriteBatch.draw(image, x, y, w * .5f + origin.x, h * .5f
-					+ origin.y, w, h, scale.x, scale.y, rotation);
+			spriteBatch.draw(image, x, y, image.getRegionWidth() * .5f
+					+ origin.x, image.getRegionHeight() * .5f + origin.y, w, h,
+					scale.x, scale.y, rotation);
 		}
 	}
 
@@ -207,5 +244,16 @@ public class BoundedImage {
 
 	public void setRotation(float rotation) {
 		this.rotation = rotation;
+	}
+
+	/**
+	 * Disposes the underlying {@link TextureRegionRef}. You can either dispose
+	 * the {@link BoundedImage} <b>OR</b> the underlying
+	 * {@link TextureRegionRef}. <b>NEVER</b> call <b>both</b>, this would
+	 * confuse the reference counting!
+	 */
+	@Override
+	public void dispose() {
+		image.dispose();
 	}
 }

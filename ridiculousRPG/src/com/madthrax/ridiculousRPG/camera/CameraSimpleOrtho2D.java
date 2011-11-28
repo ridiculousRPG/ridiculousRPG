@@ -53,8 +53,8 @@ public class CameraSimpleOrtho2D extends Camera {
 
 	@Override
 	public void update() {
-		view.setToOrtho2D(0, 0, GameBase.$().getScreenWidth(), GameBase.$()
-				.getScreenHeight());
+		view.setToOrtho2D(0, 0, GameBase.$().getScreen().width, GameBase.$()
+				.getScreen().height);
 		projection.setToOrtho2D(position.x, position.y, viewportWidth,
 				viewportHeight);
 		//combined.set(projection);

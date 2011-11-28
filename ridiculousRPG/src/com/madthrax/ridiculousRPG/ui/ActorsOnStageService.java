@@ -48,7 +48,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	public ActorsOnStageService() {
 		//TODO: uncomment after libgdx bugfix :/
-		super(GameBase.$().getScreenWidth(), GameBase.$().getScreenHeight(),
+		super(GameBase.$().getScreen().width, GameBase.$().getScreen().height,
 				true/*, GameBase.$().getSpriteBatch()*/);
 	}
 
@@ -105,8 +105,8 @@ public class ActorsOnStageService extends Stage implements GameService,
 	public void init() {
 		if (isInitialized())
 			return;
-		setViewport(GameBase.$().getScreenWidth(), GameBase.$()
-				.getScreenHeight(), true);
+		setViewport(GameBase.$().getScreen().width, GameBase.$()
+				.getScreen().height, true);
 		skinNormal = new Skin(Gdx.files.internal("data/uiskin2.json"),
 				Gdx.files.internal("data/uiskin2.png"));
 		skinFocused = new Skin(Gdx.files.internal("data/uiskin2.json"),

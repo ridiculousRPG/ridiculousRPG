@@ -33,6 +33,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
+import com.madthrax.ridiculousRPG.animations.ImageProjectionService;
 import com.madthrax.ridiculousRPG.camera.CameraSimpleOrtho2D;
 import com.madthrax.ridiculousRPG.events.EventObject;
 import com.madthrax.ridiculousRPG.events.Speed;
@@ -59,7 +60,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 	private GameOptions options;
 
 	private Rectangle plane = new Rectangle();
-	private int screenWidth, screenHeight;
+	private Rectangle screen = new Rectangle();
 	private int originalWidth, originalHeight;
 
 	private boolean fullscreen, debugMode, resizeView;
@@ -82,9 +83,9 @@ public class GameBase extends GameServiceDefaultImpl implements
 		spriteBatch = new SpriteBatch();
 		camera = new CameraSimpleOrtho2D();
 		globalState = new ObjectState();
-		plane.width = camera.viewportWidth = screenWidth = originalWidth = Gdx.graphics
+		plane.width = camera.viewportWidth = screen.width = originalWidth = Gdx.graphics
 				.getWidth();
-		plane.height = camera.viewportHeight = screenHeight = originalHeight = Gdx.graphics
+		plane.height = camera.viewportHeight = screen.height = originalHeight = Gdx.graphics
 				.getHeight();
 		// instance != null indicates that GameBase is initialized
 		if (!isInitialized())
@@ -98,9 +99,12 @@ public class GameBase extends GameServiceDefaultImpl implements
 			serviceProvider.putService(scriptFactory);
 			serviceProvider.putService(DisplayTextService.$map);
 			serviceProvider.putService(DisplayTextService.$screen);
+			serviceProvider.putService(ImageProjectionService.$map);
+			serviceProvider.putService(ImageProjectionService.$screen);
 			for (Constructor<GameService> service : options.initGameService) {
 				serviceProvider.putService(service.newInstance());
 			}
+			serviceProvider.putService(ImageProjectionService.$background);
 		} catch (Exception e) {
 			e.printStackTrace();
 			StringWriter stackTrace = new StringWriter();
@@ -314,15 +318,15 @@ public class GameBase extends GameServiceDefaultImpl implements
 			float centerX = cam.viewportWidth * .5f;
 			float centerY = cam.viewportHeight * .5f;
 			cam.viewportWidth *= (float) Gdx.graphics.getWidth()
-					/ (float) screenWidth;
+					/ (float) screen.width;
 			cam.viewportHeight *= (float) Gdx.graphics.getHeight()
-					/ (float) screenHeight;
+					/ (float) screen.height;
 			centerX -= cam.viewportWidth * .5f;
 			centerY -= cam.viewportHeight * .5f;
 			cam.translate(centerX, centerY, 0);
 		}
-		screenWidth = Gdx.graphics.getWidth();
-		screenHeight = Gdx.graphics.getHeight();
+		screen.width = Gdx.graphics.getWidth();
+		screen.height = Gdx.graphics.getHeight();
 		cam.update();
 		serviceProvider.resize(width, height);
 	}
@@ -395,26 +399,14 @@ public class GameBase extends GameServiceDefaultImpl implements
 		this.resizeView = resizeView;
 	}
 
-	public int getScreenWidth() {
-		return screenWidth;
-	}
-
 	/**
-	 * Don't forget to update the camera after changing the screen dimension!
+	 * Returns the screen bounds. x and y should always be zero.<br>
+	 * Don't forget to update the camera if you change the bounds.
+	 * 
+	 * @return The windows (or full screens) dimension
 	 */
-	public void setScreenWidth(int screenWidth) {
-		this.screenWidth = screenWidth;
-	}
-
-	public int getScreenHeight() {
-		return screenHeight;
-	}
-
-	/**
-	 * Don't forget to update the camera after changing the screen dimension!
-	 */
-	public void setScreenHeight(int screenHeight) {
-		this.screenHeight = screenHeight;
+	public Rectangle getScreen() {
+		return screen;
 	}
 
 	/**

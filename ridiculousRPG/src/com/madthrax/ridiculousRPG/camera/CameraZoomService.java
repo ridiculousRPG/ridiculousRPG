@@ -74,8 +74,8 @@ public class CameraZoomService extends InputAdapter implements GameService {
 	 *            the new zoom value to set
 	 */
 	public void setZoom(float zoom) {
-		float screenW = GameBase.$().getScreenWidth();
-		float screenH = GameBase.$().getScreenHeight();
+		float screenW = GameBase.$().getScreen().width;
+		float screenH = GameBase.$().getScreen().height;
 		Camera cam = GameBase.$().getCamera();
 		cam.viewportWidth = screenW * zoom;
 		cam.viewportHeight = screenH * zoom;

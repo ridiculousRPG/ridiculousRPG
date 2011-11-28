@@ -74,10 +74,10 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 		this.projectToMap = projectToMap;
 		if (!projectToMap) {
 			GameBase gb = GameBase.$();
-			this.screenBounds.width /= gb.getScreenWidth();
-			this.screenBounds.height /= gb.getScreenHeight();
-			this.screenBounds.x /= gb.getScreenWidth();
-			this.screenBounds.y /= gb.getScreenHeight();
+			this.screenBounds.width /= gb.getScreen().width;
+			this.screenBounds.height /= gb.getScreen().height;
+			this.screenBounds.x /= gb.getScreen().width;
+			this.screenBounds.y /= gb.getScreen().height;
 		}
 		int width = (int) screenBounds.width;
 		int height = (int) screenBounds.height;
@@ -120,7 +120,7 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 		player.setParam("showSpeaker", "false");
 		player.setParam("showSubtitles", "false");
 		player.setParam("autoPlay", "false");
-		player.setParam("debug", "1");
+		player.setParam("debug", "3");
 		player.setParam("keepAspect", "false");
 	}
 
@@ -261,10 +261,10 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 		if (!projectToMap) {
 			// auto stretch on window resize
 			GameBase gb = GameBase.$();
-			x *= gb.getScreenWidth();
-			y *= gb.getScreenHeight();
-			w *= gb.getScreenWidth();
-			h *= gb.getScreenHeight();
+			x *= gb.getScreen().width;
+			y *= gb.getScreen().height;
+			w *= gb.getScreen().width;
+			h *= gb.getScreen().height;
 		}
 		spriteBatch.draw(tRef, x,y,w,h);
 	}

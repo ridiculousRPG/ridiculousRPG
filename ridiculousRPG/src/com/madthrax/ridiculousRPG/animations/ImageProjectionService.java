@@ -20,8 +20,8 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
-import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
+import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 
 /**
@@ -30,8 +30,49 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
  * @author Alexander Baumgartner
  */
 public abstract class ImageProjectionService extends GameServiceDefaultImpl
-		implements Computable, Drawable {
+		implements Drawable {
 
+	private Array<BoundedImage> images = new Array<BoundedImage>();
+
+	/**
+	 * A singleton instance for simply drawing background images onto the
+	 * screen.<br>
+	 * This service is {@link GameService#essential()}. The background will be
+	 * drawn even when an other service clears the screen. If you don't want
+	 * this behavior you may call {@link ImageProjectionService#freeze()} (and
+	 * {@link ImageProjectionService#unfreeze()}) to avoid drawing the
+	 * background (if one is assigned to this service)
+	 */
+	public static final ImageProjectionService $background = new ImageProjectionService() {
+		boolean frozen = false;
+
+		@Override
+		public Matrix4 projectionMatrix(Camera camera) {
+			return camera.view;
+		}
+
+		@Override
+		public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
+			if (!frozen) {
+				super.draw(spriteBatch, camera, debug);
+			}
+		}
+
+		@Override
+		public void freeze() {
+			frozen = true;
+		}
+
+		@Override
+		public void unfreeze() {
+			frozen = false;
+		}
+
+		@Override
+		public boolean essential() {
+			return true;
+		}
+	};
 	/**
 	 * A singleton instance for simply drawing images onto the screen.
 	 */
@@ -49,24 +90,24 @@ public abstract class ImageProjectionService extends GameServiceDefaultImpl
 		}
 	};
 
-	private Array<BoundedImage> images = new Array<BoundedImage>();
-
-	@Override
-	public void compute(float deltaTime, boolean actionKeyDown) {
-		// TODO Auto-generated method stub
-
+	/**
+	 * Don't forget to dispose all images you remove and don't need anymore!<br>
+	 * This service doesn't dispose any image.
+	 * 
+	 * @return
+	 */
+	public Array<BoundedImage> getImages() {
+		return images;
 	}
 
 	@Override
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
-		// TODO Auto-generated method stub
-
+		for (BoundedImage img : images) {
+			img.draw(spriteBatch);
+		}
 	}
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
-
 	}
-
 }
