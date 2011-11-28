@@ -17,6 +17,8 @@
 package com.madthrax.ridiculousRPG.camera;
 
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Matrix4;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.Drawable;
 
@@ -27,6 +29,7 @@ import com.madthrax.ridiculousRPG.service.Drawable;
  * are useful for drawing.
  * 
  * @see Drawable#projectionMatrix(Camera)
+ * @see SpriteBatch#setProjectionMatrix(Matrix4)
  * @author Alexander Baumgartner
  */
 public class CameraSimpleOrtho2D extends Camera {
@@ -54,11 +57,12 @@ public class CameraSimpleOrtho2D extends Camera {
 				.getScreenHeight());
 		projection.setToOrtho2D(position.x, position.y, viewportWidth,
 				viewportHeight);
+		//combined.set(projection);
 	}
 
 	private float adjustX() {
 		// keep view inside the plane
-		float planeWidth = GameBase.$().getPlaneWidth();
+		float planeWidth = GameBase.$().getPlane().width;
 		float x = this.x;
 		if (viewportWidth >= planeWidth) {
 			x = (planeWidth - viewportWidth) / 2;
@@ -67,11 +71,13 @@ public class CameraSimpleOrtho2D extends Camera {
 		} else if (x > planeWidth - viewportWidth) {
 			x = planeWidth - viewportWidth;
 		}
+		GameBase.$().getPlane().x = x;
 		return x;
 	}
 
 	private float adjustY() {
-		float planeHeight = GameBase.$().getPlaneHeight();
+		// keep view inside the plane
+		float planeHeight = GameBase.$().getPlane().height;
 		float y = this.y;
 		if (viewportHeight >= planeHeight) {
 			y = (planeHeight - viewportHeight) / 2;
@@ -80,6 +86,7 @@ public class CameraSimpleOrtho2D extends Camera {
 		} else if (y > planeHeight - viewportHeight) {
 			y = planeHeight - viewportHeight;
 		}
+		GameBase.$().getPlane().y = y;
 		return y;
 	}
 

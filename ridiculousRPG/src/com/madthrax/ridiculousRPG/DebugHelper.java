@@ -91,11 +91,10 @@ public final class DebugHelper {
 		float x1 = Math.max(0f, camera.position.x);
 		float y1 = Math.max(0f, camera.position.y);
 		float x2 = x1
-				+ Math.min(camera.viewportWidth, GameBase.$().getPlaneWidth());
+				+ Math.min(camera.viewportWidth, GameBase.$().getPlane().width);
 		float y2 = y1
-				+ Math
-						.min(camera.viewportHeight, GameBase.$()
-								.getPlaneHeight());
+				+ Math.min(camera.viewportHeight,
+						GameBase.$().getPlane().height);
 		if (f == null)
 			f = new BitmapFont();
 		f.setColor(0f, 1f, 1f, 1f);

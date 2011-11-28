@@ -23,6 +23,8 @@ import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 
 /**
+ * This service may be used to track an moving event with the camera
+ * 
  * @author Alexander Baumgartner
  */
 public class CameraTrackMovableService extends GameServiceDefaultImpl implements

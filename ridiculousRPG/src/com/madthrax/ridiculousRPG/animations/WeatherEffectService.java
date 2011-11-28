@@ -87,8 +87,8 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	 */
 	public void addLayerTimes(String path, int pixelOverlap, float effectSpeed,
 			float windSpeed, int times, float waitIntervall) {
-		int width = GameBase.$().getPlaneWidth();
-		int height = GameBase.$().getPlaneHeight();
+		int width = (int) GameBase.$().getPlane().width;
+		int height = (int) GameBase.$().getPlane().height;
 		if (times > 0) {
 			TextureRegionRef t = TextureRegionLoader.load(path);
 			renderLayers.add(new WeatherEffectLayer(t, pixelOverlap, width,
@@ -213,9 +213,10 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	 */
 	public WeatherEffectLayer addLayer(String path, int pixelOverlap,
 			float effectSpeed, float windSpeed, int layerIndex) {
+		int width = (int) GameBase.$().getPlane().width;
+		int height = (int) GameBase.$().getPlane().height;
 		WeatherEffectLayer newLayer = new WeatherEffectLayer(path,
-				pixelOverlap, GameBase.$().getPlaneWidth(), GameBase.$()
-						.getPlaneHeight(), effectSpeed, windSpeed);
+				pixelOverlap, width, height, effectSpeed, windSpeed);
 		if (renderLayers.size() > layerIndex) {
 			renderLayers.add(layerIndex, newLayer);
 		} else {

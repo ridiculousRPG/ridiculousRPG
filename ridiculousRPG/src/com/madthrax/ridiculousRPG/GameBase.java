@@ -32,9 +32,11 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
 import com.madthrax.ridiculousRPG.camera.CameraSimpleOrtho2D;
 import com.madthrax.ridiculousRPG.events.EventObject;
 import com.madthrax.ridiculousRPG.events.Speed;
+import com.madthrax.ridiculousRPG.map.MapRenderService;
 import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
@@ -56,8 +58,8 @@ public class GameBase extends GameServiceDefaultImpl implements
 	private ScriptEngine sharedEngine;
 	private GameOptions options;
 
+	private Rectangle plane = new Rectangle();
 	private int screenWidth, screenHeight;
-	private int planeWidth, planeHeight;
 	private int originalWidth, originalHeight;
 
 	private boolean fullscreen, debugMode, resizeView;
@@ -80,9 +82,9 @@ public class GameBase extends GameServiceDefaultImpl implements
 		spriteBatch = new SpriteBatch();
 		camera = new CameraSimpleOrtho2D();
 		globalState = new ObjectState();
-		camera.viewportWidth = planeWidth = screenWidth = originalWidth = Gdx.graphics
+		plane.width = camera.viewportWidth = screenWidth = originalWidth = Gdx.graphics
 				.getWidth();
-		camera.viewportHeight = planeHeight = screenHeight = originalHeight = Gdx.graphics
+		plane.height = camera.viewportHeight = screenHeight = originalHeight = Gdx.graphics
 				.getHeight();
 		// instance != null indicates that GameBase is initialized
 		if (!isInitialized())
@@ -415,26 +417,39 @@ public class GameBase extends GameServiceDefaultImpl implements
 		this.screenHeight = screenHeight;
 	}
 
-	public int getPlaneWidth() {
-		return planeWidth;
+	/**
+	 * Returns the planes position, which is actually shown by the camera and
+	 * the planes width and height .<br>
+	 * <br>
+	 * The planes position will automatically be updated by
+	 * {@link CameraSimpleOrtho2D}. So... use
+	 * {@link CameraSimpleOrtho2D#translate(float, float, float)} or
+	 * {@link CameraSimpleOrtho2D#lookAt(float, float, float)} instead setting
+	 * it directly!<br>
+	 * Furthermore you should use {@link #setPlaneWidth(int)} and
+	 * {@link #setPlaneHeight(int)} to change the planes dimension! The
+	 * dimension should be set to the displayed maps width and height. For
+	 * example the class {@link MapRenderService} will automatically change the
+	 * dimension when a new map is loaded.
+	 * 
+	 * @return The planes bounds actually displayed on the screen
+	 */
+	public Rectangle getPlane() {
+		return plane;
 	}
 
 	/**
 	 * Don't forget to update the camera after changing the drawing planes size!
 	 */
 	public void setPlaneWidth(int planeWidth) {
-		this.planeWidth = planeWidth;
-	}
-
-	public int getPlaneHeight() {
-		return planeHeight;
+		plane.width = planeWidth;
 	}
 
 	/**
 	 * Don't forget to update the camera after changing the drawing planes size!
 	 */
 	public void setPlaneHeight(int planeHeight) {
-		this.planeHeight = planeHeight;
+		plane.height = planeHeight;
 	}
 
 	/**
