@@ -120,7 +120,7 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 		player.setParam("showSpeaker", "false");
 		player.setParam("showSubtitles", "false");
 		player.setParam("autoPlay", "false");
-		player.setParam("debug", "3");
+		player.setParam("debug", "0");
 		player.setParam("keepAspect", "false");
 	}
 
