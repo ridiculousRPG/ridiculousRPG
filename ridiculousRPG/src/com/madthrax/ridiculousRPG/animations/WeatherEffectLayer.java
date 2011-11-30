@@ -19,7 +19,9 @@ package com.madthrax.ridiculousRPG.animations;
 import java.util.ArrayList;
 import java.util.Random;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
@@ -43,6 +45,8 @@ public class WeatherEffectLayer implements Disposable {
 	private int tileWidth, tileHeight;
 	private ArrayList<ArrayList<Rectangle>> tileLayer = new ArrayList<ArrayList<Rectangle>>();
 	private boolean play = true;
+	private boolean flip = false;
+	private boolean fill = false;
 	private boolean initializeEffect = true;
 	private boolean stopRequested = false;
 
@@ -50,6 +54,8 @@ public class WeatherEffectLayer implements Disposable {
 	private float newRowWindSpeed;
 	private int newRowTilesPerRow;
 	private int newRowTilesOffset;
+	private float fadeAlpha;
+	private float fadeBy;
 	private float tilePositionVarianz = .2f;
 	private float effectSpeedMin, effectSpeedMax;
 	private float windSpeedMin, windSpeedMax;
@@ -83,17 +89,23 @@ public class WeatherEffectLayer implements Disposable {
 	 * @param pixelHeight
 	 *            Height of the entire weather effect in pixel
 	 * @param effectSpeed
-	 *            The speed of the effect. Only positive values > 0 are useful!<br>
+	 *            The speed of the effect. A negative value flips the effect.<br>
 	 *            For most situations the value should be between 0.1 and 5
 	 * @param windSpeed
 	 *            The speed of the wind. Positive values generate wind from west
 	 *            to east and negative values from east to west.<br>
 	 *            For most situations the value should be between -2.5 and 2.5
+	 * @param fadeInTime
+	 *            The time used to fade in the effect. If <=0, fade in will be
+	 *            disabled.
+	 * @param fillLayer
+	 *            If the layer should be prefilled on startup.
 	 */
 	public WeatherEffectLayer(String path, int pixelOverlap, int pixelWidth,
-			int pixelHeight, float effectSpeed, float windSpeed) {
+			int pixelHeight, float effectSpeed, float windSpeed,
+			float fadeInTime, boolean fillLayer) {
 		this(TextureRegionLoader.load(path), pixelOverlap, pixelWidth,
-				pixelHeight, effectSpeed, windSpeed);
+				pixelHeight, effectSpeed, windSpeed, fadeInTime, fillLayer);
 	}
 
 	/**
@@ -107,11 +119,25 @@ public class WeatherEffectLayer implements Disposable {
 	 * @see public WeatherEffectLayer(String path, ...)
 	 */
 	protected WeatherEffectLayer(TextureRegionRef tRef, int pixelOverlap,
-			int pixelWidth, int pixelHeight, float effectSpeed, float windSpeed) {
-		if (effectSpeed < .01)
-			throw new IllegalArgumentException(
-					"The effectSpeed has to be greater or equal 0.01");
+			int pixelWidth, int pixelHeight, float effectSpeed,
+			float windSpeed, float fadeInTime, boolean fillLayer) {
+		if (effectSpeed < .01) {
+			if (effectSpeed < -.01) {
+				effectSpeed = -effectSpeed;
+				flip = true;
+			} else {
+				effectSpeed = 0;
+				windSpeed = 0;
+				fill = true;
+			}
+		}
 		this.tRef = tRef;
+		this.fill = fillLayer;
+		if (fadeInTime > 0) {
+			fadeBy = 1f / fadeInTime;
+		} else {
+			fadeAlpha = 1f;
+		}
 		tileWidth = tRef.getRegionWidth() - pixelOverlap;
 		tileHeight = tRef.getRegionHeight() - pixelOverlap;
 		width = pixelWidth;
@@ -133,14 +159,22 @@ public class WeatherEffectLayer implements Disposable {
 		internalNewRow = height * 1.3f - tileHeight;
 
 		// compute bounds for speed-varianz
-		float tmp = effectSpeed / (float) Math.sqrt(effectSpeed);
-		effectSpeedMin = Math.max(effectSpeed * .5f, effectSpeed - tmp * .7f);
-		effectSpeedMax = effectSpeed + tmp;
+		float tmp;
+		if (effectSpeed == 0) {
+			tmp = 0;
+			effectSpeedMin = -.01f;
+			effectSpeedMax = .01f;
+		} else {
+			tmp = effectSpeed / (float) Math.sqrt(effectSpeed);
+			effectSpeedMin = Math.max(effectSpeed * .5f, effectSpeed - tmp
+					* .7f);
+			effectSpeedMax = effectSpeed + tmp;
+		}
 		windSpeedMin = windSpeed - (effectSpeed - effectSpeedMin) * .5f - tmp;
 		windSpeedMax = windSpeed + (effectSpeed - effectSpeedMin) + tmp * .5f;
 
-		// generate first row of tiles
-		tileLayer.add(newRow(height));
+		// generate first row of tiles or fill entire layer with tiles
+		fillLayer();
 	}
 
 	/**
@@ -175,18 +209,22 @@ public class WeatherEffectLayer implements Disposable {
 
 		// refill the layer
 		tileLayer.clear();
-		if (initializeEffect) {
+		// (that's a best effort solution - not perfect)
+		fillLayer();
+	}
+
+	private void fillLayer() {
+		if (initializeEffect && !fill) {
 			// generate first row of tiles
 			tileLayer.add(newRow(height));
 		} else {
 			// generate all rows of tiles
-			// (that's a best effort solution - not perfect)
 			recycleRow = null;
 			for (int i = -tileHeight / 2; i < height; i += tileHeight) {
 				tileLayer.add(newRow(i));
 			}
-			initializeEffect = true;
 		}
+		initializeEffect = true;
 	}
 
 	/**
@@ -390,7 +428,8 @@ public class WeatherEffectLayer implements Disposable {
 				else if (clip.width > windSpeedMax)
 					clip.width = windSpeedMax;
 				clip.y -= (effectSpeed + (newRowWindSpeed < 0 ? -clip.width
-						: clip.width) * .4) * deltaSpeed;
+						: clip.width) * .4)
+						* deltaSpeed;
 				clip.x += clip.width * deltaSpeed;
 				yPos += clip.y;
 			}
@@ -415,6 +454,19 @@ public class WeatherEffectLayer implements Disposable {
 	 * Draw the effect-layer.
 	 */
 	public void draw(SpriteBatch batch, Camera cam) {
+		if (flip) {
+			batch.setTransformMatrix(batch.getTransformMatrix().translate(0,
+					cam.viewportHeight + 2 * cam.position.y, 0).rotate(1, 0, 0,
+					180));
+		}
+		if (fadeAlpha < 1f) {
+			Color c = batch.getColor();
+			c.a *= fadeAlpha;
+			batch.setColor(c);
+			fadeAlpha += fadeBy * Gdx.graphics.getDeltaTime();
+			if (fadeAlpha > 1f)
+				fadeAlpha = 1f;
+		}
 		// load frequently used variables into registers
 		Texture t = tRef.getTexture();
 		int tWidth = tRef.getRegionWidth();
@@ -458,6 +510,9 @@ public class WeatherEffectLayer implements Disposable {
 					batch.draw(t, x, y, srcX, srcY, srcWidth, srcHeight);
 				}
 			}
+		if (flip) {
+			batch.setTransformMatrix(batch.getTransformMatrix().idt());
+		}
 	}
 
 	public void dispose() {

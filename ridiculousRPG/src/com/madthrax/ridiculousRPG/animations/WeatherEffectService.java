@@ -22,8 +22,6 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.TextureRegionLoader;
-import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
@@ -90,15 +88,13 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 		int width = (int) GameBase.$().getPlane().width;
 		int height = (int) GameBase.$().getPlane().height;
 		if (times > 0) {
-			TextureRegionRef t = TextureRegionLoader.load(path);
-			renderLayers.add(new WeatherEffectLayer(t, pixelOverlap, width,
-					height, effectSpeed, windSpeed));
+			renderLayers.add(new WeatherEffectLayer(path, pixelOverlap, width,
+					height, effectSpeed, windSpeed,0, false));
 		}
 		ensureAddCapacity(times - 1);
 		for (int i = 1; i < times; i++, addPointer++) {
-			TextureRegionRef t = TextureRegionLoader.load(path);
-			addLayer[addPointer] = new WeatherEffectLayer(t, pixelOverlap,
-					width, height, effectSpeed, windSpeed);
+			addLayer[addPointer] = new WeatherEffectLayer(path, pixelOverlap,
+					width, height, effectSpeed, windSpeed,0, false);
 			addLayerWait[addPointer] = waitIntervall;
 		}
 	}
@@ -216,7 +212,7 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 		int width = (int) GameBase.$().getPlane().width;
 		int height = (int) GameBase.$().getPlane().height;
 		WeatherEffectLayer newLayer = new WeatherEffectLayer(path,
-				pixelOverlap, width, height, effectSpeed, windSpeed);
+				pixelOverlap, width, height, effectSpeed, windSpeed, 0, false);
 		if (renderLayers.size() > layerIndex) {
 			renderLayers.add(layerIndex, newLayer);
 		} else {
