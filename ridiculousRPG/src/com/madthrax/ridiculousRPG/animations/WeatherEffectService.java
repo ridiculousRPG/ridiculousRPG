@@ -25,6 +25,7 @@ import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
+import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
  * A container for weather effects. You can add effect-layers into this
@@ -34,7 +35,7 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
  * @author Alexander Baumgartner
  */
 public class WeatherEffectService extends GameServiceDefaultImpl implements
-		Computable, Drawable {
+		Computable, Drawable, ResizeListener {
 	private ArrayList<WeatherEffectLayer> renderLayers = new ArrayList<WeatherEffectLayer>();
 	private WeatherEffectLayer[] addLayer = new WeatherEffectLayer[10];
 	private WeatherEffectLayer[] removeLayer = new WeatherEffectLayer[10];
@@ -89,12 +90,12 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 		int height = (int) GameBase.$().getPlane().height;
 		if (times > 0) {
 			renderLayers.add(new WeatherEffectLayer(path, pixelOverlap, width,
-					height, effectSpeed, windSpeed,0, false));
+					height, effectSpeed, windSpeed, 0, false));
 		}
 		ensureAddCapacity(times - 1);
 		for (int i = 1; i < times; i++, addPointer++) {
 			addLayer[addPointer] = new WeatherEffectLayer(path, pixelOverlap,
-					width, height, effectSpeed, windSpeed,0, false);
+					width, height, effectSpeed, windSpeed, 0, false);
 			addLayerWait[addPointer] = waitIntervall;
 		}
 	}
@@ -340,7 +341,10 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 		renderLayers.clear();
 	}
 
-	public void resize(int pixelWidth, int pixelHeight) {
+	@Override
+	public void resize(int width, int height) {
+		int pixelWidth = (int) GameBase.$().getPlane().width;
+		int pixelHeight = (int) GameBase.$().getPlane().height;
 		for (int i = 0, len = renderLayers.size(); i < len; i++) {
 			renderLayers.get(i).resize(pixelWidth, pixelHeight);
 		}

@@ -22,11 +22,12 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.animations.WeatherEffectService;
+import com.madthrax.ridiculousRPG.GameServiceProvider;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
+import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
  * This service renders (tiled) maps with events on them.
@@ -39,8 +40,9 @@ public class MapRenderService extends GameServiceDefaultImpl implements
 	private MapWithEvents<?> map;
 
 	/**
-	 * Loads a new map to render and automatically resizes the weather effect if
-	 * there is one running.
+	 * Loads a new map to render and calls
+	 * {@link GameBase#resizePlane(int, int)} which triggers all
+	 * {@link ResizeListener}s to be called by the {@link GameServiceProvider}.
 	 * 
 	 * @param map
 	 * @return The old map or null. Don't forget to dispose the old map!
@@ -48,14 +50,7 @@ public class MapRenderService extends GameServiceDefaultImpl implements
 	public MapWithEvents<?> loadMap(MapWithEvents<?> map) {
 		MapWithEvents<?> old = this.map;
 		this.map = map;
-		GameBase.$().setPlaneWidth(map.getWidth());
-		GameBase.$().setPlaneHeight(map.getHeight());
-		WeatherEffectService wes = GameBase.$serviceProvider().getService(
-				WeatherEffectService.class);
-		if (wes != null) {
-			wes.resize(map.getWidth(), map.getHeight());
-		}
-		GameBase.$().getCamera().update();
+		GameBase.$().resizePlane(map.getWidth(), map.getHeight());
 		return old;
 	}
 
@@ -72,7 +67,8 @@ public class MapRenderService extends GameServiceDefaultImpl implements
 
 	@Override
 	public void freeze() {
-		if (map==null) return;
+		if (map == null)
+			return;
 		List<? extends Movable> events = map.getAllEvents();
 		for (int i = 0, len = events.size(); i < len; i++) {
 			events.get(i).getMoveHandler().freeze();

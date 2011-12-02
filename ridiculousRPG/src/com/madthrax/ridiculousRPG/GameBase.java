@@ -18,7 +18,6 @@ package com.madthrax.ridiculousRPG;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Constructor;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -33,7 +32,6 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
-import com.madthrax.ridiculousRPG.animations.ImageProjectionService;
 import com.madthrax.ridiculousRPG.camera.CameraSimpleOrtho2D;
 import com.madthrax.ridiculousRPG.events.EventObject;
 import com.madthrax.ridiculousRPG.events.Speed;
@@ -42,7 +40,6 @@ import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 import com.madthrax.ridiculousRPG.ui.DisplayErrorService;
-import com.madthrax.ridiculousRPG.ui.DisplayTextService;
 
 /**
  * @author Alexander Baumgartner
@@ -95,6 +92,10 @@ public class GameBase extends GameServiceDefaultImpl implements
 			scriptFactory = options.scriptFactory.newInstance();
 			serviceProvider = new GameServiceProvider();
 			serviceProvider.init();
+			//TODO: init scriptFactory and load services via script;)
+			// This way we become extremely flexible.
+
+			/*
 			// offer some essential services
 			serviceProvider.putService(scriptFactory);
 			serviceProvider.putService(DisplayTextService.$map);
@@ -105,6 +106,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 				serviceProvider.putService(service.newInstance());
 			}
 			serviceProvider.putService(ImageProjectionService.$background);
+			*/
 		} catch (Exception e) {
 			e.printStackTrace();
 			StringWriter stackTrace = new StringWriter();
@@ -134,15 +136,19 @@ public class GameBase extends GameServiceDefaultImpl implements
 	/**
 	 * The {@link GameServiceProvider} from the first GameBase instance which
 	 * has been initialized is used to obtain the requested service.<br>
-	 * A shortcut for calling {@link #$serviceProvider()}
-	 * {@link GameServiceProvider#getService(Class) .getService(Class)}
+	 * A shortcut for calling {@link #$serviceProvider()
+	 * (TYPE_CAST)$serviceProvider()}
+	 * {@link GameServiceProvider#getService(String) .getService(String)}
 	 * 
 	 * @return The requested service or null if no service matches.
+	 * @throws ClassCastException
+	 *             If the named service is not from type T
 	 */
-	public static <T extends GameService> T $service(Class<T> serviceType) {
+	@SuppressWarnings("unchecked")
+	public static <T extends GameService> T $service(String name) {
 		if (!isInitialized())
 			throw new IllegalStateException("GameBase not initialized!");
-		return $serviceProvider().getService(serviceType);
+		return (T) $serviceProvider().getService(name);
 	}
 
 	/**
@@ -312,21 +318,30 @@ public class GameBase extends GameServiceDefaultImpl implements
 		return actionKeyPressedOld && !actionKeyPressed;
 	}
 
+	/**
+	 * Resizes the planes dimensions (e.g. the dimension of the tiled map).
+	 */
+	public void resizePlane(int planeWidth, int planeHeight) {
+		plane.width = planeWidth;
+		plane.height = planeHeight;
+		camera.update();
+		serviceProvider.resize((int) screen.width, (int) screen.height);
+	}
+
+	@Override
 	public void resize(int width, int height) {
 		Camera cam = camera;
 		if (resizeView) {
 			float centerX = cam.viewportWidth * .5f;
 			float centerY = cam.viewportHeight * .5f;
-			cam.viewportWidth *= (float) Gdx.graphics.getWidth()
-					/ (float) screen.width;
-			cam.viewportHeight *= (float) Gdx.graphics.getHeight()
-					/ (float) screen.height;
+			cam.viewportWidth *= width / screen.width;
+			cam.viewportHeight *= height / screen.height;
 			centerX -= cam.viewportWidth * .5f;
 			centerY -= cam.viewportHeight * .5f;
 			cam.translate(centerX, centerY, 0);
 		}
-		screen.width = Gdx.graphics.getWidth();
-		screen.height = Gdx.graphics.getHeight();
+		screen.width = width;
+		screen.height = height;
 		cam.update();
 		serviceProvider.resize(width, height);
 	}
@@ -428,20 +443,6 @@ public class GameBase extends GameServiceDefaultImpl implements
 	 */
 	public Rectangle getPlane() {
 		return plane;
-	}
-
-	/**
-	 * Don't forget to update the camera after changing the drawing planes size!
-	 */
-	public void setPlaneWidth(int planeWidth) {
-		plane.width = planeWidth;
-	}
-
-	/**
-	 * Don't forget to update the camera after changing the drawing planes size!
-	 */
-	public void setPlaneHeight(int planeHeight) {
-		plane.height = planeHeight;
 	}
 
 	/**

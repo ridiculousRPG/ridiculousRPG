@@ -16,9 +16,6 @@
 
 package com.madthrax.ridiculousRPG.animations;
 
-import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.ui.DisplayErrorService;
-
 /**
  * This class simplifies the usage of some frequently used weather effects. It
  * defines default implementations for rain and snow.
@@ -47,10 +44,9 @@ public abstract class WeatherEffectUtil {
 	 * @param wind
 	 *            Use the enum inner class WeatherEffectUtil.Wind
 	 */
-	public static void generateSnow(Wind wind) {
-		engine().addLayerTimes(SNOW_TEXTURE_PATH, 50,
-				.2f + .1f * Math.abs(wind.val), .07f * wind.val, 3,
-				10 + 30 / wind.val);
+	public static void generateSnow(WeatherEffectService engine, Wind wind) {
+		engine.addLayerTimes(SNOW_TEXTURE_PATH, 50, .2f + .1f * Math
+				.abs(wind.val), .07f * wind.val, 3, 10 + 30 / wind.val);
 	}
 
 	/**
@@ -60,11 +56,10 @@ public abstract class WeatherEffectUtil {
 	 * @param wind
 	 *            Use the enum inner class WeatherEffectUtil.Wind
 	 */
-	public static void generateRain(Wind wind) {
-		engine().addLayerTimes(
-				wind.val > 0 ? RAIN_NW_TEXTURE_PATH : RAIN_NE_TEXTURE_PATH, 50,
-				1f + .67f * Math.abs(wind.val), .33f * wind.val, 2,
-				10 + 30 / wind.val);
+	public static void generateRain(WeatherEffectService engine, Wind wind) {
+		engine.addLayerTimes(wind.val > 0 ? RAIN_NW_TEXTURE_PATH
+				: RAIN_NE_TEXTURE_PATH, 50, 1f + .67f * Math.abs(wind.val),
+				.33f * wind.val, 2, 10 + 30 / wind.val);
 	}
 
 	/**
@@ -72,8 +67,8 @@ public abstract class WeatherEffectUtil {
 	 * 
 	 * @see WeatherEffectEngine.stopLayer(0)
 	 */
-	public static void decreaseEffect() {
-		engine().stopLayer(0);
+	public static void decreaseEffect(WeatherEffectService engine) {
+		engine.stopLayer(0);
 	}
 
 	/**
@@ -82,9 +77,9 @@ public abstract class WeatherEffectUtil {
 	 * @param wind
 	 *            Use the enum inner class WeatherEffectUtil.Wind
 	 */
-	public static void increaseSnow(Wind wind) {
-		engine().addLayer(SNOW_TEXTURE_PATH, 50,
-				.2f + .1f * Math.abs(wind.val), .07f * wind.val);
+	public static void increaseSnow(WeatherEffectService engine, Wind wind) {
+		engine.addLayer(SNOW_TEXTURE_PATH, 50, .2f + .1f * Math.abs(wind.val),
+				.07f * wind.val);
 	}
 
 	/**
@@ -93,10 +88,10 @@ public abstract class WeatherEffectUtil {
 	 * @param wind
 	 *            Use the enum inner class WeatherEffectUtil.Wind
 	 */
-	public static void increaseRain(Wind wind) {
-		engine().addLayer(
-				wind.val > 0 ? RAIN_NW_TEXTURE_PATH : RAIN_NE_TEXTURE_PATH, 50,
-				1f + .67f * Math.abs(wind.val), .33f * wind.val);
+	public static void increaseRain(WeatherEffectService engine, Wind wind) {
+		engine.addLayer(wind.val > 0 ? RAIN_NW_TEXTURE_PATH
+				: RAIN_NE_TEXTURE_PATH, 50, 1f + .67f * Math.abs(wind.val),
+				.33f * wind.val);
 	}
 
 	/**
@@ -106,24 +101,7 @@ public abstract class WeatherEffectUtil {
 	 * @see WeatherEffectEngine.stop()
 	 * @return
 	 */
-	public static void stop() {
-		engine().stop();
-	}
-
-	private static WeatherEffectService engine() {
-		WeatherEffectService wes = GameBase.$serviceProvider().getService(
-				WeatherEffectService.class);
-		if (wes == null) {
-			System.err
-					.println("WeatherEffectService is not running, please add it to the GameServiceProvider before using WeatherEffectUtil");
-			GameBase
-					.$serviceProvider()
-					.putService(
-							new DisplayErrorService(
-									"WeatherEffectService is not running, please add it to the\n"
-											+ "GameServiceProvider before using WeatherEffectUtil"));
-			wes = new WeatherEffectService(); // to avoid NullPointerException
-		}
-		return wes;
+	public static void stop(WeatherEffectService engine) {
+		engine.stop();
 	}
 }

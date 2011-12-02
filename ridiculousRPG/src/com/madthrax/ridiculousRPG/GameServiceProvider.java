@@ -43,7 +43,7 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
  * @author Alexander Baumgartner
  */
 public class GameServiceProvider implements Initializable {
-	private Map<Class<? extends GameService>, GameService> services = new HashMap<Class<? extends GameService>, GameService>();
+	private Map<String, GameService> services = new HashMap<String, GameService>();
 	private AtomicReference<GameService> hasAttention = new AtomicReference<GameService>();
 	private int attentionCount = 0;
 	private boolean freezeTheWorld = false;
@@ -60,29 +60,176 @@ public class GameServiceProvider implements Initializable {
 		Array<Initializable> initializables = this.initializables;
 		this.initializables = null;
 		Gdx.input.setInputProcessor(inputMultiplexer);
-		for (Initializable service : initializables)
-			service.init();
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T extends GameService> T getService(Class<T> serviceType) {
-		return (T) services.get(serviceType);
+		for (Initializable service : initializables) {
+			if (!service.isInitialized())
+				service.init();
+		}
 	}
 
 	/**
-	 * Adds a service to the ServiceProvider.<br>
-	 * This method is NOT threadsafe.<br>
-	 * If there exists already a service of the same type(=class), the old
+	 * Returns a {@link GameService} by its name.
+	 * 
+	 * @param name
+	 *            The name of services to return.
+	 * @return The {@link GameService} or null if no service with the specified
+	 *         name exists
+	 * @see #putService(String, GameService)
+	 */
+	public GameService getService(String name) {
+		return services.get(name);
+	}
+
+	/**
+	 * A convenience method which checks if the {@link GameService} is from the
+	 * specified type. If not it will return null.
+	 * 
+	 * @param clazz
+	 *            The type of services to return.
+	 * @param name
+	 *            The name of services to return.
+	 * @return The service from type clazz with the specified name or null if
+	 *         there is no service with the specified name or the service is not
+	 *         from the type
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends GameService> T getService(Class<T> clazz, String name) {
+		GameService s = services.get(name);
+		return (T) (clazz.isInstance(s) ? s : null);
+	}
+
+	/**
+	 * Returns all services which are from the specified type or extend from the
+	 * specified type.
+	 * 
+	 * @param clazz
+	 *            The type of services to return.
+	 * @return An {@link Array} with all services from type clazz.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends GameService> Array<T> getServices(Class<T> clazz) {
+		Array<T> ret = new Array<T>();
+		for (GameService s : services.values()) {
+			if (clazz.isInstance(s))
+				ret.add((T) s);
+		}
+		return ret;
+	}
+
+	/**
+	 * Adds or replaces a service. The service will be inserted before the
+	 * referenceService.<br>
+	 * If there exists already a service with the specified name, the old
 	 * service will be removed and returned.<br>
-	 * Note: You have to dispose the old service to avoid memory leaks!<br>
+	 * <br>
+	 * If referenceService doesn't exist, the behavior will be exactly the same
+	 * as {@link #putService(String, GameService)}. <br>
+	 * <br>
+	 * This method is NOT thread safe.<br>
+	 * Note: You have to dispose the old service to avoid memory leaks (if you
+	 * don't need it anymore)!<br>
 	 * If you need to put services from different threads concurrently, you have
 	 * to synchronize your code!
 	 * 
+	 * @param name
+	 *            The name under which this service will be provided.
 	 * @param service
-	 * @return the old service or null
+	 *            The service to append to the {@link GameServiceProvider}.
+	 * @return the old {@link GameService} which was stored under this name or
+	 *         null if no service with this name existed.
+	 * @see #putService(String, GameService)
+	 * @see #putServiceAfter(String, GameService, String)
 	 */
-	public GameService putService(GameService service) {
-		GameService old = services.put(service.getClass(), service);
+	public GameService putServiceBefore(String name, GameService service,
+			String referenceService) {
+		return putServiceRelativeTo(name, service, referenceService, 0);
+	}
+
+	/**
+	 * Adds or replaces a service. The service will be inserted after the
+	 * referenceService.<br>
+	 * If there exists already a service with the specified name, the old
+	 * service will be removed and returned.<br>
+	 * <br>
+	 * If referenceService doesn't exist, the behavior will be exactly the same
+	 * as {@link #putService(String, GameService)}. <br>
+	 * <br>
+	 * This method is NOT thread safe.<br>
+	 * Note: You have to dispose the old service to avoid memory leaks (if you
+	 * don't need it anymore)!<br>
+	 * If you need to put services from different threads concurrently, you have
+	 * to synchronize your code!
+	 * 
+	 * @param name
+	 *            The name under which this service will be provided.
+	 * @param service
+	 *            The service to append to the {@link GameServiceProvider}.
+	 * @return the old {@link GameService} which was stored under this name or
+	 *         null if no service with this name existed.
+	 * @see #putService(String, GameService)
+	 * @see #putServiceBefore(String, GameService, String)
+	 */
+	public GameService putServiceAfter(String name, GameService service,
+			String referenceService) {
+		return putServiceRelativeTo(name, service, referenceService, 1);
+	}
+
+	private GameService putServiceRelativeTo(String name, GameService service,
+			String referenceService, int offset) {
+		GameService old = putService(name, service);
+		GameService ref = getService(referenceService);
+		// change position
+		if (ref != null && ref != service) {
+			if (ref instanceof Drawable && service instanceof Drawable) {
+				shiftPos(drawables, (Drawable) service, (Drawable) ref, offset);
+			}
+			if (ref instanceof Computable && service instanceof Computable) {
+				shiftPos(computables, (Computable) service, (Computable) ref,
+						offset);
+			}
+			if (ref instanceof ResizeListener
+					&& service instanceof ResizeListener) {
+				shiftPos(resizeListener, (ResizeListener) service,
+						(ResizeListener) ref, offset);
+			}
+			if (ref instanceof InputProcessor
+					&& service instanceof InputProcessor) {
+				shiftPos(inputMultiplexer.getProcessors(),
+						(InputProcessor) service, (InputProcessor) ref, offset);
+			}
+		}
+		return old;
+	}
+
+	private <T> void shiftPos(Array<T> array, T service, T ref, int offset) {
+		array.removeValue(service, true);
+		array.insert(array.indexOf(ref, true) + offset, service);
+	}
+
+	/**
+	 * Adds or replaces a service. The service will be added at the end if it
+	 * doesn't exist already. This means that the service will be computed last
+	 * and drawn first (All other services will overdraw this service).<br>
+	 * If there exists already a service with the specified name, it will be
+	 * replaced (the position will be the one of the old service). The old
+	 * service will be removed and returned.<br>
+	 * <br>
+	 * This method is NOT thread safe.<br>
+	 * Note: You have to dispose the old service to avoid memory leaks (if you
+	 * don't need it anymore)!<br>
+	 * If you need to put services from different threads concurrently, you have
+	 * to synchronize your code!
+	 * 
+	 * @param name
+	 *            The name under which this service will be provided.
+	 * @param service
+	 *            The service to append to the {@link GameServiceProvider}.
+	 * @return the old {@link GameService} which was stored under this name or
+	 *         null if no service with this name existed.
+	 * @see #putServiceAfter(String, GameService, String)
+	 * @see #putServiceBefore(String, GameService, String)
+	 */
+	public GameService putService(String name, GameService service) {
+		GameService old = services.put(name, service);
 		if (service instanceof Initializable
 				&& !((Initializable) service).isInitialized()) {
 			if (isInitialized()) {
@@ -92,40 +239,62 @@ public class GameServiceProvider implements Initializable {
 				initializables.add((Initializable) service);
 			}
 		}
-		if (service instanceof Drawable) {
-			if (old != null)
-				drawables.removeValue((Drawable) old, true);
+		if (old instanceof Drawable) {
+			int index = drawables.indexOf((Drawable) old, true);
+			if (service instanceof Drawable)
+				drawables.set(index, (Drawable) service);
+			else
+				drawables.removeIndex(index);
+		} else if (service instanceof Drawable) {
 			drawables.add((Drawable) service);
 		}
-		if (service instanceof Computable) {
-			if (old != null)
-				computables.removeValue((Computable) old, true);
+		if (old instanceof Computable) {
+			int index = computables.indexOf((Computable) old, true);
+			if (service instanceof Computable)
+				computables.set(index, (Computable) service);
+			else
+				computables.removeIndex(index);
+		} else if (service instanceof Computable) {
 			computables.add((Computable) service);
 		}
-		if (service instanceof ResizeListener) {
-			if (old != null)
-				resizeListener.removeValue((ResizeListener) old, true);
+		if (old instanceof ResizeListener) {
+			int index = resizeListener.indexOf((ResizeListener) old, true);
+			if (service instanceof ResizeListener)
+				resizeListener.set(index, (ResizeListener) service);
+			else
+				resizeListener.removeIndex(index);
+		} else if (service instanceof ResizeListener) {
 			resizeListener.add((ResizeListener) service);
 		}
-		if (service instanceof InputProcessor) {
-			if (old != null)
-				inputMultiplexer.removeProcessor((InputProcessor) old);
-			inputMultiplexer.addProcessor((InputProcessor) service);
+		if (old instanceof InputProcessor) {
+			int index = inputMultiplexer.getProcessors().indexOf(
+					(InputProcessor) old, true);
+			if (service instanceof InputProcessor)
+				inputMultiplexer.getProcessors().set(index,
+						(InputProcessor) service);
+			else
+				inputMultiplexer.getProcessors().removeIndex(index);
+		} else if (service instanceof InputProcessor) {
+			inputMultiplexer.getProcessors().add((InputProcessor) service);
 		}
 		return old;
 	}
 
 	/**
-	 * This method is NOT threadsafe.<br>
+	 * This method is NOT thread safe.<br>
 	 * Note: You have to dispose the old service to avoid memory leaks!<br>
 	 * If you need to put services from different threads concurrently, you have
 	 * to synchronize your code!
 	 * 
-	 * @param service
-	 * @return the old service or null
+	 * @param name
+	 *            The name under which the service is provided.
+	 * @return The removed service or null if no service with the specified name
+	 *         exists.
 	 */
-	public GameService removeService(GameService service) {
-		GameService old = services.remove(service.getClass());
+	public GameService removeService(String name) {
+		GameService old = services.remove(name);
+		if (old == null)
+			return null;
 		if (old instanceof InputProcessor)
 			inputMultiplexer.removeProcessor((InputProcessor) old);
 		if (old instanceof Computable)
@@ -139,8 +308,9 @@ public class GameServiceProvider implements Initializable {
 
 	/**
 	 * A service is able to request the users attention for itself. All other
-	 * {@link InputProcessor} are dead until the service releases its attention.<br>
-	 * This method IS threadsafe.<br>
+	 * {@link InputProcessor} are dead (except the essential ones) until the
+	 * service releases its attention.<br>
+	 * This method IS thread safe.<br>
 	 * If {@link #freezeTheWorld} is true and {@link #clearTheScreen} is false,
 	 * all other GameServices will draw their frozen pictures - in a lot of
 	 * cases this is probably what you want.<br>
@@ -176,15 +346,16 @@ public class GameServiceProvider implements Initializable {
 			this.freezeTheWorld = freezeTheWorld;
 			this.clearTheScreen = clearTheScreen;
 			attentionInputMultiplexer.clear();
+			boolean found = false;
 			for (InputProcessor in : inputMultiplexer.getProcessors()) {
 				if (in == service) {
 					attentionInputMultiplexer.addProcessor(in);
-					service = null;
+					found = true;
 				} else if (((GameService) in).essential()) {
 					attentionInputMultiplexer.addProcessor(in);
 				}
 			}
-			if (service instanceof InputProcessor) {
+			if (!found) {
 				attentionInputMultiplexer
 						.addProcessor((InputProcessor) service);
 			}
@@ -201,7 +372,7 @@ public class GameServiceProvider implements Initializable {
 
 	/**
 	 * Release the attention. Checks if the service has attention<br>
-	 * This method IS threadsafe.
+	 * This method IS thread safe.
 	 * 
 	 * @param service
 	 * @return true on succeed, otherwise false
@@ -328,6 +499,7 @@ public class GameServiceProvider implements Initializable {
 					computables, drawables, hasAttention.get());
 		}
 	}
+
 	void resize(int width, int height) {
 		for (int i = resizeListener.size - 1; i > -1; i--) {
 			resizeListener.get(i).resize(width, height);
@@ -352,4 +524,5 @@ public class GameServiceProvider implements Initializable {
 	public boolean isInitialized() {
 		return initializables == null;
 	}
+
 }
