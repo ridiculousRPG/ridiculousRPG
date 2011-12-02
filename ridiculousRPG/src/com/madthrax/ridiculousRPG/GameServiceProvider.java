@@ -16,9 +16,7 @@
 
 package com.madthrax.ridiculousRPG;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -29,6 +27,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
@@ -50,15 +49,15 @@ public class GameServiceProvider implements Initializable {
 	private boolean freezeTheWorld = false;
 	private boolean clearTheScreen = false;
 
-	private List<Initializable> initializables = new ArrayList<Initializable>();
+	private Array<Initializable> initializables = new Array<Initializable>();
 	private InputMultiplexer inputMultiplexer = new InputMultiplexer();
 	private InputMultiplexer attentionInputMultiplexer = new InputMultiplexer();
-	private List<Computable> computables = new ArrayList<Computable>();
-	private List<Drawable> drawables = new ArrayList<Drawable>();
-	private List<ResizeListener> resizeListener = new ArrayList<ResizeListener>();
+	private Array<Computable> computables = new Array<Computable>();
+	private Array<Drawable> drawables = new Array<Drawable>();
+	private Array<ResizeListener> resizeListener = new Array<ResizeListener>();
 
 	public void init() {
-		List<Initializable> initializables = this.initializables;
+		Array<Initializable> initializables = this.initializables;
 		this.initializables = null;
 		Gdx.input.setInputProcessor(inputMultiplexer);
 		for (Initializable service : initializables)
@@ -95,17 +94,17 @@ public class GameServiceProvider implements Initializable {
 		}
 		if (service instanceof Drawable) {
 			if (old != null)
-				drawables.remove(old);
+				drawables.removeValue((Drawable) old, true);
 			drawables.add((Drawable) service);
 		}
 		if (service instanceof Computable) {
 			if (old != null)
-				computables.remove(old);
+				computables.removeValue((Computable) old, true);
 			computables.add((Computable) service);
 		}
 		if (service instanceof ResizeListener) {
 			if (old != null)
-				resizeListener.remove(old);
+				resizeListener.removeValue((ResizeListener) old, true);
 			resizeListener.add((ResizeListener) service);
 		}
 		if (service instanceof InputProcessor) {
@@ -130,11 +129,11 @@ public class GameServiceProvider implements Initializable {
 		if (old instanceof InputProcessor)
 			inputMultiplexer.removeProcessor((InputProcessor) old);
 		if (old instanceof Computable)
-			computables.remove(old);
+			computables.removeValue((Computable) old, true);
 		if (old instanceof Drawable)
-			drawables.remove(old);
+			drawables.removeValue((Drawable) old, true);
 		if (old instanceof ResizeListener)
-			resizeListener.remove(old);
+			resizeListener.removeValue((ResizeListener) old, true);
 		return old;
 	}
 
@@ -261,7 +260,7 @@ public class GameServiceProvider implements Initializable {
 		boolean actionKeyPressed = GameBase.$().isActionKeyDown();
 		GameService holdsAttention = hasAttention.get();
 		if (freezeTheWorld) {
-			for (int i = 0, len = computables.size(); i < len; i++) {
+			for (int i = 0, len = computables.size; i < len; i++) {
 				Computable c = computables.get(i);
 				if (c == holdsAttention) {
 					holdsAttention = null;
@@ -271,7 +270,7 @@ public class GameServiceProvider implements Initializable {
 				}
 			}
 		} else {
-			for (int i = 0, len = computables.size(); i < len; i++) {
+			for (int i = 0, len = computables.size; i < len; i++) {
 				Computable c = computables.get(i);
 				if (c == holdsAttention) {
 					holdsAttention = null;
@@ -293,7 +292,7 @@ public class GameServiceProvider implements Initializable {
 		GameService holdsAttention = hasAttention.get();
 		Matrix4 proj = null;
 		if (clearTheScreen) {
-			for (int i = drawables.size() - 1; i > -1; i--) {
+			for (int i = drawables.size - 1; i > -1; i--) {
 				Drawable d = drawables.get(i);
 				if (d == holdsAttention) {
 					holdsAttention = null;
@@ -305,7 +304,7 @@ public class GameServiceProvider implements Initializable {
 				}
 			}
 		} else {
-			for (int i = drawables.size() - 1; i > -1; i--) {
+			for (int i = drawables.size - 1; i > -1; i--) {
 				Drawable d = drawables.get(i);
 				if (d == holdsAttention) {
 					holdsAttention = null;
@@ -330,7 +329,7 @@ public class GameServiceProvider implements Initializable {
 		}
 	}
 	void resize(int width, int height) {
-		for (int i = resizeListener.size() - 1; i > -1; i--) {
+		for (int i = resizeListener.size - 1; i > -1; i--) {
 			resizeListener.get(i).resize(width, height);
 		}
 	}

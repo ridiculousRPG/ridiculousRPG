@@ -16,13 +16,12 @@
 
 package com.madthrax.ridiculousRPG;
 
-import java.util.List;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
+import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
@@ -39,8 +38,8 @@ public final class DebugHelper {
 	private static BitmapFont f = null;
 
 	public static void drawServiceExecutionOrder(SpriteBatch spriteBatch,
-			Camera camera, List<Computable> computables,
-			List<Drawable> drawables, GameService holdsAttention) {
+			Camera camera, Array<Computable> computables,
+			Array<Drawable> drawables, GameService holdsAttention) {
 		spriteBatch.setProjectionMatrix(camera.view);
 		spriteBatch.begin();
 		String text = "Execution order of Computable services";
