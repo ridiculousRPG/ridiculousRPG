@@ -35,12 +35,12 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
  * @author Alexander Baumgartner
  */
 public class GameLauncher extends AndroidApplication {
-	protected static final String BRANDING_NORMAL = " (powered by ridiculousRPG)";
-	protected static final String BRANDING_DEBUG = " (powered by ridiculousRPG - DEBUGMODE)";
+	public String brandingDefault = " (powered by ridiculousRPG)";
+	public String brandingDebug = " (powered by ridiculousRPG - DEBUGMODE)";
 	/**
 	 * Dafault = "data/game.ini"
 	 */
-	protected static final String GAME_OPTIONS_FILE = "data/game.ini";
+	public String gameOptionsFile = "data/game.ini";
 
 	/**
 	 * AUTOMATICALLY CALLED BY ANDROID<br>
@@ -52,12 +52,47 @@ public class GameLauncher extends AndroidApplication {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		GameOptions options = new GameOptions(new AndroidFiles(getAssets())
-				.internal(GAME_OPTIONS_FILE).file());
+		GameOptions options = new GameOptionsDefaultConfigReader(
+				new AndroidFiles(getAssets()).internal(gameOptionsFile)
+						.file()).options;
 		options.fullscreen = true;
 		setTitle(options.title
-				+ (options.debug ? BRANDING_DEBUG : BRANDING_NORMAL));
+				+ (options.debug ? brandingDebug : brandingDefault));
 		initialize(new GameBase(options), options.useGL20);
+	}
+
+	/**
+	 * Equivalent to {@link #onCreate(Bundle)} for the desktop.
+	 */
+	public void onCreateDesktop() {
+		GameOptions options = new GameOptionsDefaultConfigReader(new File(
+				gameOptionsFile)).options;
+		switch (options.backend) {
+		case LWJGL: {
+			LwjglApplicationConfiguration conf = new LwjglApplicationConfiguration();
+			conf.title = options.title
+					+ (options.debug ? brandingDebug : brandingDefault);
+			conf.width = options.width;
+			conf.height = options.height;
+			conf.useGL20 = options.useGL20;
+			conf.fullscreen = options.fullscreen;
+			conf.vSyncEnabled = options.vSyncEnabled;
+			new LwjglApplication(new GameBase(options), conf);
+		}
+			break;
+		case JOGL: {
+			JoglApplicationConfiguration conf = new JoglApplicationConfiguration();
+			conf.title = options.title
+					+ (options.debug ? brandingDebug : brandingDefault);
+			conf.width = options.width;
+			conf.height = options.height;
+			conf.useGL20 = options.useGL20;
+			conf.fullscreen = options.fullscreen;
+			conf.vSyncEnabled = options.vSyncEnabled;
+			new JoglApplication(new GameBase(options), conf);
+		}
+			break;
+		}
 	}
 
 	/**
@@ -70,32 +105,6 @@ public class GameLauncher extends AndroidApplication {
 	 * @param argv
 	 */
 	public static void main(String[] argv) {
-		GameOptions options = new GameOptions(new File(GAME_OPTIONS_FILE));
-		switch (options.backend) {
-		case LWJGL: {
-			LwjglApplicationConfiguration conf = new LwjglApplicationConfiguration();
-			conf.title = options.title
-					+ (options.debug ? BRANDING_DEBUG : BRANDING_NORMAL);
-			conf.width = options.width;
-			conf.height = options.height;
-			conf.useGL20 = options.useGL20;
-			conf.fullscreen = options.fullscreen;
-			conf.vSyncEnabled = options.vSyncEnabled;
-			new LwjglApplication(new GameBase(options), conf);
-		}
-			break;
-		case JOGL: {
-			JoglApplicationConfiguration conf = new JoglApplicationConfiguration();
-			conf.title = options.title
-					+ (options.debug ? BRANDING_DEBUG : BRANDING_NORMAL);
-			conf.width = options.width;
-			conf.height = options.height;
-			conf.useGL20 = options.useGL20;
-			conf.fullscreen = options.fullscreen;
-			conf.vSyncEnabled = options.vSyncEnabled;
-			new JoglApplication(new GameBase(options), conf);
-		}
-			break;
-		}
+		new GameLauncher().onCreateDesktop();
 	}
 }

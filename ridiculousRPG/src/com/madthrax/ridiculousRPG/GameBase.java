@@ -89,7 +89,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 			instance = this;
 
 		try {
-			scriptFactory = options.scriptFactory.newInstance();
+			scriptFactory = options.scriptFactory;
 			serviceProvider = new GameServiceProvider();
 			// TODO: think about initializables - do we need this?
 			// All the scripts are executed after the gamebase has already been
@@ -97,7 +97,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 			serviceProvider.init();
 			// TODO: init scriptFactory and load services via script;)
 			// This way we become extremely flexible.
-			serviceProvider.putService("scriptFactory", scriptFactory);
+			serviceProvider.putService(options.scriptFactoryName, scriptFactory);
 
 			/*
 			 * // offer some essential services
