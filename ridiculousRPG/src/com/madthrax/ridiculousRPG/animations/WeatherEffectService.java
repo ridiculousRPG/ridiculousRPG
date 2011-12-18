@@ -36,9 +36,9 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
  */
 public class WeatherEffectService extends GameServiceDefaultImpl implements
 		Computable, Drawable, ResizeListener {
-	private ArrayList<WeatherEffectLayer> renderLayers = new ArrayList<WeatherEffectLayer>();
-	private WeatherEffectLayer[] addLayer = new WeatherEffectLayer[10];
-	private WeatherEffectLayer[] removeLayer = new WeatherEffectLayer[10];
+	private ArrayList<EffectLayer> renderLayers = new ArrayList<EffectLayer>();
+	private EffectLayer[] addLayer = new EffectLayer[10];
+	private EffectLayer[] removeLayer = new EffectLayer[10];
 	private float[] addLayerWait = new float[10];
 	private float[] removeLayerWait = new float[10];
 	int removePointer = 0;
@@ -84,7 +84,7 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	 *            Maybe 10 seconds could be a good choice.
 	 * @see addLayer(path, effectSpeed, windSpeed, layerIndex)
 	 */
-	public void addLayerTimes(String path, int pixelOverlap, float effectSpeed,
+	public void addWeatherLayerTimes(String path, int pixelOverlap, float effectSpeed,
 			float windSpeed, int times, float waitIntervall) {
 		int width = (int) GameBase.$().getPlane().width;
 		int height = (int) GameBase.$().getPlane().height;
@@ -143,9 +143,9 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	 *            (Try 0.3 (-0.3) for snow and 1.0 for rain)
 	 * @see addLayer(path, effectSpeed, windSpeed, layerIndex)
 	 */
-	public WeatherEffectLayer addLayer(String path, float effectSpeed,
+	public WeatherEffectLayer addWeatherLayer(String path, float effectSpeed,
 			float windSpeed) {
-		return addLayer(path, 0, effectSpeed, windSpeed, Integer.MAX_VALUE);
+		return addWeatherLayer(path, 0, effectSpeed, windSpeed, Integer.MAX_VALUE);
 	}
 
 	/**
@@ -172,9 +172,9 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	 *            (Try 0.3 (-0.3) for snow and 1.0 for rain)
 	 * @see addLayer(path, effectSpeed, windSpeed, layerIndex)
 	 */
-	public WeatherEffectLayer addLayer(String path, int pixelOverlap,
+	public WeatherEffectLayer addWeatherLayer(String path, int pixelOverlap,
 			float effectSpeed, float windSpeed) {
-		return addLayer(path, pixelOverlap, effectSpeed, windSpeed,
+		return addWeatherLayer(path, pixelOverlap, effectSpeed, windSpeed,
 				Integer.MAX_VALUE);
 	}
 
@@ -208,7 +208,7 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	 *            end of the list.
 	 * @see addLayer(path, effectSpeed, windSpeed)
 	 */
-	public WeatherEffectLayer addLayer(String path, int pixelOverlap,
+	private WeatherEffectLayer addWeatherLayer(String path, int pixelOverlap,
 			float effectSpeed, float windSpeed, int layerIndex) {
 		int width = (int) GameBase.$().getPlane().width;
 		int height = (int) GameBase.$().getPlane().height;
@@ -265,7 +265,7 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 			renderLayers.get(len - 1).stop();
 		ensureRemoveCapacity(len - 1);
 		for (int i = 1; i < len; i++) {
-			WeatherEffectLayer layer = renderLayers.get(i);
+			EffectLayer layer = renderLayers.get(i);
 			if (layer.isStopRequested())
 				continue;
 			layer.setStopRequested(true);
@@ -278,7 +278,8 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	/**
 	 * Computes the weather effect animation.
 	 */
-	public void compute(float deltaTime, boolean pushButtonPressed) {
+	@Override
+	public void compute(float deltaTime, boolean actionKeyDown) {
 		if (addPointer > 0) {
 			addLayerWait[addPointer - 1] -= deltaTime;
 			if (addLayerWait[addPointer - 1] <= 0) {
@@ -296,11 +297,11 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 			}
 		}
 		for (int i = 0, len = renderLayers.size(); i < len;) {
-			WeatherEffectLayer layer = renderLayers.get(i);
-			if (layer.isEmpty()) {
+			EffectLayer layer = renderLayers.get(i);
+			if (layer.isFinished()) {
 				disposeLayer(i);
 			} else {
-				layer.compute(deltaTime);
+				layer.compute(deltaTime, actionKeyDown);
 				i++;
 			}
 		}
@@ -309,10 +310,10 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	/**
 	 * Draws the entire weather effect.
 	 */
-
+	@Override
 	public void draw(SpriteBatch batch, Camera cam, boolean debug) {
 		for (int i = 0, len = renderLayers.size(); i < len; i++) {
-			renderLayers.get(i).draw(batch, cam);
+			renderLayers.get(i).draw(batch, cam, debug);
 		}
 	}
 

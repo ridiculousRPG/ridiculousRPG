@@ -25,7 +25,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 
@@ -37,7 +36,7 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
  * @see WeatherEffectService
  * @author Alexander Baumgartner
  */
-public class WeatherEffectLayer implements Disposable {
+public class WeatherEffectLayer extends EffectLayer {
 	private static final Random randomNumberGenerator = new Random();
 
 	private TextureRegionRef tRef;
@@ -48,7 +47,6 @@ public class WeatherEffectLayer implements Disposable {
 	private boolean flip = false;
 	private boolean fill = false;
 	private boolean initializeEffect = true;
-	private boolean stopRequested = false;
 
 	// Initialization of new tiles
 	private float newRowWindSpeed;
@@ -177,16 +175,9 @@ public class WeatherEffectLayer implements Disposable {
 		fillLayer();
 	}
 
-	/**
-	 * Stops the effect-layer.<br>
-	 * Note that the layer is not removed immediately. It takes some time while
-	 * the last snow flake falls from the sky to the ground - like in real
-	 * nature ;)
-	 * 
-	 * @see dispose()
-	 */
+	@Override
 	public void stop() {
-		stopRequested = true;
+		setStopRequested(true);
 		play = false;
 	}
 
@@ -232,7 +223,8 @@ public class WeatherEffectLayer implements Disposable {
 	 * 
 	 * @return true if this effect-layer is empty
 	 */
-	public boolean isEmpty() {
+	@Override
+	public boolean isFinished() {
 		return tileLayer.isEmpty();
 	}
 
@@ -377,18 +369,11 @@ public class WeatherEffectLayer implements Disposable {
 		this.windSpeedMax = windSpeedMax;
 	}
 
-	public boolean isStopRequested() {
-		return stopRequested;
-	}
-
-	public void setStopRequested(boolean stopRequested) {
-		this.stopRequested = stopRequested;
-	}
-
 	/**
 	 * Computes the animation for this layer.
 	 */
-	public void compute(float deltaTime) {
+	@Override
+	public void compute(float deltaTime, boolean actionKeyDown) {
 		// Skip first call after initialization and resize
 		// to avoid huge deltatimes with great impact
 		if (initializeEffect) {
@@ -453,7 +438,7 @@ public class WeatherEffectLayer implements Disposable {
 	/**
 	 * Draw the effect-layer.
 	 */
-	public void draw(SpriteBatch batch, Camera cam) {
+	public void draw(SpriteBatch batch, Camera cam, boolean debug) {
 		if (flip) {
 			batch.setTransformMatrix(batch.getTransformMatrix().translate(0,
 					cam.viewportHeight + 2 * cam.position.y, 0).rotate(1, 0, 0,
