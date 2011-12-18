@@ -26,7 +26,6 @@ import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.ScriptFactory;
 import com.madthrax.ridiculousRPG.events.EventObject;
 import com.madthrax.ridiculousRPG.map.TiledMapWithEvents;
-import com.madthrax.ridiculousRPG.service.Initializable;
 
 /**
  * This class executes JavaScript on touch, push, timer, load, store and custom
@@ -54,10 +53,8 @@ import com.madthrax.ridiculousRPG.service.Initializable;
  * 
  * @author Alexander Baumgartner
  */
-public class EventExecScriptAdapter extends EventAdapter implements
-		Initializable {
-	private boolean push, touch, timer, load, store, customTrigger,
-			initialized;
+public class EventExecScriptAdapter extends EventAdapter {
+	private boolean push, touch, timer, load, store, customTrigger;
 	private Invocable engine;
 	private SortedIntList<String> scriptCode = new SortedIntList<String>();
 	private SortedIntList<String> onPush = new SortedIntList<String>();
@@ -66,6 +63,15 @@ public class EventExecScriptAdapter extends EventAdapter implements
 	private SortedIntList<String> onLoad = new SortedIntList<String>();
 	private SortedIntList<String> onStore = new SortedIntList<String>();
 	private SortedIntList<String> onCustomTrigger = new SortedIntList<String>();
+
+	@Override
+	public void init() {
+		try {
+			initEngine();
+		} catch (ScriptException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	@Override
 	public boolean push(EventObject eventSelf, EventObject eventTrigger)
@@ -320,19 +326,6 @@ public class EventExecScriptAdapter extends EventAdapter implements
 	public final void addScriptCode(String scriptCode, int index) {
 		scriptCode = GameBase.$scriptFactory().loadScript(scriptCode);
 		this.scriptCode.insert(index, scriptCode);
-	}
-
-	public void init() {
-		try {
-			initEngine();
-		} catch (ScriptException e) {
-			throw new RuntimeException(e);
-		}
-		initialized = true;
-	}
-
-	public boolean isInitialized() {
-		return initialized;
 	}
 
 	private void initEngine() throws ScriptException {

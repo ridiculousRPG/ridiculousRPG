@@ -90,26 +90,9 @@ public class GameBase extends GameServiceDefaultImpl implements
 
 		try {
 			scriptFactory = options.scriptFactory;
+			scriptFactory.init(options.initScript);
 			serviceProvider = new GameServiceProvider();
-			// TODO: think about initializables - do we need this?
-			// All the scripts are executed after the gamebase has already been
-			// initialized :/
-			serviceProvider.init();
-			// TODO: init scriptFactory and load services via script;)
-			// This way we become extremely flexible.
 			serviceProvider.putService(options.scriptFactoryName, scriptFactory);
-
-			/*
-			 * // offer some essential services
-			 * serviceProvider.putService(scriptFactory);
-			 * serviceProvider.putService(DisplayTextService.$map);
-			 * serviceProvider.putService(DisplayTextService.$screen);
-			 * serviceProvider.putService(ImageProjectionService.$map);
-			 * serviceProvider.putService(ImageProjectionService.$screen); for
-			 * (Constructor<GameService> service : options.initGameService) {
-			 * serviceProvider.putService(service.newInstance()); }
-			 * serviceProvider.putService(ImageProjectionService.$background);
-			 */
 		} catch (Exception e) {
 			e.printStackTrace();
 			StringWriter stackTrace = new StringWriter();

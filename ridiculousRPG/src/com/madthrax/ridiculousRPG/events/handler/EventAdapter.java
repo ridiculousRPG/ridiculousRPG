@@ -70,4 +70,8 @@ public class EventAdapter implements EventHandler {
 	public ObjectState getActualState() {
 		return myState;
 	}
+
+	@Override
+	public void init() {
+	}
 }

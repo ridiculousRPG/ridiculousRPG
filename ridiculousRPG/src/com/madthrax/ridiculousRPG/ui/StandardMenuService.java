@@ -50,14 +50,7 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 	private TextureRegionRef background;
 	private ServiceState serviceState = ServiceState.IDLE;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.madthrax.ridiculousRPG.ui.ActorsOnStageService#init()
-	 */
-	@Override
-	public void init() {
-		super.init();
+	public StandardMenuService() {
 		if (GameBase.$().getOptions().titleBackground != null) {
 			setBackground(GameBase.$().getOptions().titleBackground);
 		}

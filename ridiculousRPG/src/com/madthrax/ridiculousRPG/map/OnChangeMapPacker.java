@@ -32,19 +32,13 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.badlogic.gdx.tiledmappacker.TiledMapPacker;
 import com.badlogic.gdx.tools.imagepacker.TexturePacker;
 import com.madthrax.ridiculousRPG.GameConfig;
-import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
-import com.madthrax.ridiculousRPG.service.Initializable;
 
 /**
  * @author Alexander Baumgartner
  */
-public class MapPackerService extends GameServiceDefaultImpl implements
-		Initializable {
-	private boolean initialized = false;
+public class OnChangeMapPacker {
 
-	public void init() {
-		if (isInitialized())
-			return;
+	public void packOnChange() {
 		File mapDir = new File(GameConfig.get().mapDir);
 		File packMapDir = new File(GameConfig.get().mapPackDir);
 		boolean packMaps = false;
@@ -124,14 +118,5 @@ public class MapPackerService extends GameServiceDefaultImpl implements
 			} catch (IOException e) {
 			}
 		}
-
-		initialized = true;
-	}
-
-	public boolean isInitialized() {
-		return initialized;
-	}
-
-	public void dispose() {
 	}
 }

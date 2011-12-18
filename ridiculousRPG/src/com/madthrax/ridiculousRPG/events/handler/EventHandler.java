@@ -109,4 +109,10 @@ public interface EventHandler {
 	 */
 	public void store(EventObject eventSelf, ObjectState parentState,
 			boolean currentlyExecuted) throws ScriptException;
+
+	/**
+	 * Initializes the event handler. For example compiles (and executes
+	 * initialization) scripts
+	 */
+	public void init();
 }

@@ -19,9 +19,9 @@ package com.madthrax.ridiculousRPG.ui;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.GameBase;
@@ -29,7 +29,6 @@ import com.madthrax.ridiculousRPG.GameServiceProvider;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
-import com.madthrax.ridiculousRPG.service.Initializable;
 
 /**
  * Draws multilined text onto the screen. This class is optimized for
@@ -38,7 +37,7 @@ import com.madthrax.ridiculousRPG.service.Initializable;
  * @author Alexander Baumgartner
  */
 public abstract class DisplayTextService extends GameServiceDefaultImpl
-		implements Drawable, Initializable {
+		implements Drawable {
 	public enum Alignment {
 		LEFT, BOTTOM, CENTER, RIGHT, TOP
 	}
@@ -67,6 +66,10 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 	private final BitmapFontCachePool fontCachePool = new BitmapFontCachePool();
 	private float defaultColor = Color.WHITE.toFloatBits();
 
+	protected DisplayTextService() {
+		font = new BitmapFont();
+	}
+
 	/**
 	 * @return the actual default colors float bits
 	 * @see {@link Color#toFloatBits()}
@@ -86,9 +89,6 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 	 */
 	public void setDefaultColor(float defaultColor) {
 		this.defaultColor = defaultColor;
-	}
-
-	protected DisplayTextService() {
 	}
 
 	/**
@@ -146,8 +146,6 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 	public BitmapFontCache addMessage(CharSequence text, float color,
 			Alignment horizontalAlign, Alignment verticalAlign, float padding,
 			float wrapWidth, boolean forceRemove) {
-		if (!isInitialized())
-			return null;
 		float x = padding, y = GameBase.$().getScreen().height - padding;
 		BitmapFontCache bfc = createMsg(text, color, 0f, 0f, wrapWidth);
 		TextBounds b = bfc.getBounds();
@@ -195,8 +193,6 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 	 */
 	public BitmapFontCache addMessage(CharSequence text, float color, float x,
 			float y, float wrapWidth, boolean forceRemove) {
-		if (!isInitialized())
-			return null;
 		BitmapFontCache bfc = createMsg(text, color, x, y, wrapWidth);
 		if (forceRemove)
 			msgDisplayOnce.add(bfc);
@@ -243,16 +239,6 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 		this.font = font;
 	}
 
-	public void init() {
-		if (isInitialized())
-			return;
-		font = new BitmapFont();
-	}
-
-	public boolean isInitialized() {
-		return font != null;
-	}
-
 	/**
 	 * The {@link DisplayTextService} (an per default also it's successors) is
 	 * essential and will always be drawn. No matter if an other
@@ -270,7 +256,7 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 		msgDisplay.clear();
 		msgDisplayOnce.clear();
 		fontCachePool.clear();
-		if (isInitialized())
+		if (font != null)
 			font.dispose();
 	}
 }

@@ -26,20 +26,16 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.SortedIntList;
 import com.badlogic.gdx.utils.SortedIntList.Node;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
-import com.madthrax.ridiculousRPG.service.Initializable;
 
 /**
  * This class loads global scripts and generates new script engines
  * 
  * @author Alexander Baumgartner
  */
-public class ScriptFactory extends GameServiceDefaultImpl implements
-		Initializable {
+public class ScriptFactory extends GameServiceDefaultImpl {
 	private final ScriptEngineManager ENGINE_FACTORY = new ScriptEngineManager();
-	private boolean initialized = false;
 
-	public void init() {
-		initialized = true;
+	public void init(String initScript) {
 		ScriptEngine engine = ENGINE_FACTORY
 				.getEngineByName(getScriptLanguage());
 		try {
@@ -52,10 +48,6 @@ public class ScriptFactory extends GameServiceDefaultImpl implements
 		} catch (ScriptException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	public boolean isInitialized() {
-		return initialized;
 	}
 
 	/**
@@ -85,8 +77,6 @@ public class ScriptFactory extends GameServiceDefaultImpl implements
 	 * @return A new script engine
 	 */
 	public ScriptEngine obtainEngine() {
-		if (!initialized)
-			throw new IllegalStateException("ScriptFactory not initialized");
 		return ENGINE_FACTORY.getEngineByName(getScriptLanguage());
 	}
 

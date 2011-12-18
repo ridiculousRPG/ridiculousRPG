@@ -32,13 +32,12 @@ import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
-import com.madthrax.ridiculousRPG.service.Initializable;
 
 /**
  * @author Alexander Baumgartner
  */
 public class ActorsOnStageService extends Stage implements GameService,
-		Drawable, Computable, Initializable {
+		Drawable, Computable {
 	private Skin skinNormal, skinFocused;
 	private boolean closeOnAction;
 
@@ -50,6 +49,10 @@ public class ActorsOnStageService extends Stage implements GameService,
 		//TODO: uncomment after libgdx bugfix :/
 		super(GameBase.$().getScreen().width, GameBase.$().getScreen().height,
 				true/*, GameBase.$().getSpriteBatch()*/);
+		skinNormal = new Skin(Gdx.files.internal("data/uiskin2.json"),
+				Gdx.files.internal("data/uiskin2.png"));
+		skinFocused = new Skin(Gdx.files.internal("data/uiskin2.json"),
+				Gdx.files.internal("data/uiskin2Focus.png"));
 	}
 
 	/**
@@ -100,21 +103,6 @@ public class ActorsOnStageService extends Stage implements GameService,
 	 */
 	public void setCloseOnAction(boolean closeOnAction) {
 		this.closeOnAction = closeOnAction;
-	}
-
-	public void init() {
-		if (isInitialized())
-			return;
-		setViewport(GameBase.$().getScreen().width, GameBase.$()
-				.getScreen().height, true);
-		skinNormal = new Skin(Gdx.files.internal("data/uiskin2.json"),
-				Gdx.files.internal("data/uiskin2.png"));
-		skinFocused = new Skin(Gdx.files.internal("data/uiskin2.json"),
-				Gdx.files.internal("data/uiskin2Focus.png"));
-	}
-
-	public boolean isInitialized() {
-		return skinNormal != null;
 	}
 
 	public void compute(float deltaTime, boolean actionKeyDown) {

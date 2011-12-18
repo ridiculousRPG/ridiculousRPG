@@ -31,7 +31,6 @@ import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
-import com.madthrax.ridiculousRPG.service.Initializable;
 import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
@@ -42,28 +41,21 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
  * 
  * @author Alexander Baumgartner
  */
-public class GameServiceProvider implements Initializable {
+public class GameServiceProvider {
 	private Map<String, GameService> services = new HashMap<String, GameService>();
 	private AtomicReference<GameService> hasAttention = new AtomicReference<GameService>();
 	private int attentionCount = 0;
 	private boolean freezeTheWorld = false;
 	private boolean clearTheScreen = false;
 
-	private Array<Initializable> initializables = new Array<Initializable>();
 	private InputMultiplexer inputMultiplexer = new InputMultiplexer();
 	private InputMultiplexer attentionInputMultiplexer = new InputMultiplexer();
 	private Array<Computable> computables = new Array<Computable>();
 	private Array<Drawable> drawables = new Array<Drawable>();
 	private Array<ResizeListener> resizeListener = new Array<ResizeListener>();
 
-	public void init() {
-		Array<Initializable> initializables = this.initializables;
-		this.initializables = null;
+	public GameServiceProvider() {
 		Gdx.input.setInputProcessor(inputMultiplexer);
-		for (Initializable service : initializables) {
-			if (!service.isInitialized())
-				service.init();
-		}
 	}
 
 	/**
@@ -230,15 +222,6 @@ public class GameServiceProvider implements Initializable {
 	 */
 	public GameService putService(String name, GameService service) {
 		GameService old = services.put(name, service);
-		if (service instanceof Initializable
-				&& !((Initializable) service).isInitialized()) {
-			if (isInitialized()) {
-				((Initializable) service).init();
-			} else { // initialize later, wait for the game-globals to be
-				// initialized
-				initializables.add((Initializable) service);
-			}
-		}
 		if (old instanceof Drawable) {
 			int index = drawables.indexOf((Drawable) old, true);
 			if (service instanceof Drawable)
@@ -339,10 +322,6 @@ public class GameServiceProvider implements Initializable {
 		boolean succeed = hasAttention.compareAndSet(null, service);
 		if (succeed) {
 			attentionCount++;
-			if (service instanceof Initializable
-					&& !((Initializable) service).isInitialized()) {
-				((Initializable) service).init();
-			}
 			this.freezeTheWorld = freezeTheWorld;
 			this.clearTheScreen = clearTheScreen;
 			attentionInputMultiplexer.clear();
@@ -519,10 +498,6 @@ public class GameServiceProvider implements Initializable {
 		spriteBatch.setColor(tintColorBits);
 		d.draw(spriteBatch, camera, debug);
 		return old;
-	}
-
-	public boolean isInitialized() {
-		return initializables == null;
 	}
 
 }

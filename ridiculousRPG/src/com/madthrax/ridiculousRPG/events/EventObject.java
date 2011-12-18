@@ -41,13 +41,12 @@ import com.madthrax.ridiculousRPG.map.TiledMapWithEvents;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 import com.madthrax.ridiculousRPG.movement.input.Move4WayAdapter;
-import com.madthrax.ridiculousRPG.service.Initializable;
 
 /**
  * @author Alexander Baumgartner
  */
 public class EventObject extends Movable implements Comparable<EventObject>,
-		Initializable, Disposable {
+		Disposable {
 	private static final float COLOR_WHITE_BITS = Color.WHITE.toFloatBits();
 
 	private TileAnimation animation;
@@ -76,7 +75,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public boolean visible = false;
 	public boolean pushable = false;
 	public boolean touchable = false;
-	public boolean initialized = false;
 	public float rotation = 0f, scaleX = 1f, scaleY = 1f;
 	/**
 	 * If an event consumes input, it triggers touch and push events. The
@@ -755,13 +753,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	}
 
 	public void init() {
-		if (eventHandler instanceof Initializable) {
-			((Initializable) eventHandler).init();
-		}
-		initialized = true;
-	}
-
-	public boolean isInitialized() {
-		return initialized;
+		eventHandler.init();
 	}
 }

@@ -21,19 +21,14 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.math.MathUtils;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
-import com.madthrax.ridiculousRPG.service.Initializable;
 
 /**
  * @author Alexander Baumgartner
  */
-public class GameIconService extends GameServiceDefaultImpl implements
-		Initializable {
-	private boolean initialized = false;
+public class GameIconService extends GameServiceDefaultImpl {
 	private Pixmap applIcon;
 
-	public void init() {
-		if (isInitialized())
-			return;
+	public GameIconService() {
 		FileHandle applIconFile = Gdx.files.internal("data/icon.png");
 		if (applIconFile.exists()) {
 			applIcon = new Pixmap(applIconFile);
@@ -50,12 +45,6 @@ public class GameIconService extends GameServiceDefaultImpl implements
 				applIcon = null;
 			}
 		}
-
-		initialized = true;
-	}
-
-	public boolean isInitialized() {
-		return initialized;
 	}
 
 	public void dispose() {
