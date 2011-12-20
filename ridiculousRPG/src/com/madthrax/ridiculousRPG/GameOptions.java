@@ -39,4 +39,8 @@ public class GameOptions {
 	public String titleBackground;
 	public ScriptFactory scriptFactory = new ScriptFactory();
 	public String initScript = "data/scripts/initGame.js";
+	public String uiSkinNormalConfig = "data/uiSkin/uiSkinNormal.json";
+	public String uiSkinNormalImage = "data/uiSkin/uiSkinNormal.png";
+	public String uiSkinFocusConfig = "data/uiSkin/uiSkinFocus.json";
+	public String uiSkinFocusImage = "data/uiSkin/uiSkinFocus.png";
 }

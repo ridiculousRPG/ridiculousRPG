@@ -24,7 +24,6 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -43,15 +42,16 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	private boolean awaitingKeyUp;
 	private Actor focusedActor = null;
-	private static Vector2 tmpPoint = new Vector2(0f, 0f);
 
 	public ActorsOnStageService() {
 		super(GameBase.$().getScreen().width, GameBase.$().getScreen().height,
 				true, GameBase.$().getSpriteBatch());
-		skinNormal = new Skin(Gdx.files.internal("data/uiskin2.json"),
-				Gdx.files.internal("data/uiskin2.png"));
-		skinFocused = new Skin(Gdx.files.internal("data/uiskin2.json"),
-				Gdx.files.internal("data/uiskin2Focus.png"));
+		skinNormal = new Skin(Gdx.files
+				.internal(GameBase.$options().uiSkinNormalConfig), Gdx.files
+				.internal(GameBase.$options().uiSkinNormalImage));
+		skinFocused = new Skin(Gdx.files
+				.internal(GameBase.$options().uiSkinFocusConfig), Gdx.files
+				.internal(GameBase.$options().uiSkinFocusImage));
 	}
 
 	/**
@@ -208,7 +208,9 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	private boolean keyUpIntern(int keycode) {
-		if (awaitingKeyUp) {
+		if (keycode == Keys.TAB) {
+			return false;
+		} else if (awaitingKeyUp) {
 			switch (keycode) {
 			case Keys.SPACE:
 			case Keys.ENTER:
@@ -257,20 +259,19 @@ public class ActorsOnStageService extends Stage implements GameService,
 				awaitingKeyUp = false;
 				return actionKeyPressed(down);
 			}
-			a.toLocalCoordinates(tmpPoint.set(a.x, a.y));
 			// simulate touch event
 			if (down) {
 				if (GameBase.$serviceProvider().requestAttention(this, false,
 						false)) {
-					root.touchDown(a.x - tmpPoint.x + 1, a.y - tmpPoint.y + 1,
-							0);
+					a.touchDown(a.width / 2, a.height / 2, 0);
 					if (a.parent != null)
 						setKeyboardFocus(a);
 					return true;
 				}
 			} else {
 				if (GameBase.$serviceProvider().releaseAttention(this)) {
-					root.touchUp(a.x - tmpPoint.x + 1, a.y - tmpPoint.y + 1, 0);
+					a.touchUp(a.width / 2, a.height / 2, 0);
+					return true;
 				}
 			}
 		} else {

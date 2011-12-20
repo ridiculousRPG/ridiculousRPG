@@ -23,6 +23,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 
 /**
  * This class offers some static methods to change the keyboard focused actor.<br>
@@ -193,7 +194,8 @@ public final class ActorFocusUtil {
 	}
 
 	private static boolean isFocusable(Actor a) {
-		return a.touchable && a.visible && styleGetter(a.getClass()) != null;
+		return a.touchable && a.visible && styleGetter(a.getClass()) != null
+				&& !(a instanceof Label);
 	}
 
 	public static Method styleGetter(Class<? extends Actor> actorClass) {

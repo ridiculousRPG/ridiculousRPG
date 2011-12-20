@@ -116,6 +116,18 @@ public class GameOptionsDefaultConfigReader {
 			if (propTmp != null && propTmp.trim().length() > 0) {
 				options.initScript = propTmp;
 			}
+
+			propTmp = props.getProperty("UI_SKIN_NORMAL");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				options.uiSkinNormalConfig = propTmp+".json";
+				options.uiSkinNormalImage = propTmp+".png";
+			}
+
+			propTmp = props.getProperty("UI_SKIN_FOCUS");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				options.uiSkinFocusConfig = propTmp+".json";
+				options.uiSkinFocusImage = propTmp+".png";
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			StringWriter stackTrace = new StringWriter();

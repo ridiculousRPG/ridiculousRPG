@@ -157,8 +157,6 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 		final Skin skin = getSkinNormal();
 		Window w = new Window("Game menu", skin);
 		addActor(w);
-		w.height = height();
-		w.width = width() * .3f;
 
 		TextButton resume = new TextButton("Resume (Esc)", skin);
 		resume.setClickListener(new ClickListener() {
@@ -223,6 +221,8 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 		w.row().fill(true, true).expand(true, false);
 		w.add(exit);
 
+		w.pack();
+		w.height = height();
 		addActor(w);
 		focus(resume);
 	}
@@ -289,16 +289,20 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 		w.add(exit);
 
 		w.pack();
-		w.x = centerX() - w.width * .5f;
-		w.y = centerY() - w.height * .5f;
-		addActor(w);
+		center(w);
 		focus(resume);
+	}
+
+	private void center(Actor actor) {
+		actor.x = (int)(centerX() - actor.width * .5f);
+		actor.y = (int)(centerY() - actor.height * .5f);
 	}
 
 	protected void createPauseMenu() {
 		Skin skin = getSkinNormal();
 		Window w = new Window("PAUSE", skin);
 		addActor(w);
+
 		TextButton resume = new TextButton("Resume (P)", skin);
 		resume.setClickListener(new ClickListener() {
 			@Override
@@ -308,6 +312,7 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 		});
 		w.row().fill(true, true).expand(true, false);
 		w.add(resume);
+
 		TextButton exit = new TextButton("Return to title", skin);
 		exit.setClickListener(new ClickListener() {
 			@Override
@@ -317,10 +322,9 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 		});
 		w.row().fill(true, true).expand(true, false);
 		w.add(exit);
+
 		w.pack();
-		w.x = centerX() - w.width * .5f;
-		w.y = centerY() - w.height * .5f;
-		addActor(w);
+		center(w);
 		focus(resume);
 	}
 
@@ -344,14 +348,14 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 	private void showInfo(final Skin skin, String info) {
 		final Window w = new Window(skin);
 		addActor(w);
+
 		w.touchable = false;
 		w.color.a = .1f;
 		w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f), Remove
 				.$()));
 		w.add(new Label(info, skin));
+
 		w.pack();
-		w.x = centerX() - w.width * .5f;
-		w.y = centerY() - w.height * .5f;
-		addActor(w);
+		center(w);
 	}
 }
