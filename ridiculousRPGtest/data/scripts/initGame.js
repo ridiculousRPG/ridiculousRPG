@@ -10,7 +10,15 @@
  * ATTENTION: Imports don't work across different scopes!
  */
 
-// make java.lang.System referencable with System
-System = Packages.java.lang.System;
-// make instantiated GameBase referencable with the Dollar sign $  
-$ = Packages.com.madthrax.ridiculousRPG.GameBase.$();
+// The very first thing on startup is loading the global scope.
+// After this two step we can use all the convenience shortcuts and
+// methods defined as global scope.
+$scriptFactory = Packages.com.madthrax.ridiculousRPG.GameBase.$scriptFactory();
+$scriptFactory.evalAllGlobalScripts("data/scripts/global", false);
+
+//Add the DisplayFPSService to the service provider
+$serviceProvider.putService("fpsService", new ridiculousRPG.ui.DisplayFPSService());
+//Add the StandardMenuService to the service provider
+$serviceProvider.putService("menuService", new ridiculousRPG.ui.StandardMenuService());
+//Add the ImageProjectionService to the service provider (used by StandardMenuService)
+$serviceProvider.putService("imageProjectionService", ridiculousRPG.animation.ImageProjectionService.$background);
