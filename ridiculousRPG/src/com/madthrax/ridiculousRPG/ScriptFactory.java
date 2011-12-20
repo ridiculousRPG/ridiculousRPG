@@ -28,7 +28,9 @@ import com.badlogic.gdx.utils.SortedIntList;
 import com.badlogic.gdx.utils.SortedIntList.Node;
 
 /**
- * This class loads global scripts and generates new script engines
+ * This class loads global scripts and generates new script engines.<br>
+ * The currently running {@link ScriptEngine} is exposed by the variable
+ * $scriptEngine.
  * 
  * @author Alexander Baumgartner
  */
@@ -36,8 +38,14 @@ public class ScriptFactory {
 	private final ScriptEngineManager ENGINE_FACTORY = new ScriptEngineManager();
 
 	public void init(String initScript) {
-		evalAllGlobalScripts(
-				Gdx.files.internal(GameBase.$options().initScript), false);
+		evalAllScripts(obtainEngine(), GameBase.$options().initScript, false);
+	}
+
+	/**
+	 * @see #evalAllGlobalScripts(FileHandle, boolean)
+	 */
+	public int evalAllGlobalScripts(String path, boolean recurse) {
+		return evalAllGlobalScripts(Gdx.files.internal(path), recurse);
 	}
 
 	/**
@@ -52,10 +60,18 @@ public class ScriptFactory {
 	 * @return The count of files which has been evaluated
 	 */
 	public int evalAllGlobalScripts(FileHandle path, boolean recurse) {
-		ScriptEngine engine = ENGINE_FACTORY
+		ScriptEngine scriptEngine = ENGINE_FACTORY
 				.getEngineByName(getScriptLanguage());
-		return evalAllScripts(engine, path, recurse, ENGINE_FACTORY
+		scriptEngine.put("$scriptEngine", scriptEngine);
+		return evalAllScripts(scriptEngine, path, recurse, ENGINE_FACTORY
 				.getBindings());
+	}
+
+	/**
+	 * @see #evalAllScripts(ScriptEngine, FileHandle, boolean)
+	 */
+	public int evalAllScripts(ScriptEngine engine, String path, boolean recurse) {
+		return evalAllScripts(engine, Gdx.files.internal(path), recurse);
 	}
 
 	/**
@@ -74,6 +90,15 @@ public class ScriptFactory {
 	public int evalAllScripts(ScriptEngine engine, FileHandle path,
 			boolean recurse) {
 		return evalAllScripts(engine, path, recurse, null);
+	}
+
+	/**
+	 * @see #evalAllScripts(ScriptEngine, FileHandle, boolean, Bindings)
+	 */
+	public int evalAllScripts(ScriptEngine engine, String path,
+			boolean recurse, Bindings bindings) {
+		return evalAllScripts(engine, Gdx.files.internal(path), recurse,
+				bindings);
 	}
 
 	/**
@@ -160,12 +185,16 @@ public class ScriptFactory {
 	/**
 	 * Creates a new script engine or reuses an other script engine. It's
 	 * guaranteed, that the local script context is a new one and that the
-	 * global script context is shared over all engines.
+	 * global script context is shared over all engines.<br>
+	 * The actual {@link ScriptEngine} is exposed by the variable $scriptEngine.
 	 * 
 	 * @return A new script engine
 	 */
 	public ScriptEngine obtainEngine() {
-		return ENGINE_FACTORY.getEngineByName(getScriptLanguage());
+		ScriptEngine scriptEngine = ENGINE_FACTORY
+				.getEngineByName(getScriptLanguage());
+		scriptEngine.put("$scriptEngine", scriptEngine);
+		return scriptEngine;
 	}
 
 	/**
