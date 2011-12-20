@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.madthrax.ridiculousRPG.camera;
+package com.madthrax.ridiculousRPG.misc;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -23,25 +23,25 @@ import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.GameService;
 
 /**
- * This service allows to toggle between fullscreen mode and windowed mode.<br>
- * Toggling is performed if the left Alt key and Enter is pressed.<br>
+ * This service allows to toggle between debug mode and normal mode.<br>
+ * Toggling is performed if the left Alt key is pressed and D is pressed.<br>
  * <br>
  * This is an {@link GameService#essential()} service and therefore the toggling
  * will always succeed. No matter if an other service has the attention or not.
  * 
  * @author Alexander Baumgartner
  */
-public class CameraToggleFullscreenService extends InputAdapter implements
-		GameService {
+public class ToggleDebugModeService extends InputAdapter implements GameService {
 
 	/**
-	 * Performs toggling between fullscreen and windowed mode.
+	 * Performs toggling between debug and normal mode.
 	 */
 	@Override
 	public boolean keyDown(int keycode) {
-		if (keycode == Input.Keys.ENTER
+		if (keycode == Input.Keys.D
 				&& Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
-			return GameBase.$().toggleFullscreen();
+			GameBase.$options().debug = !GameBase.$options().debug;
+			return true;
 		}
 		return false;
 	}
@@ -51,7 +51,7 @@ public class CameraToggleFullscreenService extends InputAdapter implements
 	 */
 	@Override
 	public boolean keyUp(int keycode) {
-		if (keycode == Input.Keys.ENTER
+		if (keycode == Input.Keys.D
 				&& Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
 			return true;
 		}

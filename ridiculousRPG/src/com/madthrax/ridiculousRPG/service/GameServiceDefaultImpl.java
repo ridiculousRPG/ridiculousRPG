@@ -20,6 +20,10 @@ package com.madthrax.ridiculousRPG.service;
  * @author Alexander Baumgartner
  */
 public abstract class GameServiceDefaultImpl implements GameService {
+	/**
+	 * Indicates if the current {@link GameService} is in frozen state.
+	 */
+	protected boolean frozen;
 
 	/*
 	 * (non-Javadoc)
@@ -27,6 +31,7 @@ public abstract class GameServiceDefaultImpl implements GameService {
 	 * @see com.madthrax.ridiculousRPG.service.GameService#essential()
 	 */
 	public void freeze() {
+		frozen = true;
 	}
 
 	/*
@@ -35,6 +40,7 @@ public abstract class GameServiceDefaultImpl implements GameService {
 	 * @see com.madthrax.ridiculousRPG.service.GameService#essential()
 	 */
 	public void unfreeze() {
+		frozen = false;
 	}
 
 	/**

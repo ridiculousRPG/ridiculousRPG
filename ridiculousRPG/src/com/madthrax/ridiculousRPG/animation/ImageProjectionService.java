@@ -21,7 +21,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.service.Drawable;
-import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 
 /**
@@ -29,66 +28,17 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
  * 
  * @author Alexander Baumgartner
  */
-public abstract class ImageProjectionService extends GameServiceDefaultImpl
-		implements Drawable {
+public class ImageProjectionService extends GameServiceDefaultImpl implements
+		Drawable {
 
 	private Array<BoundedImage> images = new Array<BoundedImage>();
 
-	/**
-	 * A singleton instance for simply drawing background images onto the
-	 * screen.<br>
-	 * This service is {@link GameService#essential()}. The background will be
-	 * drawn even when an other service clears the screen. If you don't want
-	 * this behavior you may call {@link ImageProjectionService#freeze()} (and
-	 * {@link ImageProjectionService#unfreeze()}) to avoid drawing the
-	 * background (if one is assigned to this service)
-	 */
-	public static final ImageProjectionService $background = new ImageProjectionService() {
-		boolean frozen = false;
+	private boolean essential, mapProjection;
 
-		@Override
-		public Matrix4 projectionMatrix(Camera camera) {
-			return camera.view;
-		}
-
-		@Override
-		public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
-			if (!frozen) {
-				super.draw(spriteBatch, camera, debug);
-			}
-		}
-
-		@Override
-		public void freeze() {
-			frozen = true;
-		}
-
-		@Override
-		public void unfreeze() {
-			frozen = false;
-		}
-
-		@Override
-		public boolean essential() {
-			return true;
-		}
-	};
-	/**
-	 * A singleton instance for simply drawing images onto the screen.
-	 */
-	public static final ImageProjectionService $screen = new ImageProjectionService() {
-		public Matrix4 projectionMatrix(Camera camera) {
-			return camera.view;
-		}
-	};
-	/**
-	 * A singleton instance for simply drawing images onto the map.
-	 */
-	public static final ImageProjectionService $map = new ImageProjectionService() {
-		public Matrix4 projectionMatrix(Camera camera) {
-			return camera.projection;
-		}
-	};
+	public ImageProjectionService(boolean essential, boolean mapProjection) {
+		this.essential = essential;
+		this.mapProjection = mapProjection;
+	}
 
 	/**
 	 * Don't forget to dispose all images you remove and don't need anymore!<br>
@@ -102,6 +52,8 @@ public abstract class ImageProjectionService extends GameServiceDefaultImpl
 
 	@Override
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
+		if (frozen)
+			return;
 		for (BoundedImage img : images) {
 			img.draw(spriteBatch);
 		}
@@ -109,5 +61,15 @@ public abstract class ImageProjectionService extends GameServiceDefaultImpl
 
 	@Override
 	public void dispose() {
+	}
+
+	@Override
+	public boolean essential() {
+		return essential;
+	}
+
+	@Override
+	public Matrix4 projectionMatrix(Camera camera) {
+		return mapProjection ? camera.projection : camera.view;
 	}
 }

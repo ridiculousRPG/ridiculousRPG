@@ -249,9 +249,10 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	private boolean actionKeyPressed(boolean down) {
 		Actor a = focusedActor;
-		if (a == null && closeOnAction) {
-			System.out.println("Action key pressed - close requested");
-		} else if (a != null) {
+		if (a == null) {
+			if (closeOnAction)
+				clear();
+		} else {
 			// unfocus if actor is removed
 			if (!ActorFocusUtil.isActorOnStage(a, root)) {
 				setKeyboardFocus(null);
@@ -274,8 +275,6 @@ public class ActorsOnStageService extends Stage implements GameService,
 					return true;
 				}
 			}
-		} else {
-			System.out.println("Action key pressed - nothing to do");
 		}
 		return false;
 	}

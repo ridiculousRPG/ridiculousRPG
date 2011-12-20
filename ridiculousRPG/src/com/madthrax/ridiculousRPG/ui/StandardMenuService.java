@@ -31,9 +31,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
-import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.animation.BoundedImage;
 import com.madthrax.ridiculousRPG.animation.ImageProjectionService;
+import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
@@ -47,10 +47,12 @@ public class StandardMenuService extends ActorsOnStageService implements
 		PAUSED, START_MENU, GAME_MENU, IDLE
 	};
 
-	private TextureRegionRef background;
+	private String bgServiceName;
+	private BoundedImage background;
 	private ServiceState serviceState = ServiceState.IDLE;
 
-	public StandardMenuService() {
+	public StandardMenuService(String backgroundProjectionService) {
+		this.bgServiceName = backgroundProjectionService;
 		if (GameBase.$().getOptions().titleBackground != null) {
 			setBackground(GameBase.$().getOptions().titleBackground);
 		}
@@ -64,7 +66,7 @@ public class StandardMenuService extends ActorsOnStageService implements
 	public void setBackground(String path) {
 		if (background != null)
 			background.dispose();
-		background = TextureRegionLoader.load(path);
+		background = new BoundedImage(TextureRegionLoader.load(path));
 	}
 
 	@Override
@@ -125,28 +127,47 @@ public class StandardMenuService extends ActorsOnStageService implements
 		changeState(serviceState);
 	}
 
+	@Override
+	public void clear() {
+		changeState(ServiceState.IDLE);
+	}
+
 	public boolean changeState(ServiceState newState) {
 		boolean consumed = false;
 		if (serviceState != ServiceState.IDLE) {
 			consumed = GameBase.$serviceProvider().releaseAttention(this);
+			if (consumed) {
+				super.clear();
+				GameService bgService = GameBase.$service(bgServiceName);
+				if (bgService instanceof ImageProjectionService) {
+					((ImageProjectionService) bgService).getImages()
+							.removeValue(background, true);
+				}
+			} else {
+				return false;
+			}
 		}
 		if (newState != ServiceState.IDLE) {
-			consumed = GameBase.$serviceProvider().requestAttention(this, true,
-					newState == ServiceState.START_MENU)
-					| consumed;
-		}
+			boolean ok = GameBase.$serviceProvider().requestAttention(this, true,
+					newState == ServiceState.START_MENU);
+			if (!ok) {
+				serviceState = ServiceState.IDLE;
+				return consumed;
+			}
+			consumed = true;
 
-		clear();
-		switch (newState) {
-		case PAUSED:
-			createPauseMenu();
-			break;
-		case GAME_MENU:
-			createGameMenu();
-			break;
-		case START_MENU:
-			createStartMenu();
-			break;
+			switch (newState) {
+			case PAUSED:
+				createPauseMenu();
+				break;
+			case GAME_MENU:
+				createGameMenu();
+				break;
+			case START_MENU:
+				createStartMenu();
+				break;
+			}
+
 		}
 
 		serviceState = newState;
@@ -229,8 +250,11 @@ public class StandardMenuService extends ActorsOnStageService implements
 
 	private void createStartMenu() {
 		if (background != null) {
-			ImageProjectionService.$background.getImages().add(
-					new BoundedImage(background));
+			GameService backgroundService = GameBase.$service(bgServiceName);
+			if (backgroundService instanceof ImageProjectionService) {
+				((ImageProjectionService) backgroundService).getImages().add(
+						background);
+			}
 		}
 		final Skin skin = getSkinNormal();
 		Window w = new Window("Start menu", skin);
