@@ -29,6 +29,7 @@ public class GameOptions {
 	}
 	public Backend backend = Backend.LWJGL;
 	public String title = "Game running";
+	public String encoding = "UTF-8";
 	public int width = 640, height = 480;
 	public boolean fullscreen = false;
 	public boolean useGL20 = false;
@@ -37,6 +38,5 @@ public class GameOptions {
 	public boolean debug = false;
 	public String titleBackground;
 	public ScriptFactory scriptFactory = new ScriptFactory();
-	public String scriptFactoryName = "scriptFactory";
 	public String initScript = "data/scripts/initGame.js";
 }

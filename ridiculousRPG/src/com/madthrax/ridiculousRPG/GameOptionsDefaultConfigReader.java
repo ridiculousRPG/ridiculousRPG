@@ -100,16 +100,16 @@ public class GameOptionsDefaultConfigReader {
 				options.height = Integer.parseInt(propTmp.trim());
 			}
 
+			propTmp = props.getProperty("ENCODING");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				options.encoding = propTmp;
+			}
+
 			propTmp = props.getProperty("SCRIPT_FACTORY");
 			if (propTmp != null && propTmp.trim().length() > 0) {
 				options.scriptFactory = ((Constructor<ScriptFactory>) Class
 						.forName(propTmp.trim()).getConstructor())
 						.newInstance();
-			}
-
-			propTmp = props.getProperty("SCRIPT_FACTORY_NAME");
-			if (propTmp != null && propTmp.trim().length() > 0) {
-				options.scriptFactoryName = propTmp;
 			}
 
 			propTmp = props.getProperty("INIT_SCRIPT");

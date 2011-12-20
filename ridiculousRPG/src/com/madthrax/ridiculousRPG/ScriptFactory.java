@@ -25,14 +25,13 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.SortedIntList;
 import com.badlogic.gdx.utils.SortedIntList.Node;
-import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 
 /**
  * This class loads global scripts and generates new script engines
  * 
  * @author Alexander Baumgartner
  */
-public class ScriptFactory extends GameServiceDefaultImpl {
+public class ScriptFactory {
 	private final ScriptEngineManager ENGINE_FACTORY = new ScriptEngineManager();
 
 	public void init(String initScript) {
@@ -130,8 +129,5 @@ public class ScriptFactory extends GameServiceDefaultImpl {
 			script.append("\nreturn true;");
 		script.append("\n}");
 		return script.toString();
-	}
-
-	public void dispose() {
 	}
 }

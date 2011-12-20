@@ -58,9 +58,8 @@ public class GameBase extends GameServiceDefaultImpl implements
 
 	private Rectangle plane = new Rectangle();
 	private Rectangle screen = new Rectangle();
-	private int originalWidth, originalHeight;
 
-	private boolean fullscreen, debugMode, resizeView;
+	private boolean fullscreen;
 	private boolean controlKeyPressedOld, controlKeyPressed,
 			actionKeyPressedOld, actionKeyPressed;
 
@@ -74,31 +73,28 @@ public class GameBase extends GameServiceDefaultImpl implements
 	}
 
 	public final void create() {
-		debugMode = options.debug;
 		fullscreen = options.fullscreen;
-		resizeView = options.resize;
+		scriptFactory = options.scriptFactory;
 		spriteBatch = new SpriteBatch();
 		camera = new CameraSimpleOrtho2D();
 		globalState = new ObjectState();
-		plane.width = camera.viewportWidth = screen.width = originalWidth = Gdx.graphics
+		serviceProvider = new GameServiceProvider();
+		plane.width = camera.viewportWidth = screen.width = options.width = Gdx.graphics
 				.getWidth();
-		plane.height = camera.viewportHeight = screen.height = originalHeight = Gdx.graphics
+		plane.height = camera.viewportHeight = screen.height = options.height = Gdx.graphics
 				.getHeight();
 		// instance != null indicates that GameBase is initialized
 		if (!isInitialized())
 			instance = this;
 
 		try {
-			scriptFactory = options.scriptFactory;
 			scriptFactory.init(options.initScript);
-			serviceProvider = new GameServiceProvider();
-			serviceProvider.putService(options.scriptFactoryName, scriptFactory);
 		} catch (Exception e) {
 			e.printStackTrace();
 			StringWriter stackTrace = new StringWriter();
 			e.printStackTrace(new PrintWriter(stackTrace));
 			serviceProvider.dispose();
-			String msg = "The following error occured while initializing the services:\n"
+			String msg = "The following error occured while initializing the game:\n"
 					+ e.getMessage() + "\n\n" + stackTrace;
 			serviceProvider.requestAttention(new DisplayErrorService(msg),
 					true, true);
@@ -161,6 +157,18 @@ public class GameBase extends GameServiceDefaultImpl implements
 		return $().getScriptFactory();
 	}
 
+	/**
+	 * The {@link GameOptions} from the first GameBase instance which has been
+	 * initialized.<br>
+	 * A shortcut for calling {@link GameBase#$()}{@link #getOptions()
+	 * .getOptions()}
+	 * 
+	 * @return The standard script factory
+	 */
+	public static GameOptions $options() {
+		return $().getOptions();
+	}
+
 	public final void render() {
 		try {
 			controlKeyPressedOld = controlKeyPressed;
@@ -175,7 +183,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 
 			serviceProvider.computeAll();
 			Thread.yield();
-			serviceProvider.drawAll(debugMode);
+			serviceProvider.drawAll(options.debug);
 		} catch (Exception e) {
 			try {
 				spriteBatch.end();
@@ -317,7 +325,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 	@Override
 	public void resize(int width, int height) {
 		Camera cam = camera;
-		if (resizeView) {
+		if (options.resize) {
 			float centerX = cam.viewportWidth * .5f;
 			float centerY = cam.viewportHeight * .5f;
 			cam.viewportWidth *= width / screen.width;
@@ -392,14 +400,6 @@ public class GameBase extends GameServiceDefaultImpl implements
 		return globalState;
 	}
 
-	public boolean isResizeView() {
-		return resizeView;
-	}
-
-	public void setResizeView(boolean resizeView) {
-		this.resizeView = resizeView;
-	}
-
 	/**
 	 * Returns the screen bounds. x and y should always be zero.<br>
 	 * Don't forget to update the camera if you change the bounds.
@@ -446,7 +446,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 	public boolean toggleFullscreen() {
 		try {
 			// resize is called
-			Gdx.graphics.setDisplayMode(originalWidth, originalHeight,
+			Gdx.graphics.setDisplayMode(options.width, options.height,
 					!fullscreen);
 			// In Linux setDisplayMode returns false even though it succeeds
 			// ==> DON'T make an if statement!
@@ -462,22 +462,15 @@ public class GameBase extends GameServiceDefaultImpl implements
 	}
 
 	public int getOriginalWidth() {
-		return originalWidth;
+		return options.width;
 	}
 
 	public int getOriginalHeight() {
-		return originalHeight;
+		return options.height;
 	}
 
 	public ScriptFactory getScriptFactory() {
 		return scriptFactory;
-	}
-
-	/**
-	 * True if the game is running in debug mode
-	 */
-	public boolean isDebugMode() {
-		return debugMode;
 	}
 
 	/**
