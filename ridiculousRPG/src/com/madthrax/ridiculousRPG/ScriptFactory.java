@@ -36,11 +36,26 @@ public class ScriptFactory {
 	private final ScriptEngineManager ENGINE_FACTORY = new ScriptEngineManager();
 
 	public void init(String initScript) {
+		evalAllGlobalScripts(
+				Gdx.files.internal(GameBase.$options().initScript), false);
+	}
+
+	/**
+	 * This method evaluates all scripts inside an specified directory using the
+	 * global {@link ScriptEngine} and global bindings.
+	 * 
+	 * @param path
+	 *            The path to a specified script file or a directory containing
+	 *            script files.
+	 * @param recurse
+	 *            Specifies if scripts in subdirectories should be evaluated.
+	 * @return The count of files which has been evaluated
+	 */
+	public int evalAllGlobalScripts(FileHandle path, boolean recurse) {
 		ScriptEngine engine = ENGINE_FACTORY
 				.getEngineByName(getScriptLanguage());
-		evalAllScripts(engine, Gdx.files
-				.internal(GameBase.$options().initScript), false,
-				ENGINE_FACTORY.getBindings());
+		return evalAllScripts(engine, path, recurse, ENGINE_FACTORY
+				.getBindings());
 	}
 
 	/**
