@@ -33,8 +33,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
-import com.madthrax.ridiculousRPG.animations.BoundedImage;
-import com.madthrax.ridiculousRPG.animations.ImageProjectionService;
+import com.madthrax.ridiculousRPG.animation.BoundedImage;
+import com.madthrax.ridiculousRPG.animation.ImageProjectionService;
 import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**

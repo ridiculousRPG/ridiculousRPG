@@ -20,7 +20,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 
 import com.badlogic.gdx.math.Rectangle;
-import com.madthrax.ridiculousRPG.events.EventObject;
+import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 

@@ -16,9 +16,9 @@
 
 package com.madthrax.ridiculousRPG.movement.misc;
 
-import com.madthrax.ridiculousRPG.animations.TileAnimation;
-import com.madthrax.ridiculousRPG.events.EventObject;
-import com.madthrax.ridiculousRPG.events.Speed;
+import com.madthrax.ridiculousRPG.animation.TileAnimation;
+import com.madthrax.ridiculousRPG.event.EventObject;
+import com.madthrax.ridiculousRPG.event.Speed;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 

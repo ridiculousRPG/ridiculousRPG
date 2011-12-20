@@ -18,7 +18,7 @@ package com.madthrax.ridiculousRPG.movement.input;
 
 import com.badlogic.gdx.Gdx;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.events.Direction;
+import com.madthrax.ridiculousRPG.event.Direction;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 

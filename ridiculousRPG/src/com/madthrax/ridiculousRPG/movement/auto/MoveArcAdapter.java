@@ -18,7 +18,7 @@ package com.madthrax.ridiculousRPG.movement.auto;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.madthrax.ridiculousRPG.events.EventObject;
+import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 

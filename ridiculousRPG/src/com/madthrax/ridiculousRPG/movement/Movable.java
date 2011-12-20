@@ -20,8 +20,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Rectangle;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.events.Direction;
-import com.madthrax.ridiculousRPG.events.Speed;
+import com.madthrax.ridiculousRPG.event.Direction;
+import com.madthrax.ridiculousRPG.event.Speed;
 import com.madthrax.ridiculousRPG.movement.misc.MoveNullAdapter;
 
 /**

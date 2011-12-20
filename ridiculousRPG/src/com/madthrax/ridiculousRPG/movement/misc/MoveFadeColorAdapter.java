@@ -18,8 +18,8 @@ package com.madthrax.ridiculousRPG.movement.misc;
 
 import com.badlogic.gdx.graphics.Color;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.events.EventObject;
-import com.madthrax.ridiculousRPG.events.Speed;
+import com.madthrax.ridiculousRPG.event.EventObject;
+import com.madthrax.ridiculousRPG.event.Speed;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 

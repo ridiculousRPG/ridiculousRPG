@@ -17,7 +17,7 @@
 package com.madthrax.ridiculousRPG.movement.auto;
 
 import com.badlogic.gdx.math.Rectangle;
-import com.madthrax.ridiculousRPG.events.Direction;
+import com.madthrax.ridiculousRPG.event.Direction;
 import com.madthrax.ridiculousRPG.movement.CombinedMovesAdapter;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 

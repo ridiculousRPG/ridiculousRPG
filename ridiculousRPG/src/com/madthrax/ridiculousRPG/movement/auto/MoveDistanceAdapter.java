@@ -16,7 +16,7 @@
 
 package com.madthrax.ridiculousRPG.movement.auto;
 
-import com.madthrax.ridiculousRPG.events.Direction;
+import com.madthrax.ridiculousRPG.event.Direction;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 
