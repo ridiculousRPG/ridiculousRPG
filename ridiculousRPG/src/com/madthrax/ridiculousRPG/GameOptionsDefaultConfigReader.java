@@ -37,7 +37,7 @@ public class GameOptionsDefaultConfigReader {
 	/**
 	 * This constructor parses the options from an properties file. The name of
 	 * the file is specified inside the launcher by
-	 * {@link GameLauncher#gameOptionsFile}.<br>
+	 * {@link GameLauncher#OPTIONS_FILE}.<br>
 	 * Feel free to write your own launcher if you prefer an XML structure or
 	 * whatever.
 	 * 

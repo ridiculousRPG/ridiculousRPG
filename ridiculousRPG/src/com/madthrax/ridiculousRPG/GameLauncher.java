@@ -30,17 +30,17 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 /**
  * Launches the game from either an android handy or a desktop pc.<br>
  * Simply create your own Launcher if you don't want the branding &quot;(powered
- * by ridiculousRPG)&quot;
+ * by ridiculousRPG)&quot;.
  * 
  * @author Alexander Baumgartner
  */
 public class GameLauncher extends AndroidApplication {
-	public String brandingDefault = " (powered by ridiculousRPG)";
-	public String brandingDebug = " (powered by ridiculousRPG - DEBUGMODE)";
+	public static String BRANDING = " (powered by ridiculousRPG)";
+	public static String DEBUG_TEXT = " *DEBUGMODE*";
 	/**
 	 * Dafault = "data/game.ini"
 	 */
-	public String gameOptionsFile = "data/game.ini";
+	public static String OPTIONS_FILE = "data/game.ini";
 
 	/**
 	 * AUTOMATICALLY CALLED BY ANDROID<br>
@@ -53,25 +53,35 @@ public class GameLauncher extends AndroidApplication {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		GameOptions options = new GameOptionsDefaultConfigReader(
-				new AndroidFiles(getAssets()).internal(gameOptionsFile)
+				new AndroidFiles(getAssets()).internal(OPTIONS_FILE)
 						.file()).options;
 		options.fullscreen = true;
-		setTitle(options.title
-				+ (options.debug ? brandingDebug : brandingDefault));
+		setTitle(buildTitle(options.title, options.debug));
 		initialize(new GameBase(options), options.useGL20);
+	}
+
+	/**
+	 * Builds the title for the window.
+	 * @param title
+	 * @param debug
+	 * @return
+	 */
+	protected static String buildTitle(String title, boolean debug) {
+		if (debug) title += GameLauncher.DEBUG_TEXT;
+		title += BRANDING;
+		return title;
 	}
 
 	/**
 	 * Equivalent to {@link #onCreate(Bundle)} for the desktop.
 	 */
-	public void onCreateDesktop() {
+	public static void onCreateDesktop() {
 		GameOptions options = new GameOptionsDefaultConfigReader(new File(
-				gameOptionsFile)).options;
+				OPTIONS_FILE)).options;
 		switch (options.backend) {
 		case LWJGL: {
 			LwjglApplicationConfiguration conf = new LwjglApplicationConfiguration();
-			conf.title = options.title
-					+ (options.debug ? brandingDebug : brandingDefault);
+			conf.title = buildTitle(options.title, options.debug);
 			conf.width = options.width;
 			conf.height = options.height;
 			conf.useGL20 = options.useGL20;
@@ -82,8 +92,7 @@ public class GameLauncher extends AndroidApplication {
 			break;
 		case JOGL: {
 			JoglApplicationConfiguration conf = new JoglApplicationConfiguration();
-			conf.title = options.title
-					+ (options.debug ? brandingDebug : brandingDefault);
+			conf.title = buildTitle(options.title, options.debug);
 			conf.width = options.width;
 			conf.height = options.height;
 			conf.useGL20 = options.useGL20;
@@ -105,6 +114,6 @@ public class GameLauncher extends AndroidApplication {
 	 * @param argv
 	 */
 	public static void main(String[] argv) {
-		new GameLauncher().onCreateDesktop();
+		onCreateDesktop();
 	}
 }

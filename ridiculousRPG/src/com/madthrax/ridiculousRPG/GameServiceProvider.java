@@ -334,7 +334,7 @@ public class GameServiceProvider {
 					attentionInputMultiplexer.addProcessor(in);
 				}
 			}
-			if (!found) {
+			if (!found && service instanceof InputProcessor) {
 				attentionInputMultiplexer
 						.addProcessor((InputProcessor) service);
 			}
