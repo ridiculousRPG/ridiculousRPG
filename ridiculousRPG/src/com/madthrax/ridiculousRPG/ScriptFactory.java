@@ -16,6 +16,7 @@
 
 package com.madthrax.ridiculousRPG;
 
+import javax.script.Bindings;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -37,16 +38,89 @@ public class ScriptFactory {
 	public void init(String initScript) {
 		ScriptEngine engine = ENGINE_FACTORY
 				.getEngineByName(getScriptLanguage());
+		evalAllScripts(engine, Gdx.files
+				.internal(GameBase.$options().initScript), false,
+				ENGINE_FACTORY.getBindings());
+	}
+
+	/**
+	 * This method evaluates all scripts inside an specified directory using the
+	 * specified {@link ScriptEngine}.
+	 * 
+	 * @param engine
+	 *            The {@link ScriptEngine} to use for evaluating the files.
+	 * @param path
+	 *            The path to a specified script file or a directory containing
+	 *            script files.
+	 * @param recurse
+	 *            Specifies if scripts in subdirectories should be evaluated.
+	 * @return The count of files which has been evaluated
+	 */
+	public int evalAllScripts(ScriptEngine engine, FileHandle path,
+			boolean recurse) {
+		return evalAllScripts(engine, path, recurse, null);
+	}
+
+	/**
+	 * This method evaluates all scripts inside an specified directory using the
+	 * specified {@link ScriptEngine} with the specified bindings.
+	 * 
+	 * @param engine
+	 *            The {@link ScriptEngine} to use for evaluating the files.
+	 * @param path
+	 *            The path to a specified script file or a directory containing
+	 *            script files.
+	 * @param recurse
+	 *            Specifies if scripts in subdirectories should be evaluated.
+	 * @param bindings
+	 *            The bindings object to use for evaluating the scripts. See
+	 *            also {@link ScriptEngine#getBindings(int)}.
+	 * @return The count of files which has been evaluated
+	 */
+	public int evalAllScripts(ScriptEngine engine, FileHandle path,
+			boolean recurse, Bindings bindings) {
 		try {
-			FileHandle[] files = Gdx.files.internal("data/scripts/global/")
-					.list();
-			for (FileHandle scriptFile : files) {
-				engine.eval(scriptFile.readString("UTF-8"), ENGINE_FACTORY
-						.getBindings());
+			if (path.isDirectory()) {
+				int count = 0;
+				for (FileHandle child : path.list()) {
+					if ((recurse && child.isDirectory())
+							|| hasAllowedSuffix(child)) {
+						count += evalAllScripts(engine, child, recurse,
+								bindings);
+					}
+				}
+				return count;
+			} else if (bindings == null) {
+				engine.eval(path.readString(GameBase.$options().encoding));
+				return 1;
+			} else {
+				engine.eval(path.readString(GameBase.$options().encoding),
+						bindings);
+				return 1;
 			}
 		} catch (ScriptException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	/**
+	 * Determines if the file has an suffix which matches the list of allowed
+	 * suffixes for this {@link ScriptFactory}. The comparison is case
+	 * insensitive.
+	 * 
+	 * @param file
+	 *            The {@link FileHandle} to check
+	 * @return true if the file extension matches one of
+	 *         {@link #getAllowedSuffix()}
+	 */
+	public boolean hasAllowedSuffix(FileHandle file) {
+		String suffix = file.extension();
+		for (String allowed : getAllowedSuffix()) {
+			if (suffix.equalsIgnoreCase(allowed)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -60,7 +134,7 @@ public class ScriptFactory {
 		try {
 			FileHandle fh = Gdx.files.internal(scriptCodeOrPath);
 			if (fh.exists()) {
-				return fh.readString("UTF-8");
+				return fh.readString(GameBase.$options().encoding);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -83,13 +157,27 @@ public class ScriptFactory {
 	 * Override this method if you want an other script language.<br>
 	 * The script engine has to support invocation by implementing the interface
 	 * {@link Invocable}<br>
-	 * Maybe you also need to override
+	 * Maybe you also need to override {@link #getAllowedSuffix()}
 	 * {@link #createFunction(SortedIntList, String, String)}
 	 * 
 	 * @return The script language used by this script interpreter.
 	 */
 	public String getScriptLanguage() {
 		return "JavaScript";
+	}
+
+	/**
+	 * Override this method if you want an other script language.<br>
+	 * The script engine has to support invocation by implementing the interface
+	 * {@link Invocable}<br>
+	 * Maybe you also need to override {@link #getScriptLanguage()}
+	 * {@link #createFunction(SortedIntList, String, String)}
+	 * 
+	 * @return An array of allowed file suffixes. This factory allows
+	 *         &quot;js&quot; and &quot;jscript&quot;.
+	 */
+	public String[] getAllowedSuffix() {
+		return new String[] { "js", "jscript" };
 	}
 
 	/**
@@ -107,7 +195,7 @@ public class ScriptFactory {
 	 *            consumed by the function. In a lot of cases it makes sense to
 	 *            return true.
 	 * @param fncParam
-	 *            All specified parameters.
+	 *            Specifies the parameters for the function.
 	 * @return A {@link String} with the generated script function
 	 */
 	public String createScriptFunction(SortedIntList<String> codeLines,
