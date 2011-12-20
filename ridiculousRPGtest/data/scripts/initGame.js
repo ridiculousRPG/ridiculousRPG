@@ -16,9 +16,13 @@
 $scriptFactory = Packages.com.madthrax.ridiculousRPG.GameBase.$scriptFactory();
 $scriptFactory.evalAllGlobalScripts("data/scripts/global", false);
 
+//Allow toggling between debug and normal mode (Alt+D)
+$serviceProvider.putService("toggleDebug", new ridiculousRPG.misc.ToggleDebugModeService());
+//Allow toggling between fullscreen mode and windowed mode (Alt+Enter)
+$serviceProvider.putService("toggleFullscreen", new ridiculousRPG.camera.CameraToggleFullscreenService());
 //Add the DisplayFPSService to the service provider
-$serviceProvider.putService("fpsService", new ridiculousRPG.ui.DisplayFPSService());
+$serviceProvider.putService("displayFPS", new ridiculousRPG.ui.DisplayFPSService());
 //Add the StandardMenuService to the service provider
-$serviceProvider.putService("menuService", new ridiculousRPG.ui.StandardMenuService());
+$serviceProvider.putService("menu", new ridiculousRPG.ui.StandardMenuService("bgImage"));
 //Add the ImageProjectionService to the service provider (used by StandardMenuService)
-$serviceProvider.putService("imageProjectionService", ridiculousRPG.animation.ImageProjectionService.$background);
+$serviceProvider.putService("bgImage", new ridiculousRPG.animation.ImageProjectionService(true, false));
