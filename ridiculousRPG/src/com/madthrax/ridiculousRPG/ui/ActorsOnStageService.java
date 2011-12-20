@@ -46,9 +46,8 @@ public class ActorsOnStageService extends Stage implements GameService,
 	private static Vector2 tmpPoint = new Vector2(0f, 0f);
 
 	public ActorsOnStageService() {
-		//TODO: uncomment after libgdx bugfix :/
 		super(GameBase.$().getScreen().width, GameBase.$().getScreen().height,
-				true/*, GameBase.$().getSpriteBatch()*/);
+				true, GameBase.$().getSpriteBatch());
 		skinNormal = new Skin(Gdx.files.internal("data/uiskin2.json"),
 				Gdx.files.internal("data/uiskin2.png"));
 		skinFocused = new Skin(Gdx.files.internal("data/uiskin2.json"),
@@ -110,10 +109,8 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
-		//TODO: uncomment after libgdx bugfix :/
-		//getCamera().update();
-		//super.root.draw(spriteBatch, 1f);
-		super.draw();
+		getCamera().update();
+		super.root.draw(spriteBatch, 1f);
 	}
 
 	public Matrix4 projectionMatrix(Camera camera) {
