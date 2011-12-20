@@ -18,7 +18,6 @@ package com.madthrax.ridiculousRPG.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Delay;
 import com.badlogic.gdx.scenes.scene2d.actions.FadeIn;
@@ -42,7 +41,8 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
  * 
  * @author Alexander Baumgartner
  */
-public class StandardMenuService extends ActorsOnStageService implements ResizeListener {
+public class StandardMenuService extends ActorsOnStageService implements
+		ResizeListener {
 	protected enum ServiceState {
 		PAUSED, START_MENU, GAME_MENU, IDLE
 	};
@@ -229,7 +229,8 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 
 	private void createStartMenu() {
 		if (background != null) {
-			ImageProjectionService.$background.getImages().add(new BoundedImage(background, new Rectangle(0,0,350,350)));
+			ImageProjectionService.$background.getImages().add(
+					new BoundedImage(background));
 		}
 		final Skin skin = getSkinNormal();
 		Window w = new Window("Start menu", skin);
@@ -294,8 +295,8 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 	}
 
 	private void center(Actor actor) {
-		actor.x = (int)(centerX() - actor.width * .5f);
-		actor.y = (int)(centerY() - actor.height * .5f);
+		actor.x = (int) (centerX() - actor.width * .5f);
+		actor.y = (int) (centerY() - actor.height * .5f);
 	}
 
 	protected void createPauseMenu() {
@@ -342,9 +343,11 @@ public class StandardMenuService extends ActorsOnStageService implements ResizeL
 	public void showInfoNormal(String info) {
 		showInfo(getSkinNormal(), info);
 	}
+
 	public void showInfoFocused(String info) {
 		showInfo(getSkinFocused(), info);
 	}
+
 	private void showInfo(final Skin skin, String info) {
 		final Window w = new Window(skin);
 		addActor(w);
