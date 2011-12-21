@@ -130,6 +130,8 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 	public void play() {
 		player.doPlay();
 		playing = true;
+		// reset timer
+		graphicsPixmap.streamStoped(true);
 	}
 
 	public boolean isPlaying() {

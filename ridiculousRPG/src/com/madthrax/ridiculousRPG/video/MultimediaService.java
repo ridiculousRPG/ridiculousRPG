@@ -16,7 +16,6 @@
 
 package com.madthrax.ridiculousRPG.video;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -55,12 +54,59 @@ public class MultimediaService implements GameService, Drawable {
 	 * Plays the (ogg-theora) video in full screen exclusive mode.<br>
 	 * The game is paused while the video is running.
 	 * 
+	 * @param internalPath
+	 *            The ogg theora video file
+	 */
+	public void play(String internalPath) {
+		play(Gdx.files.internal(internalPath));
+	}
+
+	/**
+	 * Plays the (ogg-theora) video in embedded mode.<br>
+	 * The video is embedded into the games world. The game is not stopped. The
+	 * video integrates smoothly into the game.
+	 * 
+	 * @param internalPath
+	 *            The ogg theora video file
+	 * @param bounds
+	 *            The position, width and height for embedding the video into
+	 *            the games world coordinates
+	 */
+	public void play(String internalPath, Rectangle bounds) {
+		play(Gdx.files.internal(internalPath), bounds);
+	}
+
+	/**
+	 * Plays an ogg theora video
+	 * 
+	 * @param internalPath
+	 *            The file for streaming the ogg theora video
+	 * @param bounds
+	 *            The position, width and height for embedding the video
+	 * @param projectToMap
+	 *            Defines whether to project the video onto the map or onto the
+	 *            screen coordinates
+	 * @param withAudio
+	 *            Defines if the audio output should be muted or not.
+	 * @param freezeTheWorld
+	 *            If true, the game will be frozen.
+	 */
+	public void play(String internalPath, Rectangle bounds,
+			boolean projectToMap, boolean withAudio, boolean freezeTheWorld) {
+		play(Gdx.files.internal(internalPath), bounds, projectToMap, withAudio,
+				freezeTheWorld);
+	}
+
+	/**
+	 * Plays the (ogg-theora) video in full screen exclusive mode.<br>
+	 * The game is paused while the video is running.
+	 * 
 	 * @param file
 	 *            The ogg theora video file
 	 */
 	public void play(FileHandle file) {
 		try {
-			play(new File(file.path()).toURI().toURL());
+			play(file.file().toURI().toURL());
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		}
@@ -79,7 +125,7 @@ public class MultimediaService implements GameService, Drawable {
 	 */
 	public void play(FileHandle file, Rectangle bounds) {
 		try {
-			play(new File(file.path()).toURI().toURL(), bounds);
+			play(file.file().toURI().toURL(), bounds);
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		}
@@ -103,8 +149,8 @@ public class MultimediaService implements GameService, Drawable {
 	public void play(FileHandle file, Rectangle bounds, boolean projectToMap,
 			boolean withAudio, boolean freezeTheWorld) {
 		try {
-			play(new File(file.path()).toURI().toURL(), bounds, projectToMap,
-					withAudio, freezeTheWorld);
+			play(file.file().toURI().toURL(), bounds, projectToMap, withAudio,
+					freezeTheWorld);
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		}
