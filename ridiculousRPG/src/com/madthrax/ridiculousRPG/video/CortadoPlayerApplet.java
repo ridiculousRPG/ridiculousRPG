@@ -21,7 +21,6 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.net.URL;
 
-import com.fluendo.jst.Message;
 import com.fluendo.player.Cortado;
 
 /**
@@ -48,7 +47,7 @@ public class CortadoPlayerApplet extends Cortado {
 	 */
 	public static boolean shutdownCortadoHook = true;
 	private Graphics graphics;
-	private CortadoPlayerAppletWrapper stub;
+	//private CortadoPlayerAppletWrapper stub;
 
 	/**
 	 * This is an applet! You should NEVER use this constructor manually!<br>
@@ -58,10 +57,13 @@ public class CortadoPlayerApplet extends Cortado {
 	 */
 	public CortadoPlayerApplet(CortadoPlayerAppletWrapper stub,
 			Graphics graphics) {
-		this.stub = stub;
+		//this.stub = stub;
 		this.graphics = graphics;
 	}
 
+	/* This doesn't work for standard cortado download, because
+	 * all class names other than Cortado are encrypted.
+	 * For example the class Message becomes the letter a :/
 	@Override
 	public void handleMessage(Message msg) {
 		if (msg.getType() == Message.EOS || msg.getType() == Message.ERROR) {
@@ -69,6 +71,7 @@ public class CortadoPlayerApplet extends Cortado {
 		}
 		super.handleMessage(msg);
 	}
+	*/
 
 	@Override
 	public Graphics getGraphics() {
@@ -82,11 +85,10 @@ public class CortadoPlayerApplet extends Cortado {
 		try {
 			stop();
 			setStub(null);
-			stub = null;
+			//stub = null;
 			graphics = null;
 			super.destroy();
 			if (isActive()) {
-				shutDown(null);
 				removeAll();
 				// try to crash it
 				doPlay();
