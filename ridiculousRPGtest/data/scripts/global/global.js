@@ -15,7 +15,3 @@ System = Packages.java.lang.System;
 ridiculousRPG = Packages.com.madthrax.ridiculousRPG;
 // make instantiated GameBase referencable with the Dollar sign $
 $ = ridiculousRPG.GameBase.$();
-// make shortcut for ScriptFactory
-$scriptFactory = $.getScriptFactory();
-// make shortcut for GameServiceProvider
-$serviceProvider = $.getServiceProvider();
