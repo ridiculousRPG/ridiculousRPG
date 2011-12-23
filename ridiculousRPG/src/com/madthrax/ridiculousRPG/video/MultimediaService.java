@@ -27,7 +27,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.Drawable;
-import com.madthrax.ridiculousRPG.service.GameService;
+import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 
 /**
  * This service is capable to play video files.<br>
@@ -44,58 +44,15 @@ import com.madthrax.ridiculousRPG.service.GameService;
  * @see http://www.theora.org/cortado/
  * @author Alexander Baumgartner
  */
-public class MultimediaService implements GameService, Drawable {
+public class MultimediaService extends GameServiceDefaultImpl implements
+		Drawable {
 
 	private CortadoPlayerAppletWrapper player;
 	private boolean playing;
 	private boolean projectToMap;
-
-	/**
-	 * Plays the (ogg-theora) video in full screen exclusive mode.<br>
-	 * The game is paused while the video is running.
-	 * 
-	 * @param internalPath
-	 *            The ogg theora video file
-	 */
-	public void play(String internalPath) {
-		play(Gdx.files.internal(internalPath));
-	}
-
-	/**
-	 * Plays the (ogg-theora) video in embedded mode.<br>
-	 * The video is embedded into the games world. The game is not stopped. The
-	 * video integrates smoothly into the game.
-	 * 
-	 * @param internalPath
-	 *            The ogg theora video file
-	 * @param bounds
-	 *            The position, width and height for embedding the video into
-	 *            the games world coordinates
-	 */
-	public void play(String internalPath, Rectangle bounds) {
-		play(Gdx.files.internal(internalPath), bounds);
-	}
-
-	/**
-	 * Plays an ogg theora video
-	 * 
-	 * @param internalPath
-	 *            The file for streaming the ogg theora video
-	 * @param bounds
-	 *            The position, width and height for embedding the video
-	 * @param projectToMap
-	 *            Defines whether to project the video onto the map or onto the
-	 *            screen coordinates
-	 * @param withAudio
-	 *            Defines if the audio output should be muted or not.
-	 * @param freezeTheWorld
-	 *            If true, the game will be frozen.
-	 */
-	public void play(String internalPath, Rectangle bounds,
-			boolean projectToMap, boolean withAudio, boolean freezeTheWorld) {
-		play(Gdx.files.internal(internalPath), bounds, projectToMap, withAudio,
-				freezeTheWorld);
-	}
+	private boolean loop;
+	private float playTime;
+	private float position;
 
 	/**
 	 * Plays the (ogg-theora) video in full screen exclusive mode.<br>
@@ -105,11 +62,8 @@ public class MultimediaService implements GameService, Drawable {
 	 *            The ogg theora video file
 	 */
 	public void play(FileHandle file) {
-		try {
-			play(file.file().toURI().toURL());
-		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
-		}
+		play(file, new Rectangle(0, 0, Gdx.graphics.getWidth(), Gdx.graphics
+				.getHeight()), false, true, true, -1f, false);
 	}
 
 	/**
@@ -124,11 +78,29 @@ public class MultimediaService implements GameService, Drawable {
 	 *            the games world coordinates
 	 */
 	public void play(FileHandle file, Rectangle bounds) {
-		try {
-			play(file.file().toURI().toURL(), bounds);
-		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
-		}
+		play(file, bounds, true, true, false, -1f, true);
+	}
+
+	/**
+	 * Plays the (ogg-theora) video in embedded mode.<br>
+	 * The video is embedded into the games world. The game is not stopped. The
+	 * video integrates smoothly into the game.
+	 * 
+	 * @param file
+	 *            The ogg theora video file
+	 * @param bounds
+	 *            The position, width and height for embedding the video into
+	 *            the games world coordinates
+	 * @param playTime
+	 *            If > -1, the video will stop at the given time (Seconds).<br>
+	 *            Use -1 to play the entire video
+	 * @param loop
+	 *            If true, the playback will loop forever (until stop() is
+	 *            called).
+	 */
+	public void play(FileHandle file, Rectangle bounds, float playTime,
+			boolean loop) {
+		play(file, bounds, true, true, false, playTime, loop);
 	}
 
 	/**
@@ -145,42 +117,22 @@ public class MultimediaService implements GameService, Drawable {
 	 *            Defines if the audio output should be muted or not.
 	 * @param freezeTheWorld
 	 *            If true, the game will be frozen.
+	 * @param playTime
+	 *            If > -1, the video will stop at the given time (Seconds).<br>
+	 *            Use -1 to play the entire video
+	 * @param loop
+	 *            If true, the playback will loop forever (until stop() is
+	 *            called).
 	 */
 	public void play(FileHandle file, Rectangle bounds, boolean projectToMap,
-			boolean withAudio, boolean freezeTheWorld) {
+			boolean withAudio, boolean freezeTheWorld, float playTime,
+			boolean loop) {
 		try {
 			play(file.file().toURI().toURL(), bounds, projectToMap, withAudio,
-					freezeTheWorld);
+					freezeTheWorld, playTime, loop);
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	/**
-	 * Plays the (ogg-theora) video in full screen exclusive mode.<br>
-	 * The game is paused while the video is running.
-	 * 
-	 * @param url
-	 *            The url for streaming the ogg theora video
-	 */
-	public void play(URL url) {
-		play(url, new Rectangle(0, 0, Gdx.graphics.getWidth(), Gdx.graphics
-				.getHeight()), false, true, true);
-	}
-
-	/**
-	 * Plays the (ogg-theora) video in embedded mode.<br>
-	 * The video is embedded into the games world. The game is not stopped. The
-	 * video integrates smoothly into the game.
-	 * 
-	 * @param url
-	 *            The url for streaming the ogg theora video
-	 * @param bounds
-	 *            The position, width and height for embedding the video into
-	 *            the games world coordinates
-	 */
-	public void play(URL url, Rectangle bounds) {
-		play(url, bounds, true, true, false);
 	}
 
 	/**
@@ -197,9 +149,16 @@ public class MultimediaService implements GameService, Drawable {
 	 *            Defines if the audio output should be muted or not.
 	 * @param freezeTheWorld
 	 *            If true, the game will be frozen.
+	 * @param playTime
+	 *            If > -1, the video will stop at the given time (Seconds).<br>
+	 *            Use -1 to play the entire video
+	 * @param loop
+	 *            If true, the playback will loop forever (until stop() is
+	 *            called).
 	 */
 	public void play(URL url, Rectangle bounds, boolean projectToMap,
-			boolean withAudio, boolean freezeTheWorld) {
+			boolean withAudio, boolean freezeTheWorld, float playTime,
+			boolean loop) {
 		if (!freezeTheWorld
 				|| GameBase.$serviceProvider().requestAttention(this, true,
 						true)) {
@@ -208,7 +167,10 @@ public class MultimediaService implements GameService, Drawable {
 			player = new CortadoPlayerAppletWrapper(url, bounds, projectToMap,
 					withAudio);
 			player.play();
-			playing = true;
+			this.playing = true;
+			this.loop = loop;
+			this.playTime = playTime;
+			this.position = 0;
 			this.projectToMap = projectToMap;
 		}
 	}
@@ -230,12 +192,14 @@ public class MultimediaService implements GameService, Drawable {
 
 	@Override
 	public void freeze() {
+		super.freeze();
 		if (playing)
 			player.pause();
 	}
 
 	@Override
 	public void unfreeze() {
+		super.unfreeze();
 		if (playing)
 			player.play();
 	}
@@ -250,7 +214,18 @@ public class MultimediaService implements GameService, Drawable {
 		if (!playing)
 			return;
 		if (player.isPlaying()) {
+			if (playTime > -1) {
+				if (position > playTime) {
+					player.stop();
+					return;
+				} else if (!frozen) {
+					position += Gdx.graphics.getDeltaTime();
+				}
+			}
 			player.draw(spriteBatch, debug);
+		} else if (loop) {
+			position = 0;
+			player.play();
 		} else {
 			GameBase.$serviceProvider().releaseAttention(this);
 			playing = false;
