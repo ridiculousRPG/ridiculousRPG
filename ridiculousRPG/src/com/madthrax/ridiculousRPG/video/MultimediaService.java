@@ -227,7 +227,7 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 				if (position > playTime) {
 					player.stop();
 				}
-			} else if (player.estimateEOS(1000)) {
+			} else if (player.estimateEOS(EOS_TIMEOUT_MILLIS)) {
 				player.stop();
 			}
 		} else if (loop) {
