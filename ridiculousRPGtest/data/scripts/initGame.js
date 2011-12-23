@@ -28,4 +28,4 @@ $.serviceProvider.putService("menu", new ridiculousRPG.ui.StandardMenuService("b
 $.serviceProvider.putService("bgImage", new ridiculousRPG.animation.ImageProjectionService(true, false));
 //Add the ImageProjectionService to the service provider (used by StandardMenuService)
 $.serviceProvider.putService("video", new ridiculousRPG.video.MultimediaService());
-$.serviceProvider.getService("video").play("data/video/test.ogg", $.screen);
+$.serviceProvider.getService("video").play(internalFile("data/video/test.ogg"), $.screen, 1, true);

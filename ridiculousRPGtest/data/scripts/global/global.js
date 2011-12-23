@@ -13,5 +13,16 @@
 System = Packages.java.lang.System;
 // make shortcut for package com.madthrax.ridiculousRPG
 ridiculousRPG = Packages.com.madthrax.ridiculousRPG;
+// make shortcut for package com.badlogic.gdx
+gdx = Packages.com.badlogic.gdx;
 // make instantiated GameBase referencable with the Dollar sign $
 $ = ridiculousRPG.GameBase.$();
+
+// Convenience method to obtain internal files from pathname
+function internalFile(pathName) {
+	return gdx.Gdx.files.internal(pathName);
+}
+// Convenience method to obtain external files from pathname
+function externalFile(pathName) {
+	return gdx.Gdx.files.external(pathName);
+}
