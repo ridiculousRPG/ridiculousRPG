@@ -68,15 +68,18 @@ public class CortadoPixmapWrapper extends GraphicsPixmapWrapper implements
 	 * 
 	 * @param paused
 	 *            indicates if the player is paused
+	 * @param timeoutMillis
+	 *            Timeout in milliseconds to switch into EOS state
 	 * 
 	 * @return true if<br>
-	 *         <code>ready && lastFrameReceived + 1000 < System.currentTimeMillis()</code>
+	 *         <code>ready && lastFrameReceived + timeout < System.currentTimeMillis()</code>
 	 */
-	public boolean streamStoped(boolean paused) {
+	public boolean streamStoped(boolean paused, long timeoutMillis) {
 		if (paused) {
 			lastFrameReceived = System.currentTimeMillis();
+			return false;
 		}
-		return ready && lastFrameReceived + 1000 < System.currentTimeMillis();
+		return ready && lastFrameReceived + timeoutMillis < System.currentTimeMillis();
 	}
 
 	@Override

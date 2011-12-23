@@ -131,7 +131,7 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 		player.doPlay();
 		playing = true;
 		// reset timer
-		graphicsPixmap.streamStoped(true);
+		graphicsPixmap.streamStoped(true, 0L);
 	}
 
 	public boolean isPlaying() {
@@ -232,11 +232,16 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 		return true;
 	}
 
+	/**
+	 * Estimates it the end of the stream is reached
+	 * @param timeout
+	 *            Timeout in milliseconds to switch into EOS state
+	 * @return
+	 */
+	public boolean estimateEOS(long timeout) {
+		return graphicsPixmap.streamStoped(player.paused, timeout);
+	}
 	public void draw(SpriteBatch spriteBatch, boolean debug) {
-		if (graphicsPixmap.streamStoped(player.paused)) {
-			stop();
-			return;
-		}
 		if (graphicsPixmap.isReady()) {
 			Pixmap toDraw = graphicsPixmap.getPixmap();
 			int width, height;

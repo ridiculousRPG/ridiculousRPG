@@ -46,13 +46,18 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
  */
 public class MultimediaService extends GameServiceDefaultImpl implements
 		Drawable {
-
 	private CortadoPlayerAppletWrapper player;
 	private boolean playing;
 	private boolean projectToMap;
 	private boolean loop;
 	private float playTime;
 	private float position;
+
+	/**
+	 * Milliseconds to estimate if the stream has stopped.<br>
+	 * Default = 1000
+	 */
+	public static long EOS_TIMEOUT_MILLIS = 1000;
 
 	/**
 	 * Plays the (ogg-theora) video in full screen exclusive mode.<br>
@@ -214,18 +219,21 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 		if (!playing)
 			return;
 		if (player.isPlaying()) {
+			player.draw(spriteBatch, debug);
 			if (playTime > -1) {
-				if (position > playTime) {
-					player.stop();
-					return;
-				} else if (!frozen) {
+				if (!frozen) {
 					position += Gdx.graphics.getDeltaTime();
 				}
+				if (position > playTime) {
+					player.stop();
+				}
+			} else if (player.estimateEOS(1000)) {
+				player.stop();
 			}
-			player.draw(spriteBatch, debug);
 		} else if (loop) {
 			position = 0;
 			player.play();
+			player.draw(spriteBatch, debug);
 		} else {
 			GameBase.$serviceProvider().releaseAttention(this);
 			playing = false;
