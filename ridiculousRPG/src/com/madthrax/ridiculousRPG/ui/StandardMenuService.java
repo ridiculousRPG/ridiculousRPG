@@ -43,13 +43,9 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
  * @author Alexander Baumgartner
  */
 public class StandardMenuService extends ActorsOnStageService implements
-		ResizeListener {
-	public enum ServiceState {
-		TITLE_SCREEN, GAME_MENU1, GAME_MENU2, GAME_MENU3, GAME_MENU4, GAME_MENU5, PAUSED, IDLE
-	};
+		MenuService, ResizeListener {
 
-	private ServiceState serviceState = ServiceState.IDLE;
-	private Invocable scriptEngine;
+	private MenuStateHandler serviceState;
 
 	/**
 	 * Initializes the menus and shows the title screen.<br>
@@ -63,7 +59,8 @@ public class StandardMenuService extends ActorsOnStageService implements
 	 */
 	public StandardMenuService(FileHandle callBackScript)
 			throws ScriptException {
-		scriptEngine = GameBase.$scriptFactory().obtainInvocable(callBackScript);
+		scriptEngine = GameBase.$scriptFactory()
+				.obtainInvocable(callBackScript);
 		changeState(ServiceState.TITLE_SCREEN);
 	}
 
@@ -76,21 +73,29 @@ public class StandardMenuService extends ActorsOnStageService implements
 		try {
 			switch (serviceState) {
 			case PAUSED:
-				return (Boolean) scriptEngine.invokeFunction("processInputPaused", this, keycode);
+				return (Boolean) scriptEngine.invokeFunction(
+						"processInputPaused", this, keycode);
 			case IDLE:
-				return (Boolean) scriptEngine.invokeFunction("processInputIdle", this, keycode);
+				return (Boolean) scriptEngine.invokeFunction(
+						"processInputIdle", this, keycode);
 			case GAME_MENU1:
-				return (Boolean) scriptEngine.invokeFunction("processInputGameMenu1", this, keycode);
+				return (Boolean) scriptEngine.invokeFunction(
+						"processInputGameMenu1", this, keycode);
 			case GAME_MENU2:
-				return (Boolean) scriptEngine.invokeFunction("processInputGameMenu2", this, keycode);
+				return (Boolean) scriptEngine.invokeFunction(
+						"processInputGameMenu2", this, keycode);
 			case GAME_MENU3:
-				return (Boolean) scriptEngine.invokeFunction("processInputGameMenu3", this, keycode);
+				return (Boolean) scriptEngine.invokeFunction(
+						"processInputGameMenu3", this, keycode);
 			case GAME_MENU4:
-				return (Boolean) scriptEngine.invokeFunction("processInputGameMenu3", this, keycode);
+				return (Boolean) scriptEngine.invokeFunction(
+						"processInputGameMenu3", this, keycode);
 			case GAME_MENU5:
-				return (Boolean) scriptEngine.invokeFunction("processInputGameMenu3", this, keycode);
+				return (Boolean) scriptEngine.invokeFunction(
+						"processInputGameMenu3", this, keycode);
 			case TITLE_SCREEN:
-				return (Boolean) scriptEngine.invokeFunction("processInputTitleScreen", this, keycode);
+				return (Boolean) scriptEngine.invokeFunction(
+						"processInputTitleScreen", this, keycode);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -110,7 +115,7 @@ public class StandardMenuService extends ActorsOnStageService implements
 		changeState(ServiceState.IDLE);
 	}
 
-	public boolean changeState(ServiceState newState) {
+	public boolean changeState(MenuStateHandler newState) {
 		boolean consumed = false;
 		if (serviceState != ServiceState.IDLE) {
 			consumed = GameBase.$serviceProvider().releaseAttention(this);
@@ -119,6 +124,8 @@ public class StandardMenuService extends ActorsOnStageService implements
 			} else {
 				return false;
 			}
+		} else {
+			super.clear();
 		}
 		if (newState != ServiceState.IDLE) {
 			boolean ok = GameBase.$serviceProvider().requestAttention(this,
@@ -132,9 +139,6 @@ public class StandardMenuService extends ActorsOnStageService implements
 			switch (newState) {
 			case PAUSED:
 				createGuiPaused();
-				break;
-			case IDLE:
-				createGuiIdle();
 				break;
 			case GAME_MENU1:
 				createGuiGameMenu1();
@@ -155,7 +159,8 @@ public class StandardMenuService extends ActorsOnStageService implements
 				createGuiTitleScreen();
 				break;
 			}
-
+		} else {
+			createGuiIdle();
 		}
 
 		serviceState = newState;
@@ -304,7 +309,7 @@ public class StandardMenuService extends ActorsOnStageService implements
 		focus(resume);
 	}
 
-	private void center(Actor actor) {
+	public void center(Object actor) {
 		actor.x = (int) (centerX() - actor.width * .5f);
 		actor.y = (int) (centerY() - actor.height * .5f);
 	}
