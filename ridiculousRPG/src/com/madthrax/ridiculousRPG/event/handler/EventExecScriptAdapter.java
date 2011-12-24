@@ -16,7 +16,6 @@
 package com.madthrax.ridiculousRPG.event.handler;
 
 import javax.script.Invocable;
-import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import com.badlogic.gdx.utils.SortedIntList;
@@ -349,13 +348,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 		script.append(factory.createScriptFunction(onStore, "store", true,
 				"eventSelf", "parentState", "currentlyExecuted", "eventState"));
 
-		ScriptEngine engine = factory.obtainEngine();
-		engine.eval(script.toString());
-		if (engine instanceof Invocable) {
-			this.engine = (Invocable) engine;
-		} else {
-			throw new ScriptException("Sorry engine is not invokable :(");
-		}
+		this.engine = factory.obtainInvocable(script);
 	}
 
 	/**

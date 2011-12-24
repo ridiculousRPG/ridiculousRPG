@@ -262,4 +262,33 @@ public class ScriptFactory {
 		script.append("\n}");
 		return script.toString();
 	}
+
+	public Invocable obtainInvocable(FileHandle scriptFileToLoad)
+			throws ScriptException {
+		return obtainInvocable(scriptFileToLoad
+				.readString(GameBase.$options().encoding));
+	}
+
+	public ScriptEngine obtainEngine(FileHandle scriptFileToLoad)
+			throws ScriptException {
+		return obtainEngine(scriptFileToLoad
+				.readString(GameBase.$options().encoding));
+	}
+
+	public Invocable obtainInvocable(CharSequence scriptToLoad)
+			throws ScriptException {
+		ScriptEngine engine = obtainEngine(scriptToLoad);
+		if (engine instanceof Invocable) {
+			return (Invocable) engine;
+		} else {
+			throw new ScriptException("Sorry engine is not invokable :(");
+		}
+	}
+
+	public ScriptEngine obtainEngine(CharSequence scriptToLoad)
+			throws ScriptException {
+		ScriptEngine engine = obtainEngine();
+		engine.eval(scriptToLoad.toString());
+		return engine;
+	}
 }

@@ -480,6 +480,10 @@ public class GameBase extends GameServiceDefaultImpl implements
 		return engineVersion;
 	}
 
+	public static void toggleCursor() {
+		Gdx.input.setCursorCatched(!Gdx.input.isCursorCatched());
+	}
+
 	public void dispose() {
 		if (fullscreen)
 			toggleFullscreen();

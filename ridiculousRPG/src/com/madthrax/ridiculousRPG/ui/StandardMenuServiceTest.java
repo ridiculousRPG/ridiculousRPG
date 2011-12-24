@@ -16,11 +16,8 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
-import javax.script.Invocable;
-import javax.script.ScriptException;
-
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Delay;
 import com.badlogic.gdx.scenes.scene2d.actions.FadeIn;
@@ -28,43 +25,48 @@ import com.badlogic.gdx.scenes.scene2d.actions.FadeOut;
 import com.badlogic.gdx.scenes.scene2d.actions.Remove;
 import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
 import com.badlogic.gdx.scenes.scene2d.ui.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.animation.BoundedImage;
+import com.madthrax.ridiculousRPG.animation.ImageProjectionService;
+import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
- * This class provides a customizable standard menu for the game.<br>
+ * This class provides a standard menu for the game.<br>
  * 
  * @author Alexander Baumgartner
  */
-public class StandardMenuService extends ActorsOnStageService implements
+public class StandardMenuServiceTest extends ActorsOnStageService implements
 		ResizeListener {
-	public enum ServiceState {
-		TITLE_SCREEN, GAME_MENU1, GAME_MENU2, GAME_MENU3, GAME_MENU4, GAME_MENU5, PAUSED, IDLE
+	protected enum ServiceState {
+		PAUSED, START_MENU, GAME_MENU, IDLE
 	};
 
+	private String bgServiceName;
+	private BoundedImage background;
 	private ServiceState serviceState = ServiceState.IDLE;
-	private Invocable scriptEngine;
 
-	/**
-	 * Initializes the menus and shows the title screen.<br>
-	 * The {@link StandardMenuService} immediately switches to
-	 * {@link ServiceState#TITLE_SCREEN}
-	 * 
-	 * @param callBackScript
-	 *            The script which contains all the callback functions which are
-	 *            called by this service
-	 * @throws ScriptException
-	 */
-	public StandardMenuService(FileHandle callBackScript)
-			throws ScriptException {
-		scriptEngine = GameBase.$scriptFactory().obtainInvocable(callBackScript);
-		changeState(ServiceState.TITLE_SCREEN);
+	public StandardMenuServiceTest(String backgroundProjectionService) {
+		this.bgServiceName = backgroundProjectionService;
+		if (GameBase.$().getOptions().titleBackground != null) {
+			setBackground(GameBase.$().getOptions().titleBackground);
+		}
+		changeState(ServiceState.START_MENU);
+	}
+
+	public static void toggleCursor() {
+		Gdx.input.setCursorCatched(!Gdx.input.isCursorCatched());
+	}
+
+	public void setBackground(String path) {
+		if (background != null)
+			background.dispose();
+		background = new BoundedImage(TextureRegionLoader.load(path));
 	}
 
 	@Override
@@ -73,27 +75,47 @@ public class StandardMenuService extends ActorsOnStageService implements
 	}
 
 	private boolean processInput(int keycode) {
-		try {
-			switch (serviceState) {
-			case PAUSED:
-				return (Boolean) scriptEngine.invokeFunction("processInputPaused", this, keycode);
-			case IDLE:
-				return (Boolean) scriptEngine.invokeFunction("processInputIdle", this, keycode);
-			case GAME_MENU1:
-				return (Boolean) scriptEngine.invokeFunction("processInputGameMenu1", this, keycode);
-			case GAME_MENU2:
-				return (Boolean) scriptEngine.invokeFunction("processInputGameMenu2", this, keycode);
-			case GAME_MENU3:
-				return (Boolean) scriptEngine.invokeFunction("processInputGameMenu3", this, keycode);
-			case GAME_MENU4:
-				return (Boolean) scriptEngine.invokeFunction("processInputGameMenu3", this, keycode);
-			case GAME_MENU5:
-				return (Boolean) scriptEngine.invokeFunction("processInputGameMenu3", this, keycode);
-			case TITLE_SCREEN:
-				return (Boolean) scriptEngine.invokeFunction("processInputTitleScreen", this, keycode);
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+		switch (serviceState) {
+		case PAUSED:
+			return processPausedState(keycode);
+		case IDLE:
+			return processIdleState(keycode);
+		case GAME_MENU:
+			return processGameMenuState(keycode);
+		case START_MENU:
+			return processStartMenuState(keycode);
+		}
+		return false;
+	}
+
+	private boolean processStartMenuState(int keycode) {
+		if (keycode == Input.Keys.ESCAPE) {
+			GameBase.exit();
+			return true;
+		}
+		return false;
+	}
+
+	private boolean processGameMenuState(int keycode) {
+		if (keycode == Input.Keys.ESCAPE) {
+			return changeState(ServiceState.IDLE);
+		}
+		return false;
+	}
+
+	private boolean processIdleState(int keycode) {
+		if (keycode == Input.Keys.P) {
+			return changeState(ServiceState.PAUSED);
+		}
+		if (keycode == Input.Keys.ESCAPE) {
+			return changeState(ServiceState.GAME_MENU);
+		}
+		return false;
+	}
+
+	private boolean processPausedState(int keycode) {
+		if (keycode == Input.Keys.P) {
+			return changeState(ServiceState.IDLE);
 		}
 		return false;
 	}
@@ -116,13 +138,18 @@ public class StandardMenuService extends ActorsOnStageService implements
 			consumed = GameBase.$serviceProvider().releaseAttention(this);
 			if (consumed) {
 				super.clear();
+				GameService bgService = GameBase.$service(bgServiceName);
+				if (bgService instanceof ImageProjectionService) {
+					((ImageProjectionService) bgService).getImages()
+							.removeValue(background, true);
+				}
 			} else {
 				return false;
 			}
 		}
 		if (newState != ServiceState.IDLE) {
-			boolean ok = GameBase.$serviceProvider().requestAttention(this,
-					true, newState == ServiceState.TITLE_SCREEN);
+			boolean ok = GameBase.$serviceProvider().requestAttention(this, true,
+					newState == ServiceState.START_MENU);
 			if (!ok) {
 				serviceState = ServiceState.IDLE;
 				return consumed;
@@ -131,28 +158,13 @@ public class StandardMenuService extends ActorsOnStageService implements
 
 			switch (newState) {
 			case PAUSED:
-				createGuiPaused();
+				createPauseMenu();
 				break;
-			case IDLE:
-				createGuiIdle();
+			case GAME_MENU:
+				createGameMenu();
 				break;
-			case GAME_MENU1:
-				createGuiGameMenu1();
-				break;
-			case GAME_MENU2:
-				createGuiGameMenu2();
-				break;
-			case GAME_MENU3:
-				createGuiGameMenu3();
-				break;
-			case GAME_MENU4:
-				createGuiGameMenu4();
-				break;
-			case GAME_MENU5:
-				createGuiGameMenu5();
-				break;
-			case TITLE_SCREEN:
-				createGuiTitleScreen();
+			case START_MENU:
+				createStartMenu();
 				break;
 			}
 
@@ -162,7 +174,7 @@ public class StandardMenuService extends ActorsOnStageService implements
 		return consumed;
 	}
 
-	private void createGuiGameMenu1() {
+	private void createGameMenu() {
 		final Skin skin = getSkinNormal();
 		Window w = new Window("Game menu", skin);
 		addActor(w);
@@ -214,7 +226,7 @@ public class StandardMenuService extends ActorsOnStageService implements
 		toTitle.setClickListener(new ClickListener() {
 			@Override
 			public void click(Actor actor, float x, float y) {
-				changeState(ServiceState.TITLE_SCREEN);
+				changeState(ServiceState.START_MENU);
 			}
 		});
 		w.row().fill(true, true).expand(true, false);
@@ -236,12 +248,14 @@ public class StandardMenuService extends ActorsOnStageService implements
 		focus(resume);
 	}
 
-	private void createGuiTitleScreen() {
-		Image bg = new Image(TextureRegionLoader.load("data/image/Title.png"));
-		bg.width = width();
-		bg.height = height();
-		addActor(bg);
-
+	private void createStartMenu() {
+		if (background != null) {
+			GameService backgroundService = GameBase.$service(bgServiceName);
+			if (backgroundService instanceof ImageProjectionService) {
+				((ImageProjectionService) backgroundService).getImages().add(
+						background);
+			}
+		}
 		final Skin skin = getSkinNormal();
 		Window w = new Window("Start menu", skin);
 		addActor(w);
@@ -309,7 +323,7 @@ public class StandardMenuService extends ActorsOnStageService implements
 		actor.y = (int) (centerY() - actor.height * .5f);
 	}
 
-	protected void createGuiPaused() {
+	protected void createPauseMenu() {
 		Skin skin = getSkinNormal();
 		Window w = new Window("PAUSE", skin);
 		addActor(w);
@@ -328,7 +342,7 @@ public class StandardMenuService extends ActorsOnStageService implements
 		exit.setClickListener(new ClickListener() {
 			@Override
 			public void click(Actor actor, float x, float y) {
-				changeState(ServiceState.TITLE_SCREEN);
+				changeState(ServiceState.START_MENU);
 			}
 		});
 		w.row().fill(true, true).expand(true, false);
@@ -342,6 +356,12 @@ public class StandardMenuService extends ActorsOnStageService implements
 	@Override
 	public void resize(int width, int height) {
 		refreshMenu();
+	}
+
+	@Override
+	public void dispose() {
+		if (background != null)
+			background.dispose();
 	}
 
 	public void showInfoNormal(String info) {
