@@ -65,10 +65,12 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 	 * 
 	 * @param file
 	 *            The ogg theora video file
+	 * @param audio
+	 *            Wether or not to stream the audio sequence
 	 */
-	public void play(FileHandle file) {
+	public void play(FileHandle file, boolean audio) {
 		play(file, new Rectangle(0, 0, Gdx.graphics.getWidth(), Gdx.graphics
-				.getHeight()), false, true, true, -1f, false);
+				.getHeight()), false, audio, true, -1f, false);
 	}
 
 	/**
@@ -83,7 +85,7 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 	 *            the games world coordinates
 	 */
 	public void play(FileHandle file, Rectangle bounds) {
-		play(file, bounds, true, true, false, -1f, true);
+		play(file, bounds, true, false, false, -1f, true);
 	}
 
 	/**
@@ -105,7 +107,7 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 	 */
 	public void play(FileHandle file, Rectangle bounds, float playTime,
 			boolean loop) {
-		play(file, bounds, true, true, false, playTime, loop);
+		play(file, bounds, true, false, false, playTime, loop);
 	}
 
 	/**
