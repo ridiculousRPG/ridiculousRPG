@@ -2,8 +2,6 @@
  * This script file is the starting point of the game.
  * See property INIT_SCRIPT in game.ini
  *
- * Split the file up before it becomes a monster!
- *
  * The default scripting engine is Mozilla Rhino.
  * See http://download.oracle.com/javase/6/docs/technotes/guides/scripting/programmer_guide/index.html
  *
@@ -23,9 +21,7 @@ $.serviceProvider.putService("toggleFullscreen", new ridiculousRPG.camera.Camera
 //Add the DisplayFPSService to the service provider
 $.serviceProvider.putService("displayFPS", new ridiculousRPG.ui.DisplayFPSService());
 //Add the StandardMenuService to the service provider
-$.serviceProvider.putService("menu", new ridiculousRPG.ui.StandardMenuService("bgImage"));
-//Add the ImageProjectionService to the service provider (used by StandardMenuService)
-$.serviceProvider.putService("bgImage", new ridiculousRPG.animation.ImageProjectionService(true, false));
-//Add the ImageProjectionService to the service provider (used by StandardMenuService)
+$.serviceProvider.putService("menu", new ridiculousRPG.ui.StandardMenuService(internalFile("data/scripts/engine/handleMenu.js")));
+//Add the MultimediaService to the service provider
 $.serviceProvider.putService("video", new ridiculousRPG.video.MultimediaService());
 $.serviceProvider.getService("video").play(internalFile("data/video/test.ogg"), $.screen, 1, true);
