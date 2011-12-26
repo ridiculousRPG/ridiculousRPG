@@ -39,6 +39,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 		Drawable, Computable {
 	private Skin skinNormal, skinFocused;
 	private boolean closeOnAction;
+	private boolean releaseAttention;
 
 	private boolean awaitingKeyUp;
 	private Actor focusedActor = null;
@@ -262,18 +263,26 @@ public class ActorsOnStageService extends Stage implements GameService,
 			}
 			// simulate touch event
 			if (down) {
-				if (GameBase.$serviceProvider().requestAttention(this, false,
-						false)) {
-					a.touchDown(a.width / 2, a.height / 2, 0);
-					if (a.parent != null)
-						setKeyboardFocus(a);
-					return true;
+				if (GameBase.$serviceProvider().queryAttention() != this) {
+					if (!GameBase.$serviceProvider().requestAttention(this,
+							false, false)) {
+						return false;
+					}
+					releaseAttention = true;
 				}
+				a.touchDown(a.width / 2, a.height / 2, 0);
+				if (a.parent != null)
+					setKeyboardFocus(a);
+				return true;
 			} else {
-				if (GameBase.$serviceProvider().releaseAttention(this)) {
-					a.touchUp(a.width / 2, a.height / 2, 0);
-					return true;
+				if (releaseAttention) {
+					if (!GameBase.$serviceProvider().releaseAttention(this)) {
+						return false;
+					}
+					releaseAttention = false;
 				}
+				a.touchUp(a.width / 2, a.height / 2, 0);
+				return true;
 			}
 		}
 		return false;
