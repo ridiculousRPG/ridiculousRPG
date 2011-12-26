@@ -76,7 +76,6 @@ function createGui(menu) {
 	w.add(exit);
 
 	w.pack();
-	w.height = menu.height;
-	menu.addActor(w);
+	w.height = menu.getHeight();
 	menu.focus(resume);
 }

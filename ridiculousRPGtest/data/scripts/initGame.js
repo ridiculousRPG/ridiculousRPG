@@ -21,9 +21,6 @@ $.serviceProvider.putService("toggleFullscreen", new ridiculousRPG.camera.Camera
 //Add the DisplayFPSService to the service provider
 $.serviceProvider.putService("displayFPS", new ridiculousRPG.ui.DisplayFPSService());
 
-//Add the MultimediaService to the service provider
-$.serviceProvider.putService("video", new ridiculousRPG.video.MultimediaService());
-
 //Add the StandardMenuService to the service provider
 var menu = new ridiculousRPG.ui.StandardMenuService();
 
@@ -47,6 +44,8 @@ menu.putStateHandler(MENU_STATE_PAUSE, handler);
 $.serviceProvider.putService("menu", menu);
 menu.changeState(MENU_STATE_TITLE);
 
+//Add the MultimediaService to the service provider
+$.serviceProvider.putService("video", new ridiculousRPG.video.MultimediaService());
 
 // ONLY FOR TESTING!!! NEVER DO THIS IN YOUR GAME
 // play a video on startup
