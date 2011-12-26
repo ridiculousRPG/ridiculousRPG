@@ -17,6 +17,16 @@ ridiculousRPG = Packages.com.madthrax.ridiculousRPG;
 gdx = Packages.com.badlogic.gdx;
 // make instantiated GameBase referencable with the Dollar sign $
 $ = ridiculousRPG.GameBase.$();
+// make shortcut for Keys
+Keys = gdx.Input.Keys;
+// make shortcut for gui creation
+ui = gdx.scenes.scene2d.ui;
+
+// Define the different menu states
+MENU_STATE_TITLE = 1;
+MENU_STATE_GAME = 2;
+MENU_STATE_IDLE = 3;
+MENU_STATE_PAUSE = 4;
 
 // Convenience method to obtain internal files from pathname
 function internalFile(pathName) {
