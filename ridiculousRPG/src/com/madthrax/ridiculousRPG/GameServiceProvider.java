@@ -293,7 +293,12 @@ public class GameServiceProvider {
 	 * A service is able to request the users attention for itself. All other
 	 * {@link InputProcessor} are dead (except the essential ones) until the
 	 * service releases its attention.<br>
-	 * This method IS thread safe.<br>
+	 * <br>
+	 * This method is thread safe if it's used carefully. Don't request
+	 * attention for the same {@link GameService} within different threads
+	 * without querying the attention. (The attentionCount is not thread safe
+	 * but the simple request and release operations are.)<br>
+	 * <br>
 	 * If {@link #freezeTheWorld} is true and {@link #clearTheScreen} is false,
 	 * all other GameServices will draw their frozen pictures - in a lot of
 	 * cases this is probably what you want.<br>
@@ -316,14 +321,13 @@ public class GameServiceProvider {
 		// we have already attention
 		if (hasAttention.get() == service) {
 			attentionCount++;
+			checkFreeze(service, freezeTheWorld, clearTheScreen);
 			return true;
 		}
 		// try to grab the attention
 		boolean succeed = hasAttention.compareAndSet(null, service);
 		if (succeed) {
 			attentionCount++;
-			this.freezeTheWorld = freezeTheWorld;
-			this.clearTheScreen = clearTheScreen;
 			attentionInputMultiplexer.clear();
 			boolean found = false;
 			for (InputProcessor in : inputMultiplexer.getProcessors()) {
@@ -338,20 +342,38 @@ public class GameServiceProvider {
 				attentionInputMultiplexer
 						.addProcessor((InputProcessor) service);
 			}
-			if (freezeTheWorld) {
-				for (GameService s : services.values()) {
-					if (s != service && !s.essential())
-						s.freeze();
-				}
-			}
+			checkFreeze(service, freezeTheWorld, clearTheScreen);
 			Gdx.input.setInputProcessor(attentionInputMultiplexer);
 		}
 		return succeed;
 	}
 
+	private void checkFreeze(GameService service, boolean freezeTheWorld,
+			boolean clearTheScreen) {
+		if (freezeTheWorld) {
+			if (!this.freezeTheWorld) {
+				for (GameService s : services.values()) {
+					if (s != service && !s.essential())
+						s.freeze();
+				}
+				this.freezeTheWorld = freezeTheWorld;
+			}
+		} else if (this.freezeTheWorld) {
+			this.freezeTheWorld = false;
+			for (GameService s : services.values()) {
+				if (s != service && !s.essential())
+					s.unfreeze();
+			}
+		}
+		this.clearTheScreen = clearTheScreen;
+	}
+
 	/**
 	 * Release the attention. Checks if the service has attention<br>
-	 * This method IS thread safe.
+	 * This method is thread safe if it's used carefully. Don't request
+	 * attention for the same {@link GameService} within different threads
+	 * without querying the attention. (The attentionCount is not thread safe
+	 * but the simple request and release operations are.)
 	 * 
 	 * @param service
 	 * @return true on succeed, otherwise false
@@ -364,14 +386,7 @@ public class GameServiceProvider {
 		boolean succeed = hasAttention.compareAndSet(service, null);
 		if (succeed) {
 			attentionCount--;
-			clearTheScreen = false;
-			if (freezeTheWorld) {
-				freezeTheWorld = false;
-				for (GameService s : services.values()) {
-					if (s != service && !s.essential())
-						s.unfreeze();
-				}
-			}
+			checkFreeze(service, false, false);
 			Gdx.input.setInputProcessor(inputMultiplexer);
 		}
 		return succeed;
