@@ -16,6 +16,10 @@ function processInput(keycode, menu) {
 	}
 	return false;
 }
+
+/**
+ * Called if the MenuService switches into this state, to build the gui.
+ */
 function createGui(menu) {
 	// no menu is shown in idle state
 }

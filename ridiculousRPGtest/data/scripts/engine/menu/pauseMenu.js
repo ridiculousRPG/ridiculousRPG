@@ -13,6 +13,10 @@ function processInput(keycode, menu) {
 	}
 	return false;
 }
+
+/**
+ * Called if the MenuService switches into this state, to build the gui.
+ */
 function createGui(menu) {
 	var skin = menu.skinNormal;
 	var w = new ui.Window("PAUSE", skin);

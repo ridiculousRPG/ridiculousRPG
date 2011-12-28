@@ -9,7 +9,8 @@
  */
 function processInput(keycode, menu) {
 	if (keycode == Keys.ESCAPE) {
-		return menu.changeState(MENU_STATE_IDLE);
+		$.exit();
+		return true;
 	}
 	return false;
 }
@@ -19,10 +20,10 @@ function processInput(keycode, menu) {
  */
 function createGui(menu) {
 	var skin = menu.skinNormal;
-	var w = new ui.Window("Game menu", skin);
+	var w = new ui.Window("Game over", skin);
 	menu.addGUIcomponent(w);
 
-	var resume = new ui.TextButton("Resume (Esc)", skin);
+	var resume = new ui.TextButton("Continue at last save point", skin);
 	resume.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			menu.changeState(MENU_STATE_IDLE);
@@ -31,27 +32,7 @@ function createGui(menu) {
 	w.row().fill(true, true).expand(true, false);
 	w.add(resume);
 
-	var bag = new ui.TextButton("Open bag", skin);
-	bag.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
-			menu.showInfoFocused("Bag is not implemented yet.\n"
-					+ "This is an early alpha release!");
-		}
-	};
-	w.row().fill(true, true).expand(true, false);
-	w.add(bag);
-
-	var save = new ui.TextButton("Save", skin);
-	save.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
-			menu.showInfoFocused("Save is not implemented yet.\n"
-					+ "This is an early alpha release!");
-		}
-	};
-	w.row().fill(true, true).expand(true, false);
-	w.add(save);
-
-	var load = new ui.TextButton("Load", skin);
+	var load = new ui.TextButton("Load game", skin);
 	load.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			menu.showInfoFocused("Load is not implemented yet.\n"
@@ -70,7 +51,7 @@ function createGui(menu) {
 	w.row().fill(true, true).expand(true, false);
 	w.add(toTitle);
 
-	var exit = new ui.TextButton("Exit game", skin);
+	var exit = new ui.TextButton("Exit game (Esc)", skin);
 	exit.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			$.exit();
@@ -80,6 +61,6 @@ function createGui(menu) {
 	w.add(exit);
 
 	w.pack();
-	w.height = menu.getHeight();
+	menu.center(w);
 	menu.focus(resume);
 }

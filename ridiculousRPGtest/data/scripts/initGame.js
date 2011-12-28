@@ -29,6 +29,11 @@ var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, true
 handler.background = ridiculousRPG.TextureRegionLoader.load("data/image/Title.png");
 menu.putStateHandler(MENU_STATE_TITLE, handler);
 
+var execScript = internalFile("data/scripts/engine/menu/gameoverMenu.js");
+var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, true, true);
+handler.background = ridiculousRPG.TextureRegionLoader.load("data/image/GameOver.png");
+menu.putStateHandler(MENU_STATE_GAMEOVER, handler);
+
 var execScript = internalFile("data/scripts/engine/menu/gameMenu.js");
 var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, false, true);
 menu.putStateHandler(MENU_STATE_GAME, handler);
