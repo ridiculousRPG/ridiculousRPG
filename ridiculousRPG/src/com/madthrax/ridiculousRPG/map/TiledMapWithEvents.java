@@ -182,13 +182,13 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 		// insert half-planes around the map
 		put(null, ev = new EventObject());
-		ev.touchBound = new Rectangle(-1000f, -1000f, width + 2000f, 1000f);
+		ev.setTouchBound(new Rectangle(-1000f, -1000f, width + 2000f, 1000f));
 		put(null, ev = new EventObject());
-		ev.touchBound = new Rectangle(-1000f, -1000f, 1000f, height + 2000f);
+		ev.setTouchBound(new Rectangle(-1000f, -1000f, 1000f, height + 2000f));
 		put(null, ev = new EventObject());
-		ev.touchBound = new Rectangle(-1000f, height, width + 2000f, 1000f);
+		ev.setTouchBound(new Rectangle(-1000f, height, width + 2000f, 1000f));
 		put(null, ev = new EventObject());
-		ev.touchBound = new Rectangle(width, -1000f, 1000f, height + 2000f);
+		ev.setTouchBound(new Rectangle(width, -1000f, 1000f, height + 2000f));
 
 		triggerEventHandler = new TriggerEventHandler(dynamicRegions);
 	}
@@ -225,7 +225,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			} else if (EVENT_PROP_BLOCKING.equals(key)) {
 				ev.blockingBehaviour = BlockingBehaviour.parse(val);
 			} else if (EVENT_PROP_SPEED.equals(key)) {
-				ev.moveSpeed = Speed.parse(val);
+				ev.setMoveSpeed(Speed.parse(val));
 			} else if (EVENT_PROP_MOVEHANDLER.equals(key)) {
 				Object evHandler = GameBase.$().eval(val);
 				if (evHandler instanceof Class<?>) {
@@ -253,8 +253,9 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				FileHandle fh = Gdx.files.internal(val);
 				if (fh.exists()) {
 					TextureRegionRef t = TextureRegionLoader.load(val);
-					TileAnimation anim = new TileAnimation(val,
-							t.getRegionWidth() / 4, t.getRegionHeight() / 4, 4, 4);
+					TileAnimation anim = new TileAnimation(val, t
+							.getRegionWidth() / 4, t.getRegionHeight() / 4, 4,
+							4);
 					ev.setAnimation(anim, "true".equalsIgnoreCase(props
 							.get(EVENT_PROP_ESTIMATETOUCHBOUNDS)));
 					t.dispose();

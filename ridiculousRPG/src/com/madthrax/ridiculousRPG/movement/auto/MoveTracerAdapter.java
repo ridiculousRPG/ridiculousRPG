@@ -90,7 +90,7 @@ public class MoveTracerAdapter extends MovementHandler {
 
 	@Override
 	public void tryMove(Movable event, float deltaTime) {
-		Rectangle actualMove = eventToTrace.touchBound;
+		Rectangle actualMove = eventToTrace.getTouchBound();
 		if (movementQueue.isEmpty()) {
 			movementQueue.offer(new Rectangle(actualMove));
 			setVisibility(event, false);

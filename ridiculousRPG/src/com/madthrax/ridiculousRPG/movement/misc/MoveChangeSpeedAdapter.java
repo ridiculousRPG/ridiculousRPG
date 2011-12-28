@@ -49,7 +49,7 @@ public class MoveChangeSpeedAdapter extends MovementHandler {
 	@Override
 	public void tryMove(Movable movable, float deltaTime) {
 		if (newMoveSpeed != null)
-			movable.moveSpeed = newMoveSpeed;
+			movable.setMoveSpeed(newMoveSpeed);
 		if (movable instanceof EventObject) {
 			TileAnimation anim = ((EventObject) movable).getAnimation();
 			if (anim != null)

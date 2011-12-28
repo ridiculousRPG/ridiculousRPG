@@ -166,7 +166,7 @@ public class MoveArcAdapter extends MovementHandler {
 				else if (startArc < 0f)
 					startArc = PI2 + startArc;
 			}
-			float arc = event.moveSpeed.computeStretch(deltaTime)
+			float arc = event.getMoveSpeed().computeStretch(deltaTime)
 					* arcCorrection;
 			lastMoveArc = arc;
 			// greater zero or positive zero

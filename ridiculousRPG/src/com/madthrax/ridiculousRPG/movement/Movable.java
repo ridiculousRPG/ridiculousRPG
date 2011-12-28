@@ -25,6 +25,8 @@ import com.madthrax.ridiculousRPG.event.Speed;
 import com.madthrax.ridiculousRPG.movement.misc.MoveNullAdapter;
 
 /**
+ * Base class for events.
+ * 
  * @author Alexander Baumgartner
  */
 public abstract class Movable {
@@ -36,14 +38,9 @@ public abstract class Movable {
 	 * false.
 	 */
 	public boolean moves = false;
-	/**
-	 * The speed may be changed at any time by the game.
-	 */
-	public Speed moveSpeed = Speed.S00_ZERO;
-	/**
-	 * The touching bounds for moving this object around.
-	 */
-	public Rectangle touchBound = new Rectangle();
+
+	protected Speed moveSpeed = Speed.S00_ZERO;
+	protected Rectangle touchBound = new Rectangle();
 
 	private MovementHandler moveHandler = MoveNullAdapter.$();
 
@@ -200,4 +197,52 @@ public abstract class Movable {
 		centerY *= Gdx.graphics.getHeight() / camera.viewportHeight;
 		return (Gdx.graphics.getHeight() - screenAbsolutY) - centerY;
 	}
+
+	/**
+	 * You can change the speed of a {@link Movable} object at any time in your
+	 * game.
+	 * 
+	 * @param moveSpeed
+	 */
+	public void setMoveSpeed(Speed moveSpeed) {
+		this.moveSpeed = moveSpeed;
+	}
+
+	/**
+	 * The speed of this movable object
+	 * 
+	 * @return
+	 */
+	public Speed getMoveSpeed() {
+		return moveSpeed;
+	}
+
+	/**
+	 * The touch bound is used to move the object around. It defines the x,y
+	 * coordinates and a width and height. The touch bound is used for collision
+	 * detection.
+	 * 
+	 * @return The touching bounds.
+	 */
+	public Rectangle getTouchBound() {
+		return touchBound;
+	}
+
+	/**
+	 * Sets the touch bounds for collision detection.
+	 * 
+	 * @param touchBound
+	 */
+	public void setTouchBound(Rectangle touchBound) {
+		this.touchBound = touchBound;
+	}
+
+	public void setX(float x) {
+		this.touchBound.x = x;
+	}
+
+	public void setY(float y) {
+		this.touchBound.y = y;
+	}
+
 }

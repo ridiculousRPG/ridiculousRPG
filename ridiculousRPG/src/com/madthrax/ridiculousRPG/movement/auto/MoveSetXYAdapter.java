@@ -64,8 +64,8 @@ public class MoveSetXYAdapter extends MovementHandler {
 				return false;
 			}
 		};
-		mv.touchBound.x = x;
-		mv.touchBound.y = y;
+		mv.setX(x);
+		mv.setY(y);
 		return new MoveSetXYAdapter(mv);
 	}
 
