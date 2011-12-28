@@ -75,11 +75,6 @@ public class GameOptionsDefaultConfigReader {
 				options.resize = "true".equalsIgnoreCase(propTmp.trim());
 			}
 
-			propTmp = props.getProperty("TITLE_BACKGROUND");
-			if (propTmp != null && propTmp.trim().length() > 0) {
-				options.titleBackground = propTmp.trim();
-			}
-
 			propTmp = props.getProperty("USEGL20");
 			if (propTmp != null && propTmp.trim().length() > 0) {
 				options.useGL20 = "true".equalsIgnoreCase(propTmp.trim());

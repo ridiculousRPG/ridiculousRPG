@@ -36,7 +36,6 @@ public class GameOptions {
 	public boolean resize = false;
 	public boolean vSyncEnabled = false;
 	public boolean debug = false;
-	public String titleBackground;
 	public ScriptFactory scriptFactory = new ScriptFactory();
 	public String initScript = "data/scripts/initGame.js";
 	public String uiSkinNormalConfig = "data/uiskin/skinNormal.json";
