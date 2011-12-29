@@ -492,7 +492,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		float rX, rY;
 
 		int i = 0;
-		EventObject event;
+		EventObject event = dynamicRegions.get(0); // is never empty
 		int dynSize = dynamicRegions.size();
 		// If there are performance problems:
 		// 1) Add only MapRenderRegions with z>0 to staticRegions
@@ -509,7 +509,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			rY = region.y;
 			if (rX < camX2 && rY < camY2 && rX + region.width > camX1
 					&& rY + region.height > camY1) {
-				while (dynSize > i && (event = dynamicRegions.get(i)).compareTo(region) == -1) {
+				while (dynSize > i && event.compareTo(region) == -1) {
 					if (event.visible) {
 						drawBound = event.drawBound;
 						if (drawBound.x < camX2 && drawBound.y < camY2
@@ -518,6 +518,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 							event.draw(spriteBatch);
 					}
 					i++;
+					if (dynSize > i)
+						event = dynamicRegions.get(i);
 				}
 				region.draw(spriteBatch);
 			}

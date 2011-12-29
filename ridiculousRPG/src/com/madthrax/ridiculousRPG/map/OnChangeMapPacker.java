@@ -52,7 +52,8 @@ public class OnChangeMapPacker {
 			} else {
 				try {
 					BufferedReader checkUpdate = new BufferedReader(
-							new FileReader(mapOutDir + "check.txt"));
+							new FileReader(mapOutDir + File.separator
+									+ "check.txt"));
 					File[] tmxFiles = mapInDir.listFiles(new FilenameFilter() {
 						public boolean accept(File dir, String name) {
 							return name.toLowerCase().endsWith(".tmx");
@@ -99,7 +100,7 @@ public class OnChangeMapPacker {
 
 				// write info-file
 				PrintWriter checkUpdate = new PrintWriter(mapOutDir
-						+ "check.txt");
+						+ File.separator + "check.txt");
 				File[] tmxFiles = mapInDir.listFiles(new FilenameFilter() {
 					public boolean accept(File dir, String name) {
 						return name.toLowerCase().endsWith(".tmx");
