@@ -21,6 +21,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.math.Matrix4;
+import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.Computable;
 
 /**
@@ -60,7 +61,8 @@ public class DisplayErrorService extends DisplayTextService implements
 				msg = "\nERROR [" + ((int) displayTime) + "]\n\n" + msg;
 			}
 			fontCache = addMessage(msg, Color.RED.toFloatBits(),
-					Alignment.CENTER, Alignment.CENTER, 0f);
+					Alignment.CENTER, Alignment.CENTER, 0f, GameBase.$()
+							.getScreen().getWidth(), false);
 		}
 		if (displayTime < 1 && actionKeyDown) {
 			Gdx.app.exit();

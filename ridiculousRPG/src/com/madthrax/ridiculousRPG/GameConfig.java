@@ -25,8 +25,6 @@ import com.badlogic.gdx.utils.Disposable;
  */
 public class GameConfig implements Disposable {
 	public Locale locale = Locale.getDefault();
-	public String mapDir = "data/map/";
-	public String mapPackDir = "data/map/pack/";
 
 	private static GameConfig INSTANCE = null;
 

@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 
@@ -31,73 +30,77 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledLoader;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.badlogic.gdx.tiledmappacker.TiledMapPacker;
 import com.badlogic.gdx.tools.imagepacker.TexturePacker;
-import com.madthrax.ridiculousRPG.GameConfig;
 
 /**
  * @author Alexander Baumgartner
  */
 public class OnChangeMapPacker {
+	private File mapInDir;
+	private File mapOutDir;
+
+	public OnChangeMapPacker(String mapInDir, String mapOutDir) {
+		this.mapInDir = new File(mapInDir);
+		this.mapOutDir = new File(mapOutDir);
+	}
 
 	public void packOnChange() {
-		File mapDir = new File(GameConfig.get().mapDir);
-		File packMapDir = new File(GameConfig.get().mapPackDir);
-		boolean packMaps = false;
-		if (!packMapDir.exists()) {
-			packMapDir.mkdirs();
-			packMaps = true;
-		} else {
-			try {
-				BufferedReader checkUpdate = new BufferedReader(new FileReader(
-						packMapDir + "check.txt"));
-				File[] tmxFiles = mapDir.listFiles(new FilenameFilter() {
-					public boolean accept(File dir, String name) {
-						return name.toLowerCase().endsWith(".tmx");
-					}
-				});
-				Arrays.sort(tmxFiles);
-				for (File tmx : tmxFiles) {
-					String line = checkUpdate.readLine();
-					if (line == null
-							|| !line.startsWith(tmx.getName())
-							|| !line.endsWith(String
-									.valueOf(tmx.lastModified()))) {
-						packMaps = true;
-						break;
-					}
-					TiledMap tmxMap = TiledLoader.createMap(Gdx.files
-							.absolute(tmx.getAbsolutePath()));
-					for (TileSet tileSet : tmxMap.tileSets) {
-						File img = new File(mapDir, tileSet.imageName);
-						line = checkUpdate.readLine();
+		try {
+			boolean packMaps = false;
+			if (!mapOutDir.exists()) {
+				mapOutDir.mkdirs();
+				packMaps = true;
+			} else {
+				try {
+					BufferedReader checkUpdate = new BufferedReader(
+							new FileReader(mapOutDir + "check.txt"));
+					File[] tmxFiles = mapInDir.listFiles(new FilenameFilter() {
+						public boolean accept(File dir, String name) {
+							return name.toLowerCase().endsWith(".tmx");
+						}
+					});
+					Arrays.sort(tmxFiles);
+					for (File tmx : tmxFiles) {
+						String line = checkUpdate.readLine();
 						if (line == null
-								|| !line.startsWith(img.getName())
-								|| !line.endsWith(String.valueOf(img
+								|| !line.startsWith(tmx.getName())
+								|| !line.endsWith(String.valueOf(tmx
 										.lastModified()))) {
 							packMaps = true;
 							break;
 						}
+						TiledMap tmxMap = TiledLoader.createMap(Gdx.files
+								.absolute(tmx.getAbsolutePath()));
+						for (TileSet tileSet : tmxMap.tileSets) {
+							File img = new File(mapInDir, tileSet.imageName);
+							line = checkUpdate.readLine();
+							if (line == null
+									|| !line.startsWith(img.getName())
+									|| !line.endsWith(String.valueOf(img
+											.lastModified()))) {
+								packMaps = true;
+								break;
+							}
+						}
 					}
+					checkUpdate.close();
+				} catch (Exception packIt) {
+					packMaps = true;
 				}
-				checkUpdate.close();
-			} catch (Exception packIt) {
-				packMaps = true;
 			}
-		}
-		if (packMaps) {
-			try {
-				Gdx.files.absolute(packMapDir.getAbsolutePath())
+			if (packMaps) {
+				Gdx.files.absolute(mapOutDir.getAbsolutePath())
 						.deleteDirectory();
 				TexturePacker.Settings settings = new TexturePacker.Settings();
 				settings.defaultFormat = Format.RGBA8888;
 				settings.stripWhitespace = true;
 				settings.incremental = true;
 				settings.alias = true;
-				new TiledMapPacker().processMap(mapDir, packMapDir, settings);
+				new TiledMapPacker().processMap(mapInDir, mapOutDir, settings);
 
 				// write info-file
-				PrintWriter checkUpdate = new PrintWriter(packMapDir
+				PrintWriter checkUpdate = new PrintWriter(mapOutDir
 						+ "check.txt");
-				File[] tmxFiles = mapDir.listFiles(new FilenameFilter() {
+				File[] tmxFiles = mapInDir.listFiles(new FilenameFilter() {
 					public boolean accept(File dir, String name) {
 						return name.toLowerCase().endsWith(".tmx");
 					}
@@ -109,14 +112,15 @@ public class OnChangeMapPacker {
 					TiledMap tmxMap = TiledLoader.createMap(Gdx.files
 							.absolute(tmx.getAbsolutePath()));
 					for (TileSet tileSet : tmxMap.tileSets) {
-						File img = new File(mapDir, tileSet.imageName);
+						File img = new File(mapInDir, tileSet.imageName);
 						checkUpdate.println(img.getName() + " / "
 								+ img.lastModified());
 					}
 				}
 				checkUpdate.close();
-			} catch (IOException e) {
 			}
+		} catch (Exception noPermission) {
+			noPermission.printStackTrace();
 		}
 	}
 }

@@ -248,6 +248,10 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				FileHandle fh = Gdx.files.internal(val);
 				if (fh.exists()) {
 					ev.setImage(TextureRegionLoader.load(val));
+					ev.visible = true;
+					if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
+						ev.z = .1f;
+					}
 				}
 			} else if (EVENT_PROP_ANIMATION.equals(key)) {
 				FileHandle fh = Gdx.files.internal(val);
@@ -256,15 +260,23 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					TileAnimation anim = new TileAnimation(val, t
 							.getRegionWidth() / 4, t.getRegionHeight() / 4, 4,
 							4);
+					t.dispose();
 					ev.setAnimation(anim, "true".equalsIgnoreCase(props
 							.get(EVENT_PROP_ESTIMATETOUCHBOUNDS)));
-					t.dispose();
+					ev.visible = true;
+					if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
+						ev.z = .1f;
+					}
 				} else {
-					Object evHandler = GameBase.$().eval(val);
-					if (evHandler instanceof TileAnimation) {
-						ev.setAnimation((TileAnimation) evHandler, "true"
+					Object result = GameBase.$().eval(val);
+					if (result instanceof TileAnimation) {
+						ev.setAnimation((TileAnimation) result, "true"
 								.equalsIgnoreCase(props
 										.get(EVENT_PROP_ESTIMATETOUCHBOUNDS)));
+						ev.visible = true;
+						if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
+							ev.z = .1f;
+						}
 					}
 				}
 			} else if (EVENT_PROP_HANDLER.equals(key)) {
@@ -480,7 +492,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		float rX, rY;
 
 		int i = 0;
-		EventObject event = dynamicRegions.get(0); // is never empty
+		EventObject event;
 		int dynSize = dynamicRegions.size();
 		// If there are performance problems:
 		// 1) Add only MapRenderRegions with z>0 to staticRegions
@@ -497,7 +509,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			rY = region.y;
 			if (rX < camX2 && rY < camY2 && rX + region.width > camX1
 					&& rY + region.height > camY1) {
-				while (dynSize > i && event.compareTo(region) == -1) {
+				while (dynSize > i && (event = dynamicRegions.get(i)).compareTo(region) == -1) {
 					if (event.visible) {
 						drawBound = event.drawBound;
 						if (drawBound.x < camX2 && drawBound.y < camY2
@@ -505,7 +517,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 								&& drawBound.y + drawBound.height > camY1)
 							event.draw(spriteBatch);
 					}
-					event = dynamicRegions.get(++i);
+					i++;
 				}
 				region.draw(spriteBatch);
 			}
