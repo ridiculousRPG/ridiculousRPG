@@ -26,6 +26,8 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
  * @author Alexander Baumgartner
  */
 public class Move4WayAdapter extends MovementHandler {
+	private static final long serialVersionUID = 1L;
+
 	private static MovementHandler instance = new Move4WayAdapter();
 
 	protected Move4WayAdapter() {

@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.movement;
 
+import java.io.Serializable;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Rectangle;
@@ -29,7 +31,9 @@ import com.madthrax.ridiculousRPG.movement.misc.MoveNullAdapter;
  * 
  * @author Alexander Baumgartner
  */
-public abstract class Movable {
+public abstract class Movable implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Indicates if a move is outstanding.<br>
 	 * All {@link #offerMove} methods should set this to true.<br>

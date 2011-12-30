@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.movement;
 
+import java.io.Serializable;
+
 /**
  * All possible MovementAdapters must extend this class.<br>
  * For performance-reasons all MovementAdapters which don't need any
@@ -27,7 +29,8 @@ package com.madthrax.ridiculousRPG.movement;
  * 
  * @author Alexander Baumgartner
  */
-public abstract class MovementHandler {
+public abstract class MovementHandler implements Serializable {
+	private static final long serialVersionUID = 1L;
 	/**
 	 * If this movement can finish (e.g. move to coordinate x,y), the
 	 * implementation should set this switch.

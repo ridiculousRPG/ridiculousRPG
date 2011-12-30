@@ -35,6 +35,8 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
  * @author Alexander Baumgartner
  */
 public class MoveAnimateEventAdapter extends MovementHandler {
+	private static final long serialVersionUID = 1L;
+
 	private EventObject oldEvent;
 	private TileAnimation oldAnimation;
 	private Speed oldSpeed;

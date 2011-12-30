@@ -30,6 +30,8 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
  * @author Alexander Baumgartner
  */
 public class MoveChangeSpeedAdapter extends MovementHandler {
+	private static final long serialVersionUID = 1L;
+
 	private Speed newMoveSpeed, newAnimationSpeed;
 
 	protected MoveChangeSpeedAdapter(Speed newMoveSpeed, Speed newAnimationSpeed) {

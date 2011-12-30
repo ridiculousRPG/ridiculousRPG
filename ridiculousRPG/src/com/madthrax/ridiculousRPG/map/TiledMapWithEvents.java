@@ -85,6 +85,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 	private static final char EVENT_CUSTOM_PROP_KZ = '$';
 	// the key is translated to lower case -> we are case insensitive
+	private static final String EVENT_TYPE_PLAYER = "player";
 	private static final String EVENT_TYPE_GLOBAL = "global";
 	private static final String EVENT_PROP_ID = "id";
 	private static final String EVENT_PROP_HEIGHT = "height";
@@ -186,12 +187,15 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		for (i = 0, len_i = dynamicRegions.size(); i < len_i; i++) {
 			EventObject eventObj = dynamicRegions.get(i);
 			if (eventObj.name != null
-					&& EVENT_TYPE_GLOBAL.equalsIgnoreCase(eventObj.type)) {
+					&& (EVENT_TYPE_PLAYER.equalsIgnoreCase(eventObj.type) || EVENT_TYPE_GLOBAL
+							.equalsIgnoreCase(eventObj.type))) {
 				EventObject globalObj = GameBase.$().getGlobalEvents().get(
 						eventObj.name);
 				if (globalObj == null) {
 					eventObj.init();
 					GameBase.$().getGlobalEvents().put(eventObj.name, eventObj);
+					if (EVENT_TYPE_PLAYER.equalsIgnoreCase(eventObj.type))
+						eventObj.consumeInput = true;
 				} else {
 					put(eventObj.name, globalObj);
 				}

@@ -16,6 +16,7 @@
 
 package com.madthrax.ridiculousRPG.movement.auto;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,8 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
  * @author Alexander Baumgartner
  */
 public class MoveMagneticAdapter extends MoveRandomAdapter {
+	private static final long serialVersionUID = 1L;
+
 
 	public enum Attraction {
 		NONE(0), LOW(150), MEDIUM(300), STRONG(500), MAXIMUM(900);
@@ -191,7 +194,9 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 			super.tryMove(event, deltaTime);
 	}
 
-	public static class MagneticEffect {
+	public static class MagneticEffect implements Serializable {
+		private static final long serialVersionUID = 1L;
+
 		boolean enabled = true;
 
 		public boolean tryMagneticMove(MoveMagneticAdapter adapter,

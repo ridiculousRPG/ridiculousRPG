@@ -31,6 +31,8 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
  * @author Alexander Baumgartner
  */
 public class MoveRotateEventAdapter extends MovementHandler {
+	private static final long serialVersionUID = 1L;
+
 	private Speed rotationSpeed;
 	private float angleInDeg;
 	private float rotatedAngle = 0f;

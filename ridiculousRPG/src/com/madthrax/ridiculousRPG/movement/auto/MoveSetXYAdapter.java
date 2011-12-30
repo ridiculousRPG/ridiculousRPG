@@ -30,6 +30,8 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
  * @author Alexander Baumgartner
  */
 public class MoveSetXYAdapter extends MovementHandler {
+	private static final long serialVersionUID = 1L;
+
 	private boolean checkPerformed;
 	private Movable other;
 
@@ -46,6 +48,8 @@ public class MoveSetXYAdapter extends MovementHandler {
 	 */
 	public static MovementHandler $(float x, float y) {
 		Movable mv = new Movable() {
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public void stop() {
 			}

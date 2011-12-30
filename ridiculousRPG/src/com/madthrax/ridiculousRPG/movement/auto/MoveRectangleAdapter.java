@@ -33,6 +33,8 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
  * @author Alexander Baumgartner
  */
 public class MoveRectangleAdapter extends CombinedMovesAdapter {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * {@link StartPoint#BOTTOM_LEFT} {@link StartPoint#BOTTOM_RIGHT}
 	 * {@link StartPoint#TOP_LEFT} {@link StartPoint#TOP_RIGHT}

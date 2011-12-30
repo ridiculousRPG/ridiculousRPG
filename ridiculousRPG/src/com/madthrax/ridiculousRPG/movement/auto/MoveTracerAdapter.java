@@ -45,6 +45,7 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
  * @author Alexander Baumgartner
  */
 public class MoveTracerAdapter extends MovementHandler {
+	private static final long serialVersionUID = 1L;
 
 	private Movable eventToTrace;
 	private float followDistance;

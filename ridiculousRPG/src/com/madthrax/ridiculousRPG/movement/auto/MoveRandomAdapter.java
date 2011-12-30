@@ -28,6 +28,7 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
  * @author Alexander Baumgartner
  */
 public class MoveRandomAdapter extends MovementHandler {
+	private static final long serialVersionUID = 1L;
 
 	protected static final Random randomNumberGenerator = new Random();
 	protected int changeDirectionSlackness;

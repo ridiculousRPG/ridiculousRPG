@@ -16,6 +16,7 @@
 
 package com.madthrax.ridiculousRPG.movement;
 
+import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -37,6 +38,8 @@ import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
  * @author Alexander Baumgartner
  */
 public class CombinedMovesAdapter extends MovementHandler {
+	private static final long serialVersionUID = 1L;
+
 
 	private Deque<MoveSegment> movementQueue = new ArrayDeque<MoveSegment>(16);
 	private List<MoveSegment> resetMoves = new ArrayList<MoveSegment>(16);
@@ -203,7 +206,9 @@ public class CombinedMovesAdapter extends MovementHandler {
 	/**
 	 * Abstract class for all possible PathSegment.
 	 */
-	public abstract class MoveSegment {
+	public abstract class MoveSegment implements Serializable {
+		private static final long serialVersionUID = 1L;
+
 		/**
 		 * The executed {@link MovementHandler} for this {@link MoveSegment}.<br>
 		 * It makes sense to set this by the implementations constructor
@@ -266,6 +271,8 @@ public class CombinedMovesAdapter extends MovementHandler {
 	}
 
 	public class MoveSegmentSeconds extends MoveSegment {
+		private static final long serialVersionUID = 1L;
+
 		protected float seconds;
 		private float secondsCount;
 
@@ -290,6 +297,8 @@ public class CombinedMovesAdapter extends MovementHandler {
 	}
 
 	public class MoveSegmentFinished extends MoveSegment {
+		private static final long serialVersionUID = 1L;
+
 		private int times, count;
 
 		protected MoveSegmentFinished(MovementHandler delegate) {
@@ -325,6 +334,8 @@ public class CombinedMovesAdapter extends MovementHandler {
 	}
 
 	public class MoveSegmentRandomSec extends MoveSegmentSeconds {
+		private static final long serialVersionUID = 1L;
+
 		protected float minSeconds, maxSeconds;
 
 		protected MoveSegmentRandomSec(MovementHandler delegate) {

@@ -62,6 +62,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 
 	private HashMap<String, EventObject> globalEvents = new HashMap<String, EventObject>();
 
+	private boolean triggerActionKeyPressed;
 	private boolean fullscreen;
 	private boolean controlKeyPressedOld, controlKeyPressed,
 			actionKeyPressedOld, actionKeyPressed;
@@ -183,7 +184,10 @@ public class GameBase extends GameServiceDefaultImpl implements
 			actionKeyPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE)
 					|| Gdx.input.isKeyPressed(Input.Keys.ENTER)
 					|| Gdx.input.isTouched(1)
-					|| Gdx.input.isButtonPressed(Buttons.RIGHT);
+					|| Gdx.input.isButtonPressed(Buttons.RIGHT)
+					|| triggerActionKeyPressed;
+
+			triggerActionKeyPressed = false;
 
 			serviceProvider.computeAll();
 			Thread.yield();
@@ -518,5 +522,12 @@ public class GameBase extends GameServiceDefaultImpl implements
 
 	public HashMap<String, EventObject> getGlobalEvents() {
 		return globalEvents;
+	}
+
+	/**
+	 * Simulates the action key pressed event.
+	 */
+	public void triggerActionKeyPressed() {
+		this.triggerActionKeyPressed = true;
 	}
 }

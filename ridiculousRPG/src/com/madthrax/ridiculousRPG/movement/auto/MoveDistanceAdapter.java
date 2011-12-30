@@ -28,6 +28,8 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
  * @author Alexander Baumgartner
  */
 public class MoveDistanceAdapter extends MovementHandler {
+	private static final long serialVersionUID = 1L;
+
 	private float distance;
 	private float lastDistance;
 	private float distanceCount;

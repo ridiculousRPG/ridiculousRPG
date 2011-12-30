@@ -35,6 +35,8 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
  * @author Alexander Baumgartner
  */
 public class MoveEllipseAdapter extends CombinedMovesAdapter {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * {@link StartPoint#BOTTOM} {@link StartPoint#TOP} {@link StartPoint#LEFT}
 	 * {@link StartPoint#RIGHT}
