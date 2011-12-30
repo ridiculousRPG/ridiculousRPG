@@ -16,6 +16,11 @@
 
 package com.madthrax.ridiculousRPG.animation;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
@@ -34,9 +39,12 @@ import com.madthrax.ridiculousRPG.event.Speed;
  * 
  * @author Alexander Baumgartner
  */
-public class TileAnimation implements Disposable {
-	private TextureRegionRef animationTexture;
-	private TextureRegion[][] animationTiles; // [row][col]
+public class TileAnimation implements Disposable, Serializable {
+	private static final long serialVersionUID = 1L;
+
+	private transient TextureRegionRef animationTexture;
+	private transient TextureRegion[][] animationTiles; // [row][col]
+
 	private int animationRow = 0, animationCol = 0;
 	private float animationTimer = 1.001f;
 	/**
@@ -53,6 +61,10 @@ public class TileAnimation implements Disposable {
 	 * computations!!!
 	 */
 	public boolean animationCycleFinished = false;
+
+	// Needed for serialization
+	private String path;
+	private boolean isCompressed;
 
 	/**
 	 * Instantiate a new animation. Every animation consists of tiles which are
@@ -259,6 +271,8 @@ public class TileAnimation implements Disposable {
 	 */
 	public TextureRegion setAnimationTexture(String path, int tileWidth,
 			int tileHeight, int anzCols, int anzRows, boolean isCompressed) {
+		this.path = path;
+		this.isCompressed = isCompressed;
 		if (animationTexture != null)
 			animationTexture.dispose();
 		animationTexture = TextureRegionLoader.load(path, 0, 0, tileWidth
@@ -470,6 +484,22 @@ public class TileAnimation implements Disposable {
 		animationTimer = 1.001f;
 		animationCol = 0;
 		return animationTiles[animationRow][animationCol];
+	}
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+		// write tile width
+		out.write(animationTiles[0][0].getRegionWidth());
+		// write tile height
+		out.write(animationTiles[0][0].getRegionHeight());
+		// write amount of columns
+		out.write(animationTiles[0].length);
+		// write amount of rows
+		out.write(animationTiles.length);
+	}
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		in.defaultReadObject();
+		setAnimationTexture(path, in.readInt(),
+				in.readInt(), in.readInt(), in.readInt(), isCompressed);
 	}
 
 	public void dispose() {

@@ -18,6 +18,7 @@ package com.madthrax.ridiculousRPG;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -59,10 +60,13 @@ public class GameBase extends GameServiceDefaultImpl implements
 	private Rectangle plane = new Rectangle();
 	private Rectangle screen = new Rectangle();
 
+	private HashMap<String, EventObject> globalEvents = new HashMap<String, EventObject>();
+
 	private boolean fullscreen;
 	private boolean controlKeyPressedOld, controlKeyPressed,
 			actionKeyPressedOld, actionKeyPressed;
 
+	private Color backgroundColor = new Color(0f, 0f, 0f, 1f);
 	private Color gameColorTint = new Color(1f, 1f, 1f, 1f);
 	private float gameColorBits = gameColorTint.toFloatBits();
 
@@ -498,5 +502,21 @@ public class GameBase extends GameServiceDefaultImpl implements
 	 */
 	public static void exit() {
 		Gdx.app.exit();
+	}
+
+	public void setBackgroundColor(Color backgroundColor) {
+		this.backgroundColor = backgroundColor;
+	}
+
+	public Color getBackgroundColor() {
+		return backgroundColor;
+	}
+
+	public void setGlobalEvents(HashMap<String, EventObject> globalEvents) {
+		this.globalEvents = globalEvents;
+	}
+
+	public HashMap<String, EventObject> getGlobalEvents() {
+		return globalEvents;
 	}
 }

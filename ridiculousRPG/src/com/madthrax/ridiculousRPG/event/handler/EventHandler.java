@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.event.handler;
 
+import java.io.Serializable;
+
 import javax.script.ScriptException;
 
 import com.madthrax.ridiculousRPG.ObjectState;
@@ -26,7 +28,7 @@ import com.madthrax.ridiculousRPG.event.EventObject;
  * 
  * @author Alexander Baumgartner
  */
-public interface EventHandler {
+public interface EventHandler extends Serializable {
 	/**
 	 * This method is called if the event is touchable and an touch event
 	 * occurred.
@@ -92,23 +94,8 @@ public interface EventHandler {
 	 * Make sure that you do not collide with an other event state.
 	 * 
 	 * @param eventSelf
-	 * @param parentState
 	 */
-	public void load(EventObject eventSelf, ObjectState parentState)
-			throws ScriptException;
-
-	/**
-	 * Save your own state into the parent's child states!<br>
-	 * Make sure that you do not collide with an other event state.
-	 * 
-	 * @param eventSelf
-	 * @param parentState
-	 * @param currentlyExecuted
-	 *            true if this event is currently active. E.g. the one map is
-	 *            rendered currently, where this event is placed on.
-	 */
-	public void store(EventObject eventSelf, ObjectState parentState,
-			boolean currentlyExecuted) throws ScriptException;
+	public void load(EventObject eventSelf) throws ScriptException;
 
 	/**
 	 * Initializes the event handler. For example compiles (and executes

@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.script.ScriptException;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
@@ -83,6 +85,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 	private static final char EVENT_CUSTOM_PROP_KZ = '$';
 	// the key is translated to lower case -> we are case insensitive
+	private static final String EVENT_TYPE_GLOBAL = "global";
 	private static final String EVENT_PROP_ID = "id";
 	private static final String EVENT_PROP_HEIGHT = "height";
 	private static final String EVENT_PROP_OUTREACH = "outreach";
@@ -104,15 +107,15 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final String EVENT_PROP_ONTIMER = "ontimer";
 	private static final String EVENT_PROP_ONCUSTOMEVENT = "oncustomevent";
 	private static final String EVENT_PROP_ONLOAD = "onload";
-	private static final String EVENT_PROP_ONSTORE = "onstore";
 
 	/**
 	 * Creates a new map with the specified events from a tmx file.<br>
 	 * tmx files can be created by using the Tiled editor.
 	 * 
 	 * @param tmxFile
+	 * @throws ScriptException
 	 */
-	public TiledMapWithEvents(FileHandle tmxFile) {
+	public TiledMapWithEvents(FileHandle tmxFile) throws ScriptException {
 		TiledMap map = TiledLoader.createMap(tmxFile);
 		tileWidth = map.tileWidth;
 		tileHeight = map.tileHeight;
@@ -149,8 +152,14 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 							}
 						AtlasRegion region = (AtlasRegion) atlas
 								.getRegion(tile);
-						alTmp.add(new MapRenderRegion(region, k * map.tileWidth
-								+ region.offsetX, rowY + region.offsetY, z));
+						if (region == null) {
+							System.err.println("TILE-REGION " + tile
+									+ " IS NULL?!?");
+						} else {
+							alTmp.add(new MapRenderRegion(region, k
+									* map.tileWidth + region.offsetX, rowY
+									+ region.offsetY, z));
+						}
 					}
 				}
 			}
@@ -173,11 +182,22 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				put(object.name, ev);
 			}
 		}
-		// Compile all scripts after creating the events
-		// because scripts may use other events (for example to initialize the
-		// MoveTraceAdapter).
+		// Initialize the events
 		for (i = 0, len_i = dynamicRegions.size(); i < len_i; i++) {
-			dynamicRegions.get(i).init();
+			EventObject eventObj = dynamicRegions.get(i);
+			if (eventObj.name != null
+					&& EVENT_TYPE_GLOBAL.equalsIgnoreCase(eventObj.type)) {
+				EventObject globalObj = GameBase.$().getGlobalEvents().get(
+						eventObj.name);
+				if (globalObj == null) {
+					eventObj.init();
+					GameBase.$().getGlobalEvents().put(eventObj.name, eventObj);
+				} else {
+					put(eventObj.name, globalObj);
+				}
+			} else {
+				eventObj.init();
+			}
 		}
 
 		// insert half-planes around the map
@@ -352,17 +372,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					((EventExecScriptAdapter) ev.getEventHandler()).execOnLoad(
 							val, index.length() == 0 ? -1 : Integer
 									.parseInt(index));
-				}
-			} else if (key.startsWith(EVENT_PROP_ONSTORE)) {
-				if (ev.getEventHandler() == null) {
-					ev.setEventHandler(new EventExecScriptAdapter());
-				}
-				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_ONSTORE.length())
-							.trim();
-					((EventExecScriptAdapter) ev.getEventHandler())
-							.execOnStore(val, index.length() == 0 ? -1
-									: Integer.parseInt(index));
 				}
 			} else if (key.startsWith(EVENT_PROP_SCRIPT)) {
 				if (ev.getEventHandler() == null) {
@@ -581,10 +590,13 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		namedRegions = null;
 	}
 
-	public void dispose(boolean disposeAllEvents) {
-		if (disposeAllEvents) {
+	public void dispose(boolean disposeLocalEvents) {
+		if (disposeLocalEvents) {
 			for (int i = 0, size = dynamicRegions.size(); i < size; i++) {
-				dynamicRegions.get(i).dispose();
+				if (!EVENT_TYPE_GLOBAL
+						.equalsIgnoreCase(dynamicRegions.get(i).type)) {
+					dynamicRegions.get(i).dispose();
+				}
 			}
 		}
 		dispose();

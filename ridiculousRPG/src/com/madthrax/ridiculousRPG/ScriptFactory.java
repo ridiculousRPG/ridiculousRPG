@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG;
 
+import java.util.SortedMap;
+
 import javax.script.Bindings;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -25,7 +27,6 @@ import javax.script.ScriptException;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.SortedIntList;
-import com.badlogic.gdx.utils.SortedIntList.Node;
 
 /**
  * This class loads global scripts and generates new script engines.<br>
@@ -65,6 +66,13 @@ public class ScriptFactory {
 		scriptEngine.put("$scriptEngine", scriptEngine);
 		return evalAllScripts(scriptEngine, path, recurse, ENGINE_FACTORY
 				.getBindings());
+	}
+
+	/**
+	 * This method adds a global variable.
+	 */
+	public void putGlobalVar(String name, Object value) {
+		ENGINE_FACTORY.getBindings().put(name, value);
 	}
 
 	/**
@@ -242,7 +250,7 @@ public class ScriptFactory {
 	 *            Specifies the parameters for the function.
 	 * @return A {@link String} with the generated script function
 	 */
-	public String createScriptFunction(SortedIntList<String> codeLines,
+	public String createScriptFunction(SortedMap<Integer, String> codeLines,
 			String fncName, boolean returnTrue, String... fncParam) {
 		StringBuilder script = new StringBuilder();
 		script.append("\nfunction ").append(fncName).append('(');
@@ -252,11 +260,9 @@ public class ScriptFactory {
 			script.append(fncParam[i]);
 		}
 		script.append(") {");
-		for (Node<String> line : codeLines) {
-			script.append('\n').append(line.value).append(';');
+		for (String line : codeLines.values()) {
+			script.append('\n').append(line).append(';');
 		}
-		// let gc do it's work
-		codeLines.clear();
 		if (returnTrue)
 			script.append("\nreturn true;");
 		script.append("\n}");

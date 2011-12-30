@@ -23,6 +23,8 @@ import com.madthrax.ridiculousRPG.event.EventObject;
  * @author Alexander Baumgartner
  */
 public class EventSayAdapter extends EventAdapter {
+	private static final long serialVersionUID = 1L;
+
 	public String sayOnPush;
 	public String sayOnTouch;
 	public boolean touchPerformed;

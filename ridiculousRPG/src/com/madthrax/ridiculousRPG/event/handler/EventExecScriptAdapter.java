@@ -15,11 +15,15 @@
  */
 package com.madthrax.ridiculousRPG.event.handler;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import javax.script.Invocable;
 import javax.script.ScriptException;
 
-import com.badlogic.gdx.utils.SortedIntList;
-import com.badlogic.gdx.utils.SortedIntList.Node;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.ScriptFactory;
@@ -53,15 +57,16 @@ import com.madthrax.ridiculousRPG.map.TiledMapWithEvents;
  * @author Alexander Baumgartner
  */
 public class EventExecScriptAdapter extends EventAdapter {
+	private static final long serialVersionUID = 1L;
+
 	private boolean push, touch, timer, load, store, customTrigger;
-	private Invocable engine;
-	private SortedIntList<String> scriptCode = new SortedIntList<String>();
-	private SortedIntList<String> onPush = new SortedIntList<String>();
-	private SortedIntList<String> onTouch = new SortedIntList<String>();
-	private SortedIntList<String> onTimer = new SortedIntList<String>();
-	private SortedIntList<String> onLoad = new SortedIntList<String>();
-	private SortedIntList<String> onStore = new SortedIntList<String>();
-	private SortedIntList<String> onCustomTrigger = new SortedIntList<String>();
+	private transient Invocable engine;
+	private SortedMap<Integer, String> scriptCode = new TreeMap<Integer, String>();
+	private SortedMap<Integer, String> onPush = new TreeMap<Integer, String>();
+	private SortedMap<Integer, String> onTouch = new TreeMap<Integer, String>();
+	private SortedMap<Integer, String> onTimer = new TreeMap<Integer, String>();
+	private SortedMap<Integer, String> onLoad = new TreeMap<Integer, String>();
+	private SortedMap<Integer, String> onCustomTrigger = new TreeMap<Integer, String>();
 
 	@Override
 	public void init() {
@@ -129,30 +134,12 @@ public class EventExecScriptAdapter extends EventAdapter {
 	}
 
 	@Override
-	public void load(EventObject eventSelf, ObjectState parentState)
-			throws ScriptException {
+	public void load(EventObject eventSelf) throws ScriptException {
 		if (!load) {
-			super.load(eventSelf, parentState);
+			super.load(eventSelf);
 		} else {
 			try {
-				engine.invokeFunction("load", eventSelf, parentState,
-						getActualState());
-			} catch (NoSuchMethodException e) {
-				// this should never happen
-				throw new AssertionError(e);
-			}
-		}
-	}
-
-	@Override
-	public void store(EventObject eventSelf, ObjectState parentState,
-			boolean currentlyExecuted) throws ScriptException {
-		if (!store) {
-			super.store(eventSelf, parentState, currentlyExecuted);
-		} else {
-			try {
-				engine.invokeFunction("store", eventSelf, parentState,
-						currentlyExecuted, getActualState());
+				engine.invokeFunction("load", eventSelf, getActualState());
 			} catch (NoSuchMethodException e) {
 				// this should never happen
 				throw new AssertionError(e);
@@ -180,7 +167,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 	 */
 	public final void execOnPush(String val, int index) {
 		val = GameBase.$scriptFactory().loadScript(val);
-		onPush.insert(index, val);
+		onPush.put(index, val);
 		push = true;
 	}
 
@@ -204,7 +191,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 	 */
 	public final void execOnTouch(String val, int index) {
 		val = GameBase.$scriptFactory().loadScript(val);
-		onTouch.insert(index, val);
+		onTouch.put(index, val);
 		touch = true;
 	}
 
@@ -228,7 +215,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 	 */
 	public final void execOnTimer(String val, int index) {
 		val = GameBase.$scriptFactory().loadScript(val);
-		onTimer.insert(index, val);
+		onTimer.put(index, val);
 		timer = true;
 	}
 
@@ -252,7 +239,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 	 */
 	public final void execOnCustomTrigger(String val, int index) {
 		val = GameBase.$scriptFactory().loadScript(val);
-		onCustomTrigger.insert(index, val);
+		onCustomTrigger.put(index, val);
 		customTrigger = true;
 	}
 
@@ -276,32 +263,8 @@ public class EventExecScriptAdapter extends EventAdapter {
 	 */
 	public final void execOnLoad(String val, int index) {
 		val = GameBase.$scriptFactory().loadScript(val);
-		onLoad.insert(index, val);
+		onLoad.put(index, val);
 		load = true;
-	}
-
-	/**
-	 * This method adds some script lines at the specified line index to be
-	 * executed when the execution of this event is triggered.<br>
-	 * <b>ATTENTION:</b> This method only takes effect before the method
-	 * {@link #init()} is called on this object. Usually this method should ONLY
-	 * BE USED shortly after the event has been initialized.<br>
-	 * After all script lines at all the methods starting with execOn... have
-	 * been assigned you must call the method {@link #init()} to compile all the
-	 * generated script functions!<br>
-	 * <br>
-	 * You can find a reference implementation in {@link TiledMapWithEvents}
-	 * .parseProperties(...)
-	 * 
-	 * @param val
-	 *            The script line(s) to be executed
-	 * @param index
-	 *            The line index of this script line(s)
-	 */
-	public final void execOnStore(String val, int index) {
-		val = GameBase.$scriptFactory().loadScript(val);
-		onStore.insert(index, val);
-		store = true;
 	}
 
 	/**
@@ -324,16 +287,17 @@ public class EventExecScriptAdapter extends EventAdapter {
 	 */
 	public final void addScriptCode(String scriptCode, int index) {
 		scriptCode = GameBase.$scriptFactory().loadScript(scriptCode);
-		this.scriptCode.insert(index, scriptCode);
+		this.scriptCode.put(index, scriptCode);
 	}
 
 	private void initEngine() throws ScriptException {
 		ScriptFactory factory = GameBase.$scriptFactory();
 		StringBuilder script = new StringBuilder();
-		for (Node<String> code : scriptCode) {
-			script.append(code.value).append('\n');
+		for (String code : scriptCode.values()) {
+			script.append(code).append('\n');
 		}
-		this.scriptCode.clear();
+		// WE NEED THIS FOR SERIALIZATION
+		// this.scriptCode.clear();
 
 		script.append(factory.createScriptFunction(onPush, "push", true,
 				"eventSelf", "eventTrigger", "eventState"));
@@ -344,9 +308,15 @@ public class EventExecScriptAdapter extends EventAdapter {
 		script.append(factory.createScriptFunction(onCustomTrigger,
 				"customTrigger", true, "eventSelf", "triggerId", "eventState"));
 		script.append(factory.createScriptFunction(onLoad, "load", true,
-				"eventSelf", "parentState", "eventState"));
-		script.append(factory.createScriptFunction(onStore, "store", true,
-				"eventSelf", "parentState", "currentlyExecuted", "eventState"));
+				"eventSelf", "eventState"));
+		// WE NEED THIS FOR SERIALIZATION
+		// let gc do it's work
+		// onPush.clear();
+		// onTouch.clear();
+		// onTimer.clear();
+		// onCustomTrigger.clear();
+		// onLoad.clear();
+		// onStore.clear();
 
 		this.engine = factory.obtainInvocable(script);
 	}
@@ -370,7 +340,20 @@ public class EventExecScriptAdapter extends EventAdapter {
 		this.onTouch = other.onTouch;
 		this.onTimer = other.onTimer;
 		this.onLoad = other.onLoad;
-		this.onStore = other.onStore;
 		this.onCustomTrigger = other.onCustomTrigger;
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+		try {
+			initEngine();
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		}
 	}
 }

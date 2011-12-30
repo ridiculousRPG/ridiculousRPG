@@ -17,7 +17,13 @@
 package com.madthrax.ridiculousRPG.event;
 
 import java.awt.geom.Point2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.HashMap;
+
+import javax.script.ScriptException;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -46,12 +52,14 @@ import com.madthrax.ridiculousRPG.movement.input.Move4WayAdapter;
  * @author Alexander Baumgartner
  */
 public class EventObject extends Movable implements Comparable<EventObject>,
-		Disposable {
+		Disposable, Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private static final float COLOR_WHITE_BITS = Color.WHITE.toFloatBits();
 
 	private TileAnimation animation;
-	private TextureRegionRef imageRef;
-	private TextureRegion image;
+	private transient TextureRegionRef imageRef;
+	private transient TextureRegion image;
 	private Point2D.Float softMove = new Point2D.Float(0f, 0f);
 	private EventHandler eventHandler;
 	private Color color = new Color(1f, 1f, 1f, 1f);
@@ -92,16 +100,19 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	/**
 	 * All actual collisions for this object are stored in this list
 	 */
-	public Array<EventObject> collision = new Array<EventObject>(false, 4);
+	public transient Array<EventObject> collision = new Array<EventObject>(
+			false, 4);
 	/**
 	 * Touching events which have just triggered a touch event
 	 */
-	public Array<EventObject> justTouching = new Array<EventObject>(false, 4);
+	public transient Array<EventObject> justTouching = new Array<EventObject>(
+			false, 4);
 	/**
 	 * All reachable objects which can be pushed at this time are stored in this
 	 * list
 	 */
-	public Array<EventObject> reachable = new Array<EventObject>(false, 4);
+	public transient Array<EventObject> reachable = new Array<EventObject>(
+			false, 4);
 	/**
 	 * This map holds the local event properties.<br>
 	 * If you use a {@link TiledMapWithEvents}, all object-properties starting
@@ -752,8 +763,27 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		setMoveHandler(null);
 	}
 
-	public void init() {
-		if (eventHandler != null)
+	public void init() throws ScriptException {
+		if (eventHandler != null) {
 			eventHandler.init();
+			eventHandler.load(this);
+		}
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+		if (animation != null) {
+			image = animation.getActualTextureRegion();
+		}
+		try {
+			init();
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		}
 	}
 }

@@ -450,6 +450,9 @@ public class GameServiceProvider {
 
 	void drawAll(boolean debug) {
 		// clear the screen
+		Gdx.gl.glClearColor(GameBase.$().getBackgroundColor().r, GameBase.$()
+				.getBackgroundColor().g, GameBase.$().getBackgroundColor().b,
+				GameBase.$().getBackgroundColor().a);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 		float tintColorBits = GameBase.$().getGameColorBits();
 		SpriteBatch spriteBatch = GameBase.$().getSpriteBatch();

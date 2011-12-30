@@ -152,7 +152,7 @@ public final class TextureRegionLoader {
 	}
 
 	private static TextureCache obtainCache(FileHandle filePath) {
-		String fileName = filePath.name();
+		String fileName = filePath.path();
 		TextureCache tCache = textureCache.get(fileName);
 		if (tCache == null) {
 			Pixmap pm = new Pixmap(filePath);

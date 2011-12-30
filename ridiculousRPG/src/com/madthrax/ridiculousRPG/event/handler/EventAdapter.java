@@ -28,6 +28,8 @@ import com.madthrax.ridiculousRPG.event.EventObject;
  * @author Alexander Baumgartner
  */
 public class EventAdapter implements EventHandler {
+	private static final long serialVersionUID = 1L;
+
 	private ObjectState myState;
 
 	public boolean touch(EventObject eventSelf, EventObject eventTrigger)
@@ -41,20 +43,7 @@ public class EventAdapter implements EventHandler {
 		return false;
 	}
 
-	public void load(EventObject eventSelf, ObjectState parentState)
-			throws ScriptException {
-		this.myState = parentState.getChild(eventSelf.id);
-		// load position, texture, movehandler ...
-	}
-
-	public void store(EventObject eventSelf, ObjectState parentState,
-			boolean currentlyExecuted) throws ScriptException {
-		if (currentlyExecuted) {
-			// store position, texture, movehandler ...
-		} else {
-			// clear position, texture, movehandler ... from myState
-		}
-		parentState.setChild(eventSelf.id, myState);
+	public void load(EventObject eventSelf) throws ScriptException {
 	}
 
 	public boolean customTrigger(EventObject eventSelf, int triggerId)
