@@ -293,5 +293,11 @@
     <property name="speed" value="S09_X_FAST"/>
    </properties>
   </object>
+  <object name="weatherTimer" x="-138" y="-24" width="103" height="16">
+   <properties>
+    <property name="onload" value="if (eventState.getFloat(0)==-1) WeatherEffectUtil.generateSnow($.serviceProvider.getService(&quot;weather&quot;), WeatherEffectUtil.Wind.NW_LOW);"/>
+    <property name="ontimer" value="var timeCount = eventState.getFloat(0); if (timeCount &gt; 5) {WeatherEffectUtil.generateSnow($.serviceProvider.getService(&quot;weather&quot;), WeatherEffectUtil.Wind.NW_LOW); eventState.setFloat(0, -1);} else if (timeCount &gt; -1) eventState.setFloat(0, timeCount+deltaTime);"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

@@ -47,7 +47,6 @@ initMenu($.serviceProvider.getService("menu"));
 var map = new ridiculousRPG.map.TiledMapWithEvents("data/map/001dinerOutside.tmx");
 $.serviceProvider.getService("map").loadMap(map);
 $.serviceProvider.getService("cameraTrack").setTrackObj(map.get("player"), true);
-ridiculousRPG.animation.WeatherEffectUtil.generateSnow($.serviceProvider.getService("weather"), ridiculousRPG.animation.WeatherEffectUtil.Wind.NW_LOW);
 
 function initMenu(menu) {
 	var execScript = internalFile("data/scripts/engine/menu/titleMenu.js");

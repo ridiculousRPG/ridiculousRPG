@@ -19,7 +19,9 @@ gdx = Packages.com.badlogic.gdx;
 $ = ridiculousRPG.GameBase.$();
 // make shortcut for Keys
 Keys = gdx.Input.Keys;
-// make shortcut for gui creation
+// make shortcut for WeatherEffectUtil
+WeatherEffectUtil = ridiculousRPG.animation.WeatherEffectUtil;
+//make shortcut for gui creation
 ui = gdx.scenes.scene2d.ui;
 //make shortcuts for Rectangle and Vector2
 Rectangle = gdx.math.Rectangle;
