@@ -33,9 +33,9 @@ public abstract class WeatherEffectUtil {
 		}
 	}
 
-	public static String SNOW_TEXTURE_PATH = "data/snow.png";
-	public static String RAIN_NW_TEXTURE_PATH = "data/rainNW.png";
-	public static String RAIN_NE_TEXTURE_PATH = "data/rainNE.png";
+	public static String SNOW_TEXTURE_PATH = "data/weatherEffect/snow.png";
+	public static String RAIN_NW_TEXTURE_PATH = "data/weatherEffect/rainNW.png";
+	public static String RAIN_NE_TEXTURE_PATH = "data/weatherEffect/rainNE.png";
 
 	/**
 	 * Generates snow with default parameters.<br>

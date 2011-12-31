@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package com.madthrax.ridiculousRPG.movement.misc;
+package com.madthrax.ridiculousRPG.movement;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.madthrax.ridiculousRPG.movement.Movable;
-import com.madthrax.ridiculousRPG.movement.MovementHandler;
+import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 
 /**
  * This {@link MovementHandler} allows to combine any other

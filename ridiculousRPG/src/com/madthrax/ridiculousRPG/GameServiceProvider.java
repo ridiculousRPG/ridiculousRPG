@@ -264,6 +264,73 @@ public class GameServiceProvider {
 	}
 
 	/**
+	 * Adds or replaces a service. The service will be added in front of all
+	 * other services (at the head) if it doesn't exist already. This means that
+	 * the service will be computed first and drawn last (This service will
+	 * overdraw all the other services).<br>
+	 * If there exists already a service with the specified name, it will be
+	 * replaced (the position will be the one of the old service). The old
+	 * service will be removed and returned.<br>
+	 * <br>
+	 * This method is NOT thread safe.<br>
+	 * Note: You have to dispose the old service to avoid memory leaks (if you
+	 * don't need it anymore)!<br>
+	 * If you need to put services from different threads concurrently, you have
+	 * to synchronize your code!
+	 * 
+	 * @param name
+	 *            The name under which this service will be provided.
+	 * @param service
+	 *            The service to append to the {@link GameServiceProvider}.
+	 * @return the old {@link GameService} which was stored under this name or
+	 *         null if no service with this name existed.
+	 * @see #putServiceAfter(String, GameService, String)
+	 * @see #putServiceBefore(String, GameService, String)
+	 */
+	public GameService putServiceHead(String name, GameService service) {
+		GameService old = services.put(name, service);
+		if (old instanceof Drawable) {
+			int index = drawables.indexOf((Drawable) old, true);
+			if (service instanceof Drawable)
+				drawables.set(index, (Drawable) service);
+			else
+				drawables.removeIndex(index);
+		} else if (service instanceof Drawable) {
+			drawables.insert(0, (Drawable) service);
+		}
+		if (old instanceof Computable) {
+			int index = computables.indexOf((Computable) old, true);
+			if (service instanceof Computable)
+				computables.set(index, (Computable) service);
+			else
+				computables.removeIndex(index);
+		} else if (service instanceof Computable) {
+			computables.insert(0, (Computable) service);
+		}
+		if (old instanceof ResizeListener) {
+			int index = resizeListener.indexOf((ResizeListener) old, true);
+			if (service instanceof ResizeListener)
+				resizeListener.set(index, (ResizeListener) service);
+			else
+				resizeListener.removeIndex(index);
+		} else if (service instanceof ResizeListener) {
+			resizeListener.insert(0, (ResizeListener) service);
+		}
+		if (old instanceof InputProcessor) {
+			int index = inputMultiplexer.getProcessors().indexOf(
+					(InputProcessor) old, true);
+			if (service instanceof InputProcessor)
+				inputMultiplexer.getProcessors().set(index,
+						(InputProcessor) service);
+			else
+				inputMultiplexer.getProcessors().removeIndex(index);
+		} else if (service instanceof InputProcessor) {
+			inputMultiplexer.getProcessors().insert(0, (InputProcessor) service);
+		}
+		return old;
+	}
+
+	/**
 	 * This method is NOT thread safe.<br>
 	 * Note: You have to dispose the old service to avoid memory leaks!<br>
 	 * If you need to put services from different threads concurrently, you have

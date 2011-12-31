@@ -30,8 +30,7 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 
 /**
  * A Layer for a weather effect. Every effect layer is simulated by a texture.
- * The texture is tiled to fill the map (or whatever display-region is used) Use
- * textures which are powers of 2 for your effects.
+ * The texture is tiled to fill the map (or whatever display-region is used).
  * 
  * @see WeatherEffectService
  * @author Alexander Baumgartner

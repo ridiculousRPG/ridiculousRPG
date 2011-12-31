@@ -92,14 +92,14 @@ public class MoveAnimateEventAdapter extends MovementHandler {
 				// restore the old animation
 				if (oldEvent != null) {
 					oldAnimation.animationSpeed = oldSpeed;
-					oldEvent.setAnimation(oldAnimation, false);
+					oldEvent.setAnimation(oldAnimation, false, false);
 					oldEvent.stop();
 				}
 				oldEvent = newEvent;
 				oldAnimation = newEvent.getAnimation();
 				oldSpeed = oldAnimation.animationSpeed;
 				if (animation != null) {
-					newEvent.setAnimation(animation, false);
+					newEvent.setAnimation(animation, false, false);
 				}
 				if (newEvent.getAnimation().animationSpeed == null) {
 					newEvent.getAnimation().animationSpeed = Speed.S07_NORMAL;
@@ -120,7 +120,7 @@ public class MoveAnimateEventAdapter extends MovementHandler {
 		// restore the old animation
 		if (oldEvent != null) {
 			oldAnimation.animationSpeed = oldSpeed;
-			oldEvent.setAnimation(oldAnimation, false);
+			oldEvent.setAnimation(oldAnimation, false, false);
 			oldEvent.stop();
 		}
 		oldEvent = null;

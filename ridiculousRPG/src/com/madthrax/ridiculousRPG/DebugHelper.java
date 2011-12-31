@@ -16,15 +16,23 @@
 
 package com.madthrax.ridiculousRPG;
 
+import java.util.List;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
+import com.madthrax.ridiculousRPG.event.BlockingBehaviour;
+import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
+import com.madthrax.ridiculousRPG.ui.DisplayTextService;
 
 /**
  * This class offers some debug functions.
@@ -32,10 +40,13 @@ import com.madthrax.ridiculousRPG.service.GameService;
  * @author Alexander Baumgartner
  */
 public final class DebugHelper {
+	private static ShapeRenderer debugRenderer;
+	private static DisplayTextService textMapDebugger;
+	private static DisplayTextService textViewDebugger;
+	private static BitmapFont f;
+
 	private DebugHelper() {
 	} // static container
-
-	private static BitmapFont f = null;
 
 	public static void drawServiceExecutionOrder(SpriteBatch spriteBatch,
 			Camera camera, Array<Computable> computables,
@@ -78,8 +89,8 @@ public final class DebugHelper {
 		TextBounds b = f.getMultiLineBounds(text);
 		f.drawMultiLine(spriteBatch, text, Math.max(Math.min(x1 + 10, GameBase
 				.$().getScreen().width
-				- b.width), 0f), Math.max(Math.min(y1, GameBase.$()
-				.getScreen().height), b.height));
+				- b.width), 0f), Math.max(Math.min(y1,
+				GameBase.$().getScreen().height), b.height));
 		spriteBatch.end();
 	}
 
@@ -104,4 +115,65 @@ public final class DebugHelper {
 		f.draw(spriteBatch, text, x2 - b.width, y2);
 		spriteBatch.end();
 	}
+
+	public static void debugEvents(List<EventObject> dynamicRegions) {
+		if (debugRenderer == null)
+			debugRenderer = new ShapeRenderer();
+		debugRenderer.setProjectionMatrix(GameBase.$().getCamera().projection);
+		debugRenderer.begin(ShapeType.Rectangle);
+		for (EventObject ev : dynamicRegions) {
+			if (ev.visible) {
+				debugRenderer.setColor(.7f, .7f, .7f, 1f);
+				debugRenderer.rect(ev.drawBound.x, ev.drawBound.y,
+						ev.drawBound.width, ev.drawBound.height);
+			}
+			if (!ev.blockingBehaviour
+					.blocks(BlockingBehaviour.BUILDING_LOW)) {
+				debugRenderer.setColor(0f, 1f, 0f, 1f);
+			} else if (!ev.blockingBehaviour
+					.blocks(BlockingBehaviour.BARRIER_LOW)) {
+				debugRenderer.setColor(1f, 1f, 0f, 1f);
+			} else {
+				debugRenderer.setColor(1f, 0f, 0f, 1f);
+			}
+			debugRenderer.rect(ev.getX(), ev.getY(), ev.getWidth(), ev
+					.getHeight());
+			if (ev.name != null) {
+				getTextMapDebugger().addMessage(ev.name,
+						getTextMapDebugger().getDefaultColor(),
+						ev.drawBound.x + 2f,
+						ev.drawBound.y + ev.drawBound.height - 2, 0f, true);
+			}
+		}
+		debugRenderer.end();
+	}
+
+	public static DisplayTextService getTextMapDebugger() {
+		if (textMapDebugger == null) {
+			textMapDebugger = new DisplayTextService() {
+				@Override
+				public Matrix4 projectionMatrix(Camera camera) {
+					return camera.projection;
+				}
+			};
+			GameBase.$serviceProvider().putServiceHead("textMapDebugger",
+					textMapDebugger);
+		}
+		return textMapDebugger;
+	}
+
+	public static DisplayTextService getTextViewDebugger() {
+		if (textViewDebugger == null) {
+			textViewDebugger = new DisplayTextService() {
+				@Override
+				public Matrix4 projectionMatrix(Camera camera) {
+					return camera.view;
+				}
+			};
+			GameBase.$serviceProvider().putServiceHead("textViewDebugger",
+					textViewDebugger);
+		}
+		return textViewDebugger;
+	}
+
 }

@@ -38,11 +38,10 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledLoader;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObject;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObjectGroup;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntMap;
+import com.madthrax.ridiculousRPG.DebugHelper;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
@@ -55,7 +54,6 @@ import com.madthrax.ridiculousRPG.event.handler.EventExecScriptAdapter;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 import com.madthrax.ridiculousRPG.service.Computable;
-import com.madthrax.ridiculousRPG.ui.DisplayTextService;
 
 /**
  * This class represents a tiled map with events on this map.<br>
@@ -75,7 +73,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private int idCount = -1;
 	private static final Object DUMMY = new Object();
 	private transient IntMap<Object> usedIds = new IntMap<Object>();
-	private transient static ShapeRenderer debugRenderer;
 
 	// tiles
 	private transient MapRenderRegion[] staticRegions;
@@ -98,6 +95,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final String EVENT_PROP_SCALEX = "scalex";
 	private static final String EVENT_PROP_SCALEY = "scaley";
 	private static final String EVENT_PROP_IMAGE = "image";
+	private static final String EVENT_PROP_CENTERIMAGE = "centerimage";
 	private static final String EVENT_PROP_BLOCKING = "blocking";
 	private static final String EVENT_PROP_MOVEHANDLER = "movehandler";
 	private static final String EVENT_PROP_SPEED = "speed";
@@ -301,13 +299,11 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			} else if (EVENT_PROP_SCALEY.equals(key)) {
 				ev.scaleY = Float.parseFloat(val);
 			} else if (EVENT_PROP_IMAGE.equals(key)) {
-				FileHandle fh = Gdx.files.internal(val);
-				if (fh.exists()) {
-					ev.setImage(TextureRegionLoader.load(val));
-					ev.visible = true;
-					if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
-						ev.z = .1f;
-					}
+				if (Gdx.files.internal(val).exists()) {
+					boolean estimateTouch = "true".equalsIgnoreCase(props
+							.get(EVENT_PROP_ESTIMATETOUCHBOUNDS));
+					ev.setImage(val, estimateTouch, !estimateTouch);
+					initVisibleEvent(ev, props);
 				}
 			} else if (EVENT_PROP_ANIMATION.equals(key)) {
 				FileHandle fh = Gdx.files.internal(val);
@@ -317,22 +313,18 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 							.getRegionWidth() / 4, t.getRegionHeight() / 4, 4,
 							4);
 					t.dispose();
-					ev.setAnimation(anim, "true".equalsIgnoreCase(props
-							.get(EVENT_PROP_ESTIMATETOUCHBOUNDS)));
-					ev.visible = true;
-					if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
-						ev.z = .1f;
-					}
+					boolean estimateTouch = "true".equalsIgnoreCase(props
+							.get(EVENT_PROP_ESTIMATETOUCHBOUNDS));
+					ev.setAnimation(anim, estimateTouch, !estimateTouch);
+					initVisibleEvent(ev, props);
 				} else {
 					Object result = GameBase.$().eval(val);
 					if (result instanceof TileAnimation) {
-						ev.setAnimation((TileAnimation) result, "true"
-								.equalsIgnoreCase(props
-										.get(EVENT_PROP_ESTIMATETOUCHBOUNDS)));
-						ev.visible = true;
-						if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
-							ev.z = .1f;
-						}
+						boolean estimateTouch = "true".equalsIgnoreCase(props
+								.get(EVENT_PROP_ESTIMATETOUCHBOUNDS));
+						ev.setAnimation((TileAnimation) result, estimateTouch,
+								!estimateTouch);
+						initVisibleEvent(ev, props);
 					}
 				}
 			} else if (EVENT_PROP_HANDLER.equals(key)) {
@@ -424,6 +416,16 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		} catch (Exception e) {
 			// Maybe it would be better to display the error
 			e.printStackTrace();
+		}
+	}
+
+	private void initVisibleEvent(EventObject ev, HashMap<String, String> props) {
+		ev.visible = true;
+		if ("true".equalsIgnoreCase(props
+				.get(EVENT_PROP_CENTERIMAGE)))
+			ev.centerDrawbound();
+		if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
+			ev.z = .1f;
 		}
 	}
 
@@ -582,35 +584,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		}
 		if (debug) {
 			spriteBatch.end();
-			if (debugRenderer == null)
-				debugRenderer = new ShapeRenderer();
-			debugRenderer
-					.setProjectionMatrix(spriteBatch.getProjectionMatrix());
-			debugRenderer.begin(ShapeType.Rectangle);
-			for (EventObject ev : dynamicRegions) {
-				if (ev.visible) {
-					debugRenderer.setColor(.7f, .7f, .7f, 1f);
-					debugRenderer.rect(ev.drawBound.x, ev.drawBound.y,
-							ev.drawBound.width, ev.drawBound.height);
-				}
-				if (!ev.blockingBehaviour
-						.blocks(BlockingBehaviour.PASSES_NO_BARRIER)) {
-					debugRenderer.setColor(0f, 1f, 0f, 1f);
-				} else if (!ev.blockingBehaviour
-						.blocks(BlockingBehaviour.PASSES_ALL_BARRIERS)) {
-					debugRenderer.setColor(1f, 1f, 0f, 1f);
-				} else {
-					debugRenderer.setColor(1f, 0f, 0f, 1f);
-				}
-				debugRenderer.rect(ev.getX(), ev.getY(), ev.getWidth(), ev
-						.getHeight());
-				if (ev.name != null)
-					DisplayTextService.$map.addMessage(ev.name,
-							DisplayTextService.$map.getDefaultColor(),
-							ev.drawBound.x + 2f, ev.drawBound.y
-									+ ev.drawBound.height - 2, 0f, true);
-			}
-			debugRenderer.end();
+			DebugHelper.debugEvents(dynamicRegions);
 			spriteBatch.begin();
 		}
 	}

@@ -58,6 +58,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	private static final float COLOR_WHITE_BITS = Color.WHITE.toFloatBits();
 
 	private TileAnimation animation;
+	private String texturePath;
 	private transient TextureRegionRef imageRef;
 	private transient TextureRegion image;
 	private Point2D.Float softMove = new Point2D.Float(0f, 0f);
@@ -282,7 +283,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		addY(y);
 		z = .1f;
 		setAnimationTexture(animationPath, animationTileWidth,
-				animationTileHeight, anzCols, anzRows, true,
+				animationTileHeight, anzCols, anzRows, true, false,
 				isAnimationCompressed);
 		this.image = animation.setAnimationPosition(startDirection);
 		this.visible = true;
@@ -619,9 +620,10 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 *            tileWidth and tileHeight.
 	 */
 	public void setAnimationTexture(String path, int tileWidth, int tileHeight,
-			int anzCols, int anzRows, boolean estimateTouchBound) {
+			int anzCols, int anzRows, boolean estimateTouchBound,
+			boolean estimateDrawBound) {
 		setAnimationTexture(path, tileWidth, tileHeight, anzCols, anzRows,
-				estimateTouchBound, false);
+				estimateTouchBound, estimateDrawBound, false);
 	}
 
 	/**
@@ -665,7 +667,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 */
 	public void setAnimationTexture(String path, int tileWidth, int tileHeight,
 			int anzCols, int anzRows, boolean estimateTouchBound,
-			boolean isCompressed) {
+			boolean estimateDrawBound, boolean isCompressed) {
 		if (animation == null) {
 			animation = new TileAnimation(path, tileWidth, tileHeight, anzCols,
 					anzRows, isCompressed);
@@ -676,8 +678,12 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		}
 		this.drawBound.width = tileWidth;
 		this.drawBound.height = tileHeight;
-		if (estimateTouchBound)
+		if (estimateTouchBound) {
 			estimateTouchBound();
+		} else if (estimateDrawBound) {
+			drawBound.x = touchBound.x - (tileWidth - getWidth()) / 2;
+			drawBound.y = touchBound.y;
+		}
 	}
 
 	/**
@@ -698,7 +704,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 *         dispose it!
 	 */
 	public TileAnimation setAnimation(TileAnimation animation,
-			boolean estimateTouchBound) {
+			boolean estimateTouchBound, boolean estimateDrawBound) {
 		TileAnimation old = this.animation;
 		this.animation = animation;
 		image = animation.getActualTextureRegion();
@@ -708,7 +714,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		drawBound.height = height;
 		if (estimateTouchBound) {
 			estimateTouchBound();
-		} else {
+		} else if (estimateDrawBound) {
 			drawBound.x = touchBound.x - (width - getWidth()) / 2;
 			drawBound.y = touchBound.y;
 		}
@@ -733,15 +739,30 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	/**
 	 * This texture reference will automatically be unloaded
 	 * 
-	 * @param tRef
+	 * @param texturePath
+	 *            path to an png image
 	 */
-	public void setImage(TextureRegionRef texture) {
+	public void setImage(String texturePath, boolean estimateTouchBound,
+			boolean estimateDrawBound) {
+		this.texturePath = texturePath;
+		TextureRegionRef texture = TextureRegionLoader.load(texturePath);
 		if (imageRef != null)
 			imageRef.dispose();
 		imageRef = texture;
 		image = texture;
+		drawBound.width = texture.getRegionWidth();
+		drawBound.height = texture.getRegionHeight();
+		if (estimateTouchBound) {
+			estimateTouchBound();
+		} else if (estimateDrawBound) {
+			drawBound.x = touchBound.x - (drawBound.width - getWidth()) / 2;
+			drawBound.y = touchBound.y;
+		}
 	}
-
+	public void centerDrawBound() {
+		drawBound.x = touchBound.x - (drawBound.width - getWidth()) / 2;
+		drawBound.y = touchBound.y - (drawBound.height - getHeight()) / 2;
+	}
 	public void setEventHandler(EventHandler eventHandler) {
 		this.eventHandler = eventHandler;
 	}
@@ -777,6 +798,9 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	private void readObject(ObjectInputStream in) throws IOException,
 			ClassNotFoundException {
 		in.defaultReadObject();
+		if (texturePath != null) {
+			setImage(texturePath, false, false);
+		}
 		if (animation != null) {
 			image = animation.getActualTextureRegion();
 		}

@@ -63,7 +63,7 @@ public class MoveArcAdapter extends MovementHandler {
 		this.rotateTexture = rotateTexture;
 		this.stretch = stretch;
 		this.fixedSpeed = variableSpeed;
-		this.drift = drift;
+		this.drift = drift == null ? new Vector2() : drift;
 	}
 
 	/**

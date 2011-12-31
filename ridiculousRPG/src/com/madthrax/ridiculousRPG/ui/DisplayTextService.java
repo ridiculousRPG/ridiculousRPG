@@ -22,7 +22,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.GameServiceProvider;
@@ -42,22 +41,6 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 		LEFT, BOTTOM, CENTER, RIGHT, TOP
 	}
 
-	/**
-	 * A singleton instance for simply printing messages onto the screen.
-	 */
-	public static final DisplayTextService $screen = new DisplayTextService() {
-		public Matrix4 projectionMatrix(Camera camera) {
-			return camera.view;
-		}
-	};
-	/**
-	 * A singleton instance for simply printing messages onto the map.
-	 */
-	public static final DisplayTextService $map = new DisplayTextService() {
-		public Matrix4 projectionMatrix(Camera camera) {
-			return camera.projection;
-		}
-	};
 	private BitmapFont font;
 	private final Array<BitmapFontCache> msgDisplay = new Array<BitmapFontCache>(
 			false, 32);
