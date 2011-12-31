@@ -16,6 +16,9 @@
 
 package com.madthrax.ridiculousRPG.map;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,8 +57,6 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.ui.DisplayTextService;
 
-// THIS CLASS IS OPTIMIZED FOR PERFORMANCE NOT FOR READABILITY!
-// SOMETIMES THE CODE COULD LOOK A LITTLE STRANGE (NOT PRETTY JAVA-STYLED)
 /**
  * This class represents a tiled map with events on this map.<br>
  * The events may move around on the map.<br>
@@ -64,24 +65,27 @@ import com.madthrax.ridiculousRPG.ui.DisplayTextService;
  * @author Alexander Baumgartner
  */
 public class TiledMapWithEvents implements MapWithEvents<EventObject> {
-	private TileAtlas atlas;
-	private int width, height;
-	private int tileWidth, tileHeight;
+	private static final long serialVersionUID = 1L;
+
+	private transient TileAtlas atlas;
+	private transient int width, height;
+	private transient int tileWidth, tileHeight;
+	private String tmxPath;
 
 	private int idCount = -1;
-	private IntMap<Object> usedIds = new IntMap<Object>();
 	private static final Object DUMMY = new Object();
-	private static ShapeRenderer debugRenderer;
+	private transient IntMap<Object> usedIds = new IntMap<Object>();
+	private transient static ShapeRenderer debugRenderer;
 
 	// tiles
-	private MapRenderRegion[] staticRegions;
+	private transient MapRenderRegion[] staticRegions;
 	// events
 	private List<EventObject> dynamicRegions = new ArrayList<EventObject>(50);
 	// named events
 	private Map<String, EventObject> namedRegions = new HashMap<String, EventObject>(
 			30);
 
-	private Computable triggerEventHandler;
+	private transient Computable triggerEventHandler;
 
 	private static final char EVENT_CUSTOM_PROP_KZ = '$';
 	// the key is translated to lower case -> we are case insensitive
@@ -113,21 +117,42 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	 * Creates a new map with the specified events from a tmx file.<br>
 	 * tmx files can be created by using the Tiled editor.
 	 * 
-	 * @param tmxFile
+	 * @param tmxPath
 	 * @throws ScriptException
 	 */
-	public TiledMapWithEvents(FileHandle tmxFile) throws ScriptException {
+	public TiledMapWithEvents(String tmxPath) throws ScriptException {
+		TiledMap map = loadTileMap(tmxPath);
+
+		loadStaticTiles(map);
+		loadEvents(map);
+
+		triggerEventHandler = new TriggerEventHandler(dynamicRegions);
+	}
+
+	private TiledMap loadTileMap(String tmxPath) {
+		this.tmxPath = tmxPath;
+		FileHandle tmxFile = Gdx.files.internal(tmxPath);
 		TiledMap map = TiledLoader.createMap(tmxFile);
 		tileWidth = map.tileWidth;
 		tileHeight = map.tileHeight;
 		width = map.width * tileWidth;
 		height = map.height * tileHeight;
 		atlas = new TileAtlas(map, tmxFile.parent());
-		int i, j, k, len_i, len_j, len_k, layer_z, z;
+		return map;
+	}
+
+	private void loadStaticTiles(TiledMap map) {
+		int i;
+		int j;
+		int k;
+		int len_i;
+		int len_j;
+		int len_k;
+		int layer_z;
+		int z;
 		int[][] layerTiles;
 		int[] row;
 		String prop;
-		EventObject ev;
 		ArrayList<MapRenderRegion> alTmp = new ArrayList<MapRenderRegion>(1000);
 		for (i = 0, len_i = map.layers.size(); i < len_i; i++) {
 			layerTiles = map.layers.get(i).tiles;
@@ -167,6 +192,15 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		}
 		Collections.sort(alTmp);
 		staticRegions = alTmp.toArray(new MapRenderRegion[alTmp.size()]);
+	}
+
+	private void loadEvents(TiledMap map) throws ScriptException {
+		int i;
+		int j;
+		int len_i;
+		int len_j;
+		String prop;
+		EventObject ev;
 		for (i = 0, len_i = map.objectGroups.size(); i < len_i; i++) {
 			TiledObjectGroup group = map.objectGroups.get(i);
 			for (j = 0, len_j = group.objects.size(); j < len_j; j++) {
@@ -213,8 +247,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		ev.setTouchBound(new Rectangle(-1000f, height, width + 2000f, 1000f));
 		put(null, ev = new EventObject());
 		ev.setTouchBound(new Rectangle(width, -1000f, 1000f, height + 2000f));
-
-		triggerEventHandler = new TriggerEventHandler(dynamicRegions);
 	}
 
 	/**
@@ -594,11 +626,25 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		namedRegions = null;
 	}
 
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+
+		TiledMap map = loadTileMap(tmxPath);
+		loadStaticTiles(map);
+		triggerEventHandler = new TriggerEventHandler(dynamicRegions);
+	}
+
 	public void dispose(boolean disposeLocalEvents) {
 		if (disposeLocalEvents) {
 			for (int i = 0, size = dynamicRegions.size(); i < size; i++) {
-				if (!EVENT_TYPE_GLOBAL
-						.equalsIgnoreCase(dynamicRegions.get(i).type)) {
+				if (!(EVENT_TYPE_GLOBAL
+						.equalsIgnoreCase(dynamicRegions.get(i).type) || EVENT_TYPE_PLAYER
+						.equalsIgnoreCase(dynamicRegions.get(i).type))) {
 					dynamicRegions.get(i).dispose();
 				}
 			}

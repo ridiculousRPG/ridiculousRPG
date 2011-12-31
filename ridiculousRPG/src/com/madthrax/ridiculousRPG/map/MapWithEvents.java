@@ -16,6 +16,7 @@
 
 package com.madthrax.ridiculousRPG.map;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.badlogic.gdx.graphics.Camera;
@@ -30,7 +31,7 @@ import com.madthrax.ridiculousRPG.service.Computable;
  * @author Alexander Baumgartner
  */
 public interface MapWithEvents<T extends Movable> extends Disposable,
-		Computable {
+		Computable, Serializable {
 	/**
 	 * Puts a named event onto the loaded map.<br>
 	 * Use the method <code>get(String name)</code> to dereference this named
