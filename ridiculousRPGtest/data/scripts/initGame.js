@@ -44,7 +44,7 @@ initMenu($.serviceProvider.getService("menu"));
 // play a video on startup
 //$.serviceProvider.getService("video").play(internalFile("data/video/test.ogg"), $.screen, 1, true);
 
-var map = new ridiculousRPG.map.TiledMapWithEvents(internalFile("data/map/001dinerOutside.tmx"));
+var map = new ridiculousRPG.map.TiledMapWithEvents("data/map/001dinerOutside.tmx");
 $.serviceProvider.getService("map").loadMap(map);
 $.serviceProvider.getService("cameraTrack").setTrackObj(map.get("player"), true);
 ridiculousRPG.animation.WeatherEffectUtil.generateSnow($.serviceProvider.getService("weather"), ridiculousRPG.animation.WeatherEffectUtil.Wind.NW_LOW);
