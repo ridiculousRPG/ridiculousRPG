@@ -21,6 +21,9 @@ $ = ridiculousRPG.GameBase.$();
 Keys = gdx.Input.Keys;
 // make shortcut for gui creation
 ui = gdx.scenes.scene2d.ui;
+//make shortcuts for Rectangle and Vector2
+Rectangle = gdx.math.Rectangle;
+Vector2 = gdx.math.Vector2;
 
 // Define the different menu states
 MENU_STATE_TITLE = 1;

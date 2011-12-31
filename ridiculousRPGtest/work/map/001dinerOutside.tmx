@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="18" height="14" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="diner" tilewidth="32" tileheight="32">
+  <image source="tileset/diner.png" width="256" height="2048"/>
+  <tile id="8">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="9">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="11">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="12">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="13">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="14">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="104">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="105">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="106">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="107">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="148">
+   <properties>
+    <property name="height" value="128"/>
+   </properties>
+  </tile>
+  <tile id="149">
+   <properties>
+    <property name="height" value="128"/>
+   </properties>
+  </tile>
+  <tile id="156">
+   <properties>
+    <property name="height" value="96"/>
+   </properties>
+  </tile>
+  <tile id="157">
+   <properties>
+    <property name="height" value="96"/>
+   </properties>
+  </tile>
+  <tile id="164">
+   <properties>
+    <property name="height" value="64"/>
+   </properties>
+  </tile>
+  <tile id="165">
+   <properties>
+    <property name="height" value="64"/>
+   </properties>
+  </tile>
+  <tile id="172">
+   <properties>
+    <property name="height" value="32"/>
+   </properties>
+  </tile>
+  <tile id="173">
+   <properties>
+    <property name="height" value="32"/>
+   </properties>
+  </tile>
+  <tile id="180">
+   <properties>
+    <property name="height" value="1"/>
+   </properties>
+  </tile>
+  <tile id="181">
+   <properties>
+    <property name="height" value="1"/>
+   </properties>
+  </tile>
+  <tile id="378">
+   <properties>
+    <property name="height" value="54"/>
+   </properties>
+  </tile>
+  <tile id="379">
+   <properties>
+    <property name="height" value="54"/>
+   </properties>
+  </tile>
+  <tile id="380">
+   <properties>
+    <property name="height" value="4"/>
+   </properties>
+  </tile>
+  <tile id="381">
+   <properties>
+    <property name="height" value="4"/>
+   </properties>
+  </tile>
+  <tile id="382">
+   <properties>
+    <property name="height" value="4"/>
+   </properties>
+  </tile>
+  <tile id="383">
+   <properties>
+    <property name="height" value="4"/>
+   </properties>
+  </tile>
+  <tile id="386">
+   <properties>
+    <property name="height" value="22"/>
+   </properties>
+  </tile>
+  <tile id="387">
+   <properties>
+    <property name="height" value="22"/>
+   </properties>
+  </tile>
+  <tile id="388">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="389">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="390">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="391">
+   <properties>
+    <property name="height" value="3"/>
+   </properties>
+  </tile>
+  <tile id="394">
+   <properties>
+    <property name="height" value="1"/>
+   </properties>
+  </tile>
+  <tile id="395">
+   <properties>
+    <property name="height" value="1"/>
+   </properties>
+  </tile>
+  <tile id="396">
+   <properties>
+    <property name="height" value="2"/>
+   </properties>
+  </tile>
+  <tile id="397">
+   <properties>
+    <property name="height" value="2"/>
+   </properties>
+  </tile>
+  <tile id="398">
+   <properties>
+    <property name="height" value="2"/>
+   </properties>
+  </tile>
+  <tile id="399">
+   <properties>
+    <property name="height" value="2"/>
+   </properties>
+  </tile>
+  <tile id="400">
+   <properties>
+    <property name="height" value="1"/>
+   </properties>
+  </tile>
+  <tile id="401">
+   <properties>
+    <property name="height" value="1"/>
+   </properties>
+  </tile>
+  <tile id="402">
+   <properties>
+    <property name="height" value="1"/>
+   </properties>
+  </tile>
+  <tile id="403">
+   <properties>
+    <property name="height" value="17"/>
+   </properties>
+  </tile>
+  <tile id="404">
+   <properties>
+    <property name="height" value="1"/>
+   </properties>
+  </tile>
+  <tile id="405">
+   <properties>
+    <property name="height" value="1"/>
+   </properties>
+  </tile>
+  <tile id="406">
+   <properties>
+    <property name="height" value="1"/>
+   </properties>
+  </tile>
+  <tile id="407">
+   <properties>
+    <property name="height" value="1"/>
+   </properties>
+  </tile>
+  <tile id="411">
+   <properties>
+    <property name="height" value="1"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer name="Kachelebene 2" width="18" height="14">
+  <data encoding="base64" compression="zlib">
+   eJzzYGRg8BjFVMWbGRgYtjBQbs5uoBl7qGAOpe6ZDdQ7h4Fy9ywG6l3CQLl7VgP1rqGCe2DuGGzxRUsMACpHUbk=
+  </data>
+ </layer>
+ <layer name="Kachelebene 1" width="18" height="14">
+  <data encoding="base64" compression="zlib">
+   eJy1zNsvkAEYx3G3iFLphCQpKpJDiQ4SKuno1NG5dLoJN9JNcaO6yWkj2diyZdNWWzZxI/4wn8t37d17xbN99tz89o2J2byLJY54tpFAItvZwQte8orXEZ0kdrKL3SSzh73s4w3d9NAb0dnPAVJIJY2DpHOIPt7Sz7uITgaHyeQIWRzlGNm85wMDDEZ0cjjOCU6SSx6nyGeIj3zic0TnNAUUUkQxZzhLCV8YZoRRxhgP6ZyjlDLOc4GLXKKcCSb5yhTfmA7pXKaCK1RSRTVXucYMs4H9d+ZCOtep4Qa13OQWt7nDD+YD+wV+hnTuco866mmgkSbu84vfgf0fFkM6D3jIIx7zhGZaaGWJvyyzEvj/XxvtdNDJU57RxXNW+cca64G/FbcB9Gg22Q==
+  </data>
+ </layer>
+ <objectgroup name="Objektebene 1" width="18" height="14" opacity="0.75">
+  <object x="32" y="64" width="384" height="224"/>
+  <object x="288" y="288" width="128" height="32"/>
+  <object x="32" y="288" width="192" height="32"/>
+  <object x="439" y="341" width="21" height="4"/>
+  <object gid="404" x="288" y="320"/>
+  <object gid="412" x="288" y="352"/>
+  <object gid="395" x="128" y="352"/>
+  <object gid="396" x="160" y="352"/>
+  <object gid="387" x="128" y="320"/>
+  <object gid="388" x="160" y="320"/>
+  <object gid="379" x="128" y="288"/>
+  <object gid="380" x="160" y="288"/>
+  <object gid="306" x="240" y="328">
+   <properties>
+    <property name="blocking" value="NONE"/>
+    <property name="ontouch" value="System.out.println(&quot;huu&quot;)"/>
+   </properties>
+  </object>
+  <object name="player" type="player" x="511" y="370" width="19" height="9">
+   <properties>
+    <property name="animation" value="data/charset/Daisy.png"/>
+    <property name="blocking" value="PASSES_LOW_BARRIER"/>
+    <property name="movehandler" value="Move4WayAdapter"/>
+    <property name="speed" value="S07_NORMAL"/>
+   </properties>
+  </object>
+  <object name="Arrow" x="48" y="386" width="15" height="13">
+   <properties>
+    <property name="centerimage" value="true"/>
+    <property name="image" value="data/charset/Arrow.png"/>
+    <property name="movehandler" value="CombinedMovesAdapter.$(true, false, [MoveEllipseAdapter.$(new Rectangle(20, 20, 200, 70), MoveEllipseAdapter.StartPoint.RIGHT, -360 * 2, true, false, null), MoveEllipseAdapter.$(new Rectangle(220, 20, 200, 70), MoveEllipseAdapter.StartPoint.LEFT, 360 * 2, true, false, null)])"/>
+    <property name="speed" value="S09_X_FAST"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>
