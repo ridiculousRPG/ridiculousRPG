@@ -49,8 +49,8 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.animation.TileAnimation;
 import com.madthrax.ridiculousRPG.event.BlockingBehaviour;
 import com.madthrax.ridiculousRPG.event.EventObject;
+import com.madthrax.ridiculousRPG.event.EventTriggerAsync;
 import com.madthrax.ridiculousRPG.event.Speed;
-import com.madthrax.ridiculousRPG.event.TriggerEventHandler;
 import com.madthrax.ridiculousRPG.event.handler.EventExecScriptAdapter;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
@@ -84,7 +84,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private Map<String, EventObject> namedRegions = new HashMap<String, EventObject>(
 			30);
 
-	private transient Computable triggerEventHandler;
+	private transient Computable eventTrigger;
 
 	private static final char EVENT_CUSTOM_PROP_KZ = '$';
 	// the key is translated to lower case -> we are case insensitive
@@ -127,7 +127,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		loadStaticTiles(map);
 		loadEvents(map);
 
-		triggerEventHandler = new TriggerEventHandler(dynamicRegions);
+		eventTrigger = new EventTriggerAsync(dynamicRegions);
 	}
 
 	private TiledMap loadTileMap(String tmxPath) {
@@ -272,7 +272,9 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	protected void parseProperties(EventObject ev, HashMap<String, String> props) {
 		for (Entry<String, String> entry : props.entrySet()) {
 			String key = entry.getKey().trim();
-			String val = entry.getValue().replace("&quot;", "\"").trim();
+			// the libgdx homemade XmlReader of course is buggy :/
+			String val = entry.getValue().replace("&quot;", "\"").replace(
+					"&gt;", ">").replace("&lt;", "<").trim();
 			if (key.length() == 0 || val.length() == 0)
 				continue;
 			if (key.charAt(0) == EVENT_CUSTOM_PROP_KZ) {
@@ -536,7 +538,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	 * @param deltaTime
 	 */
 	public void compute(float deltaTime, boolean actionKeyDown) {
-		triggerEventHandler.compute(deltaTime, actionKeyDown);
+		eventTrigger.compute(deltaTime, actionKeyDown);
 	}
 
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
@@ -605,8 +607,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	}
 
 	public void dispose() {
-		if (triggerEventHandler instanceof Disposable) {
-			((Disposable) triggerEventHandler).dispose();
+		if (eventTrigger instanceof Disposable) {
+			((Disposable) eventTrigger).dispose();
 		}
 		if (atlas != null)
 			atlas.dispose();
@@ -625,7 +627,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 		TiledMap map = loadTileMap(tmxPath);
 		loadStaticTiles(map);
-		triggerEventHandler = new TriggerEventHandler(dynamicRegions);
+		eventTrigger = new EventTriggerAsync(dynamicRegions);
 	}
 
 	public void dispose(boolean disposeLocalEvents) {

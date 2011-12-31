@@ -20,7 +20,6 @@ import java.util.List;
 
 import javax.script.ScriptException;
 
-import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
 import com.madthrax.ridiculousRPG.service.Computable;
 
@@ -32,37 +31,11 @@ import com.madthrax.ridiculousRPG.service.Computable;
  * 
  * @author Alexander Baumgartner
  */
-public class TriggerEventHandler extends Thread implements Disposable,
-		Computable {
+public class EventTriggerSync implements Computable {
 	private List<EventObject> events;
-	private boolean disposed = false;
-	private float deltaTime;
-	private boolean computationReady = false;
-	private boolean actionKeyDown = false;
 
-	public TriggerEventHandler(List<EventObject> events) {
+	public EventTriggerSync(List<EventObject> events) {
 		this.events = events;
-		start();
-	}
-
-	@Override
-	public void run() {
-		while (!disposed) {
-			while (!computationReady) {
-				yield();
-				if (disposed)
-					return;
-			}
-			float deltaTime = this.deltaTime;
-			this.deltaTime = 0f;
-			try {
-				callEventHandler(deltaTime, events, actionKeyDown);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			this.computationReady = false;
-			yield();
-		}
 	}
 
 	// Call all event handler
@@ -74,13 +47,13 @@ public class TriggerEventHandler extends Thread implements Disposable,
 		int i, j;
 		int dynSize = dynamicRegions.size();
 		boolean consumed = false;
-		for (i = 0; i < dynSize && !consumed && !disposed; i++) {
+		for (i = 0; i < dynSize && !consumed; i++) {
 			obj1 = dynamicRegions.get(i);
 			consumed = obj1.getEventHandler() != null
 					&& obj1.getEventHandler().timer(obj1, deltaTime);
 			if (!consumed && obj1.consumeInput) {
 				int tmpSize = obj1.collision.size;
-				for (j = 0; j < tmpSize && !consumed && !disposed; j++) {
+				for (j = 0; j < tmpSize && !consumed; j++) {
 					obj2 = obj1.collision.get(j);
 					if (obj2.touchable
 							&& !obj1.justTouching.contains(obj2, true)) {
@@ -94,7 +67,7 @@ public class TriggerEventHandler extends Thread implements Disposable,
 					for (EventObject pushed : obj1.reachable) {
 						consumed = pushed.pushable
 								&& pushed.getEventHandler().push(pushed, obj1);
-						if (consumed || disposed)
+						if (consumed)
 							break;
 					}
 				}
@@ -168,13 +141,10 @@ public class TriggerEventHandler extends Thread implements Disposable,
 			}
 			obj1.commitMove();
 		}
-		// shared variables for parallel computation
-		this.actionKeyDown = actionKeyDown;
-		this.deltaTime += deltaTime;
-		this.computationReady = true;
-	}
-
-	public void dispose() {
-		disposed = true;
+		try {
+			callEventHandler(deltaTime, events, actionKeyDown);
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		}
 	}
 }

@@ -32,7 +32,7 @@ import com.badlogic.gdx.files.FileHandle;
  * with the frame rendering.<br>
  * ATTENTION: Don't waste space by using high index values.<br>
  * The sizes of the internally used arrays are directly connected to the highest
- * index value as follows:<br> {@code len = ((index+7) >> 3) << 3}
+ * index value as follows:<br> {@code len = ((index+8) >> 3) << 3}
  * 
  * @author Alexander Baumgartner
  */
@@ -50,7 +50,6 @@ public class ObjectState implements Serializable {
 	// actually increment by 1<<3 = 8
 	private static final int INC_SHIFT = 3; // 1<<1 = 2 1<<2 = 4 1<<3 = 8
 	private static final int INC_BY = 1 << INC_SHIFT;
-	private static final int INC_REST = INC_BY - 1;
 
 	/**
 	 * Writes the entire state tree with all children to a persistent storage.
@@ -103,7 +102,7 @@ public class ObjectState implements Serializable {
 		if (intVar == null) {
 			if (value == 0)
 				return;
-			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			intVar = new int[newLen];
 			this.intVar = intVar;
 		}
@@ -115,7 +114,7 @@ public class ObjectState implements Serializable {
 				int newLen = len;
 				while (newLen > 0 && intVar[newLen - 1] == 0)
 					newLen--; // remove trailing empty elements
-				newLen = ((newLen + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+				newLen = ((newLen + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 				if (newLen < len) {
 					if (newLen == 0) {
 						this.intVar = null;
@@ -127,7 +126,7 @@ public class ObjectState implements Serializable {
 			}
 			return;
 		} else if (value != 0) {
-			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			intVar = new int[newLen];
 			System.arraycopy(this.intVar, 0, intVar, 0, len);
 			intVar[index] = value;
@@ -158,7 +157,7 @@ public class ObjectState implements Serializable {
 	 * @return
 	 */
 	public synchronized boolean getBool(int index) {
-		return boolVar.length > index && boolVar[index];
+		return boolVar != null && boolVar.length > index && boolVar[index];
 	}
 
 	/**
@@ -172,7 +171,7 @@ public class ObjectState implements Serializable {
 		if (boolVar == null) {
 			if (!value)
 				return;
-			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			boolVar = new boolean[newLen];
 			this.boolVar = boolVar;
 		}
@@ -184,7 +183,7 @@ public class ObjectState implements Serializable {
 				int newLen = len;
 				while (newLen > 0 && !boolVar[newLen - 1])
 					newLen--; // remove trailing empty elements
-				newLen = ((newLen + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+				newLen = ((newLen + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 				if (newLen == 0) {
 					this.boolVar = null;
 				} else {
@@ -194,7 +193,7 @@ public class ObjectState implements Serializable {
 			}
 			return;
 		} else if (value) {
-			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			boolVar = new boolean[newLen];
 			System.arraycopy(this.boolVar, 0, boolVar, 0, len);
 			boolVar[index] = value;
@@ -226,7 +225,8 @@ public class ObjectState implements Serializable {
 	 * @return
 	 */
 	public synchronized float getFloat(int index) {
-		return floatVar.length > index ? floatVar[index] : 0f;
+		return floatVar != null && floatVar.length > index ? floatVar[index]
+				: 0f;
 	}
 
 	/**
@@ -240,7 +240,7 @@ public class ObjectState implements Serializable {
 		if (floatVar == null) {
 			if (value == 0f)
 				return;
-			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			floatVar = new float[newLen];
 			this.floatVar = floatVar;
 		}
@@ -252,7 +252,7 @@ public class ObjectState implements Serializable {
 				int newLen = len;
 				while (newLen > 0 && floatVar[newLen - 1] == 0f)
 					newLen--; // remove trailing empty elements
-				newLen = ((newLen + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+				newLen = ((newLen + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 				if (newLen == 0) {
 					this.floatVar = null;
 				} else {
@@ -262,7 +262,7 @@ public class ObjectState implements Serializable {
 			}
 			return;
 		} else if (value != 0f) {
-			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			floatVar = new float[newLen];
 			System.arraycopy(this.floatVar, 0, floatVar, 0, len);
 			floatVar[index] = value;
@@ -293,7 +293,8 @@ public class ObjectState implements Serializable {
 	 * @return
 	 */
 	public synchronized String getString(int index) {
-		return stringVar.length > index ? stringVar[index] : null;
+		return stringVar != null && stringVar.length > index ? stringVar[index]
+				: null;
 	}
 
 	/**
@@ -307,7 +308,7 @@ public class ObjectState implements Serializable {
 		if (stringVar == null) {
 			if (value == null)
 				return;
-			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			stringVar = new String[newLen];
 			this.stringVar = stringVar;
 		}
@@ -319,7 +320,7 @@ public class ObjectState implements Serializable {
 				int newLen = len;
 				while (newLen > 0 && stringVar[newLen - 1] == null)
 					newLen--; // remove trailing empty elements
-				newLen = ((newLen + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+				newLen = ((newLen + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 				if (newLen == 0) {
 					this.stringVar = null;
 				} else {
@@ -329,7 +330,7 @@ public class ObjectState implements Serializable {
 			}
 			return;
 		} else if (value != null) {
-			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			stringVar = new String[newLen];
 			System.arraycopy(this.stringVar, 0, stringVar, 0, len);
 			stringVar[index] = value;
@@ -360,7 +361,8 @@ public class ObjectState implements Serializable {
 	 * @return
 	 */
 	public synchronized byte[] getRawBytes(int index) {
-		return rawBytesVar.length > index ? rawBytesVar[index] : null;
+		return rawBytesVar != null && rawBytesVar.length > index ? rawBytesVar[index]
+				: null;
 	}
 
 	/**
@@ -374,7 +376,7 @@ public class ObjectState implements Serializable {
 		if (bytesVar == null) {
 			if (value == null)
 				return;
-			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			bytesVar = new byte[newLen][];
 			this.rawBytesVar = bytesVar;
 		}
@@ -386,7 +388,7 @@ public class ObjectState implements Serializable {
 				int newLen = len;
 				while (newLen > 0 && bytesVar[newLen - 1] == null)
 					newLen--; // remove trailing empty elements
-				newLen = ((newLen + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+				newLen = ((newLen + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 				if (newLen == 0) {
 					this.rawBytesVar = null;
 				} else {
@@ -396,7 +398,7 @@ public class ObjectState implements Serializable {
 			}
 			return;
 		} else if (value != null) {
-			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			bytesVar = new byte[newLen][];
 			System.arraycopy(this.rawBytesVar, 0, bytesVar, 0, len);
 			bytesVar[index] = value;
@@ -449,7 +451,7 @@ public class ObjectState implements Serializable {
 		if (childVar == null) {
 			if (value == null)
 				return;
-			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			childVar = new ObjectState[newLen];
 			this.childFragment = childVar;
 		}
@@ -461,7 +463,7 @@ public class ObjectState implements Serializable {
 				int newLen = len;
 				while (newLen > 0 && childVar[newLen - 1] == null)
 					newLen--; // remove trailing empty elements
-				newLen = ((newLen + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+				newLen = ((newLen + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 				if (newLen == 0) {
 					this.childFragment = null;
 				} else {
@@ -473,7 +475,7 @@ public class ObjectState implements Serializable {
 			}
 			return;
 		} else if (value != null) {
-			int newLen = ((index + INC_REST) >> INC_SHIFT) << INC_SHIFT;
+			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			childVar = new ObjectState[newLen];
 			System.arraycopy(this.childFragment, 0, childVar, 0, len);
 			childVar[index] = value;

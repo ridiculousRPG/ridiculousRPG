@@ -30,7 +30,7 @@ import com.madthrax.ridiculousRPG.event.EventObject;
 public class EventAdapter implements EventHandler {
 	private static final long serialVersionUID = 1L;
 
-	private ObjectState myState;
+	private ObjectState myState = new ObjectState();
 
 	public boolean touch(EventObject eventSelf, EventObject eventTrigger)
 			throws ScriptException {
