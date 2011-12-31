@@ -303,11 +303,11 @@ public class EventExecScriptAdapter extends EventAdapter {
 				"eventSelf", "eventTrigger", "eventState"));
 		script.append(factory.createScriptFunction(onTouch, "touch", true,
 				"eventSelf", "eventTrigger", "eventState"));
-		script.append(factory.createScriptFunction(onTimer, "timer", true,
+		script.append(factory.createScriptFunction(onTimer, "timer", false,
 				"eventSelf", "deltaTime", "eventState"));
 		script.append(factory.createScriptFunction(onCustomTrigger,
 				"customTrigger", true, "eventSelf", "triggerId", "eventState"));
-		script.append(factory.createScriptFunction(onLoad, "load", true,
+		script.append(factory.createScriptFunction(onLoad, "load", false,
 				"eventSelf", "eventState"));
 		// WE NEED THIS FOR SERIALIZATION
 		// let gc do it's work

@@ -49,7 +49,7 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.animation.TileAnimation;
 import com.madthrax.ridiculousRPG.event.BlockingBehaviour;
 import com.madthrax.ridiculousRPG.event.EventObject;
-import com.madthrax.ridiculousRPG.event.EventTriggerAsync;
+import com.madthrax.ridiculousRPG.event.EventTriggerSync;
 import com.madthrax.ridiculousRPG.event.Speed;
 import com.madthrax.ridiculousRPG.event.handler.EventExecScriptAdapter;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
@@ -127,7 +127,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		loadStaticTiles(map);
 		loadEvents(map);
 
-		eventTrigger = new EventTriggerAsync(dynamicRegions);
+		eventTrigger = new EventTriggerSync(dynamicRegions);
 	}
 
 	private TiledMap loadTileMap(String tmxPath) {
@@ -627,7 +627,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 		TiledMap map = loadTileMap(tmxPath);
 		loadStaticTiles(map);
-		eventTrigger = new EventTriggerAsync(dynamicRegions);
+		eventTrigger = new EventTriggerSync(dynamicRegions);
 	}
 
 	public void dispose(boolean disposeLocalEvents) {

@@ -28,6 +28,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pool;
 
+//TODO: Always load textures via the main thread (the drawing thread)
+// After fixing this we are able to use EventTriggerAsync safely.
 /**
  * This class is used to load and cache textures. It automatically adds a
  * padding if the textures width or height isn't a power of two.<br>

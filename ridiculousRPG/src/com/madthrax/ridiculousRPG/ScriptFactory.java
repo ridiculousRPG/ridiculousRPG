@@ -241,17 +241,19 @@ public class ScriptFactory {
 	 *            The lines of script code sorted by the line number.
 	 * @param fncName
 	 *            The name of the script function.
-	 * @param returnTrue
+	 * @param returnTrueFalseNone
 	 *            True if the function should return true per default. If an
 	 *            event occurred, returning true means that this event has been
 	 *            consumed by the function. In a lot of cases it makes sense to
-	 *            return true.
+	 *            return true.<br>
+	 *            False if the function should return false per default.<br>
+	 *            Null if the function should return nothing per default.
 	 * @param fncParam
 	 *            Specifies the parameters for the function.
 	 * @return A {@link String} with the generated script function
 	 */
 	public String createScriptFunction(SortedMap<Integer, String> codeLines,
-			String fncName, boolean returnTrue, String... fncParam) {
+			String fncName, Boolean returnTrueFalseNone, String... fncParam) {
 		StringBuilder script = new StringBuilder();
 		script.append("\nfunction ").append(fncName).append('(');
 		for (int i = 0, len = fncParam.length; i < len; i++) {
@@ -263,8 +265,12 @@ public class ScriptFactory {
 		for (String line : codeLines.values()) {
 			script.append('\n').append(line).append(';');
 		}
-		if (returnTrue)
-			script.append("\nreturn true;");
+		if (returnTrueFalseNone != null) {
+			if (returnTrueFalseNone)
+				script.append("\nreturn true;");
+			else
+				script.append("\nreturn false;");
+		}
 		script.append("\n}");
 		return script.toString();
 	}
