@@ -108,4 +108,6 @@ public interface MapWithEvents<T extends Movable> extends Disposable,
 	 * @param debug
 	 */
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug);
+
+	public String getExternalSavePath();
 }

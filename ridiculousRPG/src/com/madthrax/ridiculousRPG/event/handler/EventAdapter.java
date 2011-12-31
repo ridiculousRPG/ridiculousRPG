@@ -56,8 +56,14 @@ public class EventAdapter implements EventHandler {
 		return false;
 	}
 
+	@Override
 	public ObjectState getActualState() {
 		return myState;
+	}
+
+	@Override
+	public void setState(ObjectState objectState) {
+		myState = objectState;
 	}
 
 	@Override

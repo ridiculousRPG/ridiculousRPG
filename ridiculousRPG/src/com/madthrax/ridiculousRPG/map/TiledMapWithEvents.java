@@ -43,6 +43,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntMap;
 import com.madthrax.ridiculousRPG.DebugHelper;
 import com.madthrax.ridiculousRPG.GameBase;
+import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.animation.TileAnimation;
@@ -65,6 +66,7 @@ import com.madthrax.ridiculousRPG.service.Computable;
 public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final long serialVersionUID = 1L;
 
+	private static final AsyncMapLoader<EventObject> asyncLoader = new AsyncTiledMapLoader();
 	private transient TileAtlas atlas;
 	private transient int width, height;
 	private transient int tileWidth, tileHeight;
@@ -116,6 +118,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	 * tmx files can be created by using the Tiled editor.
 	 * 
 	 * @param tmxPath
+	 * @param savedStatePath
 	 * @throws ScriptException
 	 */
 	public TiledMapWithEvents(String tmxPath) throws ScriptException {
@@ -146,23 +149,19 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		int len_i;
 		int len_j;
 		int len_k;
-		int layer_z;
 		int z;
-		int[][] layerTiles;
-		int[] row;
-		String prop;
 		ArrayList<MapRenderRegion> alTmp = new ArrayList<MapRenderRegion>(1000);
 		for (i = 0, len_i = map.layers.size(); i < len_i; i++) {
-			layerTiles = map.layers.get(i).tiles;
-			prop = map.layers.get(i).properties.get(EVENT_PROP_HEIGHT);
-			layer_z = 0;
+			int[][] layerTiles = map.layers.get(i).tiles;
+			String prop = map.layers.get(i).properties.get(EVENT_PROP_HEIGHT);
+			int layer_z = 0;
 			if (prop != null && prop.length() > 0)
 				try {
 					layer_z = Integer.parseInt(prop);
 				} catch (NumberFormatException e) {
 				}
 			for (j = 0, len_j = layerTiles.length; j < len_j; j++) {
-				row = layerTiles[j];
+				int[] row = layerTiles[j];
 				float rowY = (len_j - (j + 1)) * map.tileHeight;
 				for (k = 0, len_k = row.length; k < len_k; k++) {
 					int tile = row[k];
@@ -192,6 +191,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		staticRegions = alTmp.toArray(new MapRenderRegion[alTmp.size()]);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void loadEvents(TiledMap map) throws ScriptException {
 		int i;
 		int j;
@@ -199,6 +199,17 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		int len_j;
 		String prop;
 		EventObject ev;
+		HashMap<Integer, ObjectState> eventsById = new HashMap<Integer, ObjectState>();
+		FileHandle fh = Gdx.files.external(getExternalSavePath());
+		if (fh.exists()) {
+			try {
+				ObjectInputStream stateIn = new ObjectInputStream(fh.read());
+				eventsById = (HashMap<Integer, ObjectState>) stateIn
+						.readObject();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		for (i = 0, len_i = map.objectGroups.size(); i < len_i; i++) {
 			TiledObjectGroup group = map.objectGroups.get(i);
 			for (j = 0, len_j = group.objects.size(); j < len_j; j++) {
@@ -232,6 +243,11 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					put(eventObj.name, globalObj);
 				}
 			} else {
+				if (eventObj.getEventHandler() != null
+						&& eventsById.containsKey(eventObj.id)) {
+					eventObj.getEventHandler().setState(
+							eventsById.get(eventObj.id));
+				}
 				eventObj.init();
 			}
 		}
@@ -421,8 +437,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 	private void initVisibleEvent(EventObject ev, HashMap<String, String> props) {
 		ev.visible = true;
-		if ("true".equalsIgnoreCase(props
-				.get(EVENT_PROP_CENTERIMAGE)))
+		if ("true".equalsIgnoreCase(props.get(EVENT_PROP_CENTERIMAGE)))
 			ev.centerDrawbound();
 		if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
 			ev.z = .1f;
@@ -624,5 +639,106 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			}
 		}
 		dispose();
+	}
+
+	@Override
+	public String getExternalSavePath() {
+		return "ridiculousRPG/"
+				+ tmxPath.replaceFirst("(?i)\\.tmx$", ".sav").replaceAll("\\W",
+						"_");
+	}
+
+	public static AsyncMapLoader<EventObject> getAsyncLoader() {
+		return asyncLoader;
+	}
+
+	/**
+	 * This asynchronous map loader allows loading the new map while blending
+	 * out the old one. It also allows to store the old maps state
+	 * asynchronously while blending in the new map.
+	 * 
+	 * @author Alexander Baumgartner
+	 */
+	static class AsyncTiledMapLoader extends Thread implements
+			AsyncMapLoader<EventObject> {
+
+		private boolean done = true;
+		private String filePath;
+		private MapWithEvents<EventObject> map;
+		private ScriptException loadException;
+
+		AsyncTiledMapLoader() {
+			start();
+		}
+
+		@Override
+		public void run() {
+			while (true) {
+				while (done)
+					yield();
+				if (map != null && filePath != null) {
+					// store map
+					FileHandle fh = Gdx.files.external(map
+							.getExternalSavePath());
+					try {
+						HashMap<Integer, ObjectState> eventsById = new HashMap<Integer, ObjectState>(
+								100);
+						ObjectOutputStream oOut = new ObjectOutputStream(fh
+								.write(false));
+						for (EventObject event : map.getAllEvents()) {
+							EventHandler handler = event.getEventHandler();
+							if (handler != null) {
+								eventsById.put(event.id, handler
+										.getActualState());
+							}
+						}
+						oOut.writeObject(eventsById);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					map = null;
+				} else if (filePath != null) {
+					// load map
+					try {
+						map = new TiledMapWithEvents(filePath);
+					} catch (ScriptException e) {
+						loadException = e;
+					}
+				}
+				done = true;
+			}
+		}
+
+		public synchronized void startLoadMap(String tmxPath) {
+			// Wait until outstanding operation has completed.
+			while (!done && (map != null || loadException != null))
+				Thread.yield();
+			this.filePath = tmxPath;
+			done = false;
+		}
+
+		public synchronized MapWithEvents<EventObject> endLoadMap()
+				throws ScriptException {
+			// Wait until the map has been loaded.
+			while (!done)
+				Thread.yield();
+			try {
+				if (loadException != null)
+					throw loadException;
+				return map;
+			} finally {
+				map = null;
+				loadException = null;
+			}
+		}
+
+		public synchronized void storeMapState(MapWithEvents<EventObject> map) {
+			// Wait until outstanding operation has completed.
+			while (!done && (map != null || loadException != null))
+				Thread.yield();
+			this.map = map;
+			this.filePath = map.getExternalSavePath();
+			done = false;
+		}
 	}
 }

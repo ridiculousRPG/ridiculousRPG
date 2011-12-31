@@ -90,6 +90,13 @@ public interface EventHandler extends Serializable {
 	public ObjectState getActualState();
 
 	/**
+	 * Sets the state for this object
+	 * 
+	 * @param objectState
+	 */
+	public void setState(ObjectState objectState);
+
+	/**
 	 * Load your own state from the parent's child states!<br>
 	 * Make sure that you do not collide with an other event state.
 	 * 
