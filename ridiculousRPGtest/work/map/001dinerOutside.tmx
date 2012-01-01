@@ -274,7 +274,7 @@
   <object gid="306" x="240" y="328">
    <properties>
     <property name="blocking" value="NONE"/>
-    <property name="ontouch" value="System.out.println(&quot;huu&quot;)"/>
+    <property name="ontouch" value="mapTransition(&quot;data/map/002dinerInside.tmx&quot;, 310, 60, true, Speed.S07_NORMAL);"/>
    </properties>
   </object>
   <object name="player" type="player" x="511" y="370" width="19" height="9">

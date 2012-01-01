@@ -44,7 +44,7 @@ initMenu($.serviceProvider.getService("menu"));
 // play a video on startup
 //$.serviceProvider.getService("video").play(internalFile("data/video/test.ogg"), $.screen, 1, true);
 
-mapTransition("data/map/001dinerOutside.tmx", null);
+mapTransition("data/map/001dinerOutside.tmx", 0, 0, true, null);
 
 function initMenu(menu) {
 	var execScript = internalFile("data/scripts/engine/menu/titleMenu.js");
