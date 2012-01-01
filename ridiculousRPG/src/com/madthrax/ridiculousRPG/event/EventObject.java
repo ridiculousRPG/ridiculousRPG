@@ -43,7 +43,7 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.animation.TileAnimation;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
 import com.madthrax.ridiculousRPG.map.MapRenderRegion;
-import com.madthrax.ridiculousRPG.map.TiledMapWithEvents;
+import com.madthrax.ridiculousRPG.map.tiled.TiledMapWithEvents;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 import com.madthrax.ridiculousRPG.movement.input.Move4WayAdapter;

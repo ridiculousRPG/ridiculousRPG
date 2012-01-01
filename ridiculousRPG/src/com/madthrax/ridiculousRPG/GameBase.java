@@ -62,6 +62,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 
 	private HashMap<String, EventObject> globalEvents = new HashMap<String, EventObject>();
 
+	private boolean lwjglKZ;
 	private boolean triggerActionKeyPressed;
 	private boolean fullscreen;
 	private boolean controlKeyPressedOld, controlKeyPressed,
@@ -78,6 +79,7 @@ public class GameBase extends GameServiceDefaultImpl implements
 	}
 
 	public final void create() {
+		lwjglKZ = Gdx.app.getClass().getSimpleName().startsWith("Lwjgl");
 		fullscreen = options.fullscreen;
 		scriptFactory = options.scriptFactory;
 		spriteBatch = new SpriteBatch();
@@ -529,5 +531,9 @@ public class GameBase extends GameServiceDefaultImpl implements
 	 */
 	public void triggerActionKeyPressed() {
 		this.triggerActionKeyPressed = true;
+	}
+
+	public boolean isLWJGL() {
+		return lwjglKZ;
 	}
 }

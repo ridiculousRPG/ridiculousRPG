@@ -28,7 +28,7 @@ import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.ScriptFactory;
 import com.madthrax.ridiculousRPG.event.EventObject;
-import com.madthrax.ridiculousRPG.map.TiledMapWithEvents;
+import com.madthrax.ridiculousRPG.map.tiled.TiledMapWithEvents;
 
 /**
  * This class executes JavaScript on touch, push, timer, load, store and custom

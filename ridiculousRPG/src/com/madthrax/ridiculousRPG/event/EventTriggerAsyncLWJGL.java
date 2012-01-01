@@ -20,6 +20,12 @@ import java.util.List;
 
 import javax.script.ScriptException;
 
+import org.lwjgl.LWJGLException;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.SharedDrawable;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
 import com.madthrax.ridiculousRPG.service.Computable;
@@ -32,7 +38,7 @@ import com.madthrax.ridiculousRPG.service.Computable;
  * 
  * @author Alexander Baumgartner
  */
-public class EventTriggerAsync extends Thread implements Disposable,
+public class EventTriggerAsyncLWJGL extends Thread implements Disposable,
 		Computable {
 	private List<EventObject> events;
 	private boolean disposed = false;
@@ -40,13 +46,22 @@ public class EventTriggerAsync extends Thread implements Disposable,
 	private boolean computationReady = false;
 	private boolean actionKeyDown = false;
 
-	public EventTriggerAsync(List<EventObject> events) {
+	public EventTriggerAsyncLWJGL(List<EventObject> events) {
 		this.events = events;
 		start();
 	}
 
 	@Override
 	public void run() {
+		if (Gdx.app instanceof LwjglApplication) {
+			try {
+				new SharedDrawable(Display.getDrawable()).makeCurrent();
+			} catch (LWJGLException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			throw new RuntimeException(getClass().getName()+" only works with LWJGL");
+		}
 		while (!disposed) {
 			while (!computationReady) {
 				yield();

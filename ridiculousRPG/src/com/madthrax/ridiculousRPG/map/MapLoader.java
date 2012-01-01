@@ -23,16 +23,19 @@ import com.madthrax.ridiculousRPG.movement.Movable;
  * 
  * @author Alexander Baumgartner
  */
-public interface AsyncMapLoader<T extends Movable> {
+public interface MapLoader<T extends Movable> {
 	/**
-	 * Starts loading the given map asynchronously.
+	 * Starts loading the given map asynchronously.<br>
+	 * Creates a new map with the specified events from a file.
+	 * tmx files can be created by using the Tiled editor.
 	 * 
-	 * @param tmxPath
+	 * @param filePath
 	 */
-	public void startLoadMap(String tmxPath);
+	public void startLoadMap(String filePath);
 
 	/**
 	 * Waits until loading is finished and returns the map.
+	 * 
 	 * @throws Exception 
 	 */
 	public MapWithEvents<T> endLoadMap() throws Exception;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.madthrax.ridiculousRPG.map;
+package com.madthrax.ridiculousRPG.map.tiled;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -49,10 +49,14 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.animation.TileAnimation;
 import com.madthrax.ridiculousRPG.event.BlockingBehaviour;
 import com.madthrax.ridiculousRPG.event.EventObject;
+import com.madthrax.ridiculousRPG.event.EventTriggerAsyncLWJGL;
 import com.madthrax.ridiculousRPG.event.EventTriggerSync;
 import com.madthrax.ridiculousRPG.event.Speed;
 import com.madthrax.ridiculousRPG.event.handler.EventExecScriptAdapter;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
+import com.madthrax.ridiculousRPG.map.MapLoader;
+import com.madthrax.ridiculousRPG.map.MapRenderRegion;
+import com.madthrax.ridiculousRPG.map.MapWithEvents;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 import com.madthrax.ridiculousRPG.service.Computable;
 
@@ -66,7 +70,7 @@ import com.madthrax.ridiculousRPG.service.Computable;
 public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final long serialVersionUID = 1L;
 
-	private static final AsyncMapLoader<EventObject> asyncLoader = new AsyncTiledMapLoader();
+	private static MapLoader<EventObject> mapLoader;
 	private transient TileAtlas atlas;
 	private transient int width, height;
 	private transient int tileWidth, tileHeight;
@@ -113,21 +117,13 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final String EVENT_PROP_ONCUSTOMEVENT = "oncustomevent";
 	private static final String EVENT_PROP_ONLOAD = "onload";
 
-	/**
-	 * Creates a new map with the specified events from a tmx file.<br>
-	 * tmx files can be created by using the Tiled editor.
-	 * 
-	 * @param tmxPath
-	 * @param savedStatePath
-	 * @throws ScriptException
-	 */
-	public TiledMapWithEvents(String tmxPath) throws ScriptException {
+	TiledMapWithEvents(String tmxPath) throws ScriptException {
 		TiledMap map = loadTileMap(tmxPath);
 
 		loadStaticTiles(map);
 		loadEvents(map);
 
-		eventTrigger = new EventTriggerSync(dynamicRegions);
+		eventTrigger = createEventTrigger(dynamicRegions);
 	}
 
 	private TiledMap loadTileMap(String tmxPath) {
@@ -627,7 +623,15 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 		TiledMap map = loadTileMap(tmxPath);
 		loadStaticTiles(map);
-		eventTrigger = new EventTriggerSync(dynamicRegions);
+		eventTrigger = createEventTrigger(dynamicRegions);
+	}
+
+	private Computable createEventTrigger(List<EventObject> dynamicRegions2) {
+		if (GameBase.$().isLWJGL()) {
+			// Use SharedDrawable to load textures in other thread
+			return new EventTriggerAsyncLWJGL(dynamicRegions);
+		}
+		return new EventTriggerSync(dynamicRegions);
 	}
 
 	public void dispose(boolean disposeLocalEvents) {
@@ -650,97 +654,18 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 						"_");
 	}
 
-	public static AsyncMapLoader<EventObject> getAsyncLoader() {
-		return asyncLoader;
-	}
-
 	/**
-	 * This asynchronous map loader allows loading the new map while blending
-	 * out the old one. It also allows to store the old maps state
-	 * asynchronously while blending in the new map.
-	 * 
-	 * @author Alexander Baumgartner
+	 * Obtain the map loader to load tiled maps
 	 */
-	static class AsyncTiledMapLoader extends Thread implements
-			AsyncMapLoader<EventObject> {
-
-		private boolean done = true;
-		private String filePath;
-		private MapWithEvents<EventObject> map;
-		private ScriptException loadException;
-
-		AsyncTiledMapLoader() {
-			start();
-		}
-
-		@Override
-		public void run() {
-			while (true) {
-				while (done)
-					yield();
-				if (map != null && filePath != null) {
-					// store map
-					FileHandle fh = Gdx.files.external(map
-							.getExternalSavePath());
-					try {
-						HashMap<Integer, ObjectState> eventsById = new HashMap<Integer, ObjectState>(
-								100);
-						ObjectOutputStream oOut = new ObjectOutputStream(fh
-								.write(false));
-						for (EventObject event : map.getAllEvents()) {
-							EventHandler handler = event.getEventHandler();
-							if (handler != null) {
-								eventsById.put(event.id, handler
-										.getActualState());
-							}
-						}
-						oOut.writeObject(eventsById);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					map = null;
-				} else if (filePath != null) {
-					// load map
-					try {
-						map = new TiledMapWithEvents(filePath);
-					} catch (ScriptException e) {
-						loadException = e;
-					}
-				}
-				done = true;
+	public static MapLoader<EventObject> getMapLoader() {
+		if (mapLoader==null) {
+			if (GameBase.$().isLWJGL()) {
+				// Use SharedDrawable to load textures in other thread
+				mapLoader = new TiledMapLoaderAsyncLWJGL();
+			} else {
+				mapLoader = new TiledMapLoaderSync();
 			}
 		}
-
-		public synchronized void startLoadMap(String tmxPath) {
-			// Wait until outstanding operation has completed.
-			while (!done && (map != null || loadException != null))
-				Thread.yield();
-			this.filePath = tmxPath;
-			done = false;
-		}
-
-		public synchronized MapWithEvents<EventObject> endLoadMap()
-				throws ScriptException {
-			// Wait until the map has been loaded.
-			while (!done)
-				Thread.yield();
-			try {
-				if (loadException != null)
-					throw loadException;
-				return map;
-			} finally {
-				map = null;
-				loadException = null;
-			}
-		}
-
-		public synchronized void storeMapState(MapWithEvents<EventObject> map) {
-			// Wait until outstanding operation has completed.
-			while (!done && (map != null || loadException != null))
-				Thread.yield();
-			this.map = map;
-			this.filePath = map.getExternalSavePath();
-			done = false;
-		}
+		return mapLoader;
 	}
 }
