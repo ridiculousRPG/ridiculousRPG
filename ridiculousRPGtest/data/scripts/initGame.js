@@ -44,11 +44,7 @@ initMenu($.serviceProvider.getService("menu"));
 // play a video on startup
 //$.serviceProvider.getService("video").play(internalFile("data/video/test.ogg"), $.screen, 1, true);
 
-var mapLoader = ridiculousRPG.map.tiled.TiledMapWithEvents.mapLoader;
-mapLoader.startLoadMap("data/map/001dinerOutside.tmx");
-var map = mapLoader.endLoadMap();
-$.serviceProvider.getService("map").loadMap(map);
-$.serviceProvider.getService("cameraTrack").setTrackObj(map.get("player"), true);
+mapTransition("data/map/001dinerOutside.tmx", null);
 
 function initMenu(menu) {
 	var execScript = internalFile("data/scripts/engine/menu/titleMenu.js");

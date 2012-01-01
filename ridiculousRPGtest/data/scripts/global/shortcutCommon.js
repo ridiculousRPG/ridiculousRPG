@@ -1,38 +1,16 @@
-/*
- * All script files in data/scripts/global/ are loaded
- * automatically in their natural order by the script initGame.js.
- * Split the file up before it becomes a monster!
- * 
- * The default scripting engine is Mozilla Rhino.
- * See http://download.oracle.com/javase/6/docs/technotes/guides/scripting/programmer_guide/index.html
- * 
- * ATTENTION: Imports don't work across different scopes!
- */
-
-// make java.lang.System referencable with System
+// Define some common shortcuts
 System = Packages.java.lang.System;
-// make shortcut for package com.madthrax.ridiculousRPG
+Thread = Packages.java.lang.Thread;
 ridiculousRPG = Packages.com.madthrax.ridiculousRPG;
-// make shortcut for package com.badlogic.gdx
-gdx = Packages.com.badlogic.gdx;
-// make instantiated GameBase referencable with the Dollar sign $
 $ = ridiculousRPG.GameBase.$();
-// make shortcut for Keys
+gdx = Packages.com.badlogic.gdx;
 Keys = gdx.Input.Keys;
-// make shortcut for WeatherEffectUtil
-WeatherEffectUtil = ridiculousRPG.animation.WeatherEffectUtil;
-//make shortcut for gui creation
 ui = gdx.scenes.scene2d.ui;
-//make shortcuts for Rectangle and Vector2
 Rectangle = gdx.math.Rectangle;
 Vector2 = gdx.math.Vector2;
-
-// Define the different menu states
-MENU_STATE_TITLE = 1;
-MENU_STATE_GAME = 2;
-MENU_STATE_IDLE = 3;
-MENU_STATE_PAUSE = 4;
-MENU_STATE_GAMEOVER = 5;
+WeatherEffectUtil = ridiculousRPG.animation.WeatherEffectUtil;
+Speed = ridiculousRPG.event.Speed;
+Color = gdx.graphics.Color;
 
 // Convenience method to obtain internal files from pathname
 function internalFile(pathName) {
