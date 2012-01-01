@@ -172,8 +172,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 						AtlasRegion region = (AtlasRegion) atlas
 								.getRegion(tile);
 						if (region == null) {
-							System.err.println("TILE-REGION " + tile
-									+ " IS NULL?!?");
+							System.out.println("TILE-REGION " + tile
+									+ " IS NULL");
 						} else {
 							alTmp.add(new MapRenderRegion(region, k
 									* map.tileWidth + region.offsetX, rowY
@@ -658,7 +658,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	 * Obtain the map loader to load tiled maps
 	 */
 	public static MapLoader<EventObject> getMapLoader() {
-		if (mapLoader==null) {
+		if (mapLoader == null) {
 			if (GameBase.$().isLWJGL()) {
 				// Use SharedDrawable to load textures in other thread
 				mapLoader = new TiledMapLoaderAsyncLWJGL();

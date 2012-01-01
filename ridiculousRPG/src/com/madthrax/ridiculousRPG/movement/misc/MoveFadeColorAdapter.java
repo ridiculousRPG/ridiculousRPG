@@ -88,7 +88,7 @@ public class MoveFadeColorAdapter extends MovementHandler {
 	public void tryMove(Movable movable, float deltaTime) {
 		if (!finished && (tintEntireGame || movable instanceof EventObject)) {
 			float changeSpeed = transitionSpeed == null ? 1f : transitionSpeed
-					.computeStretch(deltaTime) * .1f;
+					.computeStretch(deltaTime) * .02f;
 			Color from;
 			if (tintEntireGame) {
 				from = GameBase.$().getGameColorTint();

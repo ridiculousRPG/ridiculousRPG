@@ -40,6 +40,14 @@ public class MapRenderService extends GameServiceDefaultImpl implements
 	private MapWithEvents<?> map;
 
 	/**
+	 * Returns the actually displayed Map
+	 * @return
+	 */
+	public MapWithEvents<?> getMap() {
+		return map;
+	}
+
+	/**
 	 * Loads a new map to render and calls
 	 * {@link GameBase#resizePlane(int, int)} which triggers all
 	 * {@link ResizeListener}s to be called by the {@link GameServiceProvider}.
