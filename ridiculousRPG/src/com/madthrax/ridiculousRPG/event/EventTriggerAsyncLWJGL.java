@@ -26,9 +26,7 @@ import org.lwjgl.opengl.SharedDrawable;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
-import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
-import com.madthrax.ridiculousRPG.service.Computable;
 
 /**
  * All {@link EventHandler} are called and the specified actions are performed.<br>
@@ -38,16 +36,14 @@ import com.madthrax.ridiculousRPG.service.Computable;
  * 
  * @author Alexander Baumgartner
  */
-public class EventTriggerAsyncLWJGL extends Thread implements Disposable,
-		Computable {
+public class EventTriggerAsyncLWJGL extends Thread implements EventTrigger {
 	private List<EventObject> events;
 	private boolean disposed = false;
 	private float deltaTime;
 	private boolean computationReady = false;
 	private boolean actionKeyDown = false;
 
-	public EventTriggerAsyncLWJGL(List<EventObject> events) {
-		this.events = events;
+	public EventTriggerAsyncLWJGL() {
 		start();
 	}
 
@@ -60,7 +56,8 @@ public class EventTriggerAsyncLWJGL extends Thread implements Disposable,
 				throw new RuntimeException(e);
 			}
 		} else {
-			throw new RuntimeException(getClass().getName()+" only works with LWJGL");
+			throw new RuntimeException(getClass().getName()
+					+ " only works with LWJGL");
 		}
 		while (!disposed) {
 			while (!computationReady) {
@@ -122,9 +119,10 @@ public class EventTriggerAsyncLWJGL extends Thread implements Disposable,
 	 * Invoke parallel execution of the {@link EventHandler}.
 	 */
 	@Override
-	public void compute(float deltaTime, boolean actionKeyDown) {
+	public void compute(float deltaTime, boolean actionKeyDown,
+			List<EventObject> events) {
 		// Load frequently used pointers/variables into register
-		List<EventObject> events = this.events;
+		this.events = events;
 		int dynSize = events.size();
 		int i, j;
 		EventObject obj1, obj2;

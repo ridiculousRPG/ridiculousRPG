@@ -93,14 +93,6 @@ public interface MapWithEvents<T extends Movable> extends Disposable,
 	public int getHeight();
 
 	/**
-	 * Releases all resources of this object and all resources of events on this
-	 * map if disposeAllEvents is true.
-	 * 
-	 * @param disposeAllEvents
-	 */
-	public void dispose(boolean disposeAllEvents);
-
-	/**
 	 * Draws the map with all events on it.
 	 * 
 	 * @param spriteBatch

@@ -21,7 +21,6 @@ import java.util.List;
 import javax.script.ScriptException;
 
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
-import com.madthrax.ridiculousRPG.service.Computable;
 
 /**
  * All {@link EventHandler} are called and the specified actions are performed.<br>
@@ -31,12 +30,7 @@ import com.madthrax.ridiculousRPG.service.Computable;
  * 
  * @author Alexander Baumgartner
  */
-public class EventTriggerSync implements Computable {
-	private List<EventObject> events;
-
-	public EventTriggerSync(List<EventObject> events) {
-		this.events = events;
-	}
+public class EventTriggerSync implements EventTrigger {
 
 	// Call all event handler
 	private void callEventHandler(float deltaTime,
@@ -80,9 +74,9 @@ public class EventTriggerSync implements Computable {
 	 * Invoke parallel execution of the {@link EventHandler}.
 	 */
 	@Override
-	public void compute(float deltaTime, boolean actionKeyDown) {
+	public void compute(float deltaTime, boolean actionKeyDown,
+			List<EventObject> events) {
 		// Load frequently used pointers/variables into register
-		List<EventObject> events = this.events;
 		int dynSize = events.size();
 		int i, j;
 		EventObject obj1, obj2;
@@ -146,5 +140,9 @@ public class EventTriggerSync implements Computable {
 		} catch (ScriptException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void dispose() {
 	}
 }

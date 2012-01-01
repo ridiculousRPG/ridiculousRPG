@@ -84,8 +84,8 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	 *            Maybe 10 seconds could be a good choice.
 	 * @see addLayer(path, effectSpeed, windSpeed, layerIndex)
 	 */
-	public void addWeatherLayerTimes(String path, int pixelOverlap, float effectSpeed,
-			float windSpeed, int times, float waitIntervall) {
+	public void addWeatherLayerTimes(String path, int pixelOverlap,
+			float effectSpeed, float windSpeed, int times, float waitIntervall) {
 		int width = (int) GameBase.$().getPlane().width;
 		int height = (int) GameBase.$().getPlane().height;
 		if (times > 0) {
@@ -145,7 +145,8 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	 */
 	public WeatherEffectLayer addWeatherLayer(String path, float effectSpeed,
 			float windSpeed) {
-		return addWeatherLayer(path, 0, effectSpeed, windSpeed, Integer.MAX_VALUE);
+		return addWeatherLayer(path, 0, effectSpeed, windSpeed,
+				Integer.MAX_VALUE);
 	}
 
 	/**
@@ -340,6 +341,15 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 			renderLayers.get(i).dispose();
 		}
 		renderLayers.clear();
+		while (addPointer > 0) {
+			addPointer--;
+			addLayer[addPointer].dispose();
+			addLayer[addPointer] = null;
+		}
+		while (removePointer > 0) {
+			removePointer--;
+			removeLayer[removePointer] = null;
+		}
 	}
 
 	@Override

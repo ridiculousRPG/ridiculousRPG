@@ -30,6 +30,7 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 public class CameraTrackMovableService extends GameServiceDefaultImpl implements
 		Computable {
 	private Movable trackObj;
+
 	private float oldX, oldY;
 
 	public CameraTrackMovableService() {
@@ -55,6 +56,9 @@ public class CameraTrackMovableService extends GameServiceDefaultImpl implements
 		this.trackObj = trackObj;
 		if (centerIt)
 			centerTrackObj();
+	}
+	public Movable getTrackObj() {
+		return trackObj;
 	}
 
 	public void compute(float deltaTime, boolean pushButtonPressed) {

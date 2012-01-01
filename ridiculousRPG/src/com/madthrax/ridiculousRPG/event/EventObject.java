@@ -495,7 +495,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * The event will automatically be animated by using this movement method.
 	 */
 	@Override
-	public float offerMove(Direction dir, float deltaTime) {
+	public synchronized float offerMove(Direction dir, float deltaTime) {
 		float distance = moveSpeed.computeStretch(deltaTime);
 		float x = dir.getDistanceX(distance);
 		float y = dir.getDistanceY(distance);
@@ -514,14 +514,14 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * animation.
 	 */
 	@Override
-	public void offerMove(float x, float y) {
+	public synchronized void offerMove(float x, float y) {
 		softMove.x = x;
 		softMove.y = y;
 		moves = true;
 	}
 
 	@Override
-	public boolean commitMove() {
+	public synchronized boolean commitMove() {
 		if (moves) {
 			addX(softMove.x);
 			addY(softMove.y);
@@ -759,10 +759,12 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			drawBound.y = touchBound.y;
 		}
 	}
+
 	public void centerDrawBound() {
 		drawBound.x = touchBound.x - (drawBound.width - getWidth()) / 2;
 		drawBound.y = touchBound.y - (drawBound.height - getHeight()) / 2;
 	}
+
 	public void setEventHandler(EventHandler eventHandler) {
 		this.eventHandler = eventHandler;
 	}

@@ -39,7 +39,6 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObject;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObjectGroup;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntMap;
 import com.madthrax.ridiculousRPG.DebugHelper;
 import com.madthrax.ridiculousRPG.GameBase;
@@ -49,6 +48,7 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.animation.TileAnimation;
 import com.madthrax.ridiculousRPG.event.BlockingBehaviour;
 import com.madthrax.ridiculousRPG.event.EventObject;
+import com.madthrax.ridiculousRPG.event.EventTrigger;
 import com.madthrax.ridiculousRPG.event.EventTriggerAsyncLWJGL;
 import com.madthrax.ridiculousRPG.event.EventTriggerSync;
 import com.madthrax.ridiculousRPG.event.Speed;
@@ -58,7 +58,6 @@ import com.madthrax.ridiculousRPG.map.MapLoader;
 import com.madthrax.ridiculousRPG.map.MapRenderRegion;
 import com.madthrax.ridiculousRPG.map.MapWithEvents;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
-import com.madthrax.ridiculousRPG.service.Computable;
 
 /**
  * This class represents a tiled map with events on this map.<br>
@@ -88,7 +87,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private Map<String, EventObject> namedRegions = new HashMap<String, EventObject>(
 			30);
 
-	private transient Computable eventTrigger;
+	private static transient EventTrigger eventTrigger;
 
 	private static final char EVENT_CUSTOM_PROP_KZ = '$';
 	// the key is translated to lower case -> we are case insensitive
@@ -122,8 +121,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 		loadStaticTiles(map);
 		loadEvents(map);
-
-		eventTrigger = createEventTrigger(dynamicRegions);
 	}
 
 	private TiledMap loadTileMap(String tmxPath) {
@@ -222,14 +219,15 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				put(object.name, ev);
 			}
 		}
+		HashMap<String, EventObject> globalEv = (HashMap<String, EventObject>) GameBase
+				.$().getGlobalEvents().clone();
 		// Initialize the events
 		for (i = 0, len_i = dynamicRegions.size(); i < len_i; i++) {
 			EventObject eventObj = dynamicRegions.get(i);
 			if (eventObj.name != null
 					&& (EVENT_TYPE_PLAYER.equalsIgnoreCase(eventObj.type) || EVENT_TYPE_GLOBAL
 							.equalsIgnoreCase(eventObj.type))) {
-				EventObject globalObj = GameBase.$().getGlobalEvents().get(
-						eventObj.name);
+				EventObject globalObj = globalEv.remove(eventObj.name);
 				if (globalObj == null) {
 					eventObj.init();
 					GameBase.$().getGlobalEvents().put(eventObj.name, eventObj);
@@ -246,6 +244,9 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				}
 				eventObj.init();
 			}
+		}
+		for (EventObject event : globalEv.values()) {
+			put(event.name, event);
 		}
 
 		// insert half-planes around the map
@@ -534,7 +535,10 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	 * @param deltaTime
 	 */
 	public void compute(float deltaTime, boolean actionKeyDown) {
-		eventTrigger.compute(deltaTime, actionKeyDown);
+		if (eventTrigger == null) {
+			eventTrigger = createEventTrigger();
+		}
+		eventTrigger.compute(deltaTime, actionKeyDown, dynamicRegions);
 	}
 
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
@@ -602,17 +606,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		}
 	}
 
-	public void dispose() {
-		if (eventTrigger instanceof Disposable) {
-			((Disposable) eventTrigger).dispose();
-		}
-		if (atlas != null)
-			atlas.dispose();
-		staticRegions = null;
-		dynamicRegions = null;
-		namedRegions = null;
-	}
-
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		out.defaultWriteObject();
 	}
@@ -623,28 +616,35 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 		TiledMap map = loadTileMap(tmxPath);
 		loadStaticTiles(map);
-		eventTrigger = createEventTrigger(dynamicRegions);
 	}
 
-	private Computable createEventTrigger(List<EventObject> dynamicRegions2) {
+	private EventTrigger createEventTrigger() {
 		if (GameBase.$().isLWJGL()) {
 			// Use SharedDrawable to load textures in other thread
-			return new EventTriggerAsyncLWJGL(dynamicRegions);
+			return new EventTriggerAsyncLWJGL();
 		}
-		return new EventTriggerSync(dynamicRegions);
+		return new EventTriggerSync();
 	}
 
-	public void dispose(boolean disposeLocalEvents) {
-		if (disposeLocalEvents) {
-			for (int i = 0, size = dynamicRegions.size(); i < size; i++) {
-				if (!(EVENT_TYPE_GLOBAL
-						.equalsIgnoreCase(dynamicRegions.get(i).type) || EVENT_TYPE_PLAYER
-						.equalsIgnoreCase(dynamicRegions.get(i).type))) {
-					dynamicRegions.get(i).dispose();
-				}
+	public void dispose(boolean recycleEventTrigger) {
+		for (int i = 0, size = dynamicRegions.size(); i < size; i++) {
+			if (!(EVENT_TYPE_GLOBAL
+					.equalsIgnoreCase(dynamicRegions.get(i).type) || EVENT_TYPE_PLAYER
+					.equalsIgnoreCase(dynamicRegions.get(i).type))) {
+				dynamicRegions.get(i).dispose();
 			}
 		}
-		dispose();
+		if (atlas != null)
+			atlas.dispose();
+		staticRegions = null;
+		dynamicRegions = null;
+		namedRegions = null;
+		if (!recycleEventTrigger && eventTrigger != null)
+			eventTrigger.dispose();
+	}
+
+	public void dispose() {
+		dispose(false);
 	}
 
 	@Override

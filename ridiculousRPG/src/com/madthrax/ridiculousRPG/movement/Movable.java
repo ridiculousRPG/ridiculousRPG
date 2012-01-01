@@ -52,8 +52,16 @@ public abstract class Movable implements Serializable {
 	 * Offer a move to this movable. Moves may be blocked if this objects
 	 * touchBound overlaps an other touchBound.
 	 */
-	public void offerMoveTo(float x, float y) {
+	public synchronized void offerMoveTo(float x, float y) {
 		offerMove(x - touchBound.x, y - touchBound.y);
+	}
+
+	/**
+	 * Moves this movable to the given x,y - position.
+	 */
+	public synchronized void forceMoveTo(float x, float y) {
+		offerMoveTo(x, y);
+		commitMove();
 	}
 
 	/**

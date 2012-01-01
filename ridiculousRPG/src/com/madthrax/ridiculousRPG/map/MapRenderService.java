@@ -63,6 +63,7 @@ public class MapRenderService extends GameServiceDefaultImpl implements
 	}
 
 	public void dispose() {
+		if (map!=null) map.dispose();
 	}
 
 	public void compute(float deltaTime, boolean pushButtonPressed) {
