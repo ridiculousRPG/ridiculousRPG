@@ -1,5 +1,0 @@
-001dinerOutside.tmx / 1325321391000
-diner.png / 1325320564000
-002dinerInside.tmx / 1325320564000
-diner.png / 1325320564000
-wallDiner.png / 1325320564000
