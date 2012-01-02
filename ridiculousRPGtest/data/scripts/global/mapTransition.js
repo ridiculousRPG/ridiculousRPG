@@ -6,8 +6,6 @@ function mapTransition(mapPath, playerX, playerY, stopWeatherEffect, speed) {
 	mapLoader.startLoadMap(mapPath);
 	var mapService = $.serviceProvider.getService("map");
 	var trackService = $.serviceProvider.getService("cameraTrack");
-	// Fade In/Out only works in LWJGL by now
-	if (!$.isLWJGL()) speed = null;
 	if (speed != null) {
 		// Fade out
 		if (mapService.map != null) {
