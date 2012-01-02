@@ -18,7 +18,9 @@ package com.madthrax.ridiculousRPG;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -45,10 +47,9 @@ import com.madthrax.ridiculousRPG.ui.DisplayErrorService;
 /**
  * @author Alexander Baumgartner
  */
-public class GameBase extends GameServiceDefaultImpl implements
+public abstract class GameBase extends GameServiceDefaultImpl implements
 		ApplicationListener {
 	private static GameBase instance;
-
 	private SpriteBatch spriteBatch;
 	private Camera camera;
 	private ObjectState globalState;
@@ -60,9 +61,9 @@ public class GameBase extends GameServiceDefaultImpl implements
 	private Rectangle plane = new Rectangle();
 	private Rectangle screen = new Rectangle();
 
+	private List<Thread> glContextThread = new ArrayList<Thread>();
 	private HashMap<String, EventObject> globalEvents = new HashMap<String, EventObject>();
 
-	private boolean lwjglKZ;
 	private boolean triggerActionKeyPressed;
 	private boolean fullscreen;
 	private boolean controlKeyPressedOld, controlKeyPressed,
@@ -78,8 +79,8 @@ public class GameBase extends GameServiceDefaultImpl implements
 		this.options = options;
 	}
 
-	public final void create() {
-		lwjglKZ = Gdx.app.getClass().getSimpleName().startsWith("Lwjgl");
+	public void create() {
+		glContextThread.add(Thread.currentThread());
 		fullscreen = options.fullscreen;
 		scriptFactory = options.scriptFactory;
 		spriteBatch = new SpriteBatch();
@@ -533,7 +534,34 @@ public class GameBase extends GameServiceDefaultImpl implements
 		this.triggerActionKeyPressed = true;
 	}
 
-	public boolean isLWJGL() {
-		return lwjglKZ;
+	/**
+	 * You have to implement sharing the rendering context yourself.<br>
+	 * E.g. In LWJGL you can share the context by the following code:<br>
+	 * <code>new SharedDrawable(Display.getDrawable()).makeCurrent();</code><br>
+	 * <br>
+	 * If sharing the context fails or is not supported, all texture loading and
+	 * drawing is done in the main thread.
+	 * 
+	 * @return false If sharing the context failed or is not supported by the
+	 *         backend, true otherwise.
+	 */
+	protected abstract boolean shareGLContext();
+
+	/**
+	 * Register a thread context to allow parallel texture loading if possible.
+	 */
+	public void registerGlContextThread() {
+		if (shareGLContext()) {
+			synchronized (glContextThread) {
+				glContextThread.add(Thread.currentThread());
+			}
+		}
+	}
+
+	public boolean isGlContextThread() {
+		return glContextThread.contains(Thread.currentThread());
+	}
+	public boolean isGlMainThread() {
+		return glContextThread.get(0)==Thread.currentThread();
 	}
 }

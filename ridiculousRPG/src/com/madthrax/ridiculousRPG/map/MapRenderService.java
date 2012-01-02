@@ -41,6 +41,7 @@ public class MapRenderService extends GameServiceDefaultImpl implements
 
 	/**
 	 * Returns the actually displayed Map
+	 * 
 	 * @return
 	 */
 	public MapWithEvents<?> getMap() {
@@ -63,15 +64,18 @@ public class MapRenderService extends GameServiceDefaultImpl implements
 	}
 
 	public void dispose() {
-		if (map!=null) map.dispose();
+		if (map != null)
+			map.dispose();
 	}
 
 	public void compute(float deltaTime, boolean pushButtonPressed) {
-		map.compute(deltaTime, pushButtonPressed);
+		if (map != null)
+			map.compute(deltaTime, pushButtonPressed);
 	}
 
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
-		map.draw(spriteBatch, camera, debug);
+		if (map != null)
+			map.draw(spriteBatch, camera, debug);
 	}
 
 	@Override

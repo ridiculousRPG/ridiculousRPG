@@ -22,13 +22,9 @@ import java.util.HashMap;
 
 import javax.script.ScriptException;
 
-import org.lwjgl.LWJGLException;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.SharedDrawable;
-
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.files.FileHandle;
+import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
@@ -36,42 +32,33 @@ import com.madthrax.ridiculousRPG.map.MapLoader;
 import com.madthrax.ridiculousRPG.map.MapWithEvents;
 
 /**
- * This asynchronous map loader allows loading the new map while blending
- * out the old one. It also allows to store the old maps state
- * asynchronously while blending in the new map.
+ * This asynchronous map loader allows loading the new map while blending out
+ * the old one. It also allows to store the old maps state asynchronously while
+ * blending in the new map.
  * 
  * @author Alexander Baumgartner
  */
-public class TiledMapLoaderAsyncLWJGL extends Thread implements
-MapLoader<EventObject> {
+public class TiledMapLoaderAsync extends Thread implements
+		MapLoader<EventObject> {
 
 	private boolean done = true;
 	private String filePath;
 	private MapWithEvents<EventObject> map;
 	private ScriptException loadException;
 
-	TiledMapLoaderAsyncLWJGL() {
+	TiledMapLoaderAsync() {
 		start();
 	}
 
 	@Override
 	public void run() {
-		if (Gdx.app instanceof LwjglApplication) {
-			try {
-				new SharedDrawable(Display.getDrawable()).makeCurrent();
-			} catch (LWJGLException e) {
-				throw new RuntimeException(e);
-			}
-		} else {
-			throw new RuntimeException(getClass().getName()+" only works with LWJGL");
-		}
+		GameBase.$().registerGlContextThread();
 		while (true) {
 			while (done)
 				yield();
 			if (map != null && filePath != null) {
 				// store map
-				FileHandle fh = Gdx.files.external(map
-						.getExternalSavePath());
+				FileHandle fh = Gdx.files.external(map.getExternalSavePath());
 				try {
 					HashMap<Integer, ObjectState> eventsById = new HashMap<Integer, ObjectState>(
 							100);
@@ -80,8 +67,7 @@ MapLoader<EventObject> {
 					for (EventObject event : map.getAllEvents()) {
 						EventHandler handler = event.getEventHandler();
 						if (handler != null) {
-							eventsById.put(event.id, handler
-									.getActualState());
+							eventsById.put(event.id, handler.getActualState());
 						}
 					}
 					oOut.writeObject(eventsById);
@@ -92,13 +78,17 @@ MapLoader<EventObject> {
 			} else if (filePath != null) {
 				// load map
 				try {
-					map = new TiledMapWithEvents(filePath);
+					map = loadTiledMap();
 				} catch (ScriptException e) {
 					loadException = e;
 				}
 			}
 			done = true;
 		}
+	}
+
+	private MapWithEvents<EventObject> loadTiledMap() throws ScriptException {
+		return new TiledMapWithEvents(filePath);
 	}
 
 	public synchronized void startLoadMap(String tmxPath) {
@@ -111,12 +101,17 @@ MapLoader<EventObject> {
 
 	public synchronized MapWithEvents<EventObject> endLoadMap()
 			throws ScriptException {
-		// Wait until the map has been loaded.
-		while (!done)
-			Thread.yield();
 		try {
-			if (loadException != null)
-				throw loadException;
+			if (GameBase.$().isGlMainThread()) {
+				done = true;
+				map = loadTiledMap();
+			} else {
+				// Wait until the map has been loaded by the thread.
+				while (!done)
+					Thread.yield();
+				if (loadException != null)
+					throw loadException;
+			}
 			return map;
 		} finally {
 			map = null;

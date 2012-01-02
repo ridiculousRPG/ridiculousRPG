@@ -69,4 +69,9 @@ public class EventAdapter implements EventHandler {
 	@Override
 	public void init() {
 	}
+
+	@Override
+	public void dispose() {
+		myState = null;
+	}
 }

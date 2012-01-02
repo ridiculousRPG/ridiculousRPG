@@ -41,6 +41,7 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledObjectGroup;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.IntMap;
 import com.madthrax.ridiculousRPG.DebugHelper;
+import com.madthrax.ridiculousRPG.ExecuteInMainThread;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
@@ -49,8 +50,7 @@ import com.madthrax.ridiculousRPG.animation.TileAnimation;
 import com.madthrax.ridiculousRPG.event.BlockingBehaviour;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.event.EventTrigger;
-import com.madthrax.ridiculousRPG.event.EventTriggerAsyncLWJGL;
-import com.madthrax.ridiculousRPG.event.EventTriggerSync;
+import com.madthrax.ridiculousRPG.event.EventTriggerAsync;
 import com.madthrax.ridiculousRPG.event.Speed;
 import com.madthrax.ridiculousRPG.event.handler.EventExecScriptAdapter;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
@@ -125,13 +125,22 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 	private TiledMap loadTileMap(String tmxPath) {
 		this.tmxPath = tmxPath;
-		FileHandle tmxFile = Gdx.files.internal(tmxPath);
-		TiledMap map = TiledLoader.createMap(tmxFile);
+		final FileHandle tmxFile = Gdx.files.internal(tmxPath);
+		final TiledMap map = TiledLoader.createMap(tmxFile);
 		tileWidth = map.tileWidth;
 		tileHeight = map.tileHeight;
 		width = map.width * tileWidth;
 		height = map.height * tileHeight;
-		atlas = new TileAtlas(map, tmxFile.parent());
+		if (GameBase.$().isGlContextThread()) {
+			atlas = new TileAtlas(map, tmxFile.parent());
+		} else {
+			new ExecuteInMainThread() {
+				@Override
+				public void exec() {
+					atlas = new TileAtlas(map, tmxFile.parent());
+				}
+			}.runWait();
+		}
 		return map;
 	}
 
@@ -234,7 +243,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					if (EVENT_TYPE_PLAYER.equalsIgnoreCase(eventObj.type))
 						eventObj.consumeInput = true;
 				} else {
-					put(eventObj.name, globalObj);
+					globalObj.clearCollision();
+					put(globalObj.name, globalObj).dispose();
 				}
 			} else {
 				if (eventObj.getEventHandler() != null
@@ -619,19 +629,34 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	}
 
 	private EventTrigger createEventTrigger() {
-		if (GameBase.$().isLWJGL()) {
-			// Use SharedDrawable to load textures in other thread
-			return new EventTriggerAsyncLWJGL();
-		}
-		return new EventTriggerSync();
+		// Uses a shared context to load textures in other thread
+		return new EventTriggerAsync();
 	}
 
-	public void dispose(boolean recycleEventTrigger) {
+	public void dispose() {
+		dispose(false);
+	}
+
+	public void dispose(final boolean recycleEventTrigger) {
+		if (GameBase.$().isGlContextThread()) {
+			disposeInternal(recycleEventTrigger);
+		} else {
+			Gdx.app.postRunnable(new Runnable() {
+				@Override
+				public void run() {
+					disposeInternal(recycleEventTrigger);
+				}
+			});
+		}
+	}
+
+	private void disposeInternal(boolean recycleEventTrigger) {
 		for (int i = 0, size = dynamicRegions.size(); i < size; i++) {
-			if (!(EVENT_TYPE_GLOBAL
-					.equalsIgnoreCase(dynamicRegions.get(i).type) || EVENT_TYPE_PLAYER
-					.equalsIgnoreCase(dynamicRegions.get(i).type))) {
-				dynamicRegions.get(i).dispose();
+			EventObject event = dynamicRegions.get(i);
+			if (event.name == null
+					|| !(EVENT_TYPE_GLOBAL.equalsIgnoreCase(event.type) || EVENT_TYPE_PLAYER
+							.equalsIgnoreCase(event.type))) {
+				event.dispose();
 			}
 		}
 		if (atlas != null)
@@ -641,10 +666,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		namedRegions = null;
 		if (!recycleEventTrigger && eventTrigger != null)
 			eventTrigger.dispose();
-	}
-
-	public void dispose() {
-		dispose(false);
 	}
 
 	@Override
@@ -659,12 +680,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	 */
 	public static MapLoader<EventObject> getMapLoader() {
 		if (mapLoader == null) {
-			if (GameBase.$().isLWJGL()) {
-				// Use SharedDrawable to load textures in other thread
-				mapLoader = new TiledMapLoaderAsyncLWJGL();
-			} else {
-				mapLoader = new TiledMapLoaderSync();
-			}
+			// Uses a shared context to load textures in other thread
+			mapLoader = new TiledMapLoaderSync();
 		}
 		return mapLoader;
 	}

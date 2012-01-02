@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import javax.script.ScriptException;
 
+import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.event.EventObject;
 
@@ -28,7 +29,7 @@ import com.madthrax.ridiculousRPG.event.EventObject;
  * 
  * @author Alexander Baumgartner
  */
-public interface EventHandler extends Serializable {
+public interface EventHandler extends Serializable, Disposable {
 	/**
 	 * This method is called if the event is touchable and an touch event
 	 * occurred.

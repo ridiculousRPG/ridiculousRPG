@@ -7,7 +7,7 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/gdx-backend-android"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/gdx-backend-jogl"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/gdx-backend-lwjgl"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/gdx-openal"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/gdx-openal"/>
 	<classpathentry exported="true" kind="lib" path="lib/tiledMapPacker.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/android-2.0.jar"/>
 	<classpathentry kind="output" path="bin"/>

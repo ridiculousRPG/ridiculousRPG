@@ -28,8 +28,6 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pool;
 
-//TODO: Always load textures via the main thread (the drawing thread)
-// After fixing this we are able to use EventTriggerAsync safely.
 /**
  * This class is used to load and cache textures. It automatically adds a
  * padding if the textures width or height isn't a power of two.<br>
@@ -146,27 +144,57 @@ public final class TextureRegionLoader {
 	 *         on it.
 	 */
 	public static TextureRegionRef obtainEmptyRegion(int width, int height,
-			Format format) {
-		int safeWidth = MathUtils.nextPowerOfTwo(width);
-		int safeHeight = MathUtils.nextPowerOfTwo(height);
-		return new TextureCache(safeWidth, safeHeight, format).obtainRegion(0,
-				0, width, height);
+			final Format format) {
+		final int safeWidth = MathUtils.nextPowerOfTwo(width);
+		final int safeHeight = MathUtils.nextPowerOfTwo(height);
+		TextureCache tCache;
+		if (GameBase.$().isGlContextThread()) {
+			tCache = new TextureCache(safeWidth, safeHeight, format);
+		} else {
+			final TextureCacheContainer tCC = new TextureCacheContainer();
+			new ExecuteInMainThread() {
+				@Override
+				public void exec() {
+					tCC.tCache = new TextureCache(safeWidth, safeHeight, format);
+				}
+			}.runWait();
+			tCache = tCC.tCache;
+		}
+		return tCache.obtainRegion(0, 0, width, height);
 	}
 
 	private static TextureCache obtainCache(FileHandle filePath) {
 		String fileName = filePath.path();
 		TextureCache tCache = textureCache.get(fileName);
 		if (tCache == null) {
-			Pixmap pm = new Pixmap(filePath);
-			int width = pm.getWidth();
-			int height = pm.getHeight();
-			int safeWidth = MathUtils.nextPowerOfTwo(width);
-			int safeHeight = MathUtils.nextPowerOfTwo(height);
-			if (width != safeWidth || height != safeHeight) {
-				tCache = new TextureCache(safeWidth, safeHeight, pm.getFormat());
-				tCache.setPixmap(pm, true);
+			final Pixmap pm = new Pixmap(filePath);
+			final int width = pm.getWidth();
+			final int height = pm.getHeight();
+			final int safeWidth = MathUtils.nextPowerOfTwo(width);
+			final int safeHeight = MathUtils.nextPowerOfTwo(height);
+			if (GameBase.$().isGlContextThread()) {
+				if (width != safeWidth || height != safeHeight) {
+					tCache = new TextureCache(safeWidth, safeHeight, pm
+							.getFormat());
+					tCache.setPixmap(pm, true);
+				} else {
+					tCache = new TextureCache(pm, true);
+				}
 			} else {
-				tCache = new TextureCache(pm, true);
+				final TextureCacheContainer tCC = new TextureCacheContainer();
+				new ExecuteInMainThread() {
+					@Override
+					public void exec() {
+						if (width != safeWidth || height != safeHeight) {
+							tCC.tCache = new TextureCache(safeWidth,
+									safeHeight, pm.getFormat());
+							tCC.tCache.setPixmap(pm, true);
+						} else {
+							tCC.tCache = new TextureCache(pm, true);
+						}
+					}
+				}.runWait();
+				tCache = tCC.tCache;
 			}
 			textureCache.put(fileName, tCache);
 			textureReverseCache.put(tCache, fileName);
@@ -216,6 +244,10 @@ public final class TextureRegionLoader {
 			getTexture().dispose();
 			textureRegionPool.free(this);
 		}
+	}
+
+	private static class TextureCacheContainer {
+		TextureCache tCache;
 	}
 
 	/**
@@ -309,9 +341,20 @@ public final class TextureRegionLoader {
 			count--;
 			if (count == 0) {
 				textureCache.remove(textureReverseCache.remove(this));
-				super.dispose();
-				if (pixmap != null)
-					pixmap.dispose();
+				if (GameBase.$().isGlContextThread()) {
+					super.dispose();
+					if (pixmap != null)
+						pixmap.dispose();
+				} else {
+					Gdx.app.postRunnable(new Runnable() {
+						@Override
+						public void run() {
+							TextureCache.super.dispose();
+							if (pixmap != null)
+								pixmap.dispose();
+						}
+					});
+				}
 				pixmap = null;
 			}
 		}

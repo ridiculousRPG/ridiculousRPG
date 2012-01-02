@@ -778,12 +778,29 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			imageRef.dispose();
 			imageRef = null;
 		}
+		if (eventHandler != null) {
+			eventHandler.dispose();
+			eventHandler = null;
+		}
 		visible = false;
 		pushable = false;
 		touchable = false;
 		moves = false;
 		image = null;
+		color = null;
+		drawBound = null;
+		touchBound = null;
+		collision = null;
+		justTouching = null;
+		reachable = null;
+		properties = null;
 		setMoveHandler(null);
+	}
+
+	public void clearCollision() {
+		collision.clear();
+		justTouching.clear();
+		reachable.clear();
 	}
 
 	public void init() throws ScriptException {

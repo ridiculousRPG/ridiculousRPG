@@ -18,6 +18,9 @@ package com.madthrax.ridiculousRPG;
 
 import java.io.File;
 
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.SharedDrawable;
+
 import android.os.Bundle;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
@@ -53,21 +56,27 @@ public class GameLauncher extends AndroidApplication {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		GameOptions options = new GameOptionsDefaultConfigReader(
-				new AndroidFiles(getAssets()).internal(OPTIONS_FILE)
-						.file()).options;
+				new AndroidFiles(getAssets()).internal(OPTIONS_FILE).file()).options;
 		options.fullscreen = true;
 		setTitle(buildTitle(options.title, options.debug));
-		initialize(new GameBase(options), options.useGL20);
+		initialize(new GameBase(options) {
+			@Override
+			public boolean shareGLContext() {
+				return false;
+			}
+		}, options.useGL20);
 	}
 
 	/**
 	 * Builds the title for the window.
+	 * 
 	 * @param title
 	 * @param debug
 	 * @return
 	 */
 	protected static String buildTitle(String title, boolean debug) {
-		if (debug) title += GameLauncher.DEBUG_TEXT;
+		if (debug)
+			title += GameLauncher.DEBUG_TEXT;
 		title += BRANDING;
 		return title;
 	}
@@ -87,7 +96,18 @@ public class GameLauncher extends AndroidApplication {
 			conf.useGL20 = options.useGL20;
 			conf.fullscreen = options.fullscreen;
 			conf.vSyncEnabled = options.vSyncEnabled;
-			new LwjglApplication(new GameBase(options), conf);
+			new LwjglApplication(new GameBase(options) {
+				@Override
+				public boolean shareGLContext() {
+					try {
+						new SharedDrawable(Display.getDrawable()).makeCurrent();
+						return true;
+					} catch (Exception e) {
+						System.out.println("Couldn't share context.");
+						return false;
+					}
+				}
+			}, conf);
 		}
 			break;
 		case JOGL: {
@@ -98,7 +118,12 @@ public class GameLauncher extends AndroidApplication {
 			conf.useGL20 = options.useGL20;
 			conf.fullscreen = options.fullscreen;
 			conf.vSyncEnabled = options.vSyncEnabled;
-			new JoglApplication(new GameBase(options), conf);
+			new JoglApplication(new GameBase(options) {
+				@Override
+				public boolean shareGLContext() {
+					return false;
+				}
+			}, conf);
 		}
 			break;
 		}

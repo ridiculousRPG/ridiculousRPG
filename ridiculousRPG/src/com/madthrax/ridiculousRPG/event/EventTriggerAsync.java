@@ -20,12 +20,7 @@ import java.util.List;
 
 import javax.script.ScriptException;
 
-import org.lwjgl.LWJGLException;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.SharedDrawable;
-
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
+import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
 
 /**
@@ -36,29 +31,20 @@ import com.madthrax.ridiculousRPG.event.handler.EventHandler;
  * 
  * @author Alexander Baumgartner
  */
-public class EventTriggerAsyncLWJGL extends Thread implements EventTrigger {
+public class EventTriggerAsync extends Thread implements EventTrigger {
 	private List<EventObject> events;
 	private boolean disposed = false;
 	private float deltaTime;
 	private boolean computationReady = false;
 	private boolean actionKeyDown = false;
 
-	public EventTriggerAsyncLWJGL() {
+	public EventTriggerAsync() {
 		start();
 	}
 
 	@Override
 	public void run() {
-		if (Gdx.app instanceof LwjglApplication) {
-			try {
-				new SharedDrawable(Display.getDrawable()).makeCurrent();
-			} catch (LWJGLException e) {
-				throw new RuntimeException(e);
-			}
-		} else {
-			throw new RuntimeException(getClass().getName()
-					+ " only works with LWJGL");
-		}
+		GameBase.$().registerGlContextThread();
 		while (!disposed) {
 			while (!computationReady) {
 				yield();

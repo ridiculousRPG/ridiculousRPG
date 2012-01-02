@@ -31,6 +31,9 @@ public class GameIconService extends GameServiceDefaultImpl {
 	public GameIconService() {
 		FileHandle applIconFile = Gdx.files.internal("data/icon.png");
 		if (applIconFile.exists()) {
+			//TODO: fix this
+			// 1) Load Pixmap via TextureRegionLoader
+			// 2) Different Icons for different platforms???
 			applIcon = new Pixmap(applIconFile);
 			if (applIcon.getWidth() == applIcon.getHeight()
 					&& MathUtils.isPowerOfTwo(applIcon.getWidth())) {

@@ -22,6 +22,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.script.Invocable;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import com.madthrax.ridiculousRPG.GameBase;
@@ -355,5 +357,18 @@ public class EventExecScriptAdapter extends EventAdapter {
 		} catch (ScriptException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		((ScriptEngine) engine).getBindings(ScriptContext.ENGINE_SCOPE).clear();
+		engine = null;
+		scriptCode = null;
+		onPush = null;
+		onTouch = null;
+		onTimer = null;
+		onLoad = null;
+		onCustomTrigger = null;
 	}
 }
