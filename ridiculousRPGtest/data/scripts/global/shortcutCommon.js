@@ -10,6 +10,7 @@ Rectangle = gdx.math.Rectangle;
 Vector2 = gdx.math.Vector2;
 WeatherEffectUtil = ridiculousRPG.animation.WeatherEffectUtil;
 Speed = ridiculousRPG.event.Speed;
+Direction = ridiculousRPG.event.Direction;
 Color = gdx.graphics.Color;
 
 // Convenience method to obtain internal files from pathname

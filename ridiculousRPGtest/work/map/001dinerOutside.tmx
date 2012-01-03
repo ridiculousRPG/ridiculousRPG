@@ -299,5 +299,13 @@
     <property name="ontimer" value="var timeCount = eventState.getFloat(0); if (timeCount &gt; 5) {WeatherEffectUtil.generateSnow($.serviceProvider.getService(&quot;weather&quot;), WeatherEffectUtil.Wind.NW_LOW); eventState.setFloat(0, -1);} else if (timeCount &gt; -1) eventState.setFloat(0, timeCount+deltaTime);"/>
    </properties>
   </object>
+  <object name="player2AutoMove" type="player" x="246" y="335" width="19" height="9">
+   <properties>
+    <property name="animation" value="data/charset/Daisy.png"/>
+    <property name="blocking" value="PASSES_LOW_BARRIER"/>
+    <property name="movehandler" value="data/scripts/game/player2AutoMove.js"/>
+    <property name="speed" value="S07_NORMAL"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

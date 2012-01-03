@@ -24,16 +24,12 @@ function mapTransition(mapPath, playerX, playerY, stopWeatherEffect, speed) {
 	}
 	// Switch to new map
 	var oldMap = mapService.loadMap(mapLoader.endLoadMap());
-	var player = findPlayer(mapService, trackService);
-	if (oldMap != null) {
-		if (player != null)
-			player.forceMoveTo(playerX, playerY);
-		oldMap.dispose(true);
-		//TODO: save old map state
-	}
-	if (trackService != null)
-		trackService.setTrackObj(player, true);
+	setPlayerPosition(playerX, playerY, trackService, oldMap != null);
 
+	if (oldMap != null) {
+		oldMap.dispose(true);
+		// TODO: save old map state
+	}
 	if (speed != null) {
 		// Fade in
 		fadeColor(MoveFadeColorAdapter.$(speed, Color.WHITE, true));
@@ -41,16 +37,23 @@ function mapTransition(mapPath, playerX, playerY, stopWeatherEffect, speed) {
 }
 function fadeColor(fadeAdapter) {
 	var nanoTimeOld = System.nanoTime();
-	while(!fadeAdapter.finished) {
+	while (!fadeAdapter.finished) {
 		Thread.yield(); // let other threads do their work
 		var nanoTimeNew = System.nanoTime();
-		fadeAdapter.tryMove(null, (nanoTimeNew-nanoTimeOld) * 1e-9 );
+		fadeAdapter.tryMove(null, (nanoTimeNew - nanoTimeOld) * 1e-9);
 		nanoTimeOld = nanoTimeNew;
 	}
 }
-function findPlayer(mapService, trackService) {
-	if (trackService==null || trackService.trackObj==null) {
-		return mapService.map.get("player");
+function setPlayerPosition(playerX, playerY, trackService, movePlayer) {
+	var globEv = $.globalEvents.values().toArray();
+	var PLAYER_TYPE = ridiculousRPG.map.MapWithEvents.EVENT_TYPE_PLAYER;
+	for (var i = 0; i < globEv.length; i++) {
+		var ev = globEv[i];
+		if (PLAYER_TYPE.equalsIgnoreCase(ev.type)) {
+			if (movePlayer)
+				ev.forceMoveTo(playerX, playerY);
+			if (trackService != null && trackService.trackObj == null)
+				trackService.setTrackObj(ev, true);
+		}
 	}
-	return trackService.trackObj;
 }
