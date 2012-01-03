@@ -109,7 +109,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final String EVENT_PROP_HANDLER = "eventhandler";
 	// the following properties can not be mixed with an eventhandler
 	// which doesn't extend the EventExecScriptAdapter
-	private static final String EVENT_PROP_SCRIPT = "script";
 	private static final String EVENT_PROP_ONPUSH = "onpush";
 	private static final String EVENT_PROP_ONTOUCH = "ontouch";
 	private static final String EVENT_PROP_ONTIMER = "ontimer";
@@ -425,17 +424,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					((EventExecScriptAdapter) ev.getEventHandler()).execOnLoad(
 							val, index.length() == 0 ? -1 : Integer
 									.parseInt(index));
-				}
-			} else if (key.startsWith(EVENT_PROP_SCRIPT)) {
-				if (ev.getEventHandler() == null) {
-					ev.setEventHandler(new EventExecScriptAdapter());
-				}
-				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_SCRIPT.length())
-							.trim();
-					((EventExecScriptAdapter) ev.getEventHandler())
-							.addScriptCode(val, index.length() == 0 ? -1
-									: Integer.parseInt(index));
 				}
 			}
 		} catch (Exception e) {

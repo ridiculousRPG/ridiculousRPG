@@ -248,11 +248,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		}
 		Object result = sharedEngine
 				.eval(getScriptFactory().loadScript(script));
-		try {
-			sharedEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
-					.clear();
-		} catch (Exception ignored) {
-		}
+		sharedEngine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 		return result;
 	}
 
@@ -561,7 +557,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	public boolean isGlContextThread() {
 		return glContextThread.contains(Thread.currentThread());
 	}
+
 	public boolean isGlMainThread() {
-		return glContextThread.get(0)==Thread.currentThread();
+		return glContextThread.get(0) == Thread.currentThread();
 	}
 }

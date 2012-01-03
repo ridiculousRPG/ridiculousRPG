@@ -28,7 +28,6 @@ import javax.script.ScriptException;
 
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.ObjectState;
-import com.madthrax.ridiculousRPG.ScriptFactory;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.map.tiled.TiledMapWithEvents;
 
@@ -62,8 +61,9 @@ public class EventExecScriptAdapter extends EventAdapter {
 	private static final long serialVersionUID = 1L;
 
 	private boolean push, touch, timer, load, store, customTrigger;
-	private transient Invocable engine;
-	private SortedMap<Integer, String> scriptCode = new TreeMap<Integer, String>();
+	private static transient ScriptEngine SHARED_ENGINE;
+	private static transient Invocable SHARED_INVOCABLE;
+	private transient Invocable timerEngine;
 	private SortedMap<Integer, String> onPush = new TreeMap<Integer, String>();
 	private SortedMap<Integer, String> onTouch = new TreeMap<Integer, String>();
 	private SortedMap<Integer, String> onTimer = new TreeMap<Integer, String>();
@@ -72,10 +72,19 @@ public class EventExecScriptAdapter extends EventAdapter {
 
 	@Override
 	public void init() {
-		try {
-			initEngine();
-		} catch (ScriptException e) {
-			throw new RuntimeException(e);
+		if (SHARED_ENGINE == null) {
+			SHARED_ENGINE = GameBase.$scriptFactory().obtainEngine();
+			SHARED_INVOCABLE = (Invocable) SHARED_ENGINE;
+		}
+		if (timer) {
+			try {
+				timerEngine = GameBase.$scriptFactory().obtainInvocable(
+						GameBase.$scriptFactory().createScriptFunction(onTimer,
+								"timer", false, "eventSelf", "deltaTime",
+								"eventState"));
+			} catch (ScriptException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 
@@ -85,11 +94,16 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!push)
 			return false;
 		try {
-			return (Boolean) engine.invokeFunction("push", eventSelf,
+			SHARED_ENGINE.eval(GameBase.$scriptFactory().createScriptFunction(
+					onPush, "push", true, "eventSelf", "eventTrigger",
+					"eventState"));
+			return (Boolean) SHARED_INVOCABLE.invokeFunction("push", eventSelf,
 					eventTrigger, getActualState());
 		} catch (NoSuchMethodException e) {
 			// this should never happen
 			throw new AssertionError(e);
+		} finally {
+			SHARED_ENGINE.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 		}
 	}
 
@@ -99,11 +113,16 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!touch)
 			return false;
 		try {
-			return (Boolean) engine.invokeFunction("touch", eventSelf,
-					eventTrigger, getActualState());
+			SHARED_ENGINE.eval(GameBase.$scriptFactory().createScriptFunction(
+					onTouch, "touch", true, "eventSelf", "eventTrigger",
+					"eventState"));
+			return (Boolean) SHARED_INVOCABLE.invokeFunction("touch",
+					eventSelf, eventTrigger, getActualState());
 		} catch (NoSuchMethodException e) {
 			// this should never happen
 			throw new AssertionError(e);
+		} finally {
+			SHARED_ENGINE.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 		}
 	}
 
@@ -113,7 +132,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!timer)
 			return false;
 		try {
-			return (Boolean) engine.invokeFunction("timer", eventSelf,
+			return (Boolean) timerEngine.invokeFunction("timer", eventSelf,
 					deltaTime, getActualState());
 		} catch (NoSuchMethodException e) {
 			// this should never happen
@@ -127,25 +146,33 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!customTrigger)
 			return false;
 		try {
-			return (Boolean) engine.invokeFunction("customTrigger", eventSelf,
-					triggerId, getActualState());
+			SHARED_ENGINE.eval(GameBase.$scriptFactory().createScriptFunction(
+					onCustomTrigger, "customTrigger", true, "eventSelf",
+					"triggerId", "eventState"));
+			return (Boolean) SHARED_INVOCABLE.invokeFunction("customTrigger",
+					eventSelf, triggerId, getActualState());
 		} catch (NoSuchMethodException e) {
 			// this should never happen
 			throw new AssertionError(e);
+		} finally {
+			SHARED_ENGINE.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 		}
 	}
 
 	@Override
 	public void load(EventObject eventSelf) throws ScriptException {
-		if (!load) {
-			super.load(eventSelf);
-		} else {
-			try {
-				engine.invokeFunction("load", eventSelf, getActualState());
-			} catch (NoSuchMethodException e) {
-				// this should never happen
-				throw new AssertionError(e);
-			}
+		if (!load)
+			return;
+		try {
+			SHARED_ENGINE.eval(GameBase.$scriptFactory().createScriptFunction(
+					onLoad, "load", null, "eventSelf", "eventState"));
+			SHARED_INVOCABLE
+					.invokeFunction("load", eventSelf, getActualState());
+		} catch (NoSuchMethodException e) {
+			// this should never happen
+			throw new AssertionError(e);
+		} finally {
+			SHARED_ENGINE.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 		}
 	}
 
@@ -169,8 +196,10 @@ public class EventExecScriptAdapter extends EventAdapter {
 	 */
 	public final void execOnPush(String val, int index) {
 		val = GameBase.$scriptFactory().loadScript(val);
-		onPush.put(index, val);
-		push = true;
+		if (val.trim().length() > 0) {
+			onPush.put(index, val);
+			push = true;
+		}
 	}
 
 	/**
@@ -193,8 +222,10 @@ public class EventExecScriptAdapter extends EventAdapter {
 	 */
 	public final void execOnTouch(String val, int index) {
 		val = GameBase.$scriptFactory().loadScript(val);
-		onTouch.put(index, val);
-		touch = true;
+		if (val.trim().length() > 0) {
+			onTouch.put(index, val);
+			touch = true;
+		}
 	}
 
 	/**
@@ -217,8 +248,10 @@ public class EventExecScriptAdapter extends EventAdapter {
 	 */
 	public final void execOnTimer(String val, int index) {
 		val = GameBase.$scriptFactory().loadScript(val);
-		onTimer.put(index, val);
-		timer = true;
+		if (val.trim().length() > 0) {
+			onTimer.put(index, val);
+			timer = true;
+		}
 	}
 
 	/**
@@ -241,8 +274,10 @@ public class EventExecScriptAdapter extends EventAdapter {
 	 */
 	public final void execOnCustomTrigger(String val, int index) {
 		val = GameBase.$scriptFactory().loadScript(val);
-		onCustomTrigger.put(index, val);
-		customTrigger = true;
+		if (val.trim().length() > 0) {
+			onCustomTrigger.put(index, val);
+			customTrigger = true;
+		}
 	}
 
 	/**
@@ -265,62 +300,10 @@ public class EventExecScriptAdapter extends EventAdapter {
 	 */
 	public final void execOnLoad(String val, int index) {
 		val = GameBase.$scriptFactory().loadScript(val);
-		onLoad.put(index, val);
-		load = true;
-	}
-
-	/**
-	 * This method allows to add some additional script code to this
-	 * {@link EventExecScriptAdapter}. The code has to be well formed in the
-	 * specified languages syntax.<br>
-	 * You are also allowed to define variables outside of a function body. This
-	 * variables and all the defined functions are accessible from all the
-	 * script functions inside this {@link EventExecScriptAdapter}.<br>
-	 * <br>
-	 * The script code will be evaluated at the end of the initialization.<br>
-	 * Therefore you can also add some initialization code by this method.
-	 * 
-	 * @param scriptCode
-	 *            One or more well formed script function(s) and/or variables
-	 *            matching the script language {@link #getScriptLanguage()}
-	 * @param index
-	 *            The index position of this script. All scripts are sorted by
-	 *            their index position.
-	 */
-	public final void addScriptCode(String scriptCode, int index) {
-		scriptCode = GameBase.$scriptFactory().loadScript(scriptCode);
-		this.scriptCode.put(index, scriptCode);
-	}
-
-	private void initEngine() throws ScriptException {
-		ScriptFactory factory = GameBase.$scriptFactory();
-		StringBuilder script = new StringBuilder();
-		for (String code : scriptCode.values()) {
-			script.append(code).append('\n');
+		if (val.trim().length() > 0) {
+			onLoad.put(index, val);
+			load = true;
 		}
-		// WE NEED THIS FOR SERIALIZATION
-		// this.scriptCode.clear();
-
-		script.append(factory.createScriptFunction(onPush, "push", true,
-				"eventSelf", "eventTrigger", "eventState"));
-		script.append(factory.createScriptFunction(onTouch, "touch", true,
-				"eventSelf", "eventTrigger", "eventState"));
-		script.append(factory.createScriptFunction(onTimer, "timer", false,
-				"eventSelf", "deltaTime", "eventState"));
-		script.append(factory.createScriptFunction(onCustomTrigger,
-				"customTrigger", true, "eventSelf", "triggerId", "eventState"));
-		script.append(factory.createScriptFunction(onLoad, "load", false,
-				"eventSelf", "eventState"));
-		// WE NEED THIS FOR SERIALIZATION
-		// let gc do it's work
-		// onPush.clear();
-		// onTouch.clear();
-		// onTimer.clear();
-		// onCustomTrigger.clear();
-		// onLoad.clear();
-		// onStore.clear();
-
-		this.engine = factory.obtainInvocable(script);
 	}
 
 	/**
@@ -337,7 +320,6 @@ public class EventExecScriptAdapter extends EventAdapter {
 		this.load = other.load;
 		this.store = other.store;
 		this.customTrigger = other.customTrigger;
-		this.scriptCode = other.scriptCode;
 		this.onPush = other.onPush;
 		this.onTouch = other.onTouch;
 		this.onTimer = other.onTimer;
@@ -352,19 +334,17 @@ public class EventExecScriptAdapter extends EventAdapter {
 	private void readObject(ObjectInputStream in) throws IOException,
 			ClassNotFoundException {
 		in.defaultReadObject();
-		try {
-			initEngine();
-		} catch (ScriptException e) {
-			e.printStackTrace();
-		}
+		init();
 	}
 
 	@Override
 	public void dispose() {
 		super.dispose();
-		((ScriptEngine) engine).getBindings(ScriptContext.ENGINE_SCOPE).clear();
-		engine = null;
-		scriptCode = null;
+		if (timerEngine != null) {
+			((ScriptEngine) timerEngine)
+					.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+			timerEngine = null;
+		}
 		onPush = null;
 		onTouch = null;
 		onTimer = null;
