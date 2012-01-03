@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
+import javax.script.ScriptException;
+
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Delay;
 import com.badlogic.gdx.scenes.scene2d.actions.FadeIn;
@@ -40,6 +42,7 @@ public class StandardMenuService extends ActorsOnStageService implements
 	private IntMap<MenuStateHandler> stateHandlerMap = new IntMap<MenuStateHandler>(
 			16);
 	private MenuStateHandler activeState;
+	private String startNewGameScript;
 
 	@Override
 	public boolean keyUp(int keycode) {
@@ -184,6 +187,14 @@ public class StandardMenuService extends ActorsOnStageService implements
 	@Override
 	public MenuStateHandler getActiveStateHandler() {
 		return activeState;
+	}
+
+	public void startNewGame() throws ScriptException {
+		GameBase.$().eval(startNewGameScript);
+	}
+
+	public void setStartNewGameScript(String startNewGameScript) {
+		this.startNewGameScript = startNewGameScript;
 	}
 
 	@Override

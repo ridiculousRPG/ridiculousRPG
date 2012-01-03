@@ -37,7 +37,7 @@ public class GameOptions {
 	public boolean vSyncEnabled = false;
 	public boolean debug = false;
 	public ScriptFactory scriptFactory = new ScriptFactory();
-	public String initScript = "data/scripts/initGame.js";
+	public String initScript = "data/scripts/initGameEngine.js";
 	public String uiSkinNormalConfig = "data/uiskin/skinNormal.json";
 	public String uiSkinNormalImage = "data/uiskin/skinNormal.png";
 	public String uiSkinFocusConfig = "data/uiskin/skinFocus.json";

@@ -504,8 +504,17 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	/**
 	 * Exits the running game
 	 */
-	public static void exit() {
-		Gdx.app.exit();
+	public void exit() {
+		if (isGlContextThread()) {
+			Gdx.app.exit();
+		} else {
+			Gdx.app.postRunnable(new Runnable() {
+				@Override
+				public void run() {
+					Gdx.app.exit();
+				}
+			});
+		}
 	}
 
 	public void setBackgroundColor(Color backgroundColor) {

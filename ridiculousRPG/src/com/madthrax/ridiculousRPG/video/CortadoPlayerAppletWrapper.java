@@ -50,6 +50,7 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 	private CortadoPlayerApplet player;
 	private boolean playing;
+	private boolean signalReceived;
 	private boolean projectToMap;
 	private Rectangle screenBounds;
 	private CortadoPixmapWrapper graphicsPixmap;
@@ -69,7 +70,7 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 	 *            if false, the audio channel will be disabled.
 	 */
 	public CortadoPlayerAppletWrapper(URL url, Rectangle screenBounds,
-			boolean projectToMap, boolean withAudio) {
+			boolean projectToMap, boolean withAudio, boolean drawPlaceholder) {
 		this.screenBounds = new Rectangle(screenBounds);
 		this.projectToMap = projectToMap;
 		if (!projectToMap) {
@@ -84,21 +85,23 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 
 		textureRef = TextureRegionLoader.obtainEmptyRegion(width, height,
 				Format.RGBA8888);
-		Pixmap placeholder = new Pixmap(width, height, Format.RGBA8888);
-		placeholder.setColor(0, 0, 0, 1);
-		placeholder.fillRectangle(0, 0, width, height);
-		placeholder.setColor(.7f, .7f, .7f, 1);
-		placeholder.fillCircle(width / 2, height / 2,
-				Math.min(width, height) / 3);
-		placeholder.setColor(.4f, .4f, .4f, 1);
-		placeholder.drawRectangle(0, 0, width, height);
-		placeholder.drawRectangle(2, 2, width - 4, height - 4);
-		placeholder.drawLine(1, 0, width, height - 1);
-		placeholder.drawLine(0, 1, width - 1, height);
-		placeholder.drawLine(1, height, width, 1);
-		placeholder.drawLine(0, height - 1, width - 1, 0);
-		textureRef.draw(placeholder);
-		placeholder.dispose();
+		if (drawPlaceholder) {
+			Pixmap placeholder = new Pixmap(width, height, Format.RGBA8888);
+			placeholder.setColor(0, 0, 0, 1);
+			placeholder.fillRectangle(0, 0, width, height);
+			placeholder.setColor(.7f, .7f, .7f, 1);
+			placeholder.fillCircle(width / 2, height / 2,
+					Math.min(width, height) / 3);
+			placeholder.setColor(.4f, .4f, .4f, 1);
+			placeholder.drawRectangle(0, 0, width, height);
+			placeholder.drawRectangle(2, 2, width - 4, height - 4);
+			placeholder.drawLine(1, 0, width, height - 1);
+			placeholder.drawLine(0, 1, width - 1, height);
+			placeholder.drawLine(1, height, width, 1);
+			placeholder.drawLine(0, height - 1, width - 1, 0);
+			textureRef.draw(placeholder);
+			placeholder.dispose();
+		}
 		graphicsPixmap = new CortadoPixmapWrapper();
 		player = new CortadoPlayerApplet(this, graphicsPixmap);
 		initPlayer();
@@ -243,6 +246,7 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 	}
 	public void draw(SpriteBatch spriteBatch, boolean debug) {
 		if (graphicsPixmap.isReady()) {
+			signalReceived = true;
 			Pixmap toDraw = graphicsPixmap.getPixmap();
 			int width, height;
 			synchronized (toDraw) {
@@ -276,11 +280,16 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 		spriteBatch.draw(tRef, x,y,w,h);
 	}
 
+	public boolean isSignalReceived() {
+		return signalReceived;
+	}
+
 	@Override
 	public void dispose() {
 		player.destroy();
 		graphicsPixmap.dispose();
 		textureRef.dispose();
+		signalReceived = false;
 		screenBounds = null;
 		graphicsPixmap = null;
 		textureRef = null;

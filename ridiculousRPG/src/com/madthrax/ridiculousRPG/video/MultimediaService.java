@@ -60,6 +60,18 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 	public static long EOS_TIMEOUT_MILLIS = 1000;
 
 	/**
+	 * Plays the (ogg-theora) video in full screen exclusive mode WITHOUT
+	 * playing the audio sequence.<br>
+	 * The game is paused while the video is running.
+	 * 
+	 * @param file
+	 *            The ogg theora video file
+	 */
+	public void play(FileHandle file) {
+		play(file, GameBase.$().getScreen(), false, false, true, -1f, false);
+	}
+
+	/**
 	 * Plays the (ogg-theora) video in full screen exclusive mode.<br>
 	 * The game is paused while the video is running.
 	 * 
@@ -69,8 +81,27 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 	 *            Wether or not to stream the audio sequence
 	 */
 	public void play(FileHandle file, boolean audio) {
-		play(file, new Rectangle(0, 0, Gdx.graphics.getWidth(), Gdx.graphics
-				.getHeight()), false, audio, true, -1f, false);
+		play(file, GameBase.$().getScreen(), false, audio, true, -1f, false);
+	}
+
+	/**
+	 * Plays the (ogg-theora) video in full screen exclusive mode.<br>
+	 * The game is paused while the video is running.
+	 * 
+	 * @param file
+	 *            The ogg theora video file
+	 * @param audio
+	 *            Wether or not to stream the audio sequence
+	 * @param playTime
+	 *            If > -1, the video will stop at the given time (Seconds).<br>
+	 *            Use -1 to play the entire video
+	 * @param loop
+	 *            If true, the playback will loop forever (until stop() is
+	 *            called).
+	 */
+	public void play(FileHandle file, boolean audio, float playTime,
+			boolean loop) {
+		play(file, GameBase.$().getScreen(), false, audio, true, playTime, loop);
 	}
 
 	/**
@@ -172,7 +203,7 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 			if (playing)
 				player.dispose();
 			player = new CortadoPlayerAppletWrapper(url, bounds, projectToMap,
-					withAudio);
+					withAudio, !freezeTheWorld && projectToMap);
 			player.play();
 			this.playing = true;
 			this.loop = loop;
@@ -223,7 +254,7 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 		if (player.isPlaying()) {
 			player.draw(spriteBatch, debug);
 			if (playTime > -1) {
-				if (!frozen) {
+				if (!frozen && player.isSignalReceived()) {
 					position += Gdx.graphics.getDeltaTime();
 				}
 				if (position > playTime) {

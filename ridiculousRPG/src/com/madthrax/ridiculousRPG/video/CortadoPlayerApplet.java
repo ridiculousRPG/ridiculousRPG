@@ -47,7 +47,6 @@ public class CortadoPlayerApplet extends Cortado {
 	 */
 	public static boolean shutdownCortadoHook = true;
 	private Graphics graphics;
-	//private CortadoPlayerAppletWrapper stub;
 
 	/**
 	 * This is an applet! You should NEVER use this constructor manually!<br>
@@ -57,21 +56,8 @@ public class CortadoPlayerApplet extends Cortado {
 	 */
 	public CortadoPlayerApplet(CortadoPlayerAppletWrapper stub,
 			Graphics graphics) {
-		//this.stub = stub;
 		this.graphics = graphics;
 	}
-
-	/* This doesn't work for standard cortado download, because
-	 * all class names other than Cortado are encrypted.
-	 * For example the class Message becomes the letter a :/
-	@Override
-	public void handleMessage(Message msg) {
-		if (msg.getType() == Message.EOS || msg.getType() == Message.ERROR) {
-			stub.stop();
-		}
-		super.handleMessage(msg);
-	}
-	*/
 
 	@Override
 	public Graphics getGraphics() {
@@ -92,26 +78,9 @@ public class CortadoPlayerApplet extends Cortado {
 				removeAll();
 				// try to crash it
 				doPlay();
+				stop();
 			}
 		} catch (Throwable ignored) {
-		}
-		// spawn thread to force jvm exit
-		if (isActive() && shutdownCortadoHook) {
-			shutdownCortadoHook = false;
-			System.out.println("Cortado shutdown hook thread started");
-			final Thread current = Thread.currentThread();
-			new Thread() {
-				@Override
-				public void run() {
-					do
-						try {
-							sleep(2000);
-						} catch (InterruptedException e) {
-						}
-					while (current.isAlive());
-					System.exit(0);
-				}
-			}.start();
 		}
 	}
 
