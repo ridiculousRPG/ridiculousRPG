@@ -303,7 +303,7 @@
    <properties>
     <property name="animation" value="data/charset/Daisy.png"/>
     <property name="blocking" value="PASSES_LOW_BARRIER"/>
-    <property name="movehandler" value="data/scripts/game/player2AutoMove.js"/>
+    <property name="movehandler" value="data/scripts/game/moveEvent/player2AutoMove.js"/>
     <property name="speed" value="S07_NORMAL"/>
    </properties>
   </object>

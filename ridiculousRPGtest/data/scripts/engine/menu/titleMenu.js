@@ -46,6 +46,7 @@ function createGui(menu) {
 	start.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			menu.changeState(MENU_STATE_IDLE);
+			menu.startNewGame();
 		}
 	};
 	w.row().fill(true, true).expand(true, false);

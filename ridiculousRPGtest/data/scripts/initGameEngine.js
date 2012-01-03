@@ -40,12 +40,6 @@ $.serviceProvider.putService("video", new ridiculousRPG.video.MultimediaService(
 
 initMenu($.serviceProvider.getService("menu"));
 
-// ONLY FOR TESTING!!! NEVER DO THIS IN YOUR GAME
-// play a video on startup
-//$.serviceProvider.getService("video").play(internalFile("data/video/test.ogg"), $.screen, 1, true);
-
-mapTransition("data/map/001dinerOutside.tmx", 0, 0, true, null);
-
 function initMenu(menu) {
 	var execScript = internalFile("data/scripts/engine/menu/titleMenu.js");
 	var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, true, true);
@@ -69,5 +63,6 @@ function initMenu(menu) {
 	var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, false, true);
 	menu.putStateHandler(MENU_STATE_PAUSE, handler);
 
+	menu.setStartNewGameScript("data/scripts/game/startNewGame.js");
 	menu.changeState(MENU_STATE_TITLE);
 }
