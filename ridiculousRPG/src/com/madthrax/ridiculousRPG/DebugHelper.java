@@ -27,7 +27,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
-import com.madthrax.ridiculousRPG.event.BlockingBehaviour;
+import com.madthrax.ridiculousRPG.event.BlockingBehavior;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
@@ -127,11 +127,11 @@ public final class DebugHelper {
 				debugRenderer.rect(ev.drawBound.x, ev.drawBound.y,
 						ev.drawBound.width, ev.drawBound.height);
 			}
-			if (!ev.blockingBehaviour
-					.blocks(BlockingBehaviour.BUILDING_LOW)) {
+			if (!ev.blockingBehavior
+					.blocks(BlockingBehavior.BUILDING_LOW)) {
 				debugRenderer.setColor(0f, 1f, 0f, 1f);
-			} else if (!ev.blockingBehaviour
-					.blocks(BlockingBehaviour.BARRIER_LOW)) {
+			} else if (!ev.blockingBehavior
+					.blocks(BlockingBehavior.BARRIER_LOW)) {
 				debugRenderer.setColor(1f, 1f, 0f, 1f);
 			} else {
 				debugRenderer.setColor(1f, 0f, 0f, 1f);

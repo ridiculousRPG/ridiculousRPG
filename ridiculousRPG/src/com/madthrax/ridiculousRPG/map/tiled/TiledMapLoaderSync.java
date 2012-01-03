@@ -39,6 +39,7 @@ import com.madthrax.ridiculousRPG.map.MapWithEvents;
 public class TiledMapLoaderSync extends Thread implements
 		MapLoader<EventObject> {
 
+	private boolean disposed = false;
 	private boolean done = true;
 	private String filePath;
 	private MapWithEvents<EventObject> map;
@@ -51,8 +52,10 @@ public class TiledMapLoaderSync extends Thread implements
 	@Override
 	public void run() {
 		while (true) {
-			while (done)
+			while (done) {
+				if (disposed) return;
 				yield();
+			}
 			if (map != null && filePath != null) {
 				// store map
 				FileHandle fh = Gdx.files.external(map.getExternalSavePath());
@@ -83,15 +86,25 @@ public class TiledMapLoaderSync extends Thread implements
 
 	public synchronized MapWithEvents<EventObject> endLoadMap()
 			throws ScriptException {
+		return loadTiledMap();
+	}
+	private MapWithEvents<EventObject> loadTiledMap() throws ScriptException {
 		return new TiledMapWithEvents(loadMapPath);
 	}
 
 	public synchronized void storeMapState(MapWithEvents<EventObject> map) {
 		// Wait until outstanding operation has completed.
-		while (!done && map != null)
+		while (!done && map != null) {
+			if (disposed) return;
 			Thread.yield();
+		}
 		this.map = map;
 		this.filePath = map.getExternalSavePath();
 		done = false;
+	}
+
+	@Override
+	public void dispose() {
+		disposed = true;
 	}
 }

@@ -41,6 +41,7 @@ import com.madthrax.ridiculousRPG.map.MapWithEvents;
 public class TiledMapLoaderAsync extends Thread implements
 		MapLoader<EventObject> {
 
+	private boolean disposed = false;
 	private boolean done = true;
 	private String filePath;
 	private MapWithEvents<EventObject> map;
@@ -51,11 +52,20 @@ public class TiledMapLoaderAsync extends Thread implements
 	}
 
 	@Override
-	public void run() {
+	public synchronized void run() {
 		GameBase.$().registerGlContextThread();
 		while (true) {
-			while (done)
-				yield();
+			while (done) {
+				if (disposed) {
+					notifyAll();
+					return;
+				}
+				try {
+					wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 			if (map != null && filePath != null) {
 				// store map
 				FileHandle fh = Gdx.files.external(map.getExternalSavePath());
@@ -84,6 +94,7 @@ public class TiledMapLoaderAsync extends Thread implements
 				}
 			}
 			done = true;
+			notify();
 		}
 	}
 
@@ -93,24 +104,48 @@ public class TiledMapLoaderAsync extends Thread implements
 
 	public synchronized void startLoadMap(String tmxPath) {
 		// Wait until outstanding operation has completed.
-		while (!done && (map != null || loadException != null))
-			Thread.yield();
+		while (!done) {
+			if (disposed) {
+				notifyAll();
+				return;
+			}
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 		this.filePath = tmxPath;
 		done = false;
+		if (GameBase.$().isGlAsyncLoadable())
+			notify();
 	}
 
 	public synchronized MapWithEvents<EventObject> endLoadMap()
 			throws ScriptException {
 		try {
-			if (GameBase.$().isGlMainThread()) {
-				done = true;
-				map = loadTiledMap();
-			} else {
+			if (GameBase.$().isGlAsyncLoadable()) {
 				// Wait until the map has been loaded by the thread.
-				while (!done)
-					Thread.yield();
+				while (!done) {
+					if (disposed) {
+						notifyAll();
+						return null;
+					}
+					try {
+						wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
 				if (loadException != null)
 					throw loadException;
+			} else {
+				try {
+					map = loadTiledMap();
+				} finally {
+					done = true;
+					notify();
+				}
 			}
 			return map;
 		} finally {
@@ -121,10 +156,28 @@ public class TiledMapLoaderAsync extends Thread implements
 
 	public synchronized void storeMapState(MapWithEvents<EventObject> map) {
 		// Wait until outstanding operation has completed.
-		while (!done && (map != null || loadException != null))
-			Thread.yield();
+		while (!done) {
+			if (disposed) {
+				notifyAll();
+				return;
+			}
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 		this.map = map;
 		this.filePath = map.getExternalSavePath();
 		done = false;
+		notify();
+	}
+
+	@Override
+	public void dispose() {
+		disposed = true;
+		synchronized (this) {
+			notifyAll();
+		}
 	}
 }

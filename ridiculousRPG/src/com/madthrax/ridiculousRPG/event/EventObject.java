@@ -90,7 +90,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * {@link EventHandler} from the other event is called.
 	 */
 	public boolean consumeInput = false;
-	public BlockingBehaviour blockingBehaviour = BlockingBehaviour.BUILDING_LOW;
+	public BlockingBehavior blockingBehavior = BlockingBehavior.BUILDING_LOW;
 	/**
 	 * The outreach for pushing other events. Default = 10 pixel
 	 * 
@@ -140,7 +140,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 */
 	public EventObject(String name, String imagePath, int x, int y,
 			MovementHandler moveHandler) {
-		this(name, imagePath, x, y, moveHandler, BlockingBehaviour.NONE,
+		this(name, imagePath, x, y, moveHandler, BlockingBehavior.NONE,
 				Speed.S07_NORMAL);
 	}
 
@@ -156,7 +156,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 *            the starting y position
 	 */
 	public EventObject(String name, final String imagePath, int x, int y,
-			MovementHandler moveHandler, BlockingBehaviour blockingBehaviour,
+			MovementHandler moveHandler, BlockingBehavior blockingBehaviour,
 			Speed moveSpeed) {
 		this(name, TextureRegionLoader.load(imagePath), x, y, moveHandler,
 				blockingBehaviour, moveSpeed);
@@ -177,7 +177,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 */
 	public EventObject(String name, TextureRegionRef region, int x, int y,
 			MovementHandler moveHandler) {
-		this(name, region, x, y, moveHandler, BlockingBehaviour.NONE,
+		this(name, region, x, y, moveHandler, BlockingBehavior.NONE,
 				Speed.S07_NORMAL);
 	}
 
@@ -195,7 +195,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 *            the starting y position
 	 */
 	public EventObject(String name, TextureRegionRef region, int x, int y,
-			MovementHandler moveHandler, BlockingBehaviour blockingBehaviour,
+			MovementHandler moveHandler, BlockingBehavior blockingBehaviour,
 			Speed moveSpeed) {
 		image = imageRef = region;
 		visible = true;
@@ -210,7 +210,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		touchBound.width = drawBound.width * .66f;
 		touchBound.height = drawBound.height * .66f;
 		this.setMoveHandler(moveHandler);
-		this.blockingBehaviour = blockingBehaviour;
+		this.blockingBehavior = blockingBehaviour;
 	}
 
 	/**
@@ -253,7 +253,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			int anzRows, int x, int y, MovementHandler moveHandler) {
 		this(name, animationPath, animationTileWidth, animationTileHeight,
 				anzCols, anzRows, x, y, moveHandler, Speed.S07_NORMAL,
-				Direction.N, BlockingBehaviour.PASSES_LOW_BARRIER, true);
+				Direction.N, BlockingBehavior.PASSES_LOW_BARRIER, true);
 	}
 
 	/**
@@ -278,7 +278,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			int animationTileWidth, int animationTileHeight, int anzCols,
 			int anzRows, int x, int y, MovementHandler moveHandler,
 			Speed moveSpeed, Direction startDirection,
-			BlockingBehaviour blockingBehaviour, boolean isAnimationCompressed) {
+			BlockingBehavior blockingBehaviour, boolean isAnimationCompressed) {
 		addX(x);
 		addY(y);
 		z = .1f;
@@ -290,7 +290,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		this.moveSpeed = moveSpeed;
 		this.name = name;
 		this.setMoveHandler(moveHandler);
-		this.blockingBehaviour = blockingBehaviour;
+		this.blockingBehavior = blockingBehaviour;
 	}
 
 	/**

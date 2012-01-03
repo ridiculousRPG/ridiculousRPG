@@ -102,7 +102,7 @@ public class EventTriggerSync implements EventTrigger {
 						obj1.reachable.add(obj2);
 					if (obj1.pushable)
 						obj2.reachable.add(obj1);
-					if (obj1.blockingBehaviour.blocks(obj2.blockingBehaviour)) {
+					if (obj1.blockingBehavior.blocks(obj2.blockingBehavior)) {
 						if (obj1.moves) {
 							obj1.moves = false;
 							if (obj2.moves && obj1.overlaps(obj2)) {

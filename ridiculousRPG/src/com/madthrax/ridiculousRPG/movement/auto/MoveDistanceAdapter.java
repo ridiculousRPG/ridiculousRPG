@@ -53,7 +53,7 @@ public class MoveDistanceAdapter extends MovementHandler {
 	public void tryMove(Movable event, float deltaTime) {
 		// move could be blocked
 		if (distanceCount >= distance || finished) {
-			if (distanceCount == 0f)
+			if (finished)
 				event.stop();
 			finished = true;
 		} else {

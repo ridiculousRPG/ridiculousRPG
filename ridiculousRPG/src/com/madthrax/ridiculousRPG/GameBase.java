@@ -68,6 +68,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	private boolean fullscreen;
 	private boolean controlKeyPressedOld, controlKeyPressed,
 			actionKeyPressedOld, actionKeyPressed;
+	private boolean glAsyncLoadable;
 
 	private Color backgroundColor = new Color(0f, 0f, 0f, 1f);
 	private Color gameColorTint = new Color(1f, 1f, 1f, 1f);
@@ -548,6 +549,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 */
 	public void registerGlContextThread() {
 		if (shareGLContext()) {
+			glAsyncLoadable = true;
 			synchronized (glContextThread) {
 				glContextThread.add(Thread.currentThread());
 			}
@@ -558,7 +560,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		return glContextThread.contains(Thread.currentThread());
 	}
 
-	public boolean isGlMainThread() {
-		return glContextThread.get(0) == Thread.currentThread();
+	public boolean isGlAsyncLoadable() {
+		return glAsyncLoadable;
 	}
 }

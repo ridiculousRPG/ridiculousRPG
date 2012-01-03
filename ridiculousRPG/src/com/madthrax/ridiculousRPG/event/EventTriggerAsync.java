@@ -22,6 +22,7 @@ import javax.script.ScriptException;
 
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
+import com.madthrax.ridiculousRPG.map.MapWithEvents;
 
 /**
  * All {@link EventHandler} are called and the specified actions are performed.<br>
@@ -35,7 +36,6 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 	private List<EventObject> events;
 	private boolean disposed = false;
 	private float deltaTime;
-	private boolean computationReady = false;
 	private boolean actionKeyDown = false;
 
 	public EventTriggerAsync() {
@@ -45,12 +45,18 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 	@Override
 	public void run() {
 		GameBase.$().registerGlContextThread();
-		while (!disposed) {
-			while (!computationReady) {
-				yield();
+		while (true) {
+			synchronized (this) {
 				if (disposed)
 					return;
+				try {
+					wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
+			if (disposed)
+				return;
 			float deltaTime = this.deltaTime;
 			this.deltaTime = 0f;
 			try {
@@ -58,8 +64,6 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			this.computationReady = false;
-			yield();
 		}
 	}
 
@@ -89,11 +93,11 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 					}
 				}
 				if (!consumed && actionKeyDown) {
-					for (EventObject pushed : obj1.reachable) {
-						consumed = pushed.pushable
-								&& pushed.getEventHandler().push(pushed, obj1);
-						if (consumed || disposed)
-							break;
+					tmpSize = obj1.reachable.size;
+					for (j = 0; j < tmpSize && !consumed && !disposed; j++) {
+						obj2 = obj1.reachable.get(j);
+						consumed = obj2.pushable
+								&& obj2.getEventHandler().push(obj2, obj1);
 					}
 				}
 			}
@@ -108,7 +112,6 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 	public void compute(float deltaTime, boolean actionKeyDown,
 			List<EventObject> events) {
 		// Load frequently used pointers/variables into register
-		this.events = events;
 		int dynSize = events.size();
 		int i, j;
 		EventObject obj1, obj2;
@@ -134,7 +137,10 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 						obj1.reachable.add(obj2);
 					if (obj1.pushable)
 						obj2.reachable.add(obj1);
-					if (obj1.blockingBehaviour.blocks(obj2.blockingBehaviour)) {
+					if (obj1.blockingBehavior.blocks(obj2.blockingBehavior)
+							&& (!MapWithEvents.EVENT_TYPE_PLAYER
+									.equalsIgnoreCase(obj1.type) || !MapWithEvents.EVENT_TYPE_PLAYER
+									.equalsIgnoreCase(obj2.type))) {
 						if (obj1.moves) {
 							obj1.moves = false;
 							if (obj2.moves && obj1.overlaps(obj2)) {
@@ -167,13 +173,17 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 			}
 			obj1.commitMove();
 		}
-		// shared variables for parallel computation
-		this.actionKeyDown = actionKeyDown;
-		this.deltaTime += deltaTime;
-		this.computationReady = true;
+		synchronized (this) {
+			// shared variables for parallel computation
+			this.events = events;
+			this.actionKeyDown = actionKeyDown;
+			this.deltaTime += deltaTime;
+			notify();
+		}
 	}
 
-	public void dispose() {
+	public synchronized void dispose() {
 		disposed = true;
+		notifyAll();
 	}
 }

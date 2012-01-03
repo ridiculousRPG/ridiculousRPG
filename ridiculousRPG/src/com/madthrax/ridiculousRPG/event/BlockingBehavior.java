@@ -46,28 +46,28 @@ package com.madthrax.ridiculousRPG.event;
  * 
  * @author Alexander Baumgartner
  */
-public enum BlockingBehaviour {
+public enum BlockingBehavior {
 	NONE(0), FLYING_HIGH(5), FLYING_LOW(15), BARRIER_LOW(35), BARRIER_HIGH(45), PASSES_ALL_BARRIERS(
 			50), PASSES_LOW_BARRIER(60), PASSES_NO_BARRIER(70), BUILDING_LOW(80), BUILDING_HIGH(
 			90), ALL(99);
 
 	private final int value;
 
-	private BlockingBehaviour(int value) {
+	private BlockingBehavior(int value) {
 		this.value = value;
 	}
 
-	public boolean blocks(BlockingBehaviour other) {
+	public boolean blocks(BlockingBehavior other) {
 		return value + other.value > 99;
 	}
 
-	public static BlockingBehaviour parse(String val) {
+	public static BlockingBehavior parse(String val) {
 		if ("true".equalsIgnoreCase(val)) {
-			return BlockingBehaviour.BUILDING_LOW;
+			return BlockingBehavior.BUILDING_LOW;
 		} else if ("false".equalsIgnoreCase(val)) {
-			return BlockingBehaviour.FLYING_HIGH;
+			return BlockingBehavior.FLYING_HIGH;
 		} else {
-			return BlockingBehaviour.valueOf(val);
+			return BlockingBehavior.valueOf(val);
 		}
 	}
 }

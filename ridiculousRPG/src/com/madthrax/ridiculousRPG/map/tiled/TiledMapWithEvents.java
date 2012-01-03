@@ -47,7 +47,7 @@ import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.animation.TileAnimation;
-import com.madthrax.ridiculousRPG.event.BlockingBehaviour;
+import com.madthrax.ridiculousRPG.event.BlockingBehavior;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.event.EventTrigger;
 import com.madthrax.ridiculousRPG.event.EventTriggerAsync;
@@ -69,7 +69,7 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
 public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final long serialVersionUID = 1L;
 
-	private static MapLoader<EventObject> mapLoader;
+	private static transient MapLoader<EventObject> mapLoader;
 	private transient TileAtlas atlas;
 	private transient int width, height;
 	private transient int tileWidth, tileHeight;
@@ -91,8 +91,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 	private static final char EVENT_CUSTOM_PROP_KZ = '$';
 	// the key is translated to lower case -> we are case insensitive
-	private static final String EVENT_TYPE_PLAYER = "player";
-	private static final String EVENT_TYPE_GLOBAL = "global";
 	private static final String EVENT_PROP_ID = "id";
 	private static final String EVENT_PROP_HEIGHT = "height";
 	private static final String EVENT_PROP_OUTREACH = "outreach";
@@ -254,8 +252,9 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				eventObj.init();
 			}
 		}
-		for (EventObject event : globalEv.values()) {
-			put(event.name, event);
+		for (EventObject globalObj : globalEv.values()) {
+			globalObj.clearCollision();
+			put(globalObj.name, globalObj);
 		}
 
 		// insert half-planes around the map
@@ -301,7 +300,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			} else if (EVENT_PROP_HEIGHT.equals(key)) {
 				ev.z += Integer.parseInt(val);
 			} else if (EVENT_PROP_BLOCKING.equals(key)) {
-				ev.blockingBehaviour = BlockingBehaviour.parse(val);
+				ev.blockingBehavior = BlockingBehavior.parse(val);
 			} else if (EVENT_PROP_SPEED.equals(key)) {
 				ev.setMoveSpeed(Speed.parse(val));
 			} else if (EVENT_PROP_MOVEHANDLER.equals(key)) {
@@ -534,7 +533,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	 */
 	public void compute(float deltaTime, boolean actionKeyDown) {
 		if (eventTrigger == null) {
-			eventTrigger = createEventTrigger();
+			// Uses a shared context to load textures in other thread
+			eventTrigger = new EventTriggerAsync();
 		}
 		eventTrigger.compute(deltaTime, actionKeyDown, dynamicRegions);
 	}
@@ -616,29 +616,24 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		loadStaticTiles(map);
 	}
 
-	private EventTrigger createEventTrigger() {
-		// Uses a shared context to load textures in other thread
-		return new EventTriggerAsync();
-	}
-
 	public void dispose() {
 		dispose(false);
 	}
 
-	public void dispose(final boolean recycleEventTrigger) {
+	public void dispose(final boolean recycle) {
 		if (GameBase.$().isGlContextThread()) {
-			disposeInternal(recycleEventTrigger);
+			disposeInternal(recycle);
 		} else {
 			Gdx.app.postRunnable(new Runnable() {
 				@Override
 				public void run() {
-					disposeInternal(recycleEventTrigger);
+					disposeInternal(recycle);
 				}
 			});
 		}
 	}
 
-	private void disposeInternal(boolean recycleEventTrigger) {
+	private void disposeInternal(boolean recycle) {
 		for (int i = 0, size = dynamicRegions.size(); i < size; i++) {
 			EventObject event = dynamicRegions.get(i);
 			if (event.name == null
@@ -652,8 +647,16 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		staticRegions = null;
 		dynamicRegions = null;
 		namedRegions = null;
-		if (!recycleEventTrigger && eventTrigger != null)
-			eventTrigger.dispose();
+		if (!recycle) {
+			if (eventTrigger != null) {
+				eventTrigger.dispose();
+				eventTrigger = null;
+			}
+			if (mapLoader != null) {
+				mapLoader.dispose();
+				mapLoader = null;
+			}
+		}
 	}
 
 	@Override
@@ -669,7 +672,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	public static MapLoader<EventObject> getMapLoader() {
 		if (mapLoader == null) {
 			// Uses a shared context to load textures in other thread
-			mapLoader = new TiledMapLoaderSync();
+			mapLoader = new TiledMapLoaderAsync();
 		}
 		return mapLoader;
 	}

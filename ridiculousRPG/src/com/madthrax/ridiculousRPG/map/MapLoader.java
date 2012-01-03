@@ -16,6 +16,7 @@
 
 package com.madthrax.ridiculousRPG.map;
 
+import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.movement.Movable;
 
 /**
@@ -23,11 +24,11 @@ import com.madthrax.ridiculousRPG.movement.Movable;
  * 
  * @author Alexander Baumgartner
  */
-public interface MapLoader<T extends Movable> {
+public interface MapLoader<T extends Movable> extends Disposable {
 	/**
 	 * Starts loading the given map asynchronously.<br>
-	 * Creates a new map with the specified events from a file.
-	 * tmx files can be created by using the Tiled editor.
+	 * Creates a new map with the specified events from a file. tmx files can be
+	 * created by using the Tiled editor.
 	 * 
 	 * @param filePath
 	 */
@@ -36,7 +37,7 @@ public interface MapLoader<T extends Movable> {
 	/**
 	 * Waits until loading is finished and returns the map.
 	 * 
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public MapWithEvents<T> endLoadMap() throws Exception;
 
