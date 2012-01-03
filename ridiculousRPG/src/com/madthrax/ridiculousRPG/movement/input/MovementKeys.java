@@ -18,37 +18,56 @@ package com.madthrax.ridiculousRPG.movement.input;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.madthrax.ridiculousRPG.movement.MovementHandler;
 
 /**
+ * The default movement keys are W,A,S,D and the Arrow keys.<br>
+ * If you indent to make a 2 player game, split 'em up and instantiate the
+ * {@link MovementHandler} with your own MovementKeys instance.
+ * 
  * @author Alexander Baumgartner
  */
 public final class MovementKeys {
-	private MovementKeys() {
-	} // static container
 
 	/**
-	 * You should not change the reference, but you are allowed to change the
-	 * values inside the array to any other key code.<br>
-	 * Three different key codes are supported for any direction. Per default
-	 * only two are used (the first and second value are the same).<br>
-	 * If you want a third alternative you can simply set the first values.
-	 * 
-	 * @see {@link Input.Keys}
+	 * The default movement keys are W,A,S,D and the Arrow keys.<br>
+	 * If you indent to make a 2 player game, split 'em up and instantiate the
+	 * {@link MovementHandler} with your own MovementKeys instance.
 	 */
-	public static final int[] upKeys = { Input.Keys.UP, Input.Keys.UP,
-			Input.Keys.W }, downKeys = { Input.Keys.DOWN, Input.Keys.DOWN,
-			Input.Keys.S }, leftKeys = { Input.Keys.LEFT, Input.Keys.LEFT,
-			Input.Keys.A }, rightKeys = { Input.Keys.RIGHT, Input.Keys.RIGHT,
-			Input.Keys.D };
-	private static final int[][] allKeys = { upKeys, downKeys, leftKeys,
-			rightKeys };
+	public static final MovementKeys $ = new MovementKeys();
+
+	private int[] upKeys = { Input.Keys.UP, Input.Keys.W };
+	private int[] downKeys = { Input.Keys.DOWN, Input.Keys.S };
+	private int[] leftKeys = { Input.Keys.LEFT, Input.Keys.A };
+	private int[] rightKeys = { Input.Keys.RIGHT, Input.Keys.D };
+	private int[][] allKeys = { upKeys, downKeys, leftKeys, rightKeys };
+
+	public void setUpKeys(int... upKeys) {
+		this.upKeys = upKeys;
+		allKeys[0] = upKeys;
+	}
+
+	public void setDownKeys(int... downKeys) {
+		this.downKeys = downKeys;
+		allKeys[1] = downKeys;
+	}
+
+	public void setLeftKeys(int... leftKeys) {
+		this.leftKeys = leftKeys;
+		allKeys[2] = leftKeys;
+	}
+
+	public void setRightKeys(int... rightKeys) {
+		this.rightKeys = rightKeys;
+		allKeys[3] = rightKeys;
+	}
 
 	/**
 	 * Returns all supported keys in a two dimensional array.
 	 * 
 	 * @return
 	 */
-	public static int[][] getSupportedKeys() {
+	public int[][] getSupportedKeys() {
 		return allKeys;
 	}
 
@@ -57,7 +76,7 @@ public final class MovementKeys {
 	 * 
 	 * @return The pressed key or 0 if no up key is pressed.
 	 */
-	public static int isUpKeyPressed() {
+	public int isUpKeyPressed() {
 		return checkKeys(upKeys);
 	}
 
@@ -66,7 +85,7 @@ public final class MovementKeys {
 	 * 
 	 * @return The pressed key or 0 if no down key is pressed.
 	 */
-	public static int isDownKeyPressed() {
+	public int isDownKeyPressed() {
 		return checkKeys(downKeys);
 	}
 
@@ -75,7 +94,7 @@ public final class MovementKeys {
 	 * 
 	 * @return The pressed key or 0 if no left key is pressed.
 	 */
-	public static int isLeftKeyPressed() {
+	public int isLeftKeyPressed() {
 		return checkKeys(leftKeys);
 	}
 
@@ -84,11 +103,11 @@ public final class MovementKeys {
 	 * 
 	 * @return The pressed key or 0 if no right key is pressed.
 	 */
-	public static int isRightKeyPressed() {
+	public int isRightKeyPressed() {
 		return checkKeys(rightKeys);
 	}
 
-	private static int checkKeys(int[] keys) {
+	private int checkKeys(int[] keys) {
 		for (int key : keys)
 			if (Gdx.input.isKeyPressed(key))
 				return key;

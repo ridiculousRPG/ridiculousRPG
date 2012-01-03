@@ -29,8 +29,14 @@ public class Move2WayWEAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 
 	private static MovementHandler instance = new Move2WayWEAdapter();
+	private MovementKeys movementKeys;
+
+	public Move2WayWEAdapter(MovementKeys movementKeys) {
+		this.movementKeys = movementKeys;
+	}
 
 	protected Move2WayWEAdapter() {
+		this(MovementKeys.$);
 	}
 
 	public static MovementHandler $() {
@@ -62,10 +68,10 @@ public class Move2WayWEAdapter extends MovementHandler {
 					.getY(0), movable);
 			movable.offerMove(touchDir, deltaTime);
 		} else {
-			if ((lastDirKey = MovementKeys.isLeftKeyPressed()) != 0) {
+			if ((lastDirKey = movementKeys.isLeftKeyPressed()) != 0) {
 				lastDir = Direction.W;
 				movable.offerMove(lastDir, deltaTime);
-			} else if ((lastDirKey = MovementKeys.isRightKeyPressed()) != 0) {
+			} else if ((lastDirKey = movementKeys.isRightKeyPressed()) != 0) {
 				lastDir = Direction.E;
 				movable.offerMove(lastDir, deltaTime);
 			} else {

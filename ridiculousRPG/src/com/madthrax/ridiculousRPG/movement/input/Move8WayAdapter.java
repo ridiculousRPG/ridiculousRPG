@@ -29,8 +29,14 @@ public class Move8WayAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 
 	private static MovementHandler instance = new Move8WayAdapter();
+	private MovementKeys movementKeys;
+
+	public Move8WayAdapter(MovementKeys movementKeys) {
+		this.movementKeys = movementKeys;
+	}
 
 	protected Move8WayAdapter() {
+		this(MovementKeys.$);
 	}
 
 	public static MovementHandler $() {
@@ -62,7 +68,7 @@ public class Move8WayAdapter extends MovementHandler {
 						lastDirKey1 = 0;
 					}
 				} else {
-					mainLoop: for (int[] keys : MovementKeys.getSupportedKeys())
+					mainLoop: for (int[] keys : movementKeys.getSupportedKeys())
 						for (int key : keys)
 							if (key != lastDirKey1
 									&& Gdx.input.isKeyPressed(key)) {
@@ -78,28 +84,28 @@ public class Move8WayAdapter extends MovementHandler {
 			movable.offerMove(touchDir, deltaTime);
 		} else {
 			lastDirKey2 = 0;
-			if ((lastDirKey1 = MovementKeys.isUpKeyPressed()) != 0) {
-				if ((lastDirKey2 = MovementKeys.isLeftKeyPressed()) != 0) {
+			if ((lastDirKey1 = movementKeys.isUpKeyPressed()) != 0) {
+				if ((lastDirKey2 = movementKeys.isLeftKeyPressed()) != 0) {
 					lastDir = Direction.NW;
-				} else if ((lastDirKey2 = MovementKeys.isRightKeyPressed()) != 0) {
+				} else if ((lastDirKey2 = movementKeys.isRightKeyPressed()) != 0) {
 					lastDir = Direction.NE;
 				} else {
 					lastDir = Direction.N;
 				}
 				movable.offerMove(lastDir, deltaTime);
-			} else if ((lastDirKey1 = MovementKeys.isDownKeyPressed()) != 0) {
-				if ((lastDirKey2 = MovementKeys.isLeftKeyPressed()) != 0) {
+			} else if ((lastDirKey1 = movementKeys.isDownKeyPressed()) != 0) {
+				if ((lastDirKey2 = movementKeys.isLeftKeyPressed()) != 0) {
 					lastDir = Direction.SW;
-				} else if ((lastDirKey2 = MovementKeys.isRightKeyPressed()) != 0) {
+				} else if ((lastDirKey2 = movementKeys.isRightKeyPressed()) != 0) {
 					lastDir = Direction.SE;
 				} else {
 					lastDir = Direction.S;
 				}
 				movable.offerMove(lastDir, deltaTime);
-			} else if ((lastDirKey1 = MovementKeys.isLeftKeyPressed()) != 0) {
+			} else if ((lastDirKey1 = movementKeys.isLeftKeyPressed()) != 0) {
 				lastDir = Direction.W;
 				movable.offerMove(lastDir, deltaTime);
-			} else if ((lastDirKey1 = MovementKeys.isRightKeyPressed()) != 0) {
+			} else if ((lastDirKey1 = movementKeys.isRightKeyPressed()) != 0) {
 				lastDir = Direction.E;
 				movable.offerMove(lastDir, deltaTime);
 			} else {
