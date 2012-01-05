@@ -369,6 +369,34 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	}
 
 	/**
+	 * Changes the direction of this {@link EventObject} to face the other one.<br>
+	 * The touch bounds are used to compute the direction.
+	 */
+	public void lookAt(EventObject other) {
+		if (animation == null)
+			return;
+		float x, y;
+		if (getX() + getWidth() < other.getX()) { // East
+			x = 1;
+		} else if (getX() > other.getX() + other.getWidth()) { // West
+			x = -1;
+		} else { // unchanged
+			x = 0;
+		}
+		if (getY() + getHeight() < other.getY()) { // North
+			y = 1;
+		} else if (getY() > other.getY() + other.getHeight()) { // South
+			y = -1;
+		} else { // unchanged
+			if (x == 0)
+				return;
+			y = 0;
+		}
+		// set direction...
+		animation.animate(0, 0, Direction.fromMovement(x, y), 0);
+	}
+
+	/**
 	 * Checks if one EventObject touches the other respecting all softMoves!
 	 */
 	public boolean overlaps(EventObject other) {
