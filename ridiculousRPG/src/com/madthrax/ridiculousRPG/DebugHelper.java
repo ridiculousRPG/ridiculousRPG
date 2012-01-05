@@ -32,7 +32,7 @@ import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
-import com.madthrax.ridiculousRPG.ui.DisplayTextService;
+import com.madthrax.ridiculousRPG.ui.DisplayPlainTextService;
 
 /**
  * This class offers some debug functions.
@@ -41,8 +41,8 @@ import com.madthrax.ridiculousRPG.ui.DisplayTextService;
  */
 public final class DebugHelper {
 	private static ShapeRenderer debugRenderer;
-	private static DisplayTextService textMapDebugger;
-	private static DisplayTextService textViewDebugger;
+	private static DisplayPlainTextService textMapDebugger;
+	private static DisplayPlainTextService textViewDebugger;
 	private static BitmapFont f;
 
 	private DebugHelper() {
@@ -148,9 +148,9 @@ public final class DebugHelper {
 		debugRenderer.end();
 	}
 
-	public static DisplayTextService getTextMapDebugger() {
+	public static DisplayPlainTextService getTextMapDebugger() {
 		if (textMapDebugger == null) {
-			textMapDebugger = new DisplayTextService() {
+			textMapDebugger = new DisplayPlainTextService() {
 				@Override
 				public Matrix4 projectionMatrix(Camera camera) {
 					return camera.projection;
@@ -162,9 +162,9 @@ public final class DebugHelper {
 		return textMapDebugger;
 	}
 
-	public static DisplayTextService getTextViewDebugger() {
+	public static DisplayPlainTextService getTextViewDebugger() {
 		if (textViewDebugger == null) {
-			textViewDebugger = new DisplayTextService() {
+			textViewDebugger = new DisplayPlainTextService() {
 				@Override
 				public Matrix4 projectionMatrix(Camera camera) {
 					return camera.view;

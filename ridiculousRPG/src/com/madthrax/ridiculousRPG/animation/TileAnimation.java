@@ -365,10 +365,12 @@ public class TileAnimation implements Disposable, Serializable {
 	public TextureRegion animate(float x, float y, Direction dir,
 			float deltaTime) {
 		float pixelPerSecond;
-		if (animationSpeed == null) {
+		if (deltaTime == 0) {
+			pixelPerSecond = 0;
+		} else if (animationSpeed == null) {
 			pixelPerSecond = (x < 0 ? -x : x) + (y < 0 ? -y : y);
-			pixelPerSecond /= deltaTime;
-			if (x > 0 && y > 0)
+			pixelPerSecond = pixelPerSecond / deltaTime;
+			if (x != 0 && y != 0)
 				pixelPerSecond *= .7f;
 			// exact but worse performance:
 			// pixelPerSecond = (float)Math.sqrt(x*x+y*y)/deltaTime;
@@ -421,27 +423,31 @@ public class TileAnimation implements Disposable, Serializable {
 
 	private TextureRegion animate(float pixelPerSecond,
 			int animationTextureRow, float deltaTime) {
-		animationCycleFinished = false;
-		animationTimer += Math.sqrt(pixelPerSecond / 4f) * deltaTime;
-		if (Float.isNaN(animationTimer)) {
-			animationTimer = 1.01f;
-		}
-		if (animationTextureRow > -1) {
-			while (animationTimer >= animationTiles[animationTextureRow].length) {
-				animationTimer -= animationTiles[animationTextureRow].length;
-				animationCycleFinished = true;
+		if (deltaTime > 0) {
+			animationCycleFinished = false;
+			animationTimer += Math.sqrt(pixelPerSecond / 4f) * deltaTime;
+			if (Float.isNaN(animationTimer)) {
+				animationTimer = 1.01f;
 			}
-			animationRow = animationTextureRow;
-		} else {
-			while (animationTimer >= animationTiles[animationRow].length) {
-				animationTimer -= animationTiles[animationRow].length;
-				animationRow++;
-				animationRow %= animationTiles.length;
-				if (animationRow == 0)
+			if (animationTextureRow > -1) {
+				while (animationTimer >= animationTiles[animationTextureRow].length) {
+					animationTimer -= animationTiles[animationTextureRow].length;
 					animationCycleFinished = true;
+				}
+				animationRow = animationTextureRow;
+			} else {
+				while (animationTimer >= animationTiles[animationRow].length) {
+					animationTimer -= animationTiles[animationRow].length;
+					animationRow++;
+					animationRow %= animationTiles.length;
+					if (animationRow == 0)
+						animationCycleFinished = true;
+				}
 			}
+			animationCol = (int) animationTimer;
+		} else if (animationTextureRow > -1) {
+			animationRow = animationTextureRow;
 		}
-		animationCol = (int) animationTimer;
 		return animationTiles[animationRow][animationCol];
 	}
 
@@ -485,6 +491,7 @@ public class TileAnimation implements Disposable, Serializable {
 		animationCol = 0;
 		return animationTiles[animationRow][animationCol];
 	}
+
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		out.defaultWriteObject();
 		// write tile width
@@ -496,10 +503,12 @@ public class TileAnimation implements Disposable, Serializable {
 		// write amount of rows
 		out.write(animationTiles.length);
 	}
-	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
 		in.defaultReadObject();
-		setAnimationTexture(path, in.readInt(),
-				in.readInt(), in.readInt(), in.readInt(), isCompressed);
+		setAnimationTexture(path, in.readInt(), in.readInt(), in.readInt(), in
+				.readInt(), isCompressed);
 	}
 
 	public void dispose() {

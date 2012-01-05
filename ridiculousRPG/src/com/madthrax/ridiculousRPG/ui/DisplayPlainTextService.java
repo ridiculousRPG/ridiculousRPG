@@ -35,7 +35,7 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
  * 
  * @author Alexander Baumgartner
  */
-public abstract class DisplayTextService extends GameServiceDefaultImpl
+public abstract class DisplayPlainTextService extends GameServiceDefaultImpl
 		implements Drawable {
 	public enum Alignment {
 		LEFT, BOTTOM, CENTER, RIGHT, TOP
@@ -49,7 +49,7 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 	private final BitmapFontCachePool fontCachePool = new BitmapFontCachePool();
 	private float defaultColor = Color.WHITE.toFloatBits();
 
-	protected DisplayTextService() {
+	protected DisplayPlainTextService() {
 		font = new BitmapFont();
 	}
 
@@ -223,7 +223,7 @@ public abstract class DisplayTextService extends GameServiceDefaultImpl
 	}
 
 	/**
-	 * The {@link DisplayTextService} (an per default also it's successors) is
+	 * The {@link DisplayPlainTextService} (an per default also it's successors) is
 	 * essential and will always be drawn. No matter if an other
 	 * {@link GameService} has frozen the world.
 	 * 

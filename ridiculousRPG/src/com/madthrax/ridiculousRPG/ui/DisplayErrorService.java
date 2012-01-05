@@ -29,7 +29,7 @@ import com.madthrax.ridiculousRPG.service.Computable;
  * 
  * @author Alexander Baumgartner
  */
-public class DisplayErrorService extends DisplayTextService implements
+public class DisplayErrorService extends DisplayPlainTextService implements
 		Computable {
 	private float displayTime = 10f;
 	private String msg;

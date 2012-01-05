@@ -28,7 +28,7 @@ import com.madthrax.ridiculousRPG.service.Computable;
  * 
  * @author Alexander Baumgartner
  */
-public class DisplayFPSService extends DisplayTextService implements Computable {
+public class DisplayFPSService extends DisplayPlainTextService implements Computable {
 	private float colorBits;
 	private Alignment horiAlign, vertAlign;
 	private int oldFPS;
