@@ -36,7 +36,7 @@ $.serviceProvider.putService("weather", new ridiculousRPG.animation.WeatherEffec
 //Add the MultimediaService to the service provider
 $.serviceProvider.putService("map", new ridiculousRPG.map.MapRenderService());
 //Add the MultimediaService to the service provider
-$.serviceProvider.putService("video", new ridiculousRPG.video.MultimediaService());
+$.serviceProvider.putService("video", new ridiculousRPG.video.MultimediaService(ridiculousRPG.video.CortadoPlayerAppletWrapper));
 
 initMenu($.serviceProvider.getService("menu"));
 

@@ -30,19 +30,19 @@ import com.madthrax.ridiculousRPG.pixelwrap.GraphicsPixmapWrapper;
 
 /**
  * This is a highly optimized subclass of {@link GraphicsPixmapWrapper} for
- * playing videos with the Cortado player.
+ * playing videos with are in ARGB format and use integer pixels.
  * 
  * @author Alexander Baumgartner
  */
-public class CortadoPixmapWrapper extends GraphicsPixmapWrapper implements
+public class VideoARGBintPixmapWrapper extends GraphicsPixmapWrapper implements
 		ImageConsumer {
 
-	private CortadoPixmap pixmap;
+	private ARGBintPixmap pixmap;
 	private IntBuffer intPixelBuffer;
 	private boolean ready = false;
 	private long lastFrameReceived;
 
-	public CortadoPixmapWrapper() {
+	public VideoARGBintPixmapWrapper() {
 	}
 
 	private boolean pushImg(Image img, int x, int y, int width, int height,
@@ -62,8 +62,8 @@ public class CortadoPixmapWrapper extends GraphicsPixmapWrapper implements
 	}
 
 	/**
-	 * Returns true if we have already received some frames and Cortado didn't
-	 * send a frame for more than one second.<br>
+	 * Returns true if we have already received some frames and the video player
+	 * didn't send a frame for more than one second.<br>
 	 * (This should only happen if the stream is broken or ended unexpected)
 	 * 
 	 * @param paused
@@ -111,7 +111,7 @@ public class CortadoPixmapWrapper extends GraphicsPixmapWrapper implements
 		if (pixmap == null || pixmap.getWidth() != width
 				|| pixmap.getHeight() != height) {
 			setSize(width, height);
-			pixmap = new CortadoPixmap(width, height);
+			pixmap = new ARGBintPixmap(width, height);
 			// Yeah - it's ridiculous, but we are able to draw some other stuff
 			// onto the rendered picture before pushing it onto the screen ;)
 			rasterDataBuffer.setPixmap(pixmap).dispose();
@@ -162,10 +162,10 @@ public class CortadoPixmapWrapper extends GraphicsPixmapWrapper implements
 		intPixelBuffer = null;
 	}
 
-	public class CortadoPixmap extends Pixmap {
+	public class ARGBintPixmap extends Pixmap {
 		int lastAlphaAfterShift;
 
-		public CortadoPixmap(int width, int height) {
+		public ARGBintPixmap(int width, int height) {
 			super(Math.max(width, 1), height + 1, Format.RGBA8888);
 			lastAlphaAfterShift = width * height * 4;
 		}

@@ -47,13 +47,14 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
  * @see {@link CortadoPlayerApplet}
  * @author Alexander Baumgartner
  */
-public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
+public class CortadoPlayerAppletWrapper implements AppletStub, Disposable,
+		Videoplayer {
 	private CortadoPlayerApplet player;
 	private boolean playing;
 	private boolean signalReceived;
 	private boolean projectToMap;
 	private Rectangle screenBounds;
-	private CortadoPixmapWrapper graphicsPixmap;
+	private VideoARGBintPixmapWrapper graphicsPixmap;
 	private TextureRegionRef textureRef;
 
 	/**
@@ -90,8 +91,8 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 			placeholder.setColor(0, 0, 0, 1);
 			placeholder.fillRectangle(0, 0, width, height);
 			placeholder.setColor(.7f, .7f, .7f, 1);
-			placeholder.fillCircle(width / 2, height / 2,
-					Math.min(width, height) / 3);
+			placeholder.fillCircle(width / 2, height / 2, Math.min(width,
+					height) / 3);
 			placeholder.setColor(.4f, .4f, .4f, 1);
 			placeholder.drawRectangle(0, 0, width, height);
 			placeholder.drawRectangle(2, 2, width - 4, height - 4);
@@ -102,7 +103,7 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 			textureRef.draw(placeholder);
 			placeholder.dispose();
 		}
-		graphicsPixmap = new CortadoPixmapWrapper();
+		graphicsPixmap = new VideoARGBintPixmapWrapper();
 		player = new CortadoPlayerApplet(this, graphicsPixmap);
 		initPlayer();
 		player.setParam("url", url.toString());
@@ -127,9 +128,6 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 		player.setParam("keepAspect", "false");
 	}
 
-	/**
-	 * Starts the video (and audio) playback
-	 */
 	public void play() {
 		player.doPlay();
 		playing = true;
@@ -141,16 +139,10 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 		return playing;
 	}
 
-	/**
-	 * Pauses or resumes the playback
-	 */
 	public void pause() {
 		player.doPause();
 	}
 
-	/**
-	 * Stops the video (and audio) playback
-	 */
 	public void stop() {
 		playing = false;
 		player.doStop();
@@ -235,15 +227,10 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 		return true;
 	}
 
-	/**
-	 * Estimates it the end of the stream is reached
-	 * @param timeout
-	 *            Timeout in milliseconds to switch into EOS state
-	 * @return
-	 */
 	public boolean estimateEOS(long timeout) {
 		return graphicsPixmap.streamStoped(player.paused, timeout);
 	}
+
 	public void draw(SpriteBatch spriteBatch, boolean debug) {
 		if (graphicsPixmap.isReady()) {
 			signalReceived = true;
@@ -277,7 +264,7 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable {
 			w *= gb.getScreen().width;
 			h *= gb.getScreen().height;
 		}
-		spriteBatch.draw(tRef, x,y,w,h);
+		spriteBatch.draw(tRef, x, y, w, h);
 	}
 
 	public boolean isSignalReceived() {

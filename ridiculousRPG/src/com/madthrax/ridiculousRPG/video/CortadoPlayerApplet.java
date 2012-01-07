@@ -54,7 +54,7 @@ public class CortadoPlayerApplet extends Cortado {
 	 * {@link CortadoPlayerAppletWrapper#CortadoPlayerAppletWrapper(URL, com.badlogic.gdx.math.Rectangle, boolean, boolean)
 	 * instead!
 	 */
-	public CortadoPlayerApplet(CortadoPlayerAppletWrapper stub,
+	public CortadoPlayerApplet(Videoplayer stub,
 			Graphics graphics) {
 		this.graphics = graphics;
 	}

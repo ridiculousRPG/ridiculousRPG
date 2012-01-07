@@ -16,6 +16,7 @@
 
 package com.madthrax.ridiculousRPG.video;
 
+import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -46,7 +47,8 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
  */
 public class MultimediaService extends GameServiceDefaultImpl implements
 		Drawable {
-	private CortadoPlayerAppletWrapper player;
+	private Constructor<Videoplayer> cPlayer;
+	private Videoplayer player;
 	private boolean playing;
 	private boolean projectToMap;
 	private boolean loop;
@@ -58,6 +60,20 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 	 * Default = 1000
 	 */
 	public static long EOS_TIMEOUT_MILLIS = 1000;
+
+	/**
+	 * The MultimediaService needs the type to create the player
+	 * 
+	 * @param cPlayer
+	 *            The class to create the player
+	 * @throws NoSuchMethodException
+	 * @throws SecurityException
+	 */
+	public MultimediaService(Class<Videoplayer> cPlayer)
+			throws SecurityException, NoSuchMethodException {
+		this.cPlayer = cPlayer.getConstructor(URL.class, Rectangle.class,
+				boolean.class, boolean.class, boolean.class);
+	}
 
 	/**
 	 * Plays the (ogg-theora) video in full screen exclusive mode WITHOUT
@@ -202,14 +218,18 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 						true)) {
 			if (playing)
 				player.dispose();
-			player = new CortadoPlayerAppletWrapper(url, bounds, projectToMap,
-					withAudio, !freezeTheWorld && projectToMap);
-			player.play();
-			this.playing = true;
-			this.loop = loop;
-			this.playTime = playTime;
-			this.position = 0;
-			this.projectToMap = projectToMap;
+			try {
+				player = cPlayer.newInstance(url, bounds, projectToMap,
+						withAudio, !freezeTheWorld && projectToMap);
+				player.play();
+				this.playing = true;
+				this.loop = loop;
+				this.playTime = playTime;
+				this.position = 0;
+				this.projectToMap = projectToMap;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
