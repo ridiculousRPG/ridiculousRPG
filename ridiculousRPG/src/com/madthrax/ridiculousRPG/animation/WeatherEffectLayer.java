@@ -380,7 +380,7 @@ public class WeatherEffectLayer extends EffectLayer {
 			return;
 		}
 
-		float deltaSpeed = deltaTime * 100;
+		float deltaSpeed = deltaTime * 100f;
 		randomWindCountTile += deltaTime;
 		randomWindCountAll += deltaTime;
 
@@ -411,8 +411,8 @@ public class WeatherEffectLayer extends EffectLayer {
 					clip.width = windSpeedMin;
 				else if (clip.width > windSpeedMax)
 					clip.width = windSpeedMax;
-				clip.y -= (effectSpeed + (newRowWindSpeed < 0 ? -clip.width
-						: clip.width) * .4)
+				clip.y -= (effectSpeed + (newRowWindSpeed < 0f ? -clip.width
+						: clip.width) * .4f)
 						* deltaSpeed;
 				clip.x += clip.width * deltaSpeed;
 				yPos += clip.y;
@@ -490,6 +490,7 @@ public class WeatherEffectLayer extends EffectLayer {
 					if (y > y4) {
 						srcY = (int) (y - y4);
 						srcHeight -= srcY;
+						y += y - y4 - srcY;
 					}
 					batch.draw(t, x, y, srcX, srcY, srcWidth, srcHeight);
 				}
