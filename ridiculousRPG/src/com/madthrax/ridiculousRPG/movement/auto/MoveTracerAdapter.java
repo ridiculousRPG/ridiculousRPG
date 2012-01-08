@@ -67,9 +67,9 @@ public class MoveTracerAdapter extends MovementHandler {
 	 * this Movementadapter)
 	 * 
 	 * @param eventToTrace
+	 *            The event to trace
 	 * @param followDistance
-	 * 
-	 * @see MoveTracerAdapter(Movable eventToTrace, float followDistance)
+	 *            The distance to follow the other event
 	 */
 	public static MovementHandler $(Movable eventToTrace, float followDistance) {
 		return new MoveTracerAdapter(eventToTrace, followDistance);
@@ -81,7 +81,8 @@ public class MoveTracerAdapter extends MovementHandler {
 	 * A defaultdistance for following the other event will be computed from the
 	 * touch-bounds of both events.
 	 * 
-	 * @see MoveTracerAdapter(Movable eventToTrace, float followDistance)
+	 * @param eventToTrace
+	 *            The event to trace
 	 */
 	public static MovementHandler $(Movable eventToTrace) {
 		MoveTracerAdapter mta = new MoveTracerAdapter(eventToTrace, 0);
