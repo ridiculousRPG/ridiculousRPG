@@ -48,6 +48,7 @@ public class MoveTracerAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 
 	private Movable eventToTrace;
+	private boolean computeDistance = false;
 	private float followDistance;
 
 	private Deque<Rectangle> movementQueue = new LinkedList<Rectangle>();
@@ -67,6 +68,8 @@ public class MoveTracerAdapter extends MovementHandler {
 	 * 
 	 * @param eventToTrace
 	 * @param followDistance
+	 * 
+	 * @see MoveTracerAdapter(Movable eventToTrace, float followDistance)
 	 */
 	public static MovementHandler $(Movable eventToTrace, float followDistance) {
 		return new MoveTracerAdapter(eventToTrace, followDistance);
@@ -80,17 +83,20 @@ public class MoveTracerAdapter extends MovementHandler {
 	 * 
 	 * @see MoveTracerAdapter(Movable eventToTrace, float followDistance)
 	 */
-	public static MovementHandler $(Movable eventToTrace, Movable followingEvent) {
-		float followDistance = eventToTrace.getWidth()
-				+ eventToTrace.getHeight() + followingEvent.getWidth()
-				+ followingEvent.getHeight();
-		followDistance /= 2.5f;
-
-		return $(eventToTrace, followDistance);
+	public static MovementHandler $(Movable eventToTrace) {
+		MoveTracerAdapter mta = new MoveTracerAdapter(eventToTrace, 0);
+		mta.computeDistance = true;
+		return mta;
 	}
 
 	@Override
 	public void tryMove(Movable event, float deltaTime) {
+		if (computeDistance) {
+			followDistance = eventToTrace.getWidth() + eventToTrace.getHeight()
+					+ event.getWidth() + event.getHeight();
+			followDistance /= 2.5f;
+			computeDistance = false;
+		}
 		Rectangle actualMove = eventToTrace.getTouchBound();
 		if (movementQueue.isEmpty()) {
 			movementQueue.offer(new Rectangle(actualMove));
