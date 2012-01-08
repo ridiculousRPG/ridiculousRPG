@@ -478,6 +478,11 @@
     <property name="height" value="100"/>
    </properties>
   </tile>
+  <tile id="24">
+   <properties>
+    <property name="height" value="100"/>
+   </properties>
+  </tile>
   <tile id="33">
    <properties>
     <property name="height" value="100"/>
