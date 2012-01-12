@@ -78,7 +78,7 @@ public class MoveTracerAdapter extends MovementHandler {
 	/**
 	 * <h1>ATTENTION!!!</h1> Use a none-blocking {@link #eventToTrace} otherwise
 	 * the follower could be shaken off or the events could block mutually.<br>
-	 * A defaultdistance for following the other event will be computed from the
+	 * A default distance for following the other event will be computed from the
 	 * touch-bounds of both events.
 	 * 
 	 * @param eventToTrace
