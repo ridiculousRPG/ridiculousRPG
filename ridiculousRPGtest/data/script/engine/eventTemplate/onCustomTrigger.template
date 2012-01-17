@@ -1,0 +1,5 @@
+function onCustomTrigger(eventSelf, triggerId, eventState) {
+  #codeLine#;
+  #codeLine#;
+  return true;
+}

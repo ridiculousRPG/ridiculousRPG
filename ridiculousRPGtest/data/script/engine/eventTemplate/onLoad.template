@@ -1,0 +1,4 @@
+function onLoad(eventSelf, eventState) {
+  #codeLine#;
+  #codeLine#;
+}

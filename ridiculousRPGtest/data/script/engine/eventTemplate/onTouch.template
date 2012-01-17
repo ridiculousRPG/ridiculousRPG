@@ -1,0 +1,5 @@
+function onTouch(eventSelf, eventTrigger, eventState) {
+  #codeLine#;
+  #codeLine#;
+  return true;
+}

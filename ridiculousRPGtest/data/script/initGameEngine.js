@@ -12,7 +12,7 @@
 // After this two step we can use all the convenience shortcuts and
 // methods defined in global scope.
 scriptFactory = Packages.com.madthrax.ridiculousRPG.GameBase.$scriptFactory();
-scriptFactory.evalAllGlobalScripts("data/scripts/global", false);
+scriptFactory.evalAllGlobalScripts("data/script/global", false);
 
 //It's highly recommended to comment this line out for production release.
 new ridiculousRPG.map.OnChangeMapPacker("work/map", "data/map").packOnChange();
@@ -41,28 +41,28 @@ $.serviceProvider.putService("video", new ridiculousRPG.video.MultimediaService(
 initMenu($.serviceProvider.getService("menu"));
 
 function initMenu(menu) {
-	var execScript = internalFile("data/scripts/engine/menu/titleMenu.js");
+	var execScript = internalFile("data/script/engine/menu/titleMenu.js");
 	var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, true, true);
 	handler.background = ridiculousRPG.TextureRegionLoader.load("data/image/Title.png");
 	menu.putStateHandler(MENU_STATE_TITLE, handler);
 
-	var execScript = internalFile("data/scripts/engine/menu/gameoverMenu.js");
+	var execScript = internalFile("data/script/engine/menu/gameoverMenu.js");
 	var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, true, true);
 	handler.background = ridiculousRPG.TextureRegionLoader.load("data/image/GameOver.png");
 	menu.putStateHandler(MENU_STATE_GAMEOVER, handler);
 
-	var execScript = internalFile("data/scripts/engine/menu/gameMenu.js");
+	var execScript = internalFile("data/script/engine/menu/gameMenu.js");
 	var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, false, true);
 	menu.putStateHandler(MENU_STATE_GAME, handler);
 
-	var execScript = internalFile("data/scripts/engine/menu/idleMenu.js");
+	var execScript = internalFile("data/script/engine/menu/idleMenu.js");
 	var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, false, false, true);
 	menu.putStateHandler(MENU_STATE_IDLE, handler);
 
-	var execScript = internalFile("data/scripts/engine/menu/pauseMenu.js");
+	var execScript = internalFile("data/script/engine/menu/pauseMenu.js");
 	var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, false, true);
 	menu.putStateHandler(MENU_STATE_PAUSE, handler);
 
-	menu.setStartNewGameScript("data/scripts/game/startNewGame.js");
+	menu.setStartNewGameScript("data/script/game/startNewGame.js");
 	menu.changeState(MENU_STATE_TITLE);
 }

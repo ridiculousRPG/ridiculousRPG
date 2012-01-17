@@ -1,0 +1,5 @@
+function onTimer(eventSelf, deltaTime, eventState) {
+  #codeLine#;
+  #codeLine#;
+  return false;
+}

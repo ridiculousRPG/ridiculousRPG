@@ -1,0 +1,5 @@
+function onPush(eventSelf, eventTrigger, eventState) {
+  #codeLine#;
+  #codeLine#;
+  return true;
+}
