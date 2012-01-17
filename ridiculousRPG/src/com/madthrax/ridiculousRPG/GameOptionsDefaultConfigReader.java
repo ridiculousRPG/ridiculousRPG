@@ -97,7 +97,17 @@ public class GameOptionsDefaultConfigReader {
 
 			propTmp = props.getProperty("ENCODING");
 			if (propTmp != null && propTmp.trim().length() > 0) {
-				options.encoding = propTmp;
+				options.encoding = propTmp.trim();
+			}
+
+			propTmp = props.getProperty("SCRIPT_LANGUAGE");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				options.scriptLanguage = propTmp.trim();
+			}
+
+			propTmp = props.getProperty("SCRIPT_EXTENSIONS");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				options.scriptFileExtension = propTmp.trim().split("\\s*,\\s*");
 			}
 
 			propTmp = props.getProperty("SCRIPT_FACTORY");
@@ -106,6 +116,8 @@ public class GameOptionsDefaultConfigReader {
 						.forName(propTmp.trim()).getConstructor())
 						.newInstance();
 			}
+			options.scriptFactory.setScriptLanguage(options.scriptLanguage);
+			options.scriptFactory.setScriptFileExtension(options.scriptFileExtension);
 
 			propTmp = props.getProperty("INIT_SCRIPT");
 			if (propTmp != null && propTmp.trim().length() > 0) {

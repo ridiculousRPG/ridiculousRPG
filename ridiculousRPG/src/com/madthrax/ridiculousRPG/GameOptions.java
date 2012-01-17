@@ -16,7 +16,6 @@
 
 package com.madthrax.ridiculousRPG;
 
-
 /**
  * This class is used to define the initial values for your game.
  * 
@@ -27,6 +26,7 @@ public class GameOptions {
 		LWJGL, JOGL
 		// , ANDROID, APPLET, ANGLE, GWT
 	}
+
 	public Backend backend = Backend.LWJGL;
 	public String title = "Game running";
 	public String encoding = "UTF-8";
@@ -37,9 +37,16 @@ public class GameOptions {
 	public boolean vSyncEnabled = false;
 	public boolean debug = false;
 	public ScriptFactory scriptFactory = new ScriptFactory();
-	public String initScript = "data/scripts/initGameEngine.js";
+	public String scriptLanguage = "JavaScript";
+	public String[] scriptFileExtension = { ".js", ".jscript" };
+	public String initScript = "data/script/initGameEngine.js";
 	public String uiSkinNormalConfig = "data/uiskin/skinNormal.json";
 	public String uiSkinNormalImage = "data/uiskin/skinNormal.png";
 	public String uiSkinFocusConfig = "data/uiskin/skinFocus.json";
 	public String uiSkinFocusImage = "data/uiskin/skinFocus.png";
+	public String eventCustomTriggerTemplate = "data/script/engine/eventTemplate/onCustomTrigger.template";
+	public String eventLoadTemplate = "data/script/engine/eventTemplate/onLoad.template";
+	public String eventPushTemplate = "data/script/engine/eventTemplate/onPush.template";
+	public String eventTimerTemplate = "data/script/engine/eventTemplate/onTimer.template";
+	public String eventTouchTemplate = "data/script/engine/eventTemplate/onTouch.template";
 }

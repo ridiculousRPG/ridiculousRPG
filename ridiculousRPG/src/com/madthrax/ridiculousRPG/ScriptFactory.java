@@ -26,7 +26,6 @@ import javax.script.ScriptException;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.SortedIntList;
 
 /**
  * This class loads global scripts and generates new script engines.<br>
@@ -37,6 +36,9 @@ import com.badlogic.gdx.utils.SortedIntList;
  */
 public class ScriptFactory {
 	private final ScriptEngineManager ENGINE_FACTORY = new ScriptEngineManager();
+	private String scriptLanguage;
+	private String[] scriptFileExtension;
+	private static final String TEMPLATE_LINE_MARK = "#codeLine#";
 
 	public void init(String initScript) {
 		evalAllScripts(obtainEngine(), GameBase.$options().initScript, false);
@@ -64,8 +66,8 @@ public class ScriptFactory {
 		ScriptEngine scriptEngine = ENGINE_FACTORY
 				.getEngineByName(getScriptLanguage());
 		scriptEngine.put("$scriptEngine", scriptEngine);
-		return evalAllScripts(scriptEngine, path, recurse, ENGINE_FACTORY
-				.getBindings());
+		return evalAllScripts(scriptEngine, path, recurse,
+				ENGINE_FACTORY.getBindings());
 	}
 
 	/**
@@ -162,9 +164,9 @@ public class ScriptFactory {
 	 *         {@link #getAllowedSuffix()}
 	 */
 	public boolean hasAllowedSuffix(FileHandle file) {
-		String suffix = file.extension();
-		for (String allowed : getAllowedSuffix()) {
-			if (suffix.equalsIgnoreCase(allowed)) {
+		String nameLC = file.name().toLowerCase();
+		for (String allowedSuffix : getScriptFileExtension()) {
+			if (nameLC.endsWith(allowedSuffix)) {
 				return true;
 			}
 		}
@@ -206,72 +208,28 @@ public class ScriptFactory {
 	}
 
 	/**
-	 * Override this method if you want an other script language.<br>
-	 * The script engine has to support invocation by implementing the interface
-	 * {@link Invocable}<br>
-	 * Maybe you also need to override {@link #getAllowedSuffix()}
-	 * {@link #createFunction(SortedIntList, String, String)}
+	 * This method merges the given code lines into the script function
+	 * template.
 	 * 
-	 * @return The script language used by this script interpreter.
-	 */
-	public String getScriptLanguage() {
-		return "JavaScript";
-	}
-
-	/**
-	 * Override this method if you want an other script language.<br>
-	 * The script engine has to support invocation by implementing the interface
-	 * {@link Invocable}<br>
-	 * Maybe you also need to override {@link #getScriptLanguage()}
-	 * {@link #createFunction(SortedIntList, String, String)}
-	 * 
-	 * @return An array of allowed file suffixes. This factory allows
-	 *         &quot;js&quot; and &quot;jscript&quot;.
-	 */
-	public String[] getAllowedSuffix() {
-		return new String[] { "js", "jscript" };
-	}
-
-	/**
-	 * Override this method if you want to generate a function for an other
-	 * script language.<br>
-	 * Don't forget to override {@link #getScriptLanguage()} too.<br>
-	 * 
-	 * @param codeLines
-	 *            The lines of script code sorted by the line number.
-	 * @param fncName
-	 *            The name of the script function.
-	 * @param returnTrueFalseNone
-	 *            True if the function should return true per default. If an
-	 *            event occurred, returning true means that this event has been
-	 *            consumed by the function. In a lot of cases it makes sense to
-	 *            return true.<br>
-	 *            False if the function should return false per default.<br>
-	 *            Null if the function should return nothing per default.
-	 * @param fncParam
-	 *            Specifies the parameters for the function.
 	 * @return A {@link String} with the generated script function
 	 */
-	public String createScriptFunction(SortedMap<Integer, String> codeLines,
-			String fncName, Boolean returnTrueFalseNone, String... fncParam) {
-		StringBuilder script = new StringBuilder();
-		script.append("\nfunction ").append(fncName).append('(');
-		for (int i = 0, len = fncParam.length; i < len; i++) {
-			if (i > 0)
-				script.append(',');
-			script.append(fncParam[i]);
-		}
-		script.append(") {");
+	public String prepareScriptFunction(SortedMap<Integer, String> codeLines,
+			String functionTemplate) {
+		String[] sa = functionTemplate.split(TEMPLATE_LINE_MARK);
+		// estimate length
+		StringBuilder script = new StringBuilder(functionTemplate.length()
+				+ sa[1].length() * codeLines.size() + 100);
+		script.append(sa[0]);
+		boolean lineSeparator = false;
 		for (String line : codeLines.values()) {
-			script.append('\n').append(line).append(';');
+			script.append(line);
+			if (lineSeparator) {
+				script.append(sa[1]);
+			} else {
+				lineSeparator = true;
+			}
 		}
-		if (returnTrueFalseNone != null) {
-			if (returnTrueFalseNone)
-				script.append("\nreturn true;");
-			else
-				script.append("\nreturn false;");
-		}
-		script.append("\n}");
+		script.append(sa[2]);
 		return script.toString();
 	}
 
@@ -303,4 +261,26 @@ public class ScriptFactory {
 		engine.eval(scriptToLoad.toString());
 		return engine;
 	}
+
+	public String getScriptLanguage() {
+		return scriptLanguage;
+	}
+
+	public void setScriptLanguage(String scriptLanguage) {
+		this.scriptLanguage = scriptLanguage;
+	}
+
+	public void setScriptFileExtension(String[] scriptFileExtension) {
+		for (int i = 0; i < scriptFileExtension.length; i++) {
+			scriptFileExtension[i] = scriptFileExtension[i].toLowerCase();
+			if (scriptFileExtension[i].length() == 0)
+				scriptFileExtension[i] = "_NULL_";
+		}
+		this.scriptFileExtension = scriptFileExtension;
+	}
+
+	public String[] getScriptFileExtension() {
+		return scriptFileExtension;
+	}
+
 }

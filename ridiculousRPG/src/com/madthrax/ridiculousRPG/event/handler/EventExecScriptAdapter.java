@@ -26,6 +26,7 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
+import com.badlogic.gdx.Gdx;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.event.EventObject;
@@ -60,9 +61,14 @@ import com.madthrax.ridiculousRPG.map.tiled.TiledMapWithEvents;
 public class EventExecScriptAdapter extends EventAdapter {
 	private static final long serialVersionUID = 1L;
 
-	private boolean push, touch, timer, load, store, customTrigger;
+	private boolean push, touch, timer, load, customTrigger;
 	private static transient ScriptEngine SHARED_ENGINE;
 	private static transient Invocable SHARED_INVOCABLE;
+	private static transient String CUSTOMTRIGGER_TEMPLATE;
+	private static transient String LOAD_TEMPLATE;
+	private static transient String PUSH_TEMPLATE;
+	private static transient String TIMER_TEMPLATE;
+	private static transient String TOUCH_TEMPLATE;
 	private transient Invocable timerEngine;
 	private SortedMap<Integer, String> onPush = new TreeMap<Integer, String>();
 	private SortedMap<Integer, String> onTouch = new TreeMap<Integer, String>();
@@ -75,13 +81,27 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (SHARED_ENGINE == null) {
 			SHARED_ENGINE = GameBase.$scriptFactory().obtainEngine();
 			SHARED_INVOCABLE = (Invocable) SHARED_ENGINE;
+			CUSTOMTRIGGER_TEMPLATE = Gdx.files.internal(
+					GameBase.$options().eventCustomTriggerTemplate).readString(
+					GameBase.$options().encoding);
+			LOAD_TEMPLATE = Gdx.files.internal(
+					GameBase.$options().eventLoadTemplate).readString(
+					GameBase.$options().encoding);
+			PUSH_TEMPLATE = Gdx.files.internal(
+					GameBase.$options().eventPushTemplate).readString(
+					GameBase.$options().encoding);
+			TIMER_TEMPLATE = Gdx.files.internal(
+					GameBase.$options().eventTimerTemplate).readString(
+					GameBase.$options().encoding);
+			TOUCH_TEMPLATE = Gdx.files.internal(
+					GameBase.$options().eventTouchTemplate).readString(
+					GameBase.$options().encoding);
 		}
 		if (timer) {
 			try {
 				timerEngine = GameBase.$scriptFactory().obtainInvocable(
-						GameBase.$scriptFactory().createScriptFunction(onTimer,
-								"timer", false, "eventSelf", "deltaTime",
-								"eventState"));
+						GameBase.$scriptFactory().prepareScriptFunction(
+								onTimer, TIMER_TEMPLATE));
 			} catch (ScriptException e) {
 				throw new RuntimeException(e);
 			}
@@ -94,11 +114,10 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!push)
 			return false;
 		try {
-			SHARED_ENGINE.eval(GameBase.$scriptFactory().createScriptFunction(
-					onPush, "push", true, "eventSelf", "eventTrigger",
-					"eventState"));
-			return (Boolean) SHARED_INVOCABLE.invokeFunction("push", eventSelf,
-					eventTrigger, getActualState());
+			SHARED_ENGINE.eval(GameBase.$scriptFactory().prepareScriptFunction(
+					onPush, PUSH_TEMPLATE));
+			return (Boolean) SHARED_INVOCABLE.invokeFunction("onPush",
+					eventSelf, eventTrigger, getActualState());
 		} catch (NoSuchMethodException e) {
 			// this should never happen
 			throw new AssertionError(e);
@@ -113,10 +132,9 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!touch)
 			return false;
 		try {
-			SHARED_ENGINE.eval(GameBase.$scriptFactory().createScriptFunction(
-					onTouch, "touch", true, "eventSelf", "eventTrigger",
-					"eventState"));
-			return (Boolean) SHARED_INVOCABLE.invokeFunction("touch",
+			SHARED_ENGINE.eval(GameBase.$scriptFactory().prepareScriptFunction(
+					onTouch, TOUCH_TEMPLATE));
+			return (Boolean) SHARED_INVOCABLE.invokeFunction("onTouch",
 					eventSelf, eventTrigger, getActualState());
 		} catch (NoSuchMethodException e) {
 			// this should never happen
@@ -132,7 +150,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!timer)
 			return false;
 		try {
-			return (Boolean) timerEngine.invokeFunction("timer", eventSelf,
+			return (Boolean) timerEngine.invokeFunction("onTimer", eventSelf,
 					deltaTime, getActualState());
 		} catch (NoSuchMethodException e) {
 			// this should never happen
@@ -146,10 +164,9 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!customTrigger)
 			return false;
 		try {
-			SHARED_ENGINE.eval(GameBase.$scriptFactory().createScriptFunction(
-					onCustomTrigger, "customTrigger", true, "eventSelf",
-					"triggerId", "eventState"));
-			return (Boolean) SHARED_INVOCABLE.invokeFunction("customTrigger",
+			SHARED_ENGINE.eval(GameBase.$scriptFactory().prepareScriptFunction(
+					onCustomTrigger, CUSTOMTRIGGER_TEMPLATE));
+			return (Boolean) SHARED_INVOCABLE.invokeFunction("onCustomTrigger",
 					eventSelf, triggerId, getActualState());
 		} catch (NoSuchMethodException e) {
 			// this should never happen
@@ -164,10 +181,10 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!load)
 			return;
 		try {
-			SHARED_ENGINE.eval(GameBase.$scriptFactory().createScriptFunction(
-					onLoad, "load", null, "eventSelf", "eventState"));
-			SHARED_INVOCABLE
-					.invokeFunction("load", eventSelf, getActualState());
+			SHARED_ENGINE.eval(GameBase.$scriptFactory().prepareScriptFunction(
+					onLoad, LOAD_TEMPLATE));
+			SHARED_INVOCABLE.invokeFunction("onLoad", eventSelf,
+					getActualState());
 		} catch (NoSuchMethodException e) {
 			// this should never happen
 			throw new AssertionError(e);
@@ -318,13 +335,13 @@ public class EventExecScriptAdapter extends EventAdapter {
 		this.touch = other.touch;
 		this.timer = other.timer;
 		this.load = other.load;
-		this.store = other.store;
 		this.customTrigger = other.customTrigger;
 		this.onPush = other.onPush;
 		this.onTouch = other.onTouch;
 		this.onTimer = other.onTimer;
 		this.onLoad = other.onLoad;
 		this.onCustomTrigger = other.onCustomTrigger;
+		init();
 	}
 
 	private void writeObject(ObjectOutputStream out) throws IOException {
