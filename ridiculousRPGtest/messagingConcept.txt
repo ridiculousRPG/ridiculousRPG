@@ -1,8 +1,9 @@
-face("filename",x,y,width,height) - set face for conversation
+box(x,y,width,height) - set preferred position, width and height for this conversations message box. (Default = 0,0,screen.width,250)
+face("filename",x,y,width,height) - set face for conversation. (automatically performs a commit if some text is outstanding)
 say("Line of text") - simply some text
 choice("item 1", 1) - one choice with the integer to return on click
-input("default value") - text input
-commit() - print the text and the choices and waits for the result. returns the result (or NULL if no result)
+input("default value",maximum,numberInput) - text or number input. If numberInput is true, only numbers are allowed. Maximum specifies the maximum text length or the maximum value for number input.
+commit() - prints the message box and waits for the result. returns the result (or NULL if no result)
 
 // Example conversation storing the result in a global variable
 ontouch01 : face("filename1",x,y,width,height)
