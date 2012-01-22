@@ -1,4 +1,4 @@
-function onPush(eventSelf, eventTrigger, eventState) {
+function onPush(eventSelf, eventTrigger, eventState, globalState) {
   #codeLine#;
   #codeLine#;
   return true;

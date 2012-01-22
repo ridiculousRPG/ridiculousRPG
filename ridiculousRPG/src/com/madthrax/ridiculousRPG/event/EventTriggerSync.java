@@ -44,14 +44,14 @@ public class EventTriggerSync implements EventTrigger {
 		for (i = 0; i < dynSize && !consumed; i++) {
 			obj1 = dynamicRegions.get(i);
 			consumed = obj1.getEventHandler() != null
-					&& obj1.getEventHandler().timer(obj1, deltaTime);
+					&& obj1.getEventHandler().onTimer(obj1, deltaTime);
 			if (!consumed && obj1.consumeInput) {
 				int tmpSize = obj1.collision.size;
 				for (j = 0; j < tmpSize && !consumed; j++) {
 					obj2 = obj1.collision.get(j);
 					if (obj2.touchable
 							&& !obj1.justTouching.contains(obj2, true)) {
-						consumed = obj2.getEventHandler().touch(obj2, obj1);
+						consumed = obj2.getEventHandler().onTouch(obj2, obj1);
 						if (consumed) {
 							obj1.justTouching.add(obj2);
 						}
@@ -60,7 +60,7 @@ public class EventTriggerSync implements EventTrigger {
 				if (!consumed && actionKeyDown) {
 					for (EventObject pushed : obj1.reachable) {
 						consumed = pushed.pushable
-								&& pushed.getEventHandler().push(pushed, obj1);
+								&& pushed.getEventHandler().onPush(pushed, obj1);
 						if (consumed)
 							break;
 					}

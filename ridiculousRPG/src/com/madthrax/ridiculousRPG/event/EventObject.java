@@ -834,7 +834,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public void init() throws ScriptException {
 		if (eventHandler != null) {
 			eventHandler.init();
-			eventHandler.load(this);
+			eventHandler.onLoad(this);
 		}
 	}
 

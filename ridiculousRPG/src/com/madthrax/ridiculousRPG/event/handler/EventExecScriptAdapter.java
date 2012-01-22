@@ -39,17 +39,21 @@ import com.madthrax.ridiculousRPG.map.tiled.TiledMapWithEvents;
  * All script function names are equivalent to the corresponding method names
  * and also the parameter names are equivalent to the corresponding methods
  * parameter names (see javadoc or java code). Additionally to this parameters,
- * one more parameter is passed to the script.<br>
- * This additional parameter is named eventState and holds the corresponding
- * events {@link ObjectState}.<br>
+ * two more parameters are passed to the script.<br>
+ * The first additional parameter is named eventState and holds the
+ * corresponding events {@link ObjectState}.<br>
+ * The second additional parameter is named globalState and holds the global
+ * shared {@link ObjectState}.<br>
  * <br>
  * 
- * For example, the script function touch has the following 3 parameters:<br>
+ * For example, the script function touch has the following 4 parameters:<br>
  * <ol>
  * <li>eventSelf = This {@link EventObject}</li>
  * <li>eventTrigger = The {@link EventObject} which touched this
  * {@link EventObject}</li>
  * <li>eventState = {@link #getActualState()} - The corresponding events
+ * {@link ObjectState}</li>
+ * <li>globalState = {@link GameBase#getGlobalState()} - The global shared
  * {@link ObjectState}</li>
  * </ol>
  * 
@@ -109,7 +113,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 	}
 
 	@Override
-	public boolean push(EventObject eventSelf, EventObject eventTrigger)
+	public boolean onPush(EventObject eventSelf, EventObject eventTrigger)
 			throws ScriptException {
 		if (!push)
 			return false;
@@ -127,7 +131,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 	}
 
 	@Override
-	public boolean touch(EventObject eventSelf, EventObject eventTrigger)
+	public boolean onTouch(EventObject eventSelf, EventObject eventTrigger)
 			throws ScriptException {
 		if (!touch)
 			return false;
@@ -145,7 +149,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 	}
 
 	@Override
-	public boolean timer(EventObject eventSelf, float deltaTime)
+	public boolean onTimer(EventObject eventSelf, float deltaTime)
 			throws ScriptException {
 		if (!timer)
 			return false;
@@ -159,7 +163,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 	}
 
 	@Override
-	public boolean customTrigger(EventObject eventSelf, int triggerId)
+	public boolean onCustomTrigger(EventObject eventSelf, int triggerId)
 			throws ScriptException {
 		if (!customTrigger)
 			return false;
@@ -177,7 +181,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 	}
 
 	@Override
-	public void load(EventObject eventSelf) throws ScriptException {
+	public void onLoad(EventObject eventSelf) throws ScriptException {
 		if (!load)
 			return;
 		try {

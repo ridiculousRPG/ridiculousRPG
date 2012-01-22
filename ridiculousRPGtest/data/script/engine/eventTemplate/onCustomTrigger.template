@@ -1,4 +1,4 @@
-function onCustomTrigger(eventSelf, triggerId, eventState) {
+function onCustomTrigger(eventSelf, triggerId, eventState, globalState) {
   #codeLine#;
   #codeLine#;
   return true;

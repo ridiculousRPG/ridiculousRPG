@@ -40,7 +40,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 *            The event which triggered this touch (most likely the player)
 	 * @return true if the input has been consumed
 	 */
-	public boolean touch(EventObject eventSelf, EventObject eventTrigger)
+	public boolean onTouch(EventObject eventSelf, EventObject eventTrigger)
 			throws ScriptException;
 
 	/**
@@ -53,7 +53,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 *            The event which triggered this push (most likely the player)
 	 * @return true if the input has been consumed
 	 */
-	public boolean push(EventObject eventSelf, EventObject eventTrigger)
+	public boolean onPush(EventObject eventSelf, EventObject eventTrigger)
 			throws ScriptException;
 
 	/**
@@ -68,7 +68,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 * @return true if the input has been consumed
 	 * @see #getActualState()
 	 */
-	public boolean timer(EventObject eventSelf, float deltaTime)
+	public boolean onTimer(EventObject eventSelf, float deltaTime)
 			throws ScriptException;
 
 	/**
@@ -82,7 +82,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 * @return true if the custom event ate up this triggerId
 	 * @see #getActualState()
 	 */
-	public boolean customTrigger(EventObject eventSelf, int triggerId)
+	public boolean onCustomTrigger(EventObject eventSelf, int triggerId)
 			throws ScriptException;
 
 	/**
@@ -103,7 +103,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 * 
 	 * @param eventSelf
 	 */
-	public void load(EventObject eventSelf) throws ScriptException;
+	public void onLoad(EventObject eventSelf) throws ScriptException;
 
 	/**
 	 * Initializes the event handler. For example compiles (and executes

@@ -79,14 +79,14 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 		for (i = 0; i < dynSize && !consumed && !disposed; i++) {
 			obj1 = dynamicRegions.get(i);
 			consumed = obj1.getEventHandler() != null
-					&& obj1.getEventHandler().timer(obj1, deltaTime);
+					&& obj1.getEventHandler().onTimer(obj1, deltaTime);
 			if (!consumed && obj1.consumeInput) {
 				int tmpSize = obj1.collision.size;
 				for (j = 0; j < tmpSize && !consumed && !disposed; j++) {
 					obj2 = obj1.collision.get(j);
 					if (obj2.touchable
 							&& !obj1.justTouching.contains(obj2, true)) {
-						consumed = obj2.getEventHandler().touch(obj2, obj1);
+						consumed = obj2.getEventHandler().onTouch(obj2, obj1);
 						if (consumed) {
 							obj1.justTouching.add(obj2);
 						}
@@ -97,7 +97,7 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 					for (j = 0; j < tmpSize && !consumed && !disposed; j++) {
 						obj2 = obj1.reachable.get(j);
 						consumed = obj2.pushable
-								&& obj2.getEventHandler().push(obj2, obj1);
+								&& obj2.getEventHandler().onPush(obj2, obj1);
 					}
 				}
 			}

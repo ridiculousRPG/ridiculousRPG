@@ -1,4 +1,4 @@
-function onTouch(eventSelf, eventTrigger, eventState) {
+function onTouch(eventSelf, eventTrigger, eventState, globalState) {
   #codeLine#;
   #codeLine#;
   return true;

@@ -1,0 +1,14 @@
+face("filename",x,y,width,height) - set face for conversation
+say("Line of text") - simply some text
+choice("item 1", 1) - one choice with the integer to return on click
+input("default value") - text input
+commit() - print the text and the choices and waits for the result. returns the result (or NULL if no result)
+
+// Example conversation storing the result in a global variable
+ontouch01 : face("filename1",x,y,width,height)
+ontouch02 : say("Which item do you want?")
+ontouch03 : face("filename2",x,y,width,height)
+ontouch04 : choice("Item 1", 1)
+ontouch05 : choice("Item 2", 2)
+ontouch06 : choiceResult1 = commit()
+ontouch07 : globalState.setInt(1, choiceResult1)

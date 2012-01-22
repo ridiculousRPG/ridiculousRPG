@@ -1,4 +1,4 @@
-function onTimer(eventSelf, deltaTime, eventState) {
+function onTimer(eventSelf, deltaTime, eventState, globalState) {
   #codeLine#;
   #codeLine#;
   return false;

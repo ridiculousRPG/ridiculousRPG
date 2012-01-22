@@ -30,7 +30,7 @@ public class EventSayAdapter extends EventAdapter {
 	public boolean touchPerformed;
 
 	@Override
-	public boolean push(EventObject eventSelf, EventObject pushedBy) {
+	public boolean onPush(EventObject eventSelf, EventObject pushedBy) {
 		if (sayOnPush != null) {
 			// TODO: show textbox
 			System.out.println(sayOnPush);
@@ -40,7 +40,7 @@ public class EventSayAdapter extends EventAdapter {
 	}
 
 	@Override
-	public boolean touch(EventObject eventSelf, EventObject pushedBy) {
+	public boolean onTouch(EventObject eventSelf, EventObject pushedBy) {
 		if (!touchPerformed && sayOnTouch != null) {
 			// TODO: show textbox
 			System.out.println(sayOnTouch);

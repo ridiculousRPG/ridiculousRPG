@@ -32,26 +32,26 @@ public class EventAdapter implements EventHandler {
 
 	private ObjectState myState = new ObjectState();
 
-	public boolean touch(EventObject eventSelf, EventObject eventTrigger)
+	public boolean onTouch(EventObject eventSelf, EventObject eventTrigger)
 			throws ScriptException {
 		return false;
 	}
 
-	public boolean push(EventObject eventSelf, EventObject eventTrigger)
+	public boolean onPush(EventObject eventSelf, EventObject eventTrigger)
 			throws ScriptException {
 		System.out.println("push " + eventSelf.name);
 		return false;
 	}
 
-	public void load(EventObject eventSelf) throws ScriptException {
+	public void onLoad(EventObject eventSelf) throws ScriptException {
 	}
 
-	public boolean customTrigger(EventObject eventSelf, int triggerId)
+	public boolean onCustomTrigger(EventObject eventSelf, int triggerId)
 			throws ScriptException {
 		return false;
 	}
 
-	public boolean timer(EventObject eventSelf, float deltaTime)
+	public boolean onTimer(EventObject eventSelf, float deltaTime)
 			throws ScriptException {
 		return false;
 	}
