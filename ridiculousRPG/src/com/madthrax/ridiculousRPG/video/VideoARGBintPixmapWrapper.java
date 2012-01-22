@@ -30,7 +30,7 @@ import com.madthrax.ridiculousRPG.pixelwrap.GraphicsPixmapWrapper;
 
 /**
  * This is a highly optimized subclass of {@link GraphicsPixmapWrapper} for
- * playing videos with are in ARGB format and use integer pixels.
+ * playing videos which are in ARGB format and use integer pixels.
  * 
  * @author Alexander Baumgartner
  */

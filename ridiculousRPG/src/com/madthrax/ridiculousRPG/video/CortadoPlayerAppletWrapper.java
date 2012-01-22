@@ -104,7 +104,7 @@ public class CortadoPlayerAppletWrapper implements AppletStub, Disposable,
 			placeholder.dispose();
 		}
 		graphicsPixmap = new VideoARGBintPixmapWrapper();
-		player = new CortadoPlayerApplet(this, graphicsPixmap);
+		player = new CortadoPlayerApplet(graphicsPixmap);
 		initPlayer();
 		player.setParam("url", url.toString());
 		player.setParam("audio", String.valueOf(withAudio));

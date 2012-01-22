@@ -41,11 +41,6 @@ import com.fluendo.player.Cortado;
 public class CortadoPlayerApplet extends Cortado {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * You may set this to false on startup if there are problems with this
-	 * creepy shutdown hack.
-	 */
-	public static boolean shutdownCortadoHook = true;
 	private Graphics graphics;
 
 	/**
@@ -54,8 +49,7 @@ public class CortadoPlayerApplet extends Cortado {
 	 * {@link CortadoPlayerAppletWrapper#CortadoPlayerAppletWrapper(URL, com.badlogic.gdx.math.Rectangle, boolean, boolean)
 	 * instead!
 	 */
-	public CortadoPlayerApplet(Videoplayer stub,
-			Graphics graphics) {
+	public CortadoPlayerApplet(Graphics graphics) {
 		this.graphics = graphics;
 	}
 
