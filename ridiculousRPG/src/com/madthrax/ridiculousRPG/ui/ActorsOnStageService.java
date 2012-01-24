@@ -111,7 +111,13 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
 		getCamera().update();
-		super.root.draw(spriteBatch, 1f);
+		try {
+			// draw onto OUR spriteBatch!!!
+			getRoot().draw(spriteBatch, 1f);
+		} catch (RuntimeException e) {
+			clear();
+			throw e;
+		}
 	}
 
 	public Matrix4 projectionMatrix(Camera camera) {

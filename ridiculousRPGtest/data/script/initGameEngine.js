@@ -31,6 +31,8 @@ $.serviceProvider.putService("toggleDebug", new ridiculousRPG.misc.ToggleDebugMo
 $.serviceProvider.putService("displayFPS", new ridiculousRPG.ui.DisplayFPSService());
 //Add the StandardMenuService to the service provider
 $.serviceProvider.putService("menu", new ridiculousRPG.ui.StandardMenuService());
+//Add the StandardMenuService to the service provider
+$.serviceProvider.putService("messaging", new ridiculousRPG.ui.MessagingService());
 //Add the MapRenderService to the service provider
 $.serviceProvider.putService("weather", new ridiculousRPG.animation.WeatherEffectService());
 //Add the MultimediaService to the service provider

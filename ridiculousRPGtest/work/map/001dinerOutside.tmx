@@ -305,6 +305,7 @@
     <property name="animation" value="data/charset/Daisy.png"/>
     <property name="blocking" value="PASSES_LOW_BARRIER"/>
     <property name="speed" value="S07_NORMAL"/>
+    <property name="ontouch" value="say('test')"/>
    </properties>
   </object>
  </objectgroup>

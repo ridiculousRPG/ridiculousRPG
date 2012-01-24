@@ -516,6 +516,16 @@ public class GameServiceProvider {
 	}
 
 	void drawAll(boolean debug) {
+		try {
+			drawAllInternal(debug);
+		} catch (Exception e) {
+			// after an exception while drawing, spriteBatch has an undefined state,
+			// that's why we throw it away and create a new one.
+			e.printStackTrace();
+			GameBase.$().rebuildSpriteBatch();
+		}
+	}
+	void drawAllInternal(boolean debug) {
 		// clear the screen
 		Gdx.gl.glClearColor(GameBase.$().getBackgroundColor().r, GameBase.$()
 				.getBackgroundColor().g, GameBase.$().getBackgroundColor().b,

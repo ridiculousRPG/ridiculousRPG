@@ -5,6 +5,8 @@ choice("item 1", 1) - one choice with the integer to return on click
 input("default value",maximum,numberInput) - text or number input. If numberInput is true, only numbers are allowed. Maximum specifies the maximum text length or the maximum value for number input.
 commit() - prints the message box and waits for the result. returns the result (or NULL if no result)
 
+info("Text", "title") - an info box with title, which will disappear automatically
+
 // Example conversation storing the result in a global variable
 ontouch01 : face("filename1",x,y,width,height)
 ontouch02 : say("Which item do you want?")

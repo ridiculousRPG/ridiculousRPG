@@ -84,7 +84,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		glContextThread.add(Thread.currentThread());
 		fullscreen = options.fullscreen;
 		scriptFactory = options.scriptFactory;
-		spriteBatch = new SpriteBatch();
+		rebuildSpriteBatch();
 		camera = new CameraSimpleOrtho2D();
 		globalState = new ObjectState();
 		serviceProvider = new GameServiceProvider();
@@ -110,6 +110,11 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		}
 
 		camera.update();
+	}
+
+	public void rebuildSpriteBatch() {
+		if (spriteBatch!=null) spriteBatch.dispose();
+		spriteBatch = new SpriteBatch();
 	}
 
 	/**
@@ -197,10 +202,6 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			Thread.yield();
 			serviceProvider.drawAll(options.debug);
 		} catch (Exception e) {
-			try {
-				spriteBatch.end();
-			} catch (Exception ignored) {
-			}
 			e.printStackTrace();
 			StringWriter stackTrace = new StringWriter();
 			e.printStackTrace(new PrintWriter(stackTrace));

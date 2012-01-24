@@ -224,7 +224,8 @@ public class WeatherEffectLayer extends EffectLayer {
 	 */
 	@Override
 	public boolean isFinished() {
-		return tileLayer.isEmpty();
+		ArrayList<ArrayList<Rectangle>> tileLayer = this.tileLayer;
+		return tileLayer==null || tileLayer.isEmpty();
 	}
 
 	/**

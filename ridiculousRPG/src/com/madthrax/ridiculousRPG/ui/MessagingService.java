@@ -46,7 +46,8 @@ public class MessagingService extends ActorsOnStageService implements
 
 	@Override
 	public boolean keyUp(int keycode) {
-		return activeState.processInput(keycode, this) || super.keyUp(keycode);
+		return (activeState != null && activeState.processInput(keycode, this))
+				|| super.keyUp(keycode);
 	}
 
 	/**
@@ -138,17 +139,21 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	private void showInfo(final Skin skin, String info) {
-		final Window w = new Window(skin);
-		addActor(w);
+		try {
+			final Window w = new Window(skin);
 
-		w.touchable = false;
-		w.color.a = .1f;
-		w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f), Remove
-				.$()));
-		w.add(new Label(info, skin));
+			w.touchable = false;
+			w.color.a = .1f;
+			w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f),
+					Remove.$()));
+			w.add(new Label(info, skin));
 
-		w.pack();
-		center(w);
+			w.pack();
+			center(w);
+			addActor(w);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
