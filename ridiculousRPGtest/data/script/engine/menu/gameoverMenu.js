@@ -21,7 +21,6 @@ function processInput(keycode, menu) {
 function createGui(menu) {
 	var skin = menu.skinNormal;
 	var w = new ui.Window("Game over", skin);
-	menu.addGUIcomponent(w);
 
 	var resume = new ui.TextButton("Continue at last save point", skin);
 	resume.clickListener = new ui.ClickListener() {
@@ -62,5 +61,6 @@ function createGui(menu) {
 
 	w.pack();
 	menu.center(w);
+	menu.addGUIcomponent(w);
 	menu.focus(resume);
 }

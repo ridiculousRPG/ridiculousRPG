@@ -20,7 +20,6 @@ function processInput(keycode, menu) {
 function createGui(menu) {
 	var skin = menu.skinNormal;
 	var w = new ui.Window("Game menu", skin);
-	menu.addGUIcomponent(w);
 
 	var resume = new ui.TextButton("Resume (Esc)", skin);
 	resume.clickListener = new ui.ClickListener() {
@@ -81,5 +80,6 @@ function createGui(menu) {
 
 	w.pack();
 	w.height = menu.getHeight();
+	menu.addGUIcomponent(w);
 	menu.focus(resume);
 }
