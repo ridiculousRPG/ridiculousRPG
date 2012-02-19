@@ -151,6 +151,8 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	public Object commit() {
+		if (lines.size == 0)
+			return null;
 		try {
 			final Window w = new Window(getSkinNormal());
 

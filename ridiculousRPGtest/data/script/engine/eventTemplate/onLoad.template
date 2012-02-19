@@ -1,4 +1,5 @@
 function onLoad(eventSelf, eventState, globalState) {
   #codeLine#;
   #codeLine#;
+  commit(); // comment this out if you don't want the autocommit
 }
