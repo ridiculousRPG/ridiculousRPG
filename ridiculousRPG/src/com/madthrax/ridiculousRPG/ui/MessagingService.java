@@ -39,12 +39,19 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
 public class MessagingService extends ActorsOnStageService implements
 		ResizeListener {
 
-	private Rectangle boxPosition = new Rectangle();
-	private TextureRegionRef face = null;
-	private String title = null;
+	private Rectangle boxPosition;
+	private TextureRegionRef face;
+	private String title;
+	private float displayInfoTime = 2f;
 	private Array<Message> lines = new Array<Message>();
 	private Array<MessageChoice> choices = new Array<MessageChoice>();
 	private Array<MessageInput> inputs = new Array<MessageInput>();
+
+	public MessagingService() {
+		boxPosition = new Rectangle(0, 0, 0, 200);
+		setCloseOnAction(true);
+		setFadeTime(.15f);
+	}
 
 	public void addGUIcomponent(Object component) {
 		if (component instanceof Actor)
@@ -108,8 +115,8 @@ public class MessagingService extends ActorsOnStageService implements
 
 			w.touchable = false;
 			w.color.a = .1f;
-			w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f),
-					Remove.$()));
+			w.action(Sequence.$(FadeIn.$(getFadeTime()), Delay.$(FadeOut
+					.$(getFadeTime()), displayInfoTime), Remove.$()));
 			w.add(info);
 
 			w.pack();
@@ -161,8 +168,7 @@ public class MessagingService extends ActorsOnStageService implements
 			}
 			w.touchable = false;
 			w.color.a = .1f;
-			w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f),
-					Remove.$()));
+			w.action(Sequence.$(FadeIn.$(getFadeTime())));
 			for (Message line : lines) {
 				w.row().fill(true, false).expand(true, false);
 				w.add(line.getActor());
@@ -215,9 +221,12 @@ public class MessagingService extends ActorsOnStageService implements
 		return null;
 	}
 
-	@Override
-	public void dispose() {
-		super.dispose();
+	public void setDisplayInfoTime(float displayInfoTime) {
+		this.displayInfoTime = displayInfoTime;
+	}
+
+	public float getDisplayInfoTime() {
+		return displayInfoTime;
 	}
 
 	public interface Message {
@@ -255,5 +264,12 @@ public class MessagingService extends ActorsOnStageService implements
 		public Actor getActor() {
 			return new Label(text, getSkinNormal());
 		}
+	}
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		if (face != null)
+			face.dispose();
 	}
 }

@@ -26,6 +26,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.FadeOut;
+import com.badlogic.gdx.scenes.scene2d.actions.Remove;
+import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.Computable;
@@ -39,6 +42,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 		Drawable, Computable {
 	private Skin skinNormal, skinFocused;
 	private boolean closeOnAction;
+	private float fadeTime;
 	private boolean releaseAttention;
 
 	private boolean awaitingKeyUp;
@@ -103,6 +107,21 @@ public class ActorsOnStageService extends Stage implements GameService,
 	 */
 	public void setCloseOnAction(boolean closeOnAction) {
 		this.closeOnAction = closeOnAction;
+	}
+
+	/**
+	 * Sets the fading time which is used if the actors are removed by
+	 * {@link #closeOnAction}. This value is only useful if
+	 * {@link #closeOnAction} is set to true.
+	 * 
+	 * @param fadeTime
+	 *            the fading time when close is requested
+	 */
+	public void setFadeTime(float fadeTime) {
+		this.fadeTime = fadeTime;
+	}
+	public float getFadeTime() {
+		return this.fadeTime;
 	}
 
 	public void compute(float deltaTime, boolean actionKeyDown) {
@@ -257,8 +276,17 @@ public class ActorsOnStageService extends Stage implements GameService,
 	private boolean actionKeyPressed(boolean down) {
 		Actor a = focusedActor;
 		if (a == null) {
-			if (closeOnAction)
-				clear();
+			if (closeOnAction && getActors().size() > 0) {
+				if (fadeTime > 0) {
+					for (Actor a2 : getActors()) {
+						a2.action(Sequence
+								.$(FadeOut.$(fadeTime), Remove.$()));
+					}
+				} else {
+					clear();
+				}
+				return true;
+			}
 		} else {
 			// unfocus if actor is removed
 			if (!ActorFocusUtil.isActorOnStage(a, root)) {
