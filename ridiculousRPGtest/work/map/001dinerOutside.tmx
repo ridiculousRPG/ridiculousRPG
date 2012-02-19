@@ -304,8 +304,23 @@
     <property name="//movehandler" value="data/script/game/moveEvent/player2AutoMove.js"/>
     <property name="animation" value="data/charset/Daisy.png"/>
     <property name="blocking" value="PASSES_LOW_BARRIER"/>
-    <property name="speed" value="S07_NORMAL"/>
     <property name="ontouch" value="say('test')"/>
+    <property name="speed" value="S07_NORMAL"/>
+   </properties>
+  </object>
+  <object x="391" y="358" width="66" height="83">
+   <properties>
+    <property name="blocking" value="NONE"/>
+    <property name="onpush01" value="box(0, 0, 0, 200)"/>
+    <property name="onpush02" value="say('line 1')"/>
+    <property name="onpush03" value="say('line 2')"/>
+    <property name="onpush04" value="title('blub')"/>
+    <property name="onpush05" value="commit()"/>
+    <property name="onpush06" value=""/>
+    <property name="onpush07" value=""/>
+    <property name="onpush08" value=""/>
+    <property name="onpush09" value=""/>
+    <property name="ontouch01" value="info('What\'s that?')"/>
    </properties>
   </object>
  </objectgroup>

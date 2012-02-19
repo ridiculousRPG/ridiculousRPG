@@ -41,6 +41,7 @@ public class MessagingService extends ActorsOnStageService implements
 
 	private Rectangle boxPosition = new Rectangle();
 	private TextureRegionRef face = null;
+	private String title = null;
 	private Array<Message> lines = new Array<Message>();
 	private Array<MessageChoice> choices = new Array<MessageChoice>();
 	private Array<MessageInput> inputs = new Array<MessageInput>();
@@ -119,6 +120,10 @@ public class MessagingService extends ActorsOnStageService implements
 		}
 	}
 
+	public void info(String info) {
+		showInfoNormal(info);
+	}
+
 	public void box(float x, float y, float width, float height) {
 		boxPosition.x = x;
 		boxPosition.y = y;
@@ -127,7 +132,11 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	public Object face() {
-		return null;
+		return commit();
+	}
+
+	public void title(String title) {
+		this.title = title;
 	}
 
 	public void say(String text) {
@@ -145,14 +154,17 @@ public class MessagingService extends ActorsOnStageService implements
 		try {
 			final Window w = new Window(getSkinNormal());
 
+			if (title != null) {
+				w.setTitle(title);
+			}
 			w.touchable = false;
 			w.color.a = .1f;
 			w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f),
 					Remove.$()));
 			for (Message line : lines) {
+				w.row().fill(true, false).expand(true, false);
 				w.add(line.getActor());
 			}
-			w.pack();
 			w.x = boxPosition.x;
 			w.y = boxPosition.y;
 			if (boxPosition.width == 0) {
@@ -195,6 +207,9 @@ public class MessagingService extends ActorsOnStageService implements
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		lines.clear();
+		choices.clear();
+		inputs.clear();
 		return null;
 	}
 

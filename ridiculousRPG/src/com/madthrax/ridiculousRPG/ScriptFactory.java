@@ -222,12 +222,12 @@ public class ScriptFactory {
 		script.append(sa[0]);
 		boolean lineSeparator = false;
 		for (String line : codeLines.values()) {
-			script.append(line);
 			if (lineSeparator) {
 				script.append(sa[1]);
 			} else {
 				lineSeparator = true;
 			}
+			script.append(line);
 		}
 		script.append(sa[2]);
 		return script.toString();
