@@ -27,6 +27,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Array;
+import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.service.ResizeListener;
 
@@ -76,15 +77,21 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	/*
-	box(x,y,width,height) - set preferred position, width and height for this conversations message box. (Default = 0,0,screen.width,250)
-	face("filename",x,y,width,height) - set face for conversation. (automatically performs a commit if some text is outstanding)
-	say("Line of text") - simply some text
-	choice("item 1", 1) - one choice with the integer to return on click
-	input("default value",maximum,numberInput) - text or number input. If numberInput is true, only numbers are allowed. Maximum specifies the maximum text length or the maximum value for number input.
-	commit() - prints the message box and waits for the result. returns the result (or NULL if no result)
-	*/
+	 * box(x,y,width,height) - set preferred position, width and height for this
+	 * conversations message box. (Default = 0,0,screen.width,250)
+	 * face("filename",x,y,width,height) - set face for conversation.
+	 * (automatically performs a commit if some text is outstanding)
+	 * say("Line of text") - simply some text choice("item 1", 1) - one choice
+	 * with the integer to return on click
+	 * input("default value",maximum,numberInput) - text or number input. If
+	 * numberInput is true, only numbers are allowed. Maximum specifies the
+	 * maximum text length or the maximum value for number input. commit() -
+	 * prints the message box and waits for the result. returns the result (or
+	 * NULL if no result)
+	 */
 
-	//info("Text", "title") - an info box with title, which will disappear automatically
+	// info("Text", "title") - an info box with title, which will disappear
+	// automatically
 
 	public void showInfoNormal(String info) {
 		showInfo(getSkinNormal(), info);
@@ -111,23 +118,29 @@ public class MessagingService extends ActorsOnStageService implements
 			e.printStackTrace();
 		}
 	}
-	public void box(float x,float y,float width,float height) {
+
+	public void box(float x, float y, float width, float height) {
 		boxPosition.x = x;
 		boxPosition.y = y;
 		boxPosition.width = width;
 		boxPosition.height = height;
 	}
+
 	public Object face() {
 		return null;
 	}
+
 	public void say(String text) {
 		MessageText msgText = new MessageText(text);
 		lines.add(msgText);
 	}
+
 	public void choice() {
 	}
+
 	public void input() {
 	}
+
 	public Object commit() {
 		try {
 			final Window w = new Window(getSkinNormal());
@@ -140,7 +153,44 @@ public class MessagingService extends ActorsOnStageService implements
 				w.add(line.getActor());
 			}
 			w.pack();
-			center(w);
+			w.x = boxPosition.x;
+			w.y = boxPosition.y;
+			if (boxPosition.width == 0) {
+				// width defined by margin x
+				w.width = GameBase.$().getScreen().width - 2 * w.x;
+			} else if (boxPosition.width < 0) {
+				// bind box at the top edge of the screen
+				if (w.width < -boxPosition.width) {
+					// set preferred width
+					w.width = -boxPosition.width;
+				}
+				w.x = GameBase.$().getScreen().width - w.width - w.x;
+			} else if (w.width < boxPosition.width) {
+				// set preferred width
+				w.width = boxPosition.width;
+			}
+			if (boxPosition.height == 0) {
+				// height defined by margin y
+				w.height = GameBase.$().getScreen().height - 2 * w.y;
+			} else if (boxPosition.height < 0) {
+				// bind box at the right edge of the screen
+				if (w.height < -boxPosition.height) {
+					// set preferred height
+					w.height = -boxPosition.height;
+				}
+				w.y = GameBase.$().getScreen().height - w.height - w.y;
+			} else if (w.height < boxPosition.height) {
+				// set preferred height
+				w.height = boxPosition.height;
+			}
+			if (boxPosition.x < 0) {
+				// center horizontal
+				w.x = (int) (centerX() - w.width * .5f);
+			}
+			if (boxPosition.y < 0) {
+				// center vertical
+				w.y = (int) (centerY() - w.height * .5f);
+			}
 			addActor(w);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -156,6 +206,7 @@ public class MessagingService extends ActorsOnStageService implements
 	public interface Message {
 		public Actor getActor();
 	}
+
 	public class MessageInput implements Message {
 
 		@Override
@@ -165,6 +216,7 @@ public class MessagingService extends ActorsOnStageService implements
 		}
 
 	}
+
 	public class MessageChoice implements Message {
 
 		@Override
@@ -174,11 +226,14 @@ public class MessagingService extends ActorsOnStageService implements
 		}
 
 	}
+
 	public class MessageText implements Message {
-		public String text;
+		private String text;
+
 		public MessageText(String text) {
 			this.text = text;
 		}
+
 		@Override
 		public Actor getActor() {
 			return new Label(text, getSkinNormal());
