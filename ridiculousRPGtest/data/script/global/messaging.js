@@ -18,12 +18,21 @@ function say(text) {
 	$.serviceProvider.getService("messaging").say(text);
 }
 
-function choice() {
-	$.serviceProvider.getService("messaging").choice();
+function choice(text, value) {
+	$.serviceProvider.getService("messaging").choice(text, value);
 }
 
-function input() {
-	$.serviceProvider.getService("messaging").input();
+function inputText(defaultText) {
+	inputAdvanced(defaultText, -1, false, false);
+}
+
+function inputNumber(defaultNumber) {
+	inputAdvanced(defaultNumber, -1, true, false);
+}
+
+function inputAdvanced(text, maximum, numberInput, password) {
+	$.serviceProvider.getService("messaging").input(text, maximum, numberInput,
+			password);
 }
 
 function commit() {

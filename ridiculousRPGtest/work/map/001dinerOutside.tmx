@@ -312,14 +312,16 @@
    <properties>
     <property name="blocking" value="NONE"/>
     <property name="onpush01" value="box(0, 0, 0, -200)"/>
-    <property name="onpush02" value="say('line 1')"/>
+    <property name="onpush02" value="say('line 1'); commit();"/>
     <property name="onpush03" value="say('line 2')"/>
     <property name="onpush04" value="title('blub')"/>
-    <property name="onpush05" value=""/>
-    <property name="onpush06" value=""/>
-    <property name="onpush07" value=""/>
-    <property name="onpush08" value=""/>
-    <property name="onpush09" value=""/>
+    <property name="onpush05" value="choice('c1', 4)"/>
+    <property name="onpush06" value="choice('c2', 14)"/>
+    <property name="onpush07" value="choice('c3', 7)"/>
+    <property name="onpush08" value="say('test')"/>
+    <property name="onpush09" value="say('Your choice: '+commit())"/>
+    <property name="onpush10" value="inputText('defaultVal'); commit();"/>
+    <property name="onpush11" value="inputNumber(23)"/>
     <property name="ontouch01" value="info('What\'s that?')"/>
    </properties>
   </object>

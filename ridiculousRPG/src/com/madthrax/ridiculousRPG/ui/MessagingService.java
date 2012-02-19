@@ -16,6 +16,7 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Delay;
@@ -23,9 +24,14 @@ import com.badlogic.gdx.scenes.scene2d.actions.FadeIn;
 import com.badlogic.gdx.scenes.scene2d.actions.FadeOut;
 import com.badlogic.gdx.scenes.scene2d.actions.Remove;
 import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
+import com.badlogic.gdx.scenes.scene2d.ui.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener;
 import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
@@ -44,13 +50,19 @@ public class MessagingService extends ActorsOnStageService implements
 	private String title;
 	private float displayInfoTime = 2f;
 	private Array<Message> lines = new Array<Message>();
-	private Array<MessageChoice> choices = new Array<MessageChoice>();
-	private Array<MessageInput> inputs = new Array<MessageInput>();
+	private boolean allowNull;
+	private boolean dispose;
+	Object[] resultPointer = new Object[] { null };
 
 	public MessagingService() {
 		boxPosition = new Rectangle(0, 0, 0, 200);
-		setCloseOnAction(true);
+		setAllowNull(true);
 		setFadeTime(.15f);
+	}
+
+	public void setAllowNull(boolean allowNull) {
+		this.allowNull = allowNull;
+		setCloseOnAction(allowNull);
 	}
 
 	public void addGUIcomponent(Object component) {
@@ -74,6 +86,16 @@ public class MessagingService extends ActorsOnStageService implements
 
 	public void resize(int width, int height) {
 		// TODO: resize
+	}
+
+	@Override
+	public boolean keyDown(int keycode) {
+		if (keycode == Keys.ESCAPE) {
+			if (allowNull)
+				fadeOutAllActors();
+			return true;
+		}
+		return super.keyDown(keycode);
 	}
 
 	public float getHeight() {
@@ -147,26 +169,58 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	public void say(String text) {
-		MessageText msgText = new MessageText(text);
-		lines.add(msgText);
+		lines.add(new MessageText(text));
 	}
 
-	public void choice() {
+	public void choice(String text, int value) {
+		setAllowNull(false);
+		lines.add(new MessageChoice(text, value));
 	}
 
-	public void input() {
+	public void input(String text, int maximum, boolean numeric,
+			boolean password) {
+		setAllowNull(false);
+		lines.add(new MessageInput(text, maximum, numeric, password));
 	}
 
 	public Object commit() {
-		if (lines.size == 0)
+		if (dispose)
 			return null;
+		if (lines.size > 0
+				&& GameBase.$serviceProvider().requestAttention(this, false,
+						false)) {
+			// info box is showing up
+			while (getActors().size() > 0) {
+				if (dispose)
+					return null;
+				Thread.yield();
+			}
+
+			resultPointer[0] = null;
+			drawWindow();
+
+			lines.clear();
+
+			while (resultPointer[0] == null && getActors().size() > 0
+					&& !dispose)
+				Thread.yield();
+			if (!GameBase.$serviceProvider().releaseAttention(this)) {
+				throw new RuntimeException(
+						"Something got terribly wrong! This should never happen!");
+			}
+			fadeOutAllActors();
+			setAllowNull(true);
+		}
+		return resultPointer[0];
+	}
+
+	private void drawWindow() {
 		try {
 			final Window w = new Window(getSkinNormal());
 
 			if (title != null) {
 				w.setTitle(title);
 			}
-			w.touchable = false;
 			w.color.a = .1f;
 			w.action(Sequence.$(FadeIn.$(getFadeTime())));
 			for (Message line : lines) {
@@ -212,13 +266,10 @@ public class MessagingService extends ActorsOnStageService implements
 				w.y = (int) (centerY() - w.height * .5f);
 			}
 			addActor(w);
+			focus(w);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		lines.clear();
-		choices.clear();
-		inputs.clear();
-		return null;
 	}
 
 	public void setDisplayInfoTime(float displayInfoTime) {
@@ -234,21 +285,90 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	public class MessageInput implements Message {
+		private String text;
+		private int maximum;
+		private boolean numeric;
+		private boolean password;
+
+		public MessageInput(String text, int maximum, boolean numeric,
+				boolean password) {
+			if (numeric && text != null) {
+				text = text.replaceAll("\\D+", "");
+			}
+			if (maximum < 0) {
+				maximum = numeric ? 5 : 30;
+			}
+			this.text = text;
+			this.maximum = maximum;
+			this.numeric = numeric;
+			this.password = password;
+		}
 
 		@Override
 		public Actor getActor() {
-			// TODO Auto-generated method stub
-			return null;
+			TextField tf = new TextField(text, getSkinNormal());
+			if (password)
+				tf.setPasswordMode(true);
+			if (numeric) {
+				tf.setTextFieldFilter(new TextFieldFilter() {
+					@Override
+					public boolean acceptChar(TextField textField, char key) {
+						int len = 0;
+						String text = textField.getText();
+						if (text != null)
+							len = text.length();
+						return len < maximum && Character.isDigit(key);
+					}
+				});
+			} else {
+				tf.setTextFieldFilter(new TextFieldFilter() {
+					@Override
+					public boolean acceptChar(TextField textField, char key) {
+						int len = 0;
+						String text = textField.getText();
+						if (text != null)
+							len = text.length();
+						return len < maximum;
+					}
+				});
+			}
+			tf.setTextFieldListener(new TextFieldListener() {
+				@Override
+				public void keyTyped(TextField textField, char key) {
+					String text = textField.getText();
+					if (text != null && text.trim().length() > 0
+							&& (key == '\r' || key == '\n' || key == '\t')) {
+						if (numeric) {
+							resultPointer[0] = new Integer(text.trim());
+						} else {
+							resultPointer[0] = text.trim();
+						}
+					}
+				}
+			});
+			return tf;
 		}
-
 	}
 
 	public class MessageChoice implements Message {
+		private String text;
+		private int value;
+
+		public MessageChoice(String text, int value) {
+			this.text = text;
+			this.value = value;
+		}
 
 		@Override
 		public Actor getActor() {
-			// TODO Auto-generated method stub
-			return null;
+			TextButton tb = new TextButton(text, getSkinNormal());
+			tb.setClickListener(new ClickListener() {
+				@Override
+				public void click(Actor actor, float x, float y) {
+					resultPointer[0] = value;
+				}
+			});
+			return tb;
 		}
 
 	}
@@ -268,6 +388,7 @@ public class MessagingService extends ActorsOnStageService implements
 
 	@Override
 	public void dispose() {
+		dispose = true;
 		super.dispose();
 		if (face != null)
 			face.dispose();

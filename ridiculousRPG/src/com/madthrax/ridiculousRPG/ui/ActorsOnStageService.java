@@ -30,6 +30,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.FadeOut;
 import com.badlogic.gdx.scenes.scene2d.actions.Remove;
 import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
@@ -120,6 +121,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 	public void setFadeTime(float fadeTime) {
 		this.fadeTime = fadeTime;
 	}
+
 	public float getFadeTime() {
 		return this.fadeTime;
 	}
@@ -275,16 +277,9 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	private boolean actionKeyPressed(boolean down) {
 		Actor a = focusedActor;
-		if (a == null) {
+		if (a == null || a instanceof Window) {
 			if (closeOnAction && getActors().size() > 0) {
-				if (fadeTime > 0) {
-					for (Actor a2 : getActors()) {
-						a2.action(Sequence
-								.$(FadeOut.$(fadeTime), Remove.$()));
-					}
-				} else {
-					clear();
-				}
+				fadeOutAllActors();
 				return true;
 			}
 		} else {
@@ -320,6 +315,16 @@ public class ActorsOnStageService extends Stage implements GameService,
 			}
 		}
 		return false;
+	}
+
+	public void fadeOutAllActors() {
+		if (fadeTime > 0) {
+			for (Actor a2 : getActors()) {
+				a2.action(Sequence.$(FadeOut.$(fadeTime), Remove.$()));
+			}
+		} else {
+			clear();
+		}
 	}
 
 	public void freeze() {
