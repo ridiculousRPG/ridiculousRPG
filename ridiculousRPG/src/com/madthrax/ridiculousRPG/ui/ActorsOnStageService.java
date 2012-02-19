@@ -35,12 +35,13 @@ import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
+import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
  * @author Alexander Baumgartner
  */
 public class ActorsOnStageService extends Stage implements GameService,
-		Drawable, Computable {
+		Drawable, Computable, ResizeListener {
 	private Skin skinNormal, skinFocused;
 	private boolean closeOnAction;
 	private float fadeTime;
@@ -92,6 +93,10 @@ public class ActorsOnStageService extends Stage implements GameService,
 	 */
 	public void setSkinFocused(Skin skinFocused) {
 		this.skinFocused = skinFocused;
+	}
+
+	public void resize(int width, int height) {
+		setViewport(width, height, true);
 	}
 
 	/**

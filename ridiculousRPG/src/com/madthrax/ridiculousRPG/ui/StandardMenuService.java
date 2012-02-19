@@ -29,7 +29,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.IntMap;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
  * This class provides a customizable standard menu for the game.<br>
@@ -37,7 +36,7 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
  * @author Alexander Baumgartner
  */
 public class StandardMenuService extends ActorsOnStageService implements
-		MenuService, ResizeListener {
+		MenuService {
 
 	private IntMap<MenuStateHandler> stateHandlerMap = new IntMap<MenuStateHandler>(
 			16);
@@ -115,6 +114,7 @@ public class StandardMenuService extends ActorsOnStageService implements
 	@Override
 	public void resize(int width, int height) {
 		clearAllMenus();
+		super.resize(width, height);
 		if (activeState != null)
 			rebuildMenu();
 	}

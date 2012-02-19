@@ -35,15 +35,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener;
 import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
-import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
  * This class provides a customizable standard menu for the game.<br>
  * 
  * @author Alexander Baumgartner
  */
-public class MessagingService extends ActorsOnStageService implements
-		ResizeListener {
+public class MessagingService extends ActorsOnStageService {
 
 	private Rectangle boxPosition;
 	private TextureRegionRef face;
@@ -82,10 +80,6 @@ public class MessagingService extends ActorsOnStageService implements
 		if (guiElement instanceof Actor) {
 			super.focus((Actor) guiElement);
 		}
-	}
-
-	public void resize(int width, int height) {
-		// TODO: resize
 	}
 
 	@Override
@@ -189,7 +183,7 @@ public class MessagingService extends ActorsOnStageService implements
 		if (lines.size > 0
 				&& GameBase.$serviceProvider().requestAttention(this, false,
 						false)) {
-			// info box is showing up
+			// an other box is showing up
 			while (getActors().size() > 0) {
 				if (dispose)
 					return null;
@@ -210,6 +204,10 @@ public class MessagingService extends ActorsOnStageService implements
 			}
 			fadeOutAllActors();
 			setAllowNull(true);
+			// sleep until box has disappeared
+			do {
+				Thread.yield();
+			} while (getActors().size() > 0 && !dispose);
 		}
 		return resultPointer[0];
 	}
