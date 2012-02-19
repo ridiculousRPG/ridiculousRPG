@@ -16,8 +16,7 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
-import javax.script.ScriptException;
-
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Delay;
 import com.badlogic.gdx.scenes.scene2d.actions.FadeIn;
@@ -27,8 +26,8 @@ import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
-import com.badlogic.gdx.utils.IntMap;
-import com.madthrax.ridiculousRPG.GameBase;
+import com.badlogic.gdx.utils.Array;
+import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 /**
@@ -37,62 +36,14 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
  * @author Alexander Baumgartner
  */
 public class MessagingService extends ActorsOnStageService implements
-		MenuService, ResizeListener {
+		ResizeListener {
 
-	private IntMap<MenuStateHandler> stateHandlerMap = new IntMap<MenuStateHandler>(
-			16);
-	private MenuStateHandler activeState;
-	private String startNewGameScript;
+	private Rectangle boxPosition = new Rectangle();
+	private TextureRegionRef face = null;
+	private Array<Message> lines = new Array<Message>();
+	private Array<MessageChoice> choices = new Array<MessageChoice>();
+	private Array<MessageInput> inputs = new Array<MessageInput>();
 
-	@Override
-	public boolean keyUp(int keycode) {
-		return (activeState != null && activeState.processInput(keycode, this))
-				|| super.keyUp(keycode);
-	}
-
-	/**
-	 * Refresh the menu. Call this method after you performed an action which
-	 * changes the behavior of the menu creation itself. The menu will be
-	 * recreated.
-	 */
-	public void rebuildMenu() {
-		changeState(activeState);
-	}
-
-	/**
-	 * Clear the menu. If you have to rebuild the menu (see
-	 * {@link #rebuildMenu()}), maybe you want to clean it first. This method
-	 * removes all GUI elements from the screen.
-	 */
-	public void clearAllMenus() {
-		super.clear();
-	}
-
-	public boolean changeState(MenuStateHandler newState) {
-		if (newState != null
-				&& newState.isFreezeTheWorld()
-				&& !GameBase.$serviceProvider().requestAttention(this, true,
-						newState.isClearTheScreen())) {
-			return false;
-		}
-		if (activeState != null && activeState.isFreezeTheWorld()
-				&& !GameBase.$serviceProvider().releaseAttention(this)) {
-			throw new RuntimeException(
-					"Oooops, couldn't release the attention. Something got terribly wrong!");
-		}
-		if (newState == null) {
-			super.clear();
-		} else {
-			if (newState.isClearTheMenu()) {
-				super.clear();
-			}
-			newState.createGui(this);
-		}
-		activeState = newState;
-		return true;
-	}
-
-	@Override
 	public void addGUIcomponent(Object component) {
 		if (component instanceof Actor)
 			addActor((Actor) component);
@@ -106,29 +57,34 @@ public class MessagingService extends ActorsOnStageService implements
 		}
 	}
 
-	@Override
 	public void focus(Object guiElement) {
 		if (guiElement instanceof Actor) {
 			super.focus((Actor) guiElement);
 		}
 	}
 
-	@Override
 	public void resize(int width, int height) {
-		clearAllMenus();
-		if (activeState != null)
-			rebuildMenu();
+		// TODO: resize
 	}
 
-	@Override
 	public float getHeight() {
 		return height;
 	}
 
-	@Override
 	public float getWidth() {
 		return width;
 	}
+
+	/*
+	box(x,y,width,height) - set preferred position, width and height for this conversations message box. (Default = 0,0,screen.width,250)
+	face("filename",x,y,width,height) - set face for conversation. (automatically performs a commit if some text is outstanding)
+	say("Line of text") - simply some text
+	choice("item 1", 1) - one choice with the integer to return on click
+	input("default value",maximum,numberInput) - text or number input. If numberInput is true, only numbers are allowed. Maximum specifies the maximum text length or the maximum value for number input.
+	commit() - prints the message box and waits for the result. returns the result (or NULL if no result)
+	*/
+
+	//info("Text", "title") - an info box with title, which will disappear automatically
 
 	public void showInfoNormal(String info) {
 		showInfo(getSkinNormal(), info);
@@ -146,7 +102,7 @@ public class MessagingService extends ActorsOnStageService implements
 			w.color.a = .1f;
 			w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f),
 					Remove.$()));
-			w.add(new Label(info, skin));
+			w.add(info);
 
 			w.pack();
 			center(w);
@@ -155,58 +111,77 @@ public class MessagingService extends ActorsOnStageService implements
 			e.printStackTrace();
 		}
 	}
-
-	/**
-	 * Replaces or adds a state with an associated {@link MenuStateHandler}.
-	 * 
-	 * @param state
-	 *            An int value representing one state
-	 * @param stateHandler
-	 *            The state handler associated with the state
-	 * @return The old {@link MenuStateHandler}
-	 */
-	public MenuStateHandler putStateHandler(int state,
-			MenuStateHandler stateHandler) {
-		return stateHandlerMap.put(state, stateHandler);
+	public void box(float x,float y,float width,float height) {
+		boxPosition.x = x;
+		boxPosition.y = y;
+		boxPosition.width = width;
+		boxPosition.height = height;
 	}
-
-	/**
-	 * Returns the state handler associated with the given state.
-	 */
-	public MenuStateHandler getStateHandler(int state) {
-		return stateHandlerMap.get(state);
+	public Object face() {
+		return null;
 	}
-
-	/**
-	 * Removes and returns the state handler associated with the state.
-	 */
-	public MenuStateHandler removeStateHandler(int state) {
-		return stateHandlerMap.remove(state);
+	public void say(String text) {
+		MessageText msgText = new MessageText(text);
+		lines.add(msgText);
 	}
-
-	@Override
-	public boolean changeState(int newState) {
-		return changeState(stateHandlerMap.get(newState));
+	public void choice() {
 	}
-
-	@Override
-	public MenuStateHandler getActiveStateHandler() {
-		return activeState;
+	public void input() {
 	}
+	public Object commit() {
+		try {
+			final Window w = new Window(getSkinNormal());
 
-	public void startNewGame() throws ScriptException {
-		GameBase.$().eval(startNewGameScript);
-	}
-
-	public void setStartNewGameScript(String startNewGameScript) {
-		this.startNewGameScript = startNewGameScript;
+			w.touchable = false;
+			w.color.a = .1f;
+			w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f),
+					Remove.$()));
+			for (Message line : lines) {
+				w.add(line.getActor());
+			}
+			w.pack();
+			center(w);
+			addActor(w);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	@Override
 	public void dispose() {
 		super.dispose();
-		for (MenuStateHandler handler : stateHandlerMap.values()) {
-			handler.dispose();
+	}
+
+	public interface Message {
+		public Actor getActor();
+	}
+	public class MessageInput implements Message {
+
+		@Override
+		public Actor getActor() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+	}
+	public class MessageChoice implements Message {
+
+		@Override
+		public Actor getActor() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+	}
+	public class MessageText implements Message {
+		public String text;
+		public MessageText(String text) {
+			this.text = text;
+		}
+		@Override
+		public Actor getActor() {
+			return new Label(text, getSkinNormal());
 		}
 	}
 }
