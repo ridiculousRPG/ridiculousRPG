@@ -229,49 +229,54 @@ public class MessagingService extends ActorsOnStageService {
 				w.row().fill(true, false).expand(true, false);
 				w.add(line.getActor());
 			}
-			w.x = boxPosition.x;
-			w.y = boxPosition.y;
+			computeWindowPos(w);
 			w.pack();
-			if (boxPosition.width == 0) {
-				// width defined by margin x
-				w.width = GameBase.$().getScreen().width - 2 * w.x;
-			} else if (boxPosition.width < 0) {
-				// bind box at the top edge of the screen
-				if (w.width < -boxPosition.width) {
-					// set preferred width
-					w.width = -boxPosition.width;
-				}
-				w.x = GameBase.$().getScreen().width - w.width - w.x;
-			} else if (w.width < boxPosition.width) {
-				// set preferred width
-				w.width = boxPosition.width;
-			}
-			if (boxPosition.height == 0) {
-				// height defined by margin y
-				w.height = GameBase.$().getScreen().height - 2 * w.y;
-			} else if (boxPosition.height < 0) {
-				// bind box at the right edge of the screen
-				if (w.height < -boxPosition.height) {
-					// set preferred height
-					w.height = -boxPosition.height;
-				}
-				w.y = GameBase.$().getScreen().height - w.height - w.y;
-			} else if (w.height < boxPosition.height) {
-				// set preferred height
-				w.height = boxPosition.height;
-			}
-			if (boxPosition.x < 0) {
-				// center horizontal
-				w.x = (int) (centerX() - w.width * .5f);
-			}
-			if (boxPosition.y < 0) {
-				// center vertical
-				w.y = (int) (centerY() - w.height * .5f);
-			}
+			computeWindowPos(w);
 			addActor(w);
 			focus(w);
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+
+	private void computeWindowPos(final Window w) {
+		w.x = boxPosition.x;
+		w.y = boxPosition.y;
+		if (boxPosition.width == 0) {
+			// width defined by margin x
+			w.width = GameBase.$().getScreen().width - 2 * w.x;
+		} else if (boxPosition.width < 0) {
+			// bind box at the top edge of the screen
+			if (w.width < -boxPosition.width) {
+				// set preferred width
+				w.width = -boxPosition.width;
+			}
+			w.x = GameBase.$().getScreen().width - w.width - w.x;
+		} else if (w.width < boxPosition.width) {
+			// set preferred width
+			w.width = boxPosition.width;
+		}
+		if (boxPosition.height == 0) {
+			// height defined by margin y
+			w.height = GameBase.$().getScreen().height - 2 * w.y;
+		} else if (boxPosition.height < 0) {
+			// bind box at the right edge of the screen
+			if (w.height < -boxPosition.height) {
+				// set preferred height
+				w.height = -boxPosition.height;
+			}
+			w.y = GameBase.$().getScreen().height - w.height - w.y;
+		} else if (w.height < boxPosition.height) {
+			// set preferred height
+			w.height = boxPosition.height;
+		}
+		if (boxPosition.x < 0) {
+			// center horizontal
+			w.x = (int) (centerX() - w.width * .5f);
+		}
+		if (boxPosition.y < 0) {
+			// center vertical
+			w.y = (int) (centerY() - w.height * .5f);
 		}
 	}
 
