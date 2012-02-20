@@ -24,6 +24,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.FadeIn;
 import com.badlogic.gdx.scenes.scene2d.actions.FadeOut;
 import com.badlogic.gdx.scenes.scene2d.actions.Remove;
 import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
+import com.badlogic.gdx.scenes.scene2d.ui.Align;
 import com.badlogic.gdx.scenes.scene2d.ui.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -185,8 +186,10 @@ public class MessagingService extends ActorsOnStageService {
 						false)) {
 			// an other box is showing up
 			while (getActors().size() > 0) {
-				if (dispose)
+				if (dispose) {
+					GameBase.$serviceProvider().releaseAttention(this);
 					return null;
+				}
 				Thread.yield();
 			}
 
@@ -220,6 +223,7 @@ public class MessagingService extends ActorsOnStageService {
 				w.setTitle(title);
 			}
 			w.color.a = .1f;
+			w.align(Align.TOP);
 			w.action(Sequence.$(FadeIn.$(getFadeTime())));
 			for (Message line : lines) {
 				w.row().fill(true, false).expand(true, false);
@@ -227,6 +231,7 @@ public class MessagingService extends ActorsOnStageService {
 			}
 			w.x = boxPosition.x;
 			w.y = boxPosition.y;
+			w.pack();
 			if (boxPosition.width == 0) {
 				// width defined by margin x
 				w.width = GameBase.$().getScreen().width - 2 * w.x;
@@ -380,7 +385,9 @@ public class MessagingService extends ActorsOnStageService {
 
 		@Override
 		public Actor getActor() {
-			return new Label(text, getSkinNormal());
+			Label l = new Label(text, getSkinNormal());
+			l.setWrap(true);
+			return l;
 		}
 	}
 

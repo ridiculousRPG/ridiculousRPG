@@ -279,7 +279,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			String key = entry.getKey().trim();
 			// the libgdx homemade XmlReader of course is buggy :/
 			String val = entry.getValue().replace("&quot;", "\"").replace(
-					"&gt;", ">").replace("&lt;", "<").trim();
+					"&gt;", ">").replace("&lt;", "<").replace("&amp;", "&")
+					.trim();
 			if (key.length() == 0 || val.length() == 0)
 				continue;
 			if (key.charAt(0) == EVENT_CUSTOM_PROP_KZ) {
