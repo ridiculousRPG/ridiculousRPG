@@ -54,7 +54,8 @@ public class MessagingService extends ActorsOnStageService {
 	private Array<Message> lines = new Array<Message>();
 	private boolean allowNull;
 	private boolean dispose;
-	Object[] resultPointer = new Object[] { null };
+	private Object[] resultPointer = new Object[] { null };
+	private static final int FACE_MARGIN = 8;
 
 	public MessagingService() {
 		boxPosition = new Rectangle(0, 0, 0, 200);
@@ -238,10 +239,15 @@ public class MessagingService extends ActorsOnStageService {
 			w.color.a = .1f;
 			w.align(Align.TOP);
 			w.action(Sequence.$(FadeIn.$(getFadeTime())));
+			int paddingLeft = Math.max(FACE_MARGIN,
+					(int) (w.getStyle().background.getLeftWidth() + .5f));
+			int textPadding = face == null ? 0 : face.getRegionWidth()
+					+ FACE_MARGIN + paddingLeft
+					- (int) (w.getStyle().background.getLeftWidth() + .5f);
 			for (Message line : lines) {
 				Cell<?> c = w.row();
-				if (face != null) {
-					c.padLeft(face.getRegionWidth() + 5);
+				if (textPadding > 0) {
+					c.padLeft(textPadding);
 				}
 				c.fill(true, false).expand(true, false);
 				w.add(line.getActor());
@@ -254,8 +260,17 @@ public class MessagingService extends ActorsOnStageService {
 
 			if (face != null) {
 				Image f = new Image(face);
-				f.x = w.x + 5;
-				f.y = w.y + 5;
+				f.x = w.x + paddingLeft;
+				int paddingBottom = Math
+						.max(FACE_MARGIN, (int) (w.getStyle().background
+								.getBottomHeight() + .5f));
+				int centerFace = (int) ((w.height
+						- w.getStyle().background.getTopHeight()
+						- w.getStyle().background.getBottomHeight() - face
+						.getRegionHeight()) * .5f);
+				System.out.println(w.height);
+				System.out.println(centerFace);
+				f.y = w.y + Math.max(paddingBottom, centerFace);
 				addActor(f);
 			}
 		} catch (Exception e) {
