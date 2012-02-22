@@ -26,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Remove;
 import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
 import com.badlogic.gdx.scenes.scene2d.ui.Align;
 import com.badlogic.gdx.scenes.scene2d.ui.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -34,7 +35,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener;
 import com.badlogic.gdx.utils.Array;
+import com.esotericsoftware.tablelayout.Cell;
 import com.madthrax.ridiculousRPG.GameBase;
+import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 
 /**
@@ -155,8 +158,18 @@ public class MessagingService extends ActorsOnStageService {
 		boxPosition.height = height;
 	}
 
-	public Object face() {
-		return commit();
+	public Object face(String internalPath, int x, int y, int width, int height) {
+		Object result = commit();
+		TextureRegionRef tRef;
+		if (internalPath != null) {
+			tRef = TextureRegionLoader.load(internalPath, x, y, width, height);
+		} else {
+			tRef = null;
+		}
+		if (face != null)
+			face.dispose();
+		face = tRef;
+		return result;
 	}
 
 	public void title(String title) {
@@ -226,7 +239,11 @@ public class MessagingService extends ActorsOnStageService {
 			w.align(Align.TOP);
 			w.action(Sequence.$(FadeIn.$(getFadeTime())));
 			for (Message line : lines) {
-				w.row().fill(true, false).expand(true, false);
+				Cell<?> c = w.row();
+				if (face != null) {
+					c.padLeft(face.getRegionWidth() + 5);
+				}
+				c.fill(true, false).expand(true, false);
 				w.add(line.getActor());
 			}
 			computeWindowPos(w);
@@ -234,6 +251,13 @@ public class MessagingService extends ActorsOnStageService {
 			computeWindowPos(w);
 			addActor(w);
 			focus(w);
+
+			if (face != null) {
+				Image f = new Image(face);
+				f.x = w.x + 5;
+				f.y = w.y + 5;
+				addActor(f);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

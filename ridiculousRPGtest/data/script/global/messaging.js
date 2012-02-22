@@ -6,8 +6,8 @@ function box(x, y, width, height) {
 	$.serviceProvider.getService("messaging").box(x, y, width, height);
 }
 
-function face() {
-	return $.serviceProvider.getService("messaging").face();
+function face(internalPath, x, y, width, height) {
+	return $.serviceProvider.getService("messaging").face(internalPath, x, y, width, height);
 }
 
 function title(text) {
