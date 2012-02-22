@@ -10,6 +10,19 @@ function face(internalPath, x, y, width, height) {
 	return $.serviceProvider.getService("messaging").face(internalPath, x, y, width, height);
 }
 
+function putPictureRegion(internalPath, x, y, width,
+		height, posX, posY, posZkey) {
+	$.serviceProvider.getService("messaging").putPicture(internalPath, x, y, width, height, posX, posY, posZkey);
+}
+
+function putPicture(internalPath, posX, posY, posZkey) {
+	$.serviceProvider.getService("messaging").putPicture(internalPath, 0, 0, 0, 0, posX, posY, posZkey);
+}
+
+function removePicture(posZkey) {
+	$.serviceProvider.getService("messaging").removePicture(posZkey);
+}
+
 function title(text) {
 	$.serviceProvider.getService("messaging").title(text);
 }

@@ -35,6 +35,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntMap;
 import com.esotericsoftware.tablelayout.Cell;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
@@ -52,6 +53,7 @@ public class MessagingService extends ActorsOnStageService {
 	private String title;
 	private float displayInfoTime = 2f;
 	private Array<Message> lines = new Array<Message>();
+	private IntMap<PictureRef> pictures = new IntMap<PictureRef>();
 	private boolean allowNull;
 	private boolean dispose;
 	private Object[] resultPointer = new Object[] { null };
@@ -162,15 +164,48 @@ public class MessagingService extends ActorsOnStageService {
 	public Object face(String internalPath, int x, int y, int width, int height) {
 		Object result = commit();
 		TextureRegionRef tRef;
-		if (internalPath != null) {
-			tRef = TextureRegionLoader.load(internalPath, x, y, width, height);
-		} else {
+		if (internalPath == null) {
 			tRef = null;
+		} else if (x == 0 && y == 0 && width == 0 && height == 0) {
+			tRef = TextureRegionLoader.load(internalPath);
+		} else {
+			tRef = TextureRegionLoader.load(internalPath, x, y, width, height);
 		}
 		if (face != null)
 			face.dispose();
 		face = tRef;
 		return result;
+	}
+
+	public void putPicture(String internalPath, int x, int y, int width,
+			int height, int posX, int posY, int posZkey) {
+		if (internalPath == null) {
+			removePicture(posZkey);
+		} else {
+			PictureRef pRef = new PictureRef(posX, posY);
+			if (x == 0 && y == 0 && width == 0 && height == 0) {
+				pRef.textureRegion = TextureRegionLoader.load(internalPath);
+			} else {
+				pRef.textureRegion = TextureRegionLoader.load(internalPath, x,
+						y, width, height);
+			}
+			pRef = pictures.put(posZkey, pRef);
+			if (pRef != null)
+				pRef.textureRegion.dispose();
+		}
+	}
+
+	public void removePicture(int posZkey) {
+		if (posZkey == -1) {
+			for (PictureRef pic : pictures.values()) {
+				pic.textureRegion.dispose();
+			}
+			pictures.clear();
+		} else {
+			PictureRef pRef = pictures.remove(posZkey);
+			if (pRef != null)
+				pRef.textureRegion.dispose();
+		}
 	}
 
 	public void title(String title) {
@@ -231,6 +266,13 @@ public class MessagingService extends ActorsOnStageService {
 
 	private void drawWindow() {
 		try {
+			for (PictureRef pic : pictures.values()) {
+				Image p = new Image(pic.textureRegion);
+				p.x = pic.x;
+				p.y = pic.y;
+				addActor(p);
+			}
+
 			final Window w = new Window(getSkinNormal());
 
 			if (title != null) {
@@ -268,8 +310,6 @@ public class MessagingService extends ActorsOnStageService {
 						- w.getStyle().background.getTopHeight()
 						- w.getStyle().background.getBottomHeight() - face
 						.getRegionHeight()) * .5f);
-				System.out.println(w.height);
-				System.out.println(centerFace);
 				f.y = w.y + Math.max(paddingBottom, centerFace);
 				addActor(f);
 			}
@@ -435,11 +475,25 @@ public class MessagingService extends ActorsOnStageService {
 		}
 	}
 
+	static class PictureRef {
+		TextureRegionRef textureRegion;
+		int x, y;
+
+		public PictureRef(int posX, int posY) {
+			x = posX;
+			y = posY;
+		}
+	}
+
 	@Override
 	public void dispose() {
 		dispose = true;
 		super.dispose();
 		if (face != null)
 			face.dispose();
+		for (PictureRef pic : pictures.values()) {
+			pic.textureRegion.dispose();
+		}
+		pictures.clear();
 	}
 }
