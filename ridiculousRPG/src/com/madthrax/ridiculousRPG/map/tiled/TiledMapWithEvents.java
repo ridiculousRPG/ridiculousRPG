@@ -76,7 +76,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private String tmxPath;
 
 	//TODO: ID increases after map transition
-	// ==> we're not able to identify the same object by this id
+	// ==> we're not able to identify the same object by its id
 	// WE NEED AN IDENTIFIER!!!
 	private int idCount = -1;
 	private static final Object DUMMY = new Object();
