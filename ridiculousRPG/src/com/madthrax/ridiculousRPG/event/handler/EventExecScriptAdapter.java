@@ -138,6 +138,9 @@ public class EventExecScriptAdapter extends EventAdapter {
 		try {
 			SHARED_ENGINE.eval(GameBase.$scriptFactory().prepareScriptFunction(
 					onTouch, TOUCH_TEMPLATE));
+			if (eventSelf.id==17) {
+				System.out.println(getActualState().getBool(0));
+			}
 			return (Boolean) SHARED_INVOCABLE.invokeFunction("onTouch",
 					eventSelf, eventTrigger, getActualState());
 		} catch (NoSuchMethodException e) {

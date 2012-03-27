@@ -75,9 +75,12 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private transient int tileWidth, tileHeight;
 	private String tmxPath;
 
-	//TODO: ID increases after map transition
+	//TODO: ID CHANGES after map transition
 	// ==> we're not able to identify the same object by its id
 	// WE NEED AN IDENTIFIER!!!
+	// DEBUGING shows the following behavior:
+	// the correct ids are written and read but there exists a
+	// global id which destroys other ids. its a bug
 	private int idCount = -1;
 	private static final Object DUMMY = new Object();
 	private transient IntMap<Object> usedIds = new IntMap<Object>();
@@ -233,6 +236,9 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		// Initialize the events
 		for (i = 0, len_i = dynamicRegions.size(); i < len_i; i++) {
 			EventObject eventObj = dynamicRegions.get(i);
+			if (eventObj.id==17&&eventsById.containsKey(17)) {
+				System.out.println("LOIS: "+eventsById.get(17).getBool(0));
+			}
 			if (eventObj.name != null
 					&& (EVENT_TYPE_PLAYER.equalsIgnoreCase(eventObj.type) || EVENT_TYPE_GLOBAL
 							.equalsIgnoreCase(eventObj.type))) {
@@ -247,6 +253,9 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					put(globalObj.name, globalObj).dispose();
 				}
 			} else {
+				if (eventObj.id==17&&eventsById.containsKey(17)) {
+					System.out.println("LOAD: "+eventsById.get(17).getBool(0));
+				}
 				if (eventObj.getEventHandler() != null
 						&& eventsById.containsKey(eventObj.id)) {
 					eventObj.getEventHandler().setState(
@@ -475,6 +484,9 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			}
 		} else {
 			usedIds.put(id, DUMMY);
+		}
+		if (event.getTouchBound().width==66 && event.getTouchBound().height==83) {
+			System.out.println(event.id);
 		}
 	}
 
