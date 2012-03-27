@@ -26,9 +26,9 @@ function mapTransition(mapPath, playerX, playerY, stopWeatherEffect, speed) {
 	var oldMap = mapService.loadMap(mapLoader.endLoadMap());
 	setPlayerPosition(playerX, playerY, trackService, oldMap != null);
 
+	// Store old map state and dispose the object
 	if (oldMap != null) {
-		oldMap.dispose(true);
-		// TODO: save old map state
+		mapLoader.storeMapState(oldMap, true);
 	}
 	if (speed != null) {
 		// Fade in

@@ -39,6 +39,7 @@ import com.madthrax.ridiculousRPG.map.MapWithEvents;
 public class TiledMapLoaderSync extends Thread implements
 		MapLoader<EventObject> {
 
+	private boolean disposeMap = false;
 	private boolean disposed = false;
 	private boolean done = true;
 	private String filePath;
@@ -53,7 +54,8 @@ public class TiledMapLoaderSync extends Thread implements
 	public void run() {
 		while (true) {
 			while (done) {
-				if (disposed) return;
+				if (disposed)
+					return;
 				yield();
 			}
 			if (map != null && filePath != null) {
@@ -62,8 +64,8 @@ public class TiledMapLoaderSync extends Thread implements
 				try {
 					HashMap<Integer, ObjectState> eventsById = new HashMap<Integer, ObjectState>(
 							100);
-					ObjectOutputStream oOut = new ObjectOutputStream(fh
-							.write(false));
+					ObjectOutputStream oOut = new ObjectOutputStream(
+							fh.write(false));
 					for (EventObject event : map.getAllEvents()) {
 						EventHandler handler = event.getEventHandler();
 						if (handler != null) {
@@ -74,6 +76,8 @@ public class TiledMapLoaderSync extends Thread implements
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				if (disposeMap)
+					map.dispose(true);
 				map = null;
 			}
 			done = true;
@@ -88,19 +92,23 @@ public class TiledMapLoaderSync extends Thread implements
 			throws ScriptException {
 		return loadTiledMap();
 	}
+
 	private MapWithEvents<EventObject> loadTiledMap() throws ScriptException {
 		return new TiledMapWithEvents(loadMapPath);
 	}
 
-	public synchronized void storeMapState(MapWithEvents<EventObject> map) {
+	public synchronized void storeMapState(MapWithEvents<EventObject> map,
+			boolean disposeMap) {
 		// Wait until outstanding operation has completed.
 		while (!done && map != null) {
-			if (disposed) return;
+			if (disposed)
+				return;
 			Thread.yield();
 		}
+		this.disposeMap = disposeMap;
 		this.map = map;
 		this.filePath = map.getExternalSavePath();
-		done = false;
+		this.done = false;
 	}
 
 	@Override

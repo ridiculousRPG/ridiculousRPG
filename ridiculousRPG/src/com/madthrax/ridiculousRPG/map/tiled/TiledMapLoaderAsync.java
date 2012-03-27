@@ -43,6 +43,7 @@ public class TiledMapLoaderAsync extends Thread implements
 
 	private boolean disposed = false;
 	private boolean done = true;
+	private boolean disposeMap = false;
 	private String filePath;
 	private MapWithEvents<EventObject> map;
 	private ScriptException loadException;
@@ -72,8 +73,8 @@ public class TiledMapLoaderAsync extends Thread implements
 				try {
 					HashMap<Integer, ObjectState> eventsById = new HashMap<Integer, ObjectState>(
 							100);
-					ObjectOutputStream oOut = new ObjectOutputStream(fh
-							.write(false));
+					ObjectOutputStream oOut = new ObjectOutputStream(
+							fh.write(false));
 					for (EventObject event : map.getAllEvents()) {
 						EventHandler handler = event.getEventHandler();
 						if (handler != null) {
@@ -84,6 +85,8 @@ public class TiledMapLoaderAsync extends Thread implements
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				if (disposeMap)
+					map.dispose(true);
 				map = null;
 			} else if (filePath != null) {
 				// load map
@@ -154,7 +157,8 @@ public class TiledMapLoaderAsync extends Thread implements
 		}
 	}
 
-	public synchronized void storeMapState(MapWithEvents<EventObject> map) {
+	public synchronized void storeMapState(MapWithEvents<EventObject> map,
+			boolean disposeMap) {
 		// Wait until outstanding operation has completed.
 		while (!done) {
 			if (disposed) {
@@ -167,9 +171,10 @@ public class TiledMapLoaderAsync extends Thread implements
 				e.printStackTrace();
 			}
 		}
+		this.disposeMap = disposeMap;
 		this.map = map;
 		this.filePath = map.getExternalSavePath();
-		done = false;
+		this.done = false;
 		notify();
 	}
 

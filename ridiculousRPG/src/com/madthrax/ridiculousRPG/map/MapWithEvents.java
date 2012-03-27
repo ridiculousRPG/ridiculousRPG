@@ -106,4 +106,6 @@ public interface MapWithEvents<T extends Movable> extends Disposable,
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug);
 
 	public String getExternalSavePath();
+
+	public void dispose(final boolean recycle);
 }

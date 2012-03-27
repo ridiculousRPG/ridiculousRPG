@@ -46,5 +46,5 @@ public interface MapLoader<T extends Movable> extends Disposable {
 	 * 
 	 * @param map
 	 */
-	public void storeMapState(MapWithEvents<T> map);
+	public void storeMapState(MapWithEvents<T> map, boolean disposeMap);
 }

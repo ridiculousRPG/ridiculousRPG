@@ -663,8 +663,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	@Override
 	public String getExternalSavePath() {
 		return "ridiculousRPG/"
-				+ tmxPath.replaceFirst("(?i)\\.tmx$", ".sav").replaceAll("\\W",
-						"_");
+				+ tmxPath.replaceFirst("(?i)\\.tmx$", "").replaceAll("\\W",
+						"_")+".sav";
 	}
 
 	/**
