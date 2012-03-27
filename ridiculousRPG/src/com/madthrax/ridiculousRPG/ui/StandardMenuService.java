@@ -45,7 +45,8 @@ public class StandardMenuService extends ActorsOnStageService implements
 
 	@Override
 	public boolean keyUp(int keycode) {
-		return activeState.processInput(keycode, this) || super.keyUp(keycode);
+		return (activeState != null && activeState.processInput(keycode, this))
+				|| super.keyUp(keycode);
 	}
 
 	/**
@@ -143,8 +144,8 @@ public class StandardMenuService extends ActorsOnStageService implements
 
 		w.touchable = false;
 		w.color.a = .1f;
-		w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f), Remove
-				.$()));
+		w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f),
+				Remove.$()));
 		w.add(new Label(info, skin));
 
 		w.pack();
