@@ -304,7 +304,7 @@
     <property name="//movehandler" value="data/script/game/moveEvent/player2AutoMove.js"/>
     <property name="animation" value="data/charset/Daisy.png"/>
     <property name="blocking" value="PASSES_LOW_BARRIER"/>
-    <property name="ontouch" value="say('test')"/>
+    <property name="ontouch" value="if (!eventState.getBool(0)) {say('test'); eventState.setBool(0, true)}"/>
     <property name="speed" value="S07_NORMAL"/>
    </properties>
   </object>
@@ -323,7 +323,7 @@
     <property name="onpush10" value="inputText('defaultVal'); commit();"/>
     <property name="onpush11" value="inputNumber(23)"/>
     <property name="onpush12" value="removePicture(1)"/>
-    <property name="ontouch01" value="info('What\'s that?')"/>
+    <property name="ontouch01" value="if (!eventState.getBool(0)) {info('What\'s that? I would click here if i where you.'); eventState.setBool(0, true)}"/>
    </properties>
   </object>
  </objectgroup>

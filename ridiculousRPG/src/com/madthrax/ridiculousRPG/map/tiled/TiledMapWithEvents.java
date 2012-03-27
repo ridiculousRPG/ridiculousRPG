@@ -75,6 +75,9 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private transient int tileWidth, tileHeight;
 	private String tmxPath;
 
+	//TODO: ID increases after map transition
+	// ==> we're not able to identify the same object by this id
+	// WE NEED AN IDENTIFIER!!!
 	private int idCount = -1;
 	private static final Object DUMMY = new Object();
 	private transient IntMap<Object> usedIds = new IntMap<Object>();
