@@ -46,7 +46,7 @@ function fadeColor(fadeAdapter) {
 }
 function setPlayerPosition(playerX, playerY, trackService, movePlayer) {
 	var globEv = $.globalEvents.values().toArray();
-	var PLAYER_TYPE = ridiculousRPG.map.MapWithEvents.EVENT_TYPE_PLAYER;
+	var PLAYER_TYPE = ridiculousRPG.event.EventObject.EVENT_TYPE_PLAYER;
 	for (var i = 0; i < globEv.length; i++) {
 		var ev = globEv[i];
 		if (PLAYER_TYPE.equalsIgnoreCase(ev.type)) {

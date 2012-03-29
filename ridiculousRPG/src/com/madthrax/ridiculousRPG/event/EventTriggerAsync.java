@@ -22,7 +22,6 @@ import javax.script.ScriptException;
 
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
-import com.madthrax.ridiculousRPG.map.MapWithEvents;
 
 /**
  * All {@link EventHandler} are called and the specified actions are performed.<br>
@@ -138,8 +137,8 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 					if (obj1.pushable)
 						obj2.reachable.add(obj1);
 					if (obj1.blockingBehavior.blocks(obj2.blockingBehavior)
-							&& (!MapWithEvents.EVENT_TYPE_PLAYER
-									.equalsIgnoreCase(obj1.type) || !MapWithEvents.EVENT_TYPE_PLAYER
+							&& (!EventObject.EVENT_TYPE_PLAYER
+									.equalsIgnoreCase(obj1.type) || !EventObject.EVENT_TYPE_PLAYER
 									.equalsIgnoreCase(obj2.type))) {
 						if (obj1.moves) {
 							obj1.moves = false;

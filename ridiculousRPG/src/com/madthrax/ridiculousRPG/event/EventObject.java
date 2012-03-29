@@ -121,6 +121,9 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 */
 	public HashMap<String, String> properties = new HashMap<String, String>();
 
+	public static final String EVENT_TYPE_PLAYER = "player";
+	public static final String EVENT_TYPE_GLOBAL = "global";
+
 	/**
 	 * Creates an empty new event.
 	 */
@@ -856,5 +859,11 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		} catch (ScriptException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public boolean isGlobalEvent() {
+		return name != null
+				&& (EVENT_TYPE_PLAYER.equalsIgnoreCase(type) || EVENT_TYPE_GLOBAL
+						.equalsIgnoreCase(type));
 	}
 }

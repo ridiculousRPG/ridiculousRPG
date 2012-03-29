@@ -81,9 +81,6 @@ public class TiledMapLoaderAsync extends Thread implements
 							eventsById.put(event.id, handler.getActualState());
 						}
 					}
-					if (eventsById.containsKey(17)) {
-						System.out.println("STORE: "+eventsById.get(17).getBool(0));
-					}
 					oOut.writeObject(eventsById);
 				} catch (IOException e) {
 					e.printStackTrace();

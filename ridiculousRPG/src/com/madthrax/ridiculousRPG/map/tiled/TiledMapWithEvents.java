@@ -75,13 +75,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private transient int tileWidth, tileHeight;
 	private String tmxPath;
 
-	//TODO: ID CHANGES after map transition
-	// ==> we're not able to identify the same object by its id
-	// WE NEED AN IDENTIFIER!!!
-	// DEBUGING shows the following behavior:
-	// the correct ids are written and read but there exists a
-	// global id which destroys other ids. its a bug
-	private int idCount = -1;
+	private int localIdCount = 0;
+	private int globalIdCount = 1000000000;
 	private static final Object DUMMY = new Object();
 	private transient IntMap<Object> usedIds = new IntMap<Object>();
 
@@ -236,26 +231,19 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		// Initialize the events
 		for (i = 0, len_i = dynamicRegions.size(); i < len_i; i++) {
 			EventObject eventObj = dynamicRegions.get(i);
-			if (eventObj.id==17&&eventsById.containsKey(17)) {
-				System.out.println("LOIS: "+eventsById.get(17).getBool(0));
-			}
-			if (eventObj.name != null
-					&& (EVENT_TYPE_PLAYER.equalsIgnoreCase(eventObj.type) || EVENT_TYPE_GLOBAL
-							.equalsIgnoreCase(eventObj.type))) {
+			if (eventObj.isGlobalEvent()) {
 				EventObject globalObj = globalEv.remove(eventObj.name);
 				if (globalObj == null) {
 					eventObj.init();
 					GameBase.$().getGlobalEvents().put(eventObj.name, eventObj);
-					if (EVENT_TYPE_PLAYER.equalsIgnoreCase(eventObj.type))
+					if (EventObject.EVENT_TYPE_PLAYER
+							.equalsIgnoreCase(eventObj.type))
 						eventObj.consumeInput = true;
 				} else {
 					globalObj.clearCollision();
 					put(globalObj.name, globalObj).dispose();
 				}
 			} else {
-				if (eventObj.id==17&&eventsById.containsKey(17)) {
-					System.out.println("LOAD: "+eventsById.get(17).getBool(0));
-				}
 				if (eventObj.getEventHandler() != null
 						&& eventsById.containsKey(eventObj.id)) {
 					eventObj.getEventHandler().setState(
@@ -458,11 +446,12 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		EventObject old = null;
 		if (name != null && name.length() > 0) {
 			old = namedRegions.put(name, event);
-			if (old != null) {
-				dynamicRegions.remove(old);
-			}
 		}
-		dynamicRegions.add(event);
+		if (old != null) {
+			dynamicRegions.set(dynamicRegions.indexOf(old), event);
+		} else {
+			dynamicRegions.add(event);
+		}
 		return old;
 	}
 
@@ -474,30 +463,31 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private void computeId(EventObject event) {
 		int id = event.id;
 		if (id == -1) {
-			event.id = nextId();
-		} else if (id < idCount) {
+			nextId(event);
+		} else if (id < (event.isGlobalEvent() ? globalIdCount : localIdCount)) {
 			for (int i = 0, len = dynamicRegions.size(); i < len; i++) {
 				if (dynamicRegions.get(i).id == id) {
-					dynamicRegions.get(i).id = nextId();
+					nextId(dynamicRegions.get(i));
 					return;
 				}
 			}
 		} else {
 			usedIds.put(id, DUMMY);
 		}
-		if (event.getTouchBound().width==66 && event.getTouchBound().height==83) {
-			System.out.println(event.id);
-		}
 	}
 
-	private int nextId() {
-		int idCount = this.idCount + 1;
-		while (usedIds.containsKey(idCount)) {
-			usedIds.remove(idCount);
-			idCount++;
+	private void nextId(EventObject eventToSet) {
+		if (eventToSet.isGlobalEvent()) {
+			while (usedIds.containsKey(globalIdCount))
+				globalIdCount++;
+			eventToSet.id = globalIdCount;
+			globalIdCount++;
+		} else {
+			while (usedIds.containsKey(localIdCount))
+				localIdCount++;
+			eventToSet.id = localIdCount;
+			localIdCount++;
 		}
-		this.idCount = idCount;
-		return idCount;
 	}
 
 	public EventObject get(String name) {
@@ -652,9 +642,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private void disposeInternal(boolean recycle) {
 		for (int i = 0, size = dynamicRegions.size(); i < size; i++) {
 			EventObject event = dynamicRegions.get(i);
-			if (event.name == null
-					|| !(EVENT_TYPE_GLOBAL.equalsIgnoreCase(event.type) || EVENT_TYPE_PLAYER
-							.equalsIgnoreCase(event.type))) {
+			if (!event.isGlobalEvent()) {
 				event.dispose();
 			}
 		}
@@ -678,8 +666,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	@Override
 	public String getExternalSavePath() {
 		return "ridiculousRPG/"
-				+ tmxPath.replaceFirst("(?i)\\.tmx$", "").replaceAll("\\W",
-						"_")+".sav";
+				+ tmxPath.replaceFirst("(?i)\\.tmx$", "")
+						.replaceAll("\\W", "_") + ".sav";
 	}
 
 	/**

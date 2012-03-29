@@ -33,9 +33,6 @@ import com.madthrax.ridiculousRPG.service.Computable;
 public interface MapWithEvents<T extends Movable> extends Disposable,
 		Computable, Serializable {
 
-	public static final String EVENT_TYPE_PLAYER = "player";
-	public static final String EVENT_TYPE_GLOBAL = "global";
-
 	/**
 	 * Puts a named event onto the loaded map.<br>
 	 * Use the method <code>get(String name)</code> to dereference this named
