@@ -16,7 +16,11 @@
 
 package com.madthrax.ridiculousRPG.animation;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
@@ -32,16 +36,17 @@ import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
  * A Layer for a weather effect. Every effect layer is simulated by a texture.
  * The texture is tiled to fill the map (or whatever display-region is used).
  * 
- * @see WeatherEffectService
+ * @see ParticleEffectService
  * @author Alexander Baumgartner
  */
 public class WeatherEffectLayer extends EffectLayer {
+	private static final long serialVersionUID = 1L;
+
 	private static final Random randomNumberGenerator = new Random();
 
-	private TextureRegionRef tRef;
 	private int width, height;
 	private int tileWidth, tileHeight;
-	private ArrayList<ArrayList<Rectangle>> tileLayer = new ArrayList<ArrayList<Rectangle>>();
+	private List<List<Rectangle>> tileLayer = new ArrayList<List<Rectangle>>();
 	private boolean play = true;
 	private boolean flip = false;
 	private boolean fill = false;
@@ -68,7 +73,10 @@ public class WeatherEffectLayer extends EffectLayer {
 	private float internalNewRow;
 	private float internalWindAcceleration;
 	private float internalEffectAcceleration;
-	private ArrayList<Rectangle> recycleRow;
+	private List<Rectangle> recycleRow;
+
+	private String texturePath;
+	private transient TextureRegionRef tRef;
 
 	/**
 	 * Creates a new effect-layer. Layers are used for weather effects.
@@ -101,23 +109,6 @@ public class WeatherEffectLayer extends EffectLayer {
 	public WeatherEffectLayer(String path, int pixelOverlap, int pixelWidth,
 			int pixelHeight, float effectSpeed, float windSpeed,
 			float fadeInTime, boolean fillLayer) {
-		this(TextureRegionLoader.load(path), pixelOverlap, pixelWidth,
-				pixelHeight, effectSpeed, windSpeed, fadeInTime, fillLayer);
-	}
-
-	/**
-	 * Attention: TextureRef tRef is unloaded automatically by calling the
-	 * dispose method. You have to load it every time you use this constructor.
-	 * (The texture dictionary counts the references by loading and unloading a
-	 * texture)<br>
-	 * Conclusion: Use the other constructor if it's possible!!!
-	 * 
-	 * @see TextureDict.loadTexture(...)
-	 * @see public WeatherEffectLayer(String path, ...)
-	 */
-	protected WeatherEffectLayer(TextureRegionRef tRef, int pixelOverlap,
-			int pixelWidth, int pixelHeight, float effectSpeed,
-			float windSpeed, float fadeInTime, boolean fillLayer) {
 		if (effectSpeed < .01) {
 			if (effectSpeed < -.01) {
 				effectSpeed = -effectSpeed;
@@ -128,7 +119,8 @@ public class WeatherEffectLayer extends EffectLayer {
 				fill = true;
 			}
 		}
-		this.tRef = tRef;
+		this.texturePath = path;
+		loadTexture();
 		this.fill = fillLayer;
 		if (fadeInTime > 0) {
 			fadeBy = 1f / fadeInTime;
@@ -172,6 +164,10 @@ public class WeatherEffectLayer extends EffectLayer {
 
 		// generate first row of tiles or fill entire layer with tiles
 		fillLayer();
+	}
+
+	private void loadTexture() {
+		tRef = TextureRegionLoader.load(texturePath);
 	}
 
 	@Override
@@ -224,7 +220,7 @@ public class WeatherEffectLayer extends EffectLayer {
 	 */
 	@Override
 	public boolean isFinished() {
-		ArrayList<ArrayList<Rectangle>> tileLayer = this.tileLayer;
+		List<List<Rectangle>> tileLayer = this.tileLayer;
 		return tileLayer==null || tileLayer.isEmpty();
 	}
 
@@ -232,9 +228,9 @@ public class WeatherEffectLayer extends EffectLayer {
 	 * Generates a virtual animation row over the entire map (only the subset
 	 * which is in the viewPort will be displayed)
 	 */
-	private ArrayList<Rectangle> newRow(int startY) {
+	private List<Rectangle> newRow(int startY) {
 		int startX = newRowTilesOffset;
-		ArrayList<Rectangle> row = recycleRow;
+		List<Rectangle> row = recycleRow;
 		if (row == null) {
 			row = new ArrayList<Rectangle>(newRowTilesPerRow);
 			for (int i = 0; i < newRowTilesPerRow; i++, startX += tileWidth) {
@@ -399,7 +395,7 @@ public class WeatherEffectLayer extends EffectLayer {
 			effectSpeed = effectSpeedMax;
 
 		for (int i = 0; i < tileLayer.size();) {
-			ArrayList<Rectangle> row = tileLayer.get(i);
+			List<Rectangle> row = tileLayer.get(i);
 			float yPos = 0f;
 			for (Rectangle clip : row) {
 				// variable wind acceleration (part 1)
@@ -465,7 +461,7 @@ public class WeatherEffectLayer extends EffectLayer {
 		float x4 = x2 - tWidth;
 		float y4 = y2 - tHeight;
 
-		for (ArrayList<Rectangle> row : tileLayer)
+		for (List<Rectangle> row : tileLayer)
 			for (Rectangle clip : row) {
 				float x = clip.x;
 				float y = clip.y;
@@ -504,5 +500,15 @@ public class WeatherEffectLayer extends EffectLayer {
 	public void dispose() {
 		tileLayer = null;
 		tRef.dispose();
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+		loadTexture();
 	}
 }

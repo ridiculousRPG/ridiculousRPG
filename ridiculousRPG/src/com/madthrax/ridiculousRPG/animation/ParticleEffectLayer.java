@@ -1,17 +1,43 @@
 package com.madthrax.ridiculousRPG.animation;
 
-import com.badlogic.gdx.files.FileHandle;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class ParticleEffectLayer extends EffectLayer {
-	ParticleEffect effect = new ParticleEffect();
+	private static final long serialVersionUID = 1L;
+
+	private transient ParticleEffect effect;
+	private String effectFile;
+	private String imagesDir;
 	private boolean started;
 	private float deltaTime;
 
-	public ParticleEffectLayer(FileHandle effectFile, FileHandle imagesDir) {
-		effect.load(effectFile, imagesDir);
+	/**
+	 * Creates a particle effect from a configuration file
+	 * 
+	 * @param effectFile
+	 *            The configuration file (an internal file)
+	 * @param imagesDir
+	 *            The directory for loading the used images (an internal file)
+	 */
+	public ParticleEffectLayer(String effectFile, String imagesDir) {
+		this.effectFile = effectFile;
+		this.imagesDir = imagesDir;
+		loadEffect();
+	}
+
+	private void loadEffect() {
+		effect = new ParticleEffect();
+		effect.load(Gdx.files.internal(effectFile), Gdx.files
+				.internal(imagesDir));
+		if (started)
+			effect.start();
 	}
 
 	@Override
@@ -32,7 +58,8 @@ public class ParticleEffectLayer extends EffectLayer {
 
 	@Override
 	public void compute(float deltaTime, boolean actionKeyDown) {
-		if (!started) effect.start();
+		if (!started)
+			effect.start();
 		this.deltaTime = deltaTime;
 	}
 
@@ -45,5 +72,15 @@ public class ParticleEffectLayer extends EffectLayer {
 	public void resize(int width, int height) {
 		// No scissor is implemented in libgdx ParticleEffect.
 		// Therefore no resizing is needed / possible.
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+		loadEffect();
 	}
 }

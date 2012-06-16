@@ -495,13 +495,13 @@ public class TileAnimation implements Disposable, Serializable {
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		out.defaultWriteObject();
 		// write tile width
-		out.write(animationTiles[0][0].getRegionWidth());
+		out.writeInt(animationTiles[0][0].getRegionWidth());
 		// write tile height
-		out.write(animationTiles[0][0].getRegionHeight());
+		out.writeInt(animationTiles[0][0].getRegionHeight());
 		// write amount of columns
-		out.write(animationTiles[0].length);
+		out.writeInt(animationTiles[0].length);
 		// write amount of rows
-		out.write(animationTiles.length);
+		out.writeInt(animationTiles.length);
 	}
 
 	private void readObject(ObjectInputStream in) throws IOException,

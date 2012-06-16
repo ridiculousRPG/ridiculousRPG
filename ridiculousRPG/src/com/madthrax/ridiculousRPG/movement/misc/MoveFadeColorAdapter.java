@@ -16,9 +16,8 @@
 
 package com.madthrax.ridiculousRPG.movement.misc;
 
-import java.io.Serializable;
-
 import com.badlogic.gdx.graphics.Color;
+import com.madthrax.ridiculousRPG.ColorSerializable;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.event.Speed;
@@ -42,13 +41,13 @@ public class MoveFadeColorAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 
 	private Speed transitionSpeed;
-	private SerializableColor to;
+	private Color to;
 	private boolean tintEntireGame;
 
 	protected MoveFadeColorAdapter(Speed transitionSpeed, Color to,
 			boolean tintEntireGame) {
 		this.transitionSpeed = transitionSpeed;
-		this.to = new SerializableColor(to);
+		this.to = ColorSerializable.wrap(to);
 		this.tintEntireGame = tintEntireGame;
 	}
 
@@ -126,20 +125,5 @@ public class MoveFadeColorAdapter extends MovementHandler {
 			}
 		}
 		return to;
-	}
-	public static class SerializableColor extends Color implements Serializable {
-		private static final long serialVersionUID = 1L;
-
-		public SerializableColor() {
-			super();
-		}
-
-		public SerializableColor(Color color) {
-			super(color);
-		}
-
-		public SerializableColor(float r, float g, float b, float a) {
-			super(r, g, b, a);
-		}
 	}
 }

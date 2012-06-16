@@ -100,6 +100,11 @@ public class GameOptionsDefaultConfigReader {
 				options.encoding = propTmp.trim();
 			}
 
+			propTmp = props.getProperty("SAVE_PATH");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				options.savePath = propTmp.trim();
+			}
+
 			propTmp = props.getProperty("SCRIPT_LANGUAGE");
 			if (propTmp != null && propTmp.trim().length() > 0) {
 				options.scriptLanguage = propTmp.trim();

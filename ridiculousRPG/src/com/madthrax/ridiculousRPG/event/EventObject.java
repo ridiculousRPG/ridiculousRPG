@@ -36,6 +36,7 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledObjectGroup;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
+import com.madthrax.ridiculousRPG.ColorSerializable;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
@@ -63,7 +64,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	private transient TextureRegion image;
 	private Point2D.Float softMove = new Point2D.Float(0f, 0f);
 	private EventHandler eventHandler;
-	private Color color = new Color(1f, 1f, 1f, 1f);
+	private Color color = new ColorSerializable(1f, 1f, 1f, 1f);
 	private float colorFloatBits = color.toFloatBits();
 
 	/**
@@ -101,19 +102,16 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	/**
 	 * All actual collisions for this object are stored in this list
 	 */
-	public transient Array<EventObject> collision = new Array<EventObject>(
-			false, 4);
+	public transient Array<EventObject> collision;
 	/**
 	 * Touching events which have just triggered a touch event
 	 */
-	public transient Array<EventObject> justTouching = new Array<EventObject>(
-			false, 4);
+	public transient Array<EventObject> justTouching;
 	/**
 	 * All reachable objects which can be pushed at this time are stored in this
 	 * list
 	 */
-	public transient Array<EventObject> reachable = new Array<EventObject>(
-			false, 4);
+	public transient Array<EventObject> reachable;
 	/**
 	 * This map holds the local event properties.<br>
 	 * If you use a {@link TiledMapWithEvents}, all object-properties starting
@@ -128,6 +126,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * Creates an empty new event.
 	 */
 	public EventObject() {
+		initTransient();
 	}
 
 	/**
@@ -200,6 +199,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public EventObject(String name, TextureRegionRef region, int x, int y,
 			MovementHandler moveHandler, BlockingBehavior blockingBehaviour,
 			Speed moveSpeed) {
+		this();
 		image = imageRef = region;
 		visible = true;
 		this.moveSpeed = moveSpeed;
@@ -282,6 +282,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			int anzRows, int x, int y, MovementHandler moveHandler,
 			Speed moveSpeed, Direction startDirection,
 			BlockingBehavior blockingBehaviour, boolean isAnimationCompressed) {
+		this();
 		addX(x);
 		addY(y);
 		z = .1f;
@@ -311,6 +312,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 */
 	public EventObject(TiledObject object, TiledObjectGroup layer,
 			TileAtlas atlas, TiledMap map) {
+		this();
 		float mapHeight = map.height * map.tileHeight;
 		name = object.name;
 		type = object.type;
@@ -841,6 +843,12 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		}
 	}
 
+	public boolean isGlobalEvent() {
+		return name != null
+				&& (EVENT_TYPE_PLAYER.equalsIgnoreCase(type) || EVENT_TYPE_GLOBAL
+						.equalsIgnoreCase(type));
+	}
+
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		out.defaultWriteObject();
 	}
@@ -848,6 +856,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	private void readObject(ObjectInputStream in) throws IOException,
 			ClassNotFoundException {
 		in.defaultReadObject();
+		initTransient();
 		if (texturePath != null) {
 			setImage(texturePath, false, false);
 		}
@@ -861,9 +870,10 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		}
 	}
 
-	public boolean isGlobalEvent() {
-		return name != null
-				&& (EVENT_TYPE_PLAYER.equalsIgnoreCase(type) || EVENT_TYPE_GLOBAL
-						.equalsIgnoreCase(type));
+	// default values for transient variables
+	private void initTransient() {
+		collision = new Array<EventObject>(false, 4);
+		justTouching = new Array<EventObject>(false, 4);
+		reachable = new Array<EventObject>(false, 4);
 	}
 }

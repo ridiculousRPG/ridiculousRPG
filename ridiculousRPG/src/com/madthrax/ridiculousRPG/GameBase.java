@@ -16,11 +16,17 @@
 
 package com.madthrax.ridiculousRPG;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -29,8 +35,10 @@ import javax.script.ScriptException;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -43,6 +51,7 @@ import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 import com.madthrax.ridiculousRPG.ui.DisplayErrorService;
+import com.madthrax.ridiculousRPG.ui.MenuService;
 
 /**
  * @author Alexander Baumgartner
@@ -62,16 +71,17 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	private Rectangle screen = new Rectangle();
 
 	private List<Thread> glContextThread = new ArrayList<Thread>();
-	private HashMap<String, EventObject> globalEvents = new HashMap<String, EventObject>();
+	private Map<String, EventObject> globalEvents = new HashMap<String, EventObject>();
 
+	private boolean exitForced = true;
 	private boolean triggerActionKeyPressed;
 	private boolean fullscreen;
 	private boolean controlKeyPressedOld, controlKeyPressed,
 			actionKeyPressedOld, actionKeyPressed;
 	private boolean glAsyncLoadable;
 
-	private Color backgroundColor = new Color(0f, 0f, 0f, 1f);
-	private Color gameColorTint = new Color(1f, 1f, 1f, 1f);
+	private Color backgroundColor = new ColorSerializable(0f, 0f, 0f, 1f);
+	private Color gameColorTint = new ColorSerializable(1f, 1f, 1f, 1f);
 	private float gameColorBits = gameColorTint.toFloatBits();
 
 	private final String engineVersion = "0.3 prealpha (incomplete)";
@@ -88,13 +98,17 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		camera = new CameraSimpleOrtho2D();
 		globalState = new ObjectState();
 		serviceProvider = new GameServiceProvider();
-		plane.width = camera.viewportWidth = screen.width = options.width = Gdx.graphics
-				.getWidth();
-		plane.height = camera.viewportHeight = screen.height = options.height = Gdx.graphics
-				.getHeight();
+		options.width = Gdx.graphics.getWidth();
+		options.height = Gdx.graphics.getHeight();
 		// instance != null indicates that GameBase is initialized
 		if (!isInitialized())
 			instance = this;
+		// restore last display mode
+		loadDisplayMode();
+		plane.width = camera.viewportWidth = screen.width = Gdx.graphics
+				.getWidth();
+		plane.height = camera.viewportHeight = screen.height = Gdx.graphics
+				.getHeight();
 
 		try {
 			scriptFactory.init(options.initScript);
@@ -113,7 +127,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	}
 
 	public void rebuildSpriteBatch() {
-		if (spriteBatch!=null) spriteBatch.dispose();
+		if (spriteBatch != null)
+			spriteBatch.dispose();
 		spriteBatch = new SpriteBatch();
 	}
 
@@ -181,6 +196,27 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 */
 	public static GameOptions $options() {
 		return $().getOptions();
+	}
+
+	/**
+	 * Returns a path to store temporary files while the game is running
+	 * 
+	 * @return Path to store temporary files
+	 */
+	public static FileHandle $tmpPath() {
+		FileHandle fh = Gdx.files.external($().options.savePath).child(
+				".tmpStorage");
+		if (!fh.exists())
+			fh.mkdirs();
+		return fh;
+	}
+
+	/**
+	 * Deletes all temporary files
+	 */
+	public void clearTmpFiles() {
+		Gdx.files.external($().options.savePath).child(".tmpStorage")
+				.deleteDirectory();
 	}
 
 	public final void render() {
@@ -347,16 +383,23 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		screen.height = height;
 		cam.update();
 		serviceProvider.resize(width, height);
+		saveDisplayMode();
+	}
+
+	public void restoreDefaultResolution() {
+		Gdx.graphics.setDisplayMode(options.width, options.height, fullscreen);
 	}
 
 	public void pause() {
-		// TODO: save state
-		serviceProvider.requestAttention(this, true, false);
+		if (Gdx.app.getType() != ApplicationType.Desktop
+				&& exitForced
+				&& !(getServiceProvider().queryAttention() instanceof MenuService))
+			quickSave();
 	}
 
 	public void resume() {
-		// TODO: load state
-		serviceProvider.releaseAttention(this);
+		if (lastExitForced())
+			quickLoad();
 	}
 
 	/**
@@ -374,7 +417,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 * @see {@link MoveFadeColorAdapter#$(Speed, Color, boolean)}
 	 */
 	public void setGameColorTint(Color tint) {
-		gameColorTint = tint;
+		gameColorTint = ColorSerializable.wrap(tint);
 		gameColorBits = tint.toFloatBits();
 	}
 
@@ -500,26 +543,24 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		if (spriteBatch != null)
 			spriteBatch.dispose();
 		GameConfig.get().dispose();
+		clearTmpFiles();
 	}
 
 	/**
 	 * Exits the running game
 	 */
 	public void exit() {
-		if (isGlContextThread()) {
-			Gdx.app.exit();
-		} else {
-			Gdx.app.postRunnable(new Runnable() {
-				@Override
-				public void run() {
-					Gdx.app.exit();
-				}
-			});
-		}
+		exitForced = false;
+		new ExecuteInMainThread() {
+			@Override
+			public void exec() {
+				Gdx.app.exit();
+			}
+		}.runWait();
 	}
 
 	public void setBackgroundColor(Color backgroundColor) {
-		this.backgroundColor = backgroundColor;
+		this.backgroundColor = ColorSerializable.wrap(backgroundColor);
 	}
 
 	public Color getBackgroundColor() {
@@ -530,8 +571,31 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		this.globalEvents = globalEvents;
 	}
 
-	public HashMap<String, EventObject> getGlobalEvents() {
+	/**
+	 * Returns the map which stores the global events
+	 * 
+	 * @return A map with all global events
+	 * @see #getGlobalEventsClone()
+	 */
+	public Map<String, EventObject> getGlobalEvents() {
 		return globalEvents;
+	}
+
+	/**
+	 * Returns a shallow clone of the global events map, which may be
+	 * manipulated without effecting the main map.
+	 * 
+	 * @return A map with all global events
+	 * @see #getGlobalEvents()
+	 */
+	@SuppressWarnings("unchecked")
+	public Map<String, EventObject> getGlobalEventsClone() {
+		// the clone method should be faster than instantiating a new map
+		if (globalEvents instanceof HashMap<?, ?>) {
+			return (Map<String, EventObject>) ((HashMap<String, EventObject>) globalEvents)
+					.clone();
+		}
+		return new HashMap<String, EventObject>(globalEvents);
 	}
 
 	/**
@@ -572,5 +636,160 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 
 	public boolean isGlAsyncLoadable() {
 		return glAsyncLoadable;
+	}
+
+	private String getDisplayStateSavePath() {
+		return GameBase.$options().savePath + "displayState.sav";
+	}
+
+	private FileHandle getServiceStateTmpPath() {
+		return $tmpPath().child("restoreGameServiceState.ser.sav");
+	}
+
+	public FileHandle getSaveFile(int i) {
+		return Gdx.files.external(GameBase.$options().savePath + "gameState"
+				+ i + ".sav");
+	}
+
+	private void saveDisplayMode() {
+		FileHandle fh = Gdx.files.external(getDisplayStateSavePath());
+		try {
+			ObjectOutputStream oOut = new ObjectOutputStream(fh.write(false));
+			oOut.writeObject(screen);
+			oOut.writeBoolean(fullscreen);
+			oOut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void loadDisplayMode() {
+		FileHandle fh = Gdx.files.external(getDisplayStateSavePath());
+		if (fh.exists()) {
+			try {
+				ObjectInputStream oIn = new ObjectInputStream(fh.read());
+				screen = (Rectangle) oIn.readObject();
+				fullscreen = oIn.readBoolean();
+				oIn.close();
+				Gdx.graphics.setDisplayMode((int) screen.width,
+						(int) screen.height, false);
+				if (fullscreen) {
+					Gdx.graphics.setDisplayMode((int) screen.width,
+							(int) screen.height, true);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * Saves the state to the save-file number 0, which is the quick-load/save
+	 * file
+	 * 
+	 * @see #saveFile(int)
+	 * @return true if save is successful, false otherwise
+	 */
+	public boolean quickSave() {
+		return saveFile(0);
+	}
+
+	/**
+	 * Saves the state to the specified save-file
+	 * 
+	 * @return true if save is successful, false otherwise
+	 */
+	public boolean saveFile(int fileNumber) {
+		try {
+			OutputStream os = getServiceStateTmpPath().write(false);
+			ObjectOutputStream oOut = new ObjectOutputStream(os);
+			oOut.writeBoolean(exitForced);
+			oOut.writeObject(globalState);
+			oOut.writeObject(globalEvents);
+			oOut.writeObject(camera);
+			oOut.writeObject(plane);
+			oOut.writeObject(backgroundColor);
+			oOut.writeObject(gameColorTint);
+			oOut.writeFloat(gameColorBits);
+			$serviceProvider().saveSerializableServices(oOut);
+			oOut.close();
+
+			Zipper.zip($tmpPath(), getSaveFile(fileNumber));
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	/**
+	 * Loads the state from save-file number 0, which is the quick-load/save
+	 * file
+	 * 
+	 * @see #loadFile(int)
+	 * @return true if load is successful, false otherwise
+	 */
+	public boolean quickLoad() {
+		return loadFile(0);
+	}
+
+	/**
+	 * Determines if last exit has been forced by a phone call
+	 * 
+	 * @return true if exit has been forced
+	 */
+	public boolean lastExitForced() {
+		FileHandle fh = getSaveFile(0);
+		if (fh.exists()) {
+			try {
+				clearTmpFiles();
+				Zipper.unzip(fh, $tmpPath());
+
+				InputStream is = getServiceStateTmpPath().read();
+				ObjectInputStream oIn = new ObjectInputStream(is);
+				boolean exitForced = oIn.readBoolean();
+				oIn.close();
+				return exitForced;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Loads the state from the specified save-file
+	 * 
+	 * @return true if save is successful, false otherwise
+	 */
+	@SuppressWarnings("unchecked")
+	public boolean loadFile(int fileNumber) {
+		FileHandle fh = getSaveFile(fileNumber);
+		if (fh.exists()) {
+			try {
+				clearTmpFiles();
+				Zipper.unzip(fh, $tmpPath());
+
+				InputStream is = getServiceStateTmpPath().read();
+				ObjectInputStream oIn = new ObjectInputStream(is);
+				oIn.readBoolean(); // exitForced
+				globalState = (ObjectState) oIn.readObject();
+				globalEvents = (Map<String, EventObject>) oIn.readObject();
+				camera = (Camera) oIn.readObject();
+				plane = (Rectangle) oIn.readObject();
+				backgroundColor = (Color) oIn.readObject();
+				gameColorTint = (Color) oIn.readObject();
+				gameColorBits = oIn.readFloat();
+				$serviceProvider().loadSerializableServices(oIn);
+				oIn.close();
+
+				camera.update();
+				serviceProvider.resize((int) screen.width, (int) screen.height);
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
 	}
 }

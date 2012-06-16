@@ -34,7 +34,7 @@ $.serviceProvider.putService("menu", new ridiculousRPG.ui.StandardMenuService())
 //Add the StandardMenuService to the service provider
 $.serviceProvider.putService("messaging", new ridiculousRPG.ui.MessagingService());
 //Add the MapRenderService to the service provider
-$.serviceProvider.putService("weather", new ridiculousRPG.animation.WeatherEffectService());
+$.serviceProvider.putService("weather", new ridiculousRPG.animation.ParticleEffectService());
 //Add the MultimediaService to the service provider
 $.serviceProvider.putService("map", new ridiculousRPG.map.MapRenderService());
 //Add the MultimediaService to the service provider

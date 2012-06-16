@@ -1,5 +1,7 @@
 package com.madthrax.ridiculousRPG.animation;
 
+import java.io.Serializable;
+
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
@@ -8,7 +10,9 @@ import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.ResizeListener;
 
 public abstract class EffectLayer implements Disposable, Computable, Drawable,
-		ResizeListener {
+		ResizeListener, Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private boolean stopRequested = false;
 
 	/**
@@ -38,7 +42,7 @@ public abstract class EffectLayer implements Disposable, Computable, Drawable,
 
 	/**
 	 * Normally you don't need to implement this for a layer because the
-	 * projection is specified in {@link WeatherEffectService}
+	 * projection is specified in {@link ParticleEffectService}
 	 */
 	@Override
 	public Matrix4 projectionMatrix(Camera camera) {

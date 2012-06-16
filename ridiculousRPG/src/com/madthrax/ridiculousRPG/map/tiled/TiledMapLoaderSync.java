@@ -16,17 +16,9 @@
 
 package com.madthrax.ridiculousRPG.map.tiled;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.HashMap;
-
 import javax.script.ScriptException;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.event.EventObject;
-import com.madthrax.ridiculousRPG.event.handler.EventHandler;
 import com.madthrax.ridiculousRPG.map.MapLoader;
 import com.madthrax.ridiculousRPG.map.MapWithEvents;
 
@@ -42,7 +34,6 @@ public class TiledMapLoaderSync extends Thread implements
 	private boolean disposeMap = false;
 	private boolean disposed = false;
 	private boolean done = true;
-	private String filePath;
 	private MapWithEvents<EventObject> map;
 	private String loadMapPath;
 
@@ -58,24 +49,9 @@ public class TiledMapLoaderSync extends Thread implements
 					return;
 				yield();
 			}
-			if (map != null && filePath != null) {
+			if (map != null) {
 				// store map
-				FileHandle fh = Gdx.files.external(map.getExternalSavePath());
-				try {
-					HashMap<Integer, ObjectState> eventsById = new HashMap<Integer, ObjectState>(
-							100);
-					ObjectOutputStream oOut = new ObjectOutputStream(
-							fh.write(false));
-					for (EventObject event : map.getAllEvents()) {
-						EventHandler handler = event.getEventHandler();
-						if (handler != null) {
-							eventsById.put(event.id, handler.getActualState());
-						}
-					}
-					oOut.writeObject(eventsById);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				map.saveStateToFS();
 				if (disposeMap)
 					map.dispose(true);
 				map = null;
@@ -107,7 +83,7 @@ public class TiledMapLoaderSync extends Thread implements
 		}
 		this.disposeMap = disposeMap;
 		this.map = map;
-		this.filePath = map.getExternalSavePath();
+		this.loadMapPath = null;
 		this.done = false;
 	}
 

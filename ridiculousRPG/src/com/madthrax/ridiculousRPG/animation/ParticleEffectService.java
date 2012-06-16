@@ -16,7 +16,9 @@
 
 package com.madthrax.ridiculousRPG.animation;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -34,9 +36,11 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
  * 
  * @author Alexander Baumgartner
  */
-public class WeatherEffectService extends GameServiceDefaultImpl implements
-		Computable, Drawable, ResizeListener {
-	private ArrayList<EffectLayer> renderLayers = new ArrayList<EffectLayer>();
+public class ParticleEffectService extends GameServiceDefaultImpl implements
+		Computable, Drawable, ResizeListener, Serializable {
+	private static final long serialVersionUID = 1L;
+
+	private List<EffectLayer> renderLayers = new ArrayList<EffectLayer>();
 	private EffectLayer[] addLayer = new EffectLayer[10];
 	private EffectLayer[] removeLayer = new EffectLayer[10];
 	private float[] addLayerWait = new float[10];
@@ -50,7 +54,7 @@ public class WeatherEffectService extends GameServiceDefaultImpl implements
 	 * addLayer(...).<br>
 	 * Add a new layer of the same effect to increase the weather effect.
 	 */
-	public WeatherEffectService() {
+	public ParticleEffectService() {
 	}
 
 	/**

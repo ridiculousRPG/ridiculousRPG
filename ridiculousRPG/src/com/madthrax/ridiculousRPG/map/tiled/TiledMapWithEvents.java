@@ -39,10 +39,10 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObject;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObjectGroup;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.IntMap;
 import com.madthrax.ridiculousRPG.DebugHelper;
 import com.madthrax.ridiculousRPG.ExecuteInMainThread;
 import com.madthrax.ridiculousRPG.GameBase;
+import com.madthrax.ridiculousRPG.IntSet;
 import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
@@ -77,8 +77,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 	private int localIdCount = 0;
 	private int globalIdCount = 1000000000;
-	private static final Object DUMMY = new Object();
-	private transient IntMap<Object> usedIds = new IntMap<Object>();
+	private IntSet intSet = new IntSet();
 
 	// tiles
 	private transient MapRenderRegion[] staticRegions;
@@ -191,7 +190,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		staticRegions = alTmp.toArray(new MapRenderRegion[alTmp.size()]);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void loadEvents(TiledMap map) throws ScriptException {
 		int i;
 		int j;
@@ -199,17 +197,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		int len_j;
 		String prop;
 		EventObject ev;
-		HashMap<Integer, ObjectState> eventsById = new HashMap<Integer, ObjectState>();
-		FileHandle fh = Gdx.files.external(getExternalSavePath());
-		if (fh.exists()) {
-			try {
-				ObjectInputStream stateIn = new ObjectInputStream(fh.read());
-				eventsById = (HashMap<Integer, ObjectState>) stateIn
-						.readObject();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+		Map<Integer, ObjectState> eventsById = loadStateFromFS();
 		for (i = 0, len_i = map.objectGroups.size(); i < len_i; i++) {
 			TiledObjectGroup group = map.objectGroups.get(i);
 			for (j = 0, len_j = group.objects.size(); j < len_j; j++) {
@@ -226,8 +214,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				put(object.name, ev);
 			}
 		}
-		HashMap<String, EventObject> globalEv = (HashMap<String, EventObject>) GameBase
-				.$().getGlobalEvents().clone();
+		Map<String, EventObject> globalEv = GameBase.$().getGlobalEventsClone();
 		// Initialize the events
 		for (i = 0, len_i = dynamicRegions.size(); i < len_i; i++) {
 			EventObject eventObj = dynamicRegions.get(i);
@@ -266,6 +253,61 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		ev.setTouchBound(new Rectangle(-1000f, height, width + 2000f, 1000f));
 		put(null, ev = new EventObject());
 		ev.setTouchBound(new Rectangle(width, -1000f, 1000f, height + 2000f));
+	}
+
+	/**
+	 * Loads the current state from the file system.<br>
+	 * The path used for loading the state is determined by the method
+	 * {@link #getExternalSavePath()}.
+	 * 
+	 * @see #getExternalSavePath()
+	 * @see #saveStateToFS()
+	 * @return A map with {@link EventObject#id} as key and the state
+	 *         {@link ObjectState} as value
+	 */
+	@SuppressWarnings("unchecked")
+	protected Map<Integer, ObjectState> loadStateFromFS() {
+		FileHandle fh = getExternalSavePath();
+		if (fh.exists()) {
+			try {
+				ObjectInputStream stateIn = new ObjectInputStream(fh.read());
+				Map<Integer, ObjectState> stateMap = (Map<Integer, ObjectState>) stateIn
+						.readObject();
+				stateIn.close();
+				return stateMap;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return new HashMap<Integer, ObjectState>();
+	}
+
+	/**
+	 * Saves the current state to the file system.<br>
+	 * The path used for saving the state is determined by the method
+	 * {@link #getExternalSavePath()}.
+	 * 
+	 * @see #getExternalSavePath()
+	 * @see #loadStateFromFS()
+	 */
+	@Override
+	public void saveStateToFS() {
+		FileHandle fh = getExternalSavePath();
+		try {
+			HashMap<Integer, ObjectState> eventsById = new HashMap<Integer, ObjectState>(
+					100);
+			ObjectOutputStream oOut = new ObjectOutputStream(fh.write(false));
+			for (EventObject event : getAllEvents()) {
+				EventHandler handler = event.getEventHandler();
+				if (handler != null) {
+					eventsById.put(event.id, handler.getActualState());
+				}
+			}
+			oOut.writeObject(eventsById);
+			oOut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -472,18 +514,18 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				}
 			}
 		} else {
-			usedIds.put(id, DUMMY);
+			intSet.put(id);
 		}
 	}
 
 	private void nextId(EventObject eventToSet) {
 		if (eventToSet.isGlobalEvent()) {
-			while (usedIds.containsKey(globalIdCount))
+			while (intSet.containsKey(globalIdCount))
 				globalIdCount++;
 			eventToSet.id = globalIdCount;
 			globalIdCount++;
 		} else {
-			while (usedIds.containsKey(localIdCount))
+			while (intSet.containsKey(localIdCount))
 				localIdCount++;
 			eventToSet.id = localIdCount;
 			localIdCount++;
@@ -664,10 +706,10 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	}
 
 	@Override
-	public String getExternalSavePath() {
-		return "ridiculousRPG/"
-				+ tmxPath.replaceFirst("(?i)\\.tmx$", "")
-						.replaceAll("\\W", "_") + ".sav";
+	public FileHandle getExternalSavePath() {
+		return GameBase.$tmpPath().child(
+				tmxPath.replaceFirst("(?i)\\.tmx$", "")
+						.replaceAll("\\W", "_") + ".sav");
 	}
 
 	/**

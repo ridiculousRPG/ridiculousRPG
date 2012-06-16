@@ -44,7 +44,7 @@ public abstract class WeatherEffectUtil {
 	 * @param wind
 	 *            Use the enum inner class WeatherEffectUtil.Wind
 	 */
-	public static void generateSnow(WeatherEffectService engine, Wind wind) {
+	public static void generateSnow(ParticleEffectService engine, Wind wind) {
 		engine.addWeatherLayerTimes(SNOW_TEXTURE_PATH, 50, .2f + .1f * Math
 				.abs(wind.val), .07f * wind.val, 3, 10 + 30 / wind.val);
 	}
@@ -56,7 +56,7 @@ public abstract class WeatherEffectUtil {
 	 * @param wind
 	 *            Use the enum inner class WeatherEffectUtil.Wind
 	 */
-	public static void generateRain(WeatherEffectService engine, Wind wind) {
+	public static void generateRain(ParticleEffectService engine, Wind wind) {
 		engine.addWeatherLayerTimes(wind.val > 0 ? RAIN_NW_TEXTURE_PATH
 				: RAIN_NE_TEXTURE_PATH, 50, 1f + .67f * Math.abs(wind.val),
 				.33f * wind.val, 2, 10 + 30 / wind.val);
@@ -67,7 +67,7 @@ public abstract class WeatherEffectUtil {
 	 * 
 	 * @see WeatherEffectEngine.stopLayer(0)
 	 */
-	public static void decreaseEffect(WeatherEffectService engine) {
+	public static void decreaseEffect(ParticleEffectService engine) {
 		engine.stopLayer(0);
 	}
 
@@ -77,7 +77,7 @@ public abstract class WeatherEffectUtil {
 	 * @param wind
 	 *            Use the enum inner class WeatherEffectUtil.Wind
 	 */
-	public static void increaseSnow(WeatherEffectService engine, Wind wind) {
+	public static void increaseSnow(ParticleEffectService engine, Wind wind) {
 		engine.addWeatherLayer(SNOW_TEXTURE_PATH, 50, .2f + .1f * Math.abs(wind.val),
 				.07f * wind.val);
 	}
@@ -88,7 +88,7 @@ public abstract class WeatherEffectUtil {
 	 * @param wind
 	 *            Use the enum inner class WeatherEffectUtil.Wind
 	 */
-	public static void increaseRain(WeatherEffectService engine, Wind wind) {
+	public static void increaseRain(ParticleEffectService engine, Wind wind) {
 		engine.addWeatherLayer(wind.val > 0 ? RAIN_NW_TEXTURE_PATH
 				: RAIN_NE_TEXTURE_PATH, 50, 1f + .67f * Math.abs(wind.val),
 				.33f * wind.val);
@@ -101,7 +101,7 @@ public abstract class WeatherEffectUtil {
 	 * @see WeatherEffectEngine.stop()
 	 * @return
 	 */
-	public static void stop(WeatherEffectService engine) {
+	public static void stop(ParticleEffectService engine) {
 		engine.stop();
 	}
 }

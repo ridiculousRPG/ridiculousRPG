@@ -41,6 +41,11 @@ public class CameraToggleFullscreenService extends InputAdapter implements
 	public boolean keyDown(int keycode) {
 		if (keycode == Input.Keys.ENTER
 				&& Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
+			// restore default resolution in windowed mode
+			if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
+				GameBase.$().restoreDefaultResolution();
+				return true;
+			}
 			return GameBase.$().toggleFullscreen();
 		}
 		return false;

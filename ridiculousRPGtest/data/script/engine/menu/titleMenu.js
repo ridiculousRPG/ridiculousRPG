@@ -22,25 +22,6 @@ function createGui(menu) {
 	var skin = menu.skinNormal;
 	var w = new ui.Window("Start menu", skin);
 
-	var resume = new ui.TextButton("Continue at last save point", skin);
-	resume.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
-			menu.changeState(MENU_STATE_IDLE);
-		}
-	};
-	w.row().fill(true, true).expand(true, false);
-	w.add(resume);
-
-	var load = new ui.TextButton("Load game", skin);
-	load.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
-			menu.showInfoFocused("Load is not implemented yet.\n"
-					+ "This is an early alpha release!");
-		}
-	};
-	w.row().fill(true, true).expand(true, false);
-	w.add(load);
-	
 	var start = new ui.TextButton("Start new game", skin);
 	start.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
@@ -50,6 +31,29 @@ function createGui(menu) {
 	};
 	w.row().fill(true, true).expand(true, false);
 	w.add(start);
+
+	var resume = new ui.TextButton("Quick load", skin);
+	resume.clickListener = new ui.ClickListener() {
+		click: function (actor, x, y) {
+			if ($.quickLoad()) {
+				menu.changeState(MENU_STATE_IDLE);
+			} else {
+				menu.showInfoFocused("No quick-load file available!");
+			}
+		}
+	};
+	w.row().fill(true, true).expand(true, false);
+	w.add(resume);
+
+	var load = new ui.TextButton("Load game", skin);
+	load.clickListener = new ui.ClickListener() {
+		click: function (actor, x, y) {
+			menu.changeState(MENU_STATE_IDLE);
+			$.load();
+		}
+	};
+	w.row().fill(true, true).expand(true, false);
+	w.add(load);
 
 	var toggleFull = new ui.TextButton(
 			$.isFullscreen() ? "Window mode" : "Fullscreen mode", skin);
@@ -73,5 +77,5 @@ function createGui(menu) {
 	w.pack();
 	menu.center(w);
 	menu.addGUIcomponent(w);
-	menu.focus(resume);
+	menu.focus(start);
 }

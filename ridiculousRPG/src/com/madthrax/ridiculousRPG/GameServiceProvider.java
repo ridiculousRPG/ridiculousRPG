@@ -16,6 +16,10 @@
 
 package com.madthrax.ridiculousRPG;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -325,7 +329,8 @@ public class GameServiceProvider {
 			else
 				inputMultiplexer.getProcessors().removeIndex(index);
 		} else if (service instanceof InputProcessor) {
-			inputMultiplexer.getProcessors().insert(0, (InputProcessor) service);
+			inputMultiplexer.getProcessors()
+					.insert(0, (InputProcessor) service);
 		}
 		return old;
 	}
@@ -519,12 +524,14 @@ public class GameServiceProvider {
 		try {
 			drawAllInternal(debug);
 		} catch (Exception e) {
-			// after an exception while drawing, spriteBatch has an undefined state,
+			// after an exception while drawing, spriteBatch has an undefined
+			// state,
 			// that's why we throw it away and create a new one.
 			e.printStackTrace();
 			GameBase.$().rebuildSpriteBatch();
 		}
 	}
+
 	void drawAllInternal(boolean debug) {
 		// clear the screen
 		Gdx.gl.glClearColor(GameBase.$().getBackgroundColor().r, GameBase.$()
@@ -595,4 +602,20 @@ public class GameServiceProvider {
 		return old;
 	}
 
+	protected void saveSerializableServices(ObjectOutputStream oOut) throws IOException {
+		Map<String, GameService> serializeIt = new HashMap<String, GameService>();
+		for (Map.Entry<String, GameService> es : services.entrySet()) {
+			if (es.getValue() instanceof Serializable) {
+				serializeIt.put(es.getKey(), es.getValue());
+			}
+		}
+		oOut.writeObject(serializeIt);
+	}
+	protected void loadSerializableServices(ObjectInputStream oIn) throws IOException, ClassNotFoundException {
+		@SuppressWarnings("unchecked")
+		Map<String, GameService> unserializeIt = (Map<String, GameService>) oIn.readObject();
+		for (Map.Entry<String, GameService> es : unserializeIt.entrySet()) {
+			putService(es.getKey(), es.getValue());
+		}
+	}
 }

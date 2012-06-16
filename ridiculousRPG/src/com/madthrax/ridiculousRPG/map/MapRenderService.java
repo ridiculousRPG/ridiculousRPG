@@ -16,6 +16,7 @@
 
 package com.madthrax.ridiculousRPG.map;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.badlogic.gdx.graphics.Camera;
@@ -36,7 +37,9 @@ import com.madthrax.ridiculousRPG.service.ResizeListener;
  * @author Alexander Baumgartner
  */
 public class MapRenderService extends GameServiceDefaultImpl implements
-		Computable, Drawable {
+		Computable, Drawable, Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private MapWithEvents<?> map;
 
 	/**

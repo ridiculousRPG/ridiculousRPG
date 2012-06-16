@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.movement.input;
 
+import java.io.Serializable;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
@@ -27,7 +29,8 @@ import com.madthrax.ridiculousRPG.movement.MovementHandler;
  * 
  * @author Alexander Baumgartner
  */
-public final class MovementKeys {
+public final class MovementKeys implements Serializable {
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * The default movement keys are W,A,S,D and the Arrow keys.<br>

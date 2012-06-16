@@ -40,11 +40,37 @@ function createGui(menu) {
 	w.row().fill(true, true).expand(true, false);
 	w.add(bag);
 
+	var quickload = new ui.TextButton("Quick load", skin);
+	quickload.clickListener = new ui.ClickListener() {
+		click: function (actor, x, y) {
+			if ($.quickLoad()) {
+				menu.changeState(MENU_STATE_IDLE);
+			} else {
+				menu.showInfoFocused("No quick-load file available!");
+			}
+		}
+	};
+	w.row().fill(true, true).expand(true, false);
+	w.add(quickload);
+
+	var quicksave = new ui.TextButton("Quick save", skin);
+	quicksave.clickListener = new ui.ClickListener() {
+		click: function (actor, x, y) {
+		$.quickSave();
+			if ($.quickSave()) {
+				menu.changeState(MENU_STATE_IDLE);
+			} else {
+				menu.showInfoFocused("Save failed (see log-file)!");
+			}
+		}
+	};
+	w.row().fill(true, true).expand(true, false);
+	w.add(quicksave);
+
 	var save = new ui.TextButton("Save", skin);
 	save.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.showInfoFocused("Save is not implemented yet.\n"
-					+ "This is an early alpha release!");
+			$.save();
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
@@ -53,8 +79,7 @@ function createGui(menu) {
 	var load = new ui.TextButton("Load", skin);
 	load.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.showInfoFocused("Load is not implemented yet.\n"
-					+ "This is an early alpha release!");
+			$.load();
 		}
 	};
 	w.row().fill(true, true).expand(true, false);

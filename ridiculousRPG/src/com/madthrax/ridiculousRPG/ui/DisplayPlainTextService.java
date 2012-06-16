@@ -37,6 +37,7 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
  */
 public abstract class DisplayPlainTextService extends GameServiceDefaultImpl
 		implements Drawable {
+
 	public enum Alignment {
 		LEFT, BOTTOM, CENTER, RIGHT, TOP
 	}
@@ -223,8 +224,8 @@ public abstract class DisplayPlainTextService extends GameServiceDefaultImpl
 	}
 
 	/**
-	 * The {@link DisplayPlainTextService} (an per default also it's successors) is
-	 * essential and will always be drawn. No matter if an other
+	 * The {@link DisplayPlainTextService} (an per default also it's successors)
+	 * is essential and will always be drawn. No matter if an other
 	 * {@link GameService} has frozen the world.
 	 * 
 	 * @return true

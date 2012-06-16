@@ -16,9 +16,15 @@
 
 package com.madthrax.ridiculousRPG.camera;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.Drawable;
 
@@ -32,7 +38,9 @@ import com.madthrax.ridiculousRPG.service.Drawable;
  * @see SpriteBatch#setProjectionMatrix(Matrix4)
  * @author Alexander Baumgartner
  */
-public class CameraSimpleOrtho2D extends Camera {
+public class CameraSimpleOrtho2D extends Camera implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private float x, y;
 
 	@Override
@@ -93,5 +101,40 @@ public class CameraSimpleOrtho2D extends Camera {
 	@Override
 	public void update(boolean updateFrustum) {
 		update();
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+
+		out.writeObject(combined);
+		out.writeObject(direction);
+		out.writeFloat(far);
+		//out.writeObject(frustum);
+		out.writeObject(invProjectionView);
+		out.writeFloat(near);
+		out.writeObject(position);
+		out.writeObject(projection);
+		out.writeObject(up);
+		out.writeObject(view);
+		out.writeFloat(viewportHeight);
+		out.writeFloat(viewportWidth);
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+
+		combined.set((Matrix4) in.readObject());
+		direction.set((Vector3) in.readObject());
+		far = in.readFloat();
+		// frustum.set((Frustum) in.readObject());
+		invProjectionView.set((Matrix4) in.readObject());
+		near = in.readFloat();
+		position.set((Vector3) in.readObject());
+		projection.set((Matrix4) in.readObject());
+		up.set((Vector3) in.readObject());
+		view.set((Matrix4) in.readObject());
+		viewportHeight = in.readFloat();
+		viewportWidth = in.readFloat();
 	}
 }

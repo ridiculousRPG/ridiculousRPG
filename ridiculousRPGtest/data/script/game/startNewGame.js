@@ -6,6 +6,8 @@
  * state.
  */
 
+// Clear temporary directory
+$.clearTmpFiles();
 // Play 3 seconds from the test card
 $.serviceProvider.getService("video").play(internalFile("data/video/test.ogg"), false, 3, false);
 // Display startup map

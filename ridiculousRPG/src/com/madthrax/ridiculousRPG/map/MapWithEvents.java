@@ -19,6 +19,7 @@ package com.madthrax.ridiculousRPG.map;
 import java.io.Serializable;
 import java.util.List;
 
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Disposable;
@@ -102,7 +103,12 @@ public interface MapWithEvents<T extends Movable> extends Disposable,
 	 */
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug);
 
-	public String getExternalSavePath();
+	public FileHandle getExternalSavePath();
 
 	public void dispose(final boolean recycle);
+
+	/**
+	 * Saves the current state to the file system.
+	 */
+	public void saveStateToFS();
 }
