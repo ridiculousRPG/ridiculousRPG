@@ -652,18 +652,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		}
 	}
 
-	private void writeObject(ObjectOutputStream out) throws IOException {
-		out.defaultWriteObject();
-	}
-
-	private void readObject(ObjectInputStream in) throws IOException,
-			ClassNotFoundException {
-		in.defaultReadObject();
-
-		TiledMap map = loadTileMap(tmxPath);
-		loadStaticTiles(map);
-	}
-
 	public void dispose() {
 		dispose(false);
 	}
@@ -708,8 +696,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	@Override
 	public FileHandle getExternalSavePath() {
 		return GameBase.$tmpPath().child(
-				tmxPath.replaceFirst("(?i)\\.tmx$", "")
-						.replaceAll("\\W", "_") + ".sav");
+				tmxPath.replaceFirst("(?i)\\.tmx$", "").replaceAll("\\W", "_")
+						+ ".sav");
 	}
 
 	/**
@@ -722,4 +710,21 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		}
 		return mapLoader;
 	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+
+		TiledMap map = loadTileMap(tmxPath);
+		loadStaticTiles(map);
+		for (EventObject ev : dynamicRegions) {
+			if (ev.gid > 0)
+				ev.setImage((AtlasRegion) atlas.getRegion(ev.gid));
+		}
+	}
+
 }

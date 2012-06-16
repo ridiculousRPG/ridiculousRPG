@@ -78,6 +78,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * @see EventHandler#store(EventObject, ObjectState, boolean)
 	 */
 	public int id = -1;
+	public int gid = 0;
+
 	public String name;
 	public String type;
 	public float z;
@@ -317,8 +319,9 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		name = object.name;
 		type = object.type;
 		if (object.gid > 0) {
+			gid = object.gid;
 			AtlasRegion region = (AtlasRegion) atlas.getRegion(object.gid);
-			image = region;
+			setImage(region);
 			visible = true;
 			addX(region.offsetX + object.x);
 			addY(mapHeight + region.offsetY - object.y);
@@ -875,5 +878,9 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		collision = new Array<EventObject>(false, 4);
 		justTouching = new Array<EventObject>(false, 4);
 		reachable = new Array<EventObject>(false, 4);
+	}
+
+	public void setImage(AtlasRegion region) {
+		image = region;
 	}
 }
