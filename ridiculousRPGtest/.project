@@ -3,6 +3,8 @@
 	<name>ridiculousRPGtest</name>
 	<comment></comment>
 	<projects>
+		<project>ridiculousRPG</project>
+		<project>ridiculousRPGcortado</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

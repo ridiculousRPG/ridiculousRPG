@@ -16,7 +16,10 @@
 
 package com.madthrax.ridiculousRPG.video;
 
-import java.lang.reflect.Constructor;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -31,9 +34,11 @@ import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 
 /**
- * This service is capable to play video files.<br>
- * It's a wrapper for the Cortado video player.<br>
- * The following formats are supported:<br>
+ * This service is capable to play video files. It's a wrapper for different
+ * video players.<br>
+ * At the time there exists a compatible implementation for the cortado video
+ * player (see ridiculousRPGcortado).
+ * The cortado video player supports the following formats:<br>
  * <ul>
  * <li>Ogg Theora</li>
  * <li>Ogg Vorbis</li>
@@ -46,9 +51,16 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
  * @author Alexander Baumgartner
  */
 public class MultimediaService extends GameServiceDefaultImpl implements
-		Drawable {
-	private Constructor<Videoplayer> cPlayer;
-	private Videoplayer player;
+		Drawable, Serializable {
+	private static final long serialVersionUID = 1L;
+
+	private VideoplayerFactory playerFactory;
+	private transient Videoplayer player;
+
+	private URL url;
+	private Rectangle bounds;
+	private boolean withAudio;
+	private boolean freezeTheWorld;
 	private boolean playing;
 	private boolean projectToMap;
 	private boolean loop;
@@ -62,17 +74,11 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 	public static long EOS_TIMEOUT_MILLIS = 1000;
 
 	/**
-	 * The MultimediaService needs the type to create the player
-	 * 
-	 * @param cPlayer
-	 *            The class to create the player
-	 * @throws NoSuchMethodException
-	 * @throws SecurityException
+	 * Instantiates the {@link MultimediaService} with a specified factory to
+	 * create new video players.
 	 */
-	public MultimediaService(Class<Videoplayer> cPlayer)
-			throws SecurityException, NoSuchMethodException {
-		this.cPlayer = cPlayer.getConstructor(URL.class, Rectangle.class,
-				boolean.class, boolean.class, boolean.class);
+	public MultimediaService(VideoplayerFactory playerFactory) {
+		this.playerFactory = playerFactory;
 	}
 
 	/**
@@ -216,10 +222,10 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 		if (!freezeTheWorld
 				|| GameBase.$serviceProvider().requestAttention(this, true,
 						true)) {
-			if (playing)
+			if (playing && player != null)
 				player.dispose();
 			try {
-				player = cPlayer.newInstance(url, bounds, projectToMap,
+				player = playerFactory.createPlayer(url, bounds, projectToMap,
 						withAudio, !freezeTheWorld && projectToMap);
 				player.play();
 				this.playing = true;
@@ -227,6 +233,10 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 				this.playTime = playTime;
 				this.position = 0;
 				this.projectToMap = projectToMap;
+				this.url = url;
+				this.bounds = bounds;
+				this.withAudio = withAudio;
+				this.freezeTheWorld = freezeTheWorld;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -298,5 +308,18 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 	@Override
 	public Matrix4 projectionMatrix(Camera camera) {
 		return projectToMap ? camera.projection : camera.view;
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+		if (playing) {
+			play(url, bounds, projectToMap, withAudio, freezeTheWorld,
+					playTime, loop);
+		}
 	}
 }

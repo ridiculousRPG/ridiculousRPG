@@ -79,7 +79,9 @@ public class VideoARGBintPixmapWrapper extends GraphicsPixmapWrapper implements
 			lastFrameReceived = System.currentTimeMillis();
 			return false;
 		}
-		return ready && lastFrameReceived + timeoutMillis < System.currentTimeMillis();
+		return ready
+				&& lastFrameReceived + timeoutMillis < System
+						.currentTimeMillis();
 	}
 
 	@Override
@@ -162,6 +164,11 @@ public class VideoARGBintPixmapWrapper extends GraphicsPixmapWrapper implements
 		intPixelBuffer = null;
 	}
 
+	/**
+	 * High performance pixel shifting class.
+	 * 
+	 * @author Alexander Baumgartner
+	 */
 	public class ARGBintPixmap extends Pixmap {
 		int lastAlphaAfterShift;
 
@@ -172,7 +179,7 @@ public class VideoARGBintPixmapWrapper extends GraphicsPixmapWrapper implements
 
 		/**
 		 * Of course this causes an pixel error at transparent pixels. Every
-		 * pixel gets the alpha value of it's neighbour. But i think this
+		 * pixel gets the alpha value of it's neighbor. But i think this
 		 * shouldn't matter in our case and it's brutally fast ;)
 		 */
 		public void shiftARGBtoRGBA() {
