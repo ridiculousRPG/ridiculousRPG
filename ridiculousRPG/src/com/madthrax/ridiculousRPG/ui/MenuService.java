@@ -47,6 +47,11 @@ public interface MenuService extends GameService {
 	public boolean changeState(int newState);
 
 	/**
+	 * Method to resume the last state.
+	 */
+	public boolean resumeLastState();
+
+	/**
 	 * Returns the normal (default) skin.
 	 */
 	public Skin getSkinNormal();

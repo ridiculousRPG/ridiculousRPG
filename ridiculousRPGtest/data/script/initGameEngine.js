@@ -65,6 +65,14 @@ function initMenu(menu) {
 	var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, false, true);
 	menu.putStateHandler(MENU_STATE_PAUSE, handler);
 
+	var execScript = internalFile("data/script/engine/menu/loadMenu.js");
+	var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, false, true);
+	menu.putStateHandler(MENU_STATE_LOAD, handler);
+
+	var execScript = internalFile("data/script/engine/menu/saveMenu.js");
+	var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, false, true);
+	menu.putStateHandler(MENU_STATE_SAVE, handler);
+
 	menu.setStartNewGameScript("data/script/game/startNewGame.js");
 	menu.changeState(MENU_STATE_TITLE);
 }

@@ -42,6 +42,8 @@ public class StandardMenuService extends ActorsOnStageService implements
 			16);
 	private MenuStateHandler activeState;
 	private String startNewGameScript;
+	private int lastStatePos = 0;
+	private MenuStateHandler[] lastState = new MenuStateHandler[10];
 
 	@Override
 	public boolean keyUp(int keycode) {
@@ -87,6 +89,8 @@ public class StandardMenuService extends ActorsOnStageService implements
 			}
 			newState.createGui(this);
 		}
+		if (activeState != newState)
+			lastState[incLastStateCount()] = activeState;
 		activeState = newState;
 		return true;
 	}
@@ -144,8 +148,8 @@ public class StandardMenuService extends ActorsOnStageService implements
 
 		w.touchable = false;
 		w.color.a = .1f;
-		w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f),
-				Remove.$()));
+		w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f), Remove
+				.$()));
 		w.add(new Label(info, skin));
 
 		w.pack();
@@ -204,5 +208,25 @@ public class StandardMenuService extends ActorsOnStageService implements
 		for (MenuStateHandler handler : stateHandlerMap.values()) {
 			handler.dispose();
 		}
+	}
+
+	@Override
+	public boolean resumeLastState() {
+		return changeState(lastState[decLastStateCount()]);
+	}
+
+	private int decLastStateCount() {
+		lastStatePos--;
+		if (lastStatePos < 0)
+			lastStatePos += lastState.length;
+		return lastStatePos;
+	}
+
+	private int incLastStateCount() {
+		int oldCount = lastStatePos;
+		lastStatePos++;
+		if (lastStatePos == lastState.length)
+			lastStatePos = 0;
+		return oldCount;
 	}
 }

@@ -22,24 +22,28 @@ function createGui(menu) {
 	var skin = menu.skinNormal;
 	var w = new ui.Window("Game over", skin);
 
-	var resume = new ui.TextButton("Continue at last save point", skin);
-	resume.clickListener = new ui.ClickListener() {
+	var quickload = new ui.TextButton("Quick load", skin);
+	quickload.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.changeState(MENU_STATE_IDLE);
+			if ($.quickLoad()) {
+				menu.changeState(MENU_STATE_IDLE);
+			} else {
+				menu.showInfoFocused("Load failed!");
+			}
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
-	w.add(resume);
+	w.add(quickload);
 
-	var load = new ui.TextButton("Load game", skin);
+	var load = new ui.TextButton("Load", skin);
 	load.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.showInfoFocused("Load is not implemented yet.\n"
-					+ "This is an early alpha release!");
+			menu.changeState(MENU_STATE_LOAD);
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
 	w.add(load);
+
 
 	var toTitle = new ui.TextButton("Return to title", skin);
 	toTitle.clickListener = new ui.ClickListener() {

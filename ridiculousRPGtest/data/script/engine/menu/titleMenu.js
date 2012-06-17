@@ -38,22 +38,22 @@ function createGui(menu) {
 			if ($.quickLoad()) {
 				menu.changeState(MENU_STATE_IDLE);
 			} else {
-				menu.showInfoFocused("No quick-load file available!");
+				menu.showInfoFocused("Load failed!");
 			}
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
 	w.add(resume);
 
-	var load = new ui.TextButton("Load game", skin);
+	var load = new ui.TextButton("Load", skin);
 	load.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.changeState(MENU_STATE_IDLE);
-			$.load();
+			menu.changeState(MENU_STATE_LOAD);
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
 	w.add(load);
+
 
 	var toggleFull = new ui.TextButton(
 			$.isFullscreen() ? "Window mode" : "Fullscreen mode", skin);

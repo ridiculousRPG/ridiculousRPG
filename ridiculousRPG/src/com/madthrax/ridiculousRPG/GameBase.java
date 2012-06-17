@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -649,6 +651,40 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	public FileHandle getSaveFile(int i) {
 		return Gdx.files.external(GameBase.$options().savePath + "gameState"
 				+ i + ".sav");
+	}
+
+	public FileHandle[] listSaveFiles() {
+		String[] fileNames = Gdx.files.external(GameBase.$options().savePath)
+				.file().list(new FilenameFilter() {
+					@Override
+					public boolean accept(File dir, String name) {
+						return name.startsWith("gameState")
+								&& name.endsWith(".sav");
+					}
+				});
+		// 1 quick save + 100 save files
+		FileHandle[] fh = new FileHandle[101];
+		int max = 0;
+		for (String nm : fileNames) {
+			int index = Integer.parseInt(nm.substring(9, nm.length() - 4));
+			if (index < fh.length) {
+				fh[index] = getSaveFile(index);
+				if (index + 2 > max) {
+					max = Math.min(index + 2, fh.length);
+				}
+			}
+		}
+		if (max < 11) {
+			max = 11;
+		} else if (max % 2 == 0) {
+			max++;
+		}
+		if (max < fh.length) {
+			FileHandle[] newHandles = new FileHandle[max];
+			System.arraycopy(fh, 0, newHandles, 0, max);
+			fh = newHandles;
+		}
+		return fh;
 	}
 
 	private void saveDisplayMode() {

@@ -46,7 +46,7 @@ function createGui(menu) {
 			if ($.quickLoad()) {
 				menu.changeState(MENU_STATE_IDLE);
 			} else {
-				menu.showInfoFocused("No quick-load file available!");
+				menu.showInfoFocused("Load failed!");
 			}
 		}
 	};
@@ -56,34 +56,33 @@ function createGui(menu) {
 	var quicksave = new ui.TextButton("Quick save", skin);
 	quicksave.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-		$.quickSave();
 			if ($.quickSave()) {
 				menu.changeState(MENU_STATE_IDLE);
 			} else {
-				menu.showInfoFocused("Save failed (see log-file)!");
+				menu.showInfoFocused("Save failed!");
 			}
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
 	w.add(quicksave);
 
-	var save = new ui.TextButton("Save", skin);
-	save.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
-			$.save();
-		}
-	};
-	w.row().fill(true, true).expand(true, false);
-	w.add(save);
-
 	var load = new ui.TextButton("Load", skin);
 	load.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			$.load();
+			menu.changeState(MENU_STATE_LOAD);
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
 	w.add(load);
+
+	var save = new ui.TextButton("Save", skin);
+	save.clickListener = new ui.ClickListener() {
+		click: function (actor, x, y) {
+			menu.changeState(MENU_STATE_SAVE);
+		}
+	};
+	w.row().fill(true, true).expand(true, false);
+	w.add(save);
 
 	var toTitle = new ui.TextButton("Return to title", skin);
 	toTitle.clickListener = new ui.ClickListener() {
