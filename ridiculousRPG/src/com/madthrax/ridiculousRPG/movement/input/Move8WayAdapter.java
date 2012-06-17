@@ -84,6 +84,11 @@ public class Move8WayAdapter extends MovementHandler {
 			movable.offerMove(touchDir, deltaTime);
 		} else {
 			lastDirKey2 = 0;
+			if (GameBase.$().isControlKeyPressed()) {
+				lastDirKey1 = 0;
+				movable.stop();
+				return;
+			}
 			if ((lastDirKey1 = movementKeys.isUpKeyPressed()) != 0) {
 				if ((lastDirKey2 = movementKeys.isLeftKeyPressed()) != 0) {
 					lastDir = Direction.NW;

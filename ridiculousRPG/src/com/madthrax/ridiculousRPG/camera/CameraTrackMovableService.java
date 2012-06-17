@@ -16,8 +16,16 @@
 
 package com.madthrax.ridiculousRPG.camera;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.GameBase;
+import com.madthrax.ridiculousRPG.event.EventObject;
+import com.madthrax.ridiculousRPG.map.MapRenderService;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
@@ -28,8 +36,10 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
  * @author Alexander Baumgartner
  */
 public class CameraTrackMovableService extends GameServiceDefaultImpl implements
-		Computable {
-	private Movable trackObj;
+		Computable, Serializable {
+	private static final long serialVersionUID = 1L;
+
+	private transient Movable trackObj;
 
 	private float oldX, oldY;
 
@@ -57,6 +67,7 @@ public class CameraTrackMovableService extends GameServiceDefaultImpl implements
 		if (centerIt)
 			centerTrackObj();
 	}
+
 	public Movable getTrackObj() {
 		return trackObj;
 	}
@@ -89,5 +100,35 @@ public class CameraTrackMovableService extends GameServiceDefaultImpl implements
 	}
 
 	public void dispose() {
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+		if (trackObj instanceof EventObject) {
+			EventObject evObj = (EventObject) trackObj;
+			if (evObj.name != null) {
+				out.writeBoolean(true);
+				out.writeObject(evObj.name);
+				return;
+			}
+		}
+		out.writeBoolean(false);
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+		if (in.readBoolean()) {
+			String objName = (String) in.readObject();
+			Movable obj = GameBase.$().getGlobalEvents().get(objName);
+			if (obj == null) {
+				Array<MapRenderService> serviceIter = GameBase
+						.$serviceProvider().getServices(MapRenderService.class);
+				for (int i = 0; obj == null && i < serviceIter.size; i++) {
+					obj = serviceIter.get(i).getMap().get(objName);
+				}
+			}
+			this.trackObj = obj;
+		}
 	}
 }

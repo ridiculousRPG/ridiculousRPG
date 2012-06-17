@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.camera;
 
+import java.io.Serializable;
+
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
@@ -25,7 +27,10 @@ import com.madthrax.ridiculousRPG.service.GameService;
 /**
  * @author Alexander Baumgartner
  */
-public class CameraZoomService extends InputAdapter implements GameService {
+public class CameraZoomService extends InputAdapter implements GameService,
+		Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private float zoom = 1f;
 	private float maxZoomOut = 5f;
 	private float minZoomIn = .5f;

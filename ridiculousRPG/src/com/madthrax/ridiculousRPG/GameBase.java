@@ -87,6 +87,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	private float gameColorBits = gameColorTint.toFloatBits();
 
 	private final String engineVersion = "0.3 prealpha (incomplete)";
+	private boolean terminating;
 
 	public GameBase(GameOptions options) {
 		this.options = options;
@@ -102,15 +103,14 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		serviceProvider = new GameServiceProvider();
 		options.width = Gdx.graphics.getWidth();
 		options.height = Gdx.graphics.getHeight();
-		// instance != null indicates that GameBase is initialized
-		if (!isInitialized())
-			instance = this;
-		// restore last display mode
-		loadDisplayMode();
 		plane.width = camera.viewportWidth = screen.width = Gdx.graphics
 				.getWidth();
 		plane.height = camera.viewportHeight = screen.height = Gdx.graphics
 				.getHeight();
+
+		// instance != null indicates that GameBase is initialized
+		if (!isInitialized())
+			instance = this;
 
 		try {
 			scriptFactory.init(options.initScript);
@@ -125,6 +125,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 					true, true);
 		}
 
+		// restore last display mode
+		loadDisplayMode();
 		camera.update();
 	}
 
@@ -385,7 +387,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		screen.height = height;
 		cam.update();
 		serviceProvider.resize(width, height);
-		saveDisplayMode();
+		if (!terminating) saveDisplayMode();
 	}
 
 	public void restoreDefaultResolution() {
@@ -539,6 +541,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	}
 
 	public void dispose() {
+		terminating = true;
 		if (fullscreen)
 			toggleFullscreen();
 		serviceProvider.dispose();
@@ -552,7 +555,10 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 * Exits the running game
 	 */
 	public void exit() {
+		terminating = true;
 		exitForced = false;
+		if (fullscreen)
+			toggleFullscreen();
 		new ExecuteInMainThread() {
 			@Override
 			public void exec() {
@@ -653,7 +659,32 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 				+ i + ".sav");
 	}
 
+	/**
+	 * Calls {@link #listSaveFiles(int, int, int)} with the default values (2,
+	 * 1, 5)
+	 * 
+	 * @see #listSaveFiles(int, int)
+	 * @return An array of files, containing null values for empty save slots
+	 */
 	public FileHandle[] listSaveFiles() {
+		return listSaveFiles(2, 1, 5);
+	}
+
+	/**
+	 * Reads all files at the specified save directory.<br>
+	 * Empty files are indicated with null. The maximum number of files is 101,
+	 * where the first file is reserved for quick save and should be treated
+	 * specially by the load/save menu
+	 * 
+	 * @param cols
+	 *            Amount of columns per row
+	 * @param emptyTailRows
+	 *            Amount of empty rows appended at the end
+	 * @param minRows
+	 *            Minimum amount of rows
+	 * @return An array of files, containing null values for empty save slots
+	 */
+	public FileHandle[] listSaveFiles(int cols, int emptyTailRows, int minRows) {
 		String[] fileNames = Gdx.files.external(GameBase.$options().savePath)
 				.file().list(new FilenameFilter() {
 					@Override
@@ -669,16 +700,18 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			int index = Integer.parseInt(nm.substring(9, nm.length() - 4));
 			if (index < fh.length) {
 				fh[index] = getSaveFile(index);
-				if (index + 2 > max) {
-					max = Math.min(index + 2, fh.length);
+				int idxEnd = index + 1 + cols * emptyTailRows;
+				if (idxEnd > max) {
+					max = Math.min(idxEnd, fh.length);
 				}
 			}
 		}
-		if (max < 11) {
-			max = 11;
-		} else if (max % 2 == 0) {
-			max++;
-		}
+		if (max < 1 + minRows * cols) {
+			max = 1 + minRows * cols;
+		} else
+			while ((max - 1) % cols != 0) {
+				max++;
+			}
 		if (max < fh.length) {
 			FileHandle[] newHandles = new FileHandle[max];
 			System.arraycopy(fh, 0, newHandles, 0, max);

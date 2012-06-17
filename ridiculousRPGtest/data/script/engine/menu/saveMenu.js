@@ -33,11 +33,19 @@ function createGui(menu) {
 			}
 		}
 	};
-	w.row().fill(true, true).expand(true, false).colspan(2);
-	w.add(quickSave);
+	w.row().fill(true, true).expand(true, false);
+	w.add(quickSave).colspan(4);
+
+	button = new ui.TextButton("Cancel (Esc)", skin);
+	button.clickListener = new ui.ClickListener() {
+		click: function (actor, x, y) {
+			return menu.resumeLastState();
+		}
+	};
+	w.add(button).colspan(2);
 
 	for (var i = 1; i < files.length;) {
-		w.row().fill(true, true).expand(true, false);
+		w.row().fill(true, true).expand(true, false).colspan(3);
 		for (var j = 0; j < 2; j++, i++) {
 			button = new ui.TextButton("Save "+i+" - " + generateText(files[i]), skin);
 			button.clickListener = new ridiculousRPG.ui.ClickListenerExecScript(

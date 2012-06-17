@@ -14,6 +14,20 @@ function processInput(keycode, menu) {
 	if (keycode == Keys.ESCAPE) {
 		return menu.changeState(MENU_STATE_GAME);
 	}
+	if ($.controlKeyPressed) {
+		if (keycode == Keys.S) {
+			if ($.quickSave()) {
+				menu.showInfoFocused("Quicksave successful (Ctrl+S)");
+				return true;
+			}
+		}
+		if (keycode == Keys.L) {
+			if ($.quickLoad()) {
+				menu.showInfoFocused("Quickload performed (Ctrl+L)");
+				return true;
+			}
+		}
+	}
 	return false;
 }
 

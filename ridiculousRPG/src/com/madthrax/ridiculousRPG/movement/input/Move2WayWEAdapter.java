@@ -68,6 +68,11 @@ public class Move2WayWEAdapter extends MovementHandler {
 					.getY(0), movable);
 			movable.offerMove(touchDir, deltaTime);
 		} else {
+			if (GameBase.$().isControlKeyPressed()) {
+				lastDirKey = 0;
+				movable.stop();
+				return;
+			}
 			if ((lastDirKey = movementKeys.isLeftKeyPressed()) != 0) {
 				lastDir = Direction.W;
 				movable.offerMove(lastDir, deltaTime);
