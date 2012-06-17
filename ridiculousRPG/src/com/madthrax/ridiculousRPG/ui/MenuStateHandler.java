@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.utils.Disposable;
 
 /**
@@ -80,4 +82,27 @@ public interface MenuStateHandler extends Disposable {
 	 *         this state.
 	 */
 	public boolean isClearTheMenu();
+
+	/**
+	 * Returns whether the BACK button on Android should be caught. This will
+	 * prevent the app from being paused. Will have no effect on the desktop.
+	 * 
+	 * @see Gdx#input
+	 * @see Input#setCatchBackKey(boolean)
+	 * @param catchBack
+	 *            whether to catch the back button
+	 */
+	public boolean isCatchBackKey();
+
+	/**
+	 * Returns whether the MENU button on Android should be caught. This will
+	 * prevent the onscreen keyboard to show up. Will have no effect on the
+	 * desktop.
+	 * 
+	 * @see Gdx#input
+	 * @see Input#setCatchMenuKey(boolean)
+	 * @param catchMenu
+	 *            whether to catch the menu button
+	 */
+	public boolean isCatchMenuKey();
 }

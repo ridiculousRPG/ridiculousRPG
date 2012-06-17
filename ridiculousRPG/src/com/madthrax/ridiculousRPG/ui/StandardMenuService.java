@@ -18,6 +18,7 @@ package com.madthrax.ridiculousRPG.ui;
 
 import javax.script.ScriptException;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Delay;
 import com.badlogic.gdx.scenes.scene2d.actions.FadeIn;
@@ -89,8 +90,13 @@ public class StandardMenuService extends ActorsOnStageService implements
 			}
 			newState.createGui(this);
 		}
-		if (activeState != newState)
+		if (activeState != newState) {
 			lastState[incLastStateCount()] = activeState;
+			if (newState != null) {
+				Gdx.input.setCatchBackKey(newState.isCatchBackKey());
+				Gdx.input.setCatchMenuKey(newState.isCatchMenuKey());
+			}
+		}
 		activeState = newState;
 		return true;
 	}

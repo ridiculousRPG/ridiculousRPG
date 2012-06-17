@@ -8,7 +8,7 @@
  * performed.
  */
 function processInput(keycode, menu) {
-	if (keycode == Keys.ESCAPE) {
+	if (keycode == Keys.ESCAPE || keycode == Keys.BACK || keycode == Keys.MENU) {
 		return menu.resumeLastState();
 	}
 	return false;

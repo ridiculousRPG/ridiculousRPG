@@ -11,7 +11,7 @@ function processInput(keycode, menu) {
 	if (keycode == Keys.P) {
 		return menu.changeState(MENU_STATE_PAUSE);
 	}
-	if (keycode == Keys.ESCAPE) {
+	if (keycode == Keys.ESCAPE || keycode == Keys.MENU) {
 		return menu.changeState(MENU_STATE_GAME);
 	}
 	if ($.controlKeyPressed) {

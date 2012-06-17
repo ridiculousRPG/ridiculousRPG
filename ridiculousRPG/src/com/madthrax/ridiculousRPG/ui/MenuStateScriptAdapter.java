@@ -19,6 +19,8 @@ package com.madthrax.ridiculousRPG.ui;
 import javax.script.Invocable;
 import javax.script.ScriptException;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.madthrax.ridiculousRPG.GameBase;
@@ -34,6 +36,8 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 	private boolean freezeTheWorld;
 	private boolean clearTheScreen;
 	private boolean clearTheMenu;
+	private boolean catchBackKey;
+	private boolean catchMenuKey;
 	private TextureRegionRef background;
 
 	/**
@@ -54,10 +58,13 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 	 *             If an error occurs while loading the script.
 	 */
 	public MenuStateScriptAdapter(FileHandle callBackScript,
-			boolean freezeTheWorld, boolean clearTheScreen, boolean clearTheMenu)
+			boolean freezeTheWorld, boolean clearTheScreen,
+			boolean clearTheMenu, boolean catchBackKey, boolean catchMenuKey)
 			throws ScriptException {
 		this.freezeTheWorld = freezeTheWorld;
 		this.clearTheScreen = clearTheScreen;
+		this.catchBackKey = catchBackKey;
+		this.catchMenuKey = catchMenuKey;
 		this.clearTheMenu = clearTheMenu;
 		this.scriptEngine = GameBase.$scriptFactory().obtainInvocable(
 				callBackScript);
@@ -117,5 +124,42 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 	public void dispose() {
 		if (background != null)
 			background.dispose();
+	}
+
+	@Override
+	public boolean isCatchBackKey() {
+		return catchBackKey;
+	}
+
+	@Override
+	public boolean isCatchMenuKey() {
+		return catchMenuKey;
+	}
+
+	/**
+	 * Sets whether the BACK button on Android should be caught. This will
+	 * prevent the app from being paused. Will have no effect on the desktop.
+	 * 
+	 * @see Gdx#input
+	 * @see Input#setCatchBackKey(boolean)
+	 * @param catchBack
+	 *            whether to catch the back button
+	 */
+	public void setCatchBackKey(boolean catchBackKey) {
+		this.catchBackKey = catchBackKey;
+	}
+
+	/**
+	 * Sets whether the MENU button on Android should be caught. This will
+	 * prevent the onscreen keyboard to show up. Will have no effect on the
+	 * desktop.
+	 * 
+	 * @see Gdx#input
+	 * @see Input#setCatchMenuKey(boolean)
+	 * @param catchMenu
+	 *            whether to catch the menu button
+	 */
+	public void setCatchMenuKey(boolean catchMenuKey) {
+		this.catchMenuKey = catchMenuKey;
 	}
 }
