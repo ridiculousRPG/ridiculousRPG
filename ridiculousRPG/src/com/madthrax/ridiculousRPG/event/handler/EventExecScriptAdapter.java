@@ -66,8 +66,6 @@ public class EventExecScriptAdapter extends EventAdapter {
 	private static final long serialVersionUID = 1L;
 
 	private boolean push, touch, timer, load, customTrigger;
-	private static transient ScriptEngine SHARED_ENGINE;
-	private static transient Invocable SHARED_INVOCABLE;
 	private static transient String CUSTOMTRIGGER_TEMPLATE;
 	private static transient String LOAD_TEMPLATE;
 	private static transient String PUSH_TEMPLATE;
@@ -82,9 +80,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 
 	@Override
 	public void init() {
-		if (SHARED_ENGINE == null) {
-			SHARED_ENGINE = GameBase.$scriptFactory().obtainEngine();
-			SHARED_INVOCABLE = (Invocable) SHARED_ENGINE;
+		if (CUSTOMTRIGGER_TEMPLATE == null) {
 			CUSTOMTRIGGER_TEMPLATE = Gdx.files.internal(
 					GameBase.$options().eventCustomTriggerTemplate).readString(
 					GameBase.$options().encoding);
@@ -118,15 +114,12 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!push)
 			return false;
 		try {
-			SHARED_ENGINE.eval(GameBase.$scriptFactory().prepareScriptFunction(
-					onPush, PUSH_TEMPLATE));
-			return (Boolean) SHARED_INVOCABLE.invokeFunction("onPush",
+			String script = GameBase.$scriptFactory().prepareScriptFunction(
+					onPush, PUSH_TEMPLATE);
+			return (Boolean) GameBase.$().invokeFunction(script, "onPush",
 					eventSelf, eventTrigger, getActualState());
 		} catch (NoSuchMethodException e) {
-			// this should never happen
-			throw new AssertionError(e);
-		} finally {
-			SHARED_ENGINE.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+			throw new ScriptException(e);
 		}
 	}
 
@@ -136,15 +129,12 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!touch)
 			return false;
 		try {
-			SHARED_ENGINE.eval(GameBase.$scriptFactory().prepareScriptFunction(
-					onTouch, TOUCH_TEMPLATE));
-			return (Boolean) SHARED_INVOCABLE.invokeFunction("onTouch",
+			String script = GameBase.$scriptFactory().prepareScriptFunction(
+					onTouch, TOUCH_TEMPLATE);
+			return (Boolean) GameBase.$().invokeFunction(script, "onTouch",
 					eventSelf, eventTrigger, getActualState());
 		} catch (NoSuchMethodException e) {
-			// this should never happen
-			throw new AssertionError(e);
-		} finally {
-			SHARED_ENGINE.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+			throw new ScriptException(e);
 		}
 	}
 
@@ -157,8 +147,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 			return (Boolean) timerEngine.invokeFunction("onTimer", eventSelf,
 					deltaTime, getActualState());
 		} catch (NoSuchMethodException e) {
-			// this should never happen
-			throw new AssertionError(e);
+			throw new ScriptException(e);
 		}
 	}
 
@@ -168,15 +157,12 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!customTrigger)
 			return false;
 		try {
-			SHARED_ENGINE.eval(GameBase.$scriptFactory().prepareScriptFunction(
-					onCustomTrigger, CUSTOMTRIGGER_TEMPLATE));
-			return (Boolean) SHARED_INVOCABLE.invokeFunction("onCustomTrigger",
-					eventSelf, triggerId, getActualState());
+			String script = GameBase.$scriptFactory().prepareScriptFunction(
+					onCustomTrigger, CUSTOMTRIGGER_TEMPLATE);
+			return (Boolean) GameBase.$().invokeFunction(script,
+					"onCustomTrigger", eventSelf, triggerId, getActualState());
 		} catch (NoSuchMethodException e) {
-			// this should never happen
-			throw new AssertionError(e);
-		} finally {
-			SHARED_ENGINE.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+			throw new ScriptException(e);
 		}
 	}
 
@@ -185,15 +171,12 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!load)
 			return;
 		try {
-			SHARED_ENGINE.eval(GameBase.$scriptFactory().prepareScriptFunction(
-					onLoad, LOAD_TEMPLATE));
-			SHARED_INVOCABLE.invokeFunction("onLoad", eventSelf,
+			String script = GameBase.$scriptFactory().prepareScriptFunction(
+					onLoad, LOAD_TEMPLATE);
+			GameBase.$().invokeFunction(script, "onLoad", eventSelf,
 					getActualState());
 		} catch (NoSuchMethodException e) {
-			// this should never happen
-			throw new AssertionError(e);
-		} finally {
-			SHARED_ENGINE.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+			throw new ScriptException(e);
 		}
 	}
 

@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -280,18 +281,60 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 * The same engine is used for all evaluations!
 	 * 
 	 * @param script
-	 *            The script to evaluate
+	 *            The script to evaluate (Either the path to the script or the
+	 *            script itself)
 	 * @return The result from this evaluation.
 	 * @throws ScriptException
 	 */
 	public Object eval(String script) throws ScriptException {
-		if (sharedEngine == null) {
-			sharedEngine = getScriptFactory().obtainEngine();
-		}
+		ScriptEngine sharedEngine = getSharedEngine();
 		Object result = sharedEngine
 				.eval(getScriptFactory().loadScript(script));
 		sharedEngine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 		return result;
+	}
+
+	/**
+	 * Invokes the function which is defined inside the given script, using the
+	 * given arguments.<br>
+	 * The same engine is used for all evaluations/invocations!
+	 * 
+	 * @param script
+	 *            The script containing the function to invoke (Either the path
+	 *            to the script or the script itself)
+	 * @param fncName
+	 *            The function to invoke
+	 * @param args
+	 *            Arguments for the function
+	 * @return The result which was returned by the invoked function
+	 * @throws ScriptException
+	 * @throws NoSuchMethodException
+	 */
+	public Object invokeFunction(String script, String fncName, Object... args)
+			throws ScriptException, NoSuchMethodException {
+		ScriptEngine sharedEngine = getSharedEngine();
+		try {
+			if (sharedEngine instanceof Invocable) {
+				sharedEngine.eval(getScriptFactory().loadScript(script));
+				return ((Invocable) sharedEngine).invokeFunction(fncName, args);
+			} else {
+				throw new ScriptException("ScriptEngine not Invocable!");
+			}
+		} finally {
+			sharedEngine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+		}
+	}
+
+	/**
+	 * Returns a shared script engine, which is used in many different cases.
+	 * 
+	 * @return A script engine instance
+	 */
+	protected ScriptEngine getSharedEngine() {
+		if (sharedEngine == null) {
+			sharedEngine = getScriptFactory().obtainEngine();
+		}
+		return sharedEngine;
 	}
 
 	/**
@@ -387,7 +430,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		screen.height = height;
 		cam.update();
 		serviceProvider.resize(width, height);
-		if (!terminating) saveDisplayMode();
+		if (!terminating)
+			saveDisplayMode();
 	}
 
 	public void restoreDefaultResolution() {
