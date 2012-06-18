@@ -48,13 +48,17 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.madthrax.ridiculousRPG.camera.CameraSimpleOrtho2D;
 import com.madthrax.ridiculousRPG.event.EventObject;
-import com.madthrax.ridiculousRPG.event.Speed;
 import com.madthrax.ridiculousRPG.map.MapRenderService;
 import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 import com.madthrax.ridiculousRPG.ui.DisplayErrorService;
 import com.madthrax.ridiculousRPG.ui.MenuService;
+import com.madthrax.ridiculousRPG.util.ColorSerializable;
+import com.madthrax.ridiculousRPG.util.ExecuteInMainThread;
+import com.madthrax.ridiculousRPG.util.ObjectState;
+import com.madthrax.ridiculousRPG.util.Speed;
+import com.madthrax.ridiculousRPG.util.Zipper;
 
 /**
  * @author Alexander Baumgartner
@@ -114,7 +118,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			instance = this;
 
 		try {
-			scriptFactory.init(options.initScript);
+			scriptFactory.evalAllScripts(getSharedEngine(),
+					GameBase.$options().initScript, false);
 		} catch (Exception e) {
 			e.printStackTrace();
 			StringWriter stackTrace = new StringWriter();
@@ -808,34 +813,6 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	}
 
 	/**
-	 * Saves the state to the specified save-file
-	 * 
-	 * @return true if save is successful, false otherwise
-	 */
-	public boolean saveFile(int fileNumber) {
-		try {
-			OutputStream os = getServiceStateTmpPath().write(false);
-			ObjectOutputStream oOut = new ObjectOutputStream(os);
-			oOut.writeBoolean(exitForced);
-			oOut.writeObject(globalState);
-			oOut.writeObject(globalEvents);
-			oOut.writeObject(camera);
-			oOut.writeObject(plane);
-			oOut.writeObject(backgroundColor);
-			oOut.writeObject(gameColorTint);
-			oOut.writeFloat(gameColorBits);
-			$serviceProvider().saveSerializableServices(oOut);
-			oOut.close();
-
-			Zipper.zip($tmpPath(), getSaveFile(fileNumber));
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-
-	/**
 	 * Loads the state from save-file number 0, which is the quick-load/save
 	 * file
 	 * 
@@ -851,7 +828,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 * 
 	 * @return true if exit has been forced
 	 */
-	public boolean lastExitForced() {
+	protected boolean lastExitForced() {
 		FileHandle fh = getSaveFile(0);
 		if (fh.exists()) {
 			try {
@@ -862,10 +839,38 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 				ObjectInputStream oIn = new ObjectInputStream(is);
 				boolean exitForced = oIn.readBoolean();
 				oIn.close();
+				clearTmpFiles();
 				return exitForced;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+		return false;
+	}
+
+	/**
+	 * Saves the state to the specified save-file
+	 * 
+	 * @return true if save is successful, false otherwise
+	 */
+	public boolean saveFile(int fileNumber) {
+		try {
+			OutputStream os = getServiceStateTmpPath().write(false);
+			ObjectOutputStream oOut = new ObjectOutputStream(os);
+			oOut.writeBoolean(exitForced);
+			oOut.writeObject(globalState);
+			oOut.writeObject(globalEvents);
+			oOut.writeObject(camera);
+			oOut.writeObject(plane);
+			oOut.writeObject(backgroundColor);
+			oOut.writeObject(gameColorTint);
+			$serviceProvider().saveSerializableServices(oOut);
+			oOut.close();
+
+			Zipper.zip($tmpPath(), getSaveFile(fileNumber));
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		return false;
 	}
@@ -892,7 +897,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 				plane = (Rectangle) oIn.readObject();
 				backgroundColor = (Color) oIn.readObject();
 				gameColorTint = (Color) oIn.readObject();
-				gameColorBits = oIn.readFloat();
+				gameColorBits = gameColorTint.toFloatBits();
 				$serviceProvider().loadSerializableServices(oIn);
 				oIn.close();
 

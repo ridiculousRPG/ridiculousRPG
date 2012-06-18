@@ -24,7 +24,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
 /**
  * This class provides a customizable standard menu for the game.<br>

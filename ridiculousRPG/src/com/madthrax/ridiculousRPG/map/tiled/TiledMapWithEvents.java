@@ -40,24 +40,24 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledObject;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObjectGroup;
 import com.badlogic.gdx.math.Rectangle;
 import com.madthrax.ridiculousRPG.DebugHelper;
-import com.madthrax.ridiculousRPG.ExecuteInMainThread;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.IntSet;
-import com.madthrax.ridiculousRPG.ObjectState;
-import com.madthrax.ridiculousRPG.TextureRegionLoader;
-import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.animation.TileAnimation;
-import com.madthrax.ridiculousRPG.event.BlockingBehavior;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.event.EventTrigger;
 import com.madthrax.ridiculousRPG.event.EventTriggerAsync;
-import com.madthrax.ridiculousRPG.event.Speed;
 import com.madthrax.ridiculousRPG.event.handler.EventExecScriptAdapter;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
 import com.madthrax.ridiculousRPG.map.MapLoader;
 import com.madthrax.ridiculousRPG.map.MapRenderRegion;
 import com.madthrax.ridiculousRPG.map.MapWithEvents;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
+import com.madthrax.ridiculousRPG.util.BlockingBehavior;
+import com.madthrax.ridiculousRPG.util.ExecuteInMainThread;
+import com.madthrax.ridiculousRPG.util.IntSet;
+import com.madthrax.ridiculousRPG.util.ObjectState;
+import com.madthrax.ridiculousRPG.util.Speed;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
 /**
  * This class represents a tiled map with events on this map.<br>

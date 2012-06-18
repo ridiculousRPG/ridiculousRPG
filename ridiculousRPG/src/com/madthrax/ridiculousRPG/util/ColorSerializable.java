@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package com.madthrax.ridiculousRPG;
+package com.madthrax.ridiculousRPG.util;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import com.badlogic.gdx.graphics.Color;
@@ -41,5 +44,21 @@ public class ColorSerializable extends Color implements Serializable {
 	public static final ColorSerializable wrap(Color c) {
 		return c instanceof ColorSerializable ? (ColorSerializable) c
 				: new ColorSerializable(c);
+	}
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+		out.writeFloat(a);
+		out.writeFloat(b);
+		out.writeFloat(g);
+		out.writeFloat(r);
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+		a = in.readFloat();
+		b = in.readFloat();
+		g = in.readFloat();
+		r = in.readFloat();
 	}
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.madthrax.ridiculousRPG.ui;
+package com.madthrax.ridiculousRPG.util;
 
 import java.util.IdentityHashMap;
 

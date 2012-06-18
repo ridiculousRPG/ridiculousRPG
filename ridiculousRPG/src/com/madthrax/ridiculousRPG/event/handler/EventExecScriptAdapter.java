@@ -28,9 +28,9 @@ import javax.script.ScriptException;
 
 import com.badlogic.gdx.Gdx;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.map.tiled.TiledMapWithEvents;
+import com.madthrax.ridiculousRPG.util.ObjectState;
 
 /**
  * This class executes JavaScript on touch, push, timer, load, store and custom

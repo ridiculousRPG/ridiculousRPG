@@ -29,8 +29,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
-import com.madthrax.ridiculousRPG.TextureRegionLoader;
-import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
 /**
  * A Layer for a weather effect. Every effect layer is simulated by a texture.

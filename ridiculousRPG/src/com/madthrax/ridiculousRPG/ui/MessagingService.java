@@ -38,8 +38,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 import com.esotericsoftware.tablelayout.Cell;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.TextureRegionLoader;
-import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
 /**
  * This class provides a customizable standard menu for the game.<br>

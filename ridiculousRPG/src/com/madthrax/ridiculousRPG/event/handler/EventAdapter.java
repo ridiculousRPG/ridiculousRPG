@@ -18,8 +18,8 @@ package com.madthrax.ridiculousRPG.event.handler;
 
 import javax.script.ScriptException;
 
-import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.event.EventObject;
+import com.madthrax.ridiculousRPG.util.ObjectState;
 
 /**
  * This is a default implementation of the interface {@link EventHandler}. Use

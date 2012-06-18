@@ -28,6 +28,7 @@ import com.madthrax.ridiculousRPG.GameServiceProvider;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
+import com.madthrax.ridiculousRPG.util.BitmapFontCachePool;
 
 /**
  * Draws multilined text onto the screen. This class is optimized for

@@ -21,8 +21,8 @@ import java.io.Serializable;
 import javax.script.ScriptException;
 
 import com.badlogic.gdx.utils.Disposable;
-import com.madthrax.ridiculousRPG.ObjectState;
 import com.madthrax.ridiculousRPG.event.EventObject;
+import com.madthrax.ridiculousRPG.util.ObjectState;
 
 /**
  * This interface defines all callback methods for events.

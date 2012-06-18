@@ -40,10 +40,6 @@ public class ScriptFactory {
 	private String[] scriptFileExtension;
 	private static final String TEMPLATE_LINE_MARK = "#codeLine#";
 
-	public void init(String initScript) {
-		evalAllScripts(obtainEngine(), GameBase.$options().initScript, false);
-	}
-
 	/**
 	 * @see #evalAllGlobalScripts(FileHandle, boolean)
 	 */
@@ -66,8 +62,8 @@ public class ScriptFactory {
 		ScriptEngine scriptEngine = ENGINE_FACTORY
 				.getEngineByName(getScriptLanguage());
 		scriptEngine.put("$scriptEngine", scriptEngine);
-		return evalAllScripts(scriptEngine, path, recurse,
-				ENGINE_FACTORY.getBindings());
+		return evalAllScripts(scriptEngine, path, recurse, ENGINE_FACTORY
+				.getBindings());
 	}
 
 	/**
@@ -149,6 +145,7 @@ public class ScriptFactory {
 				return 1;
 			}
 		} catch (ScriptException e) {
+			System.err.println("Problem evaluating script file " + path.path());
 			throw new RuntimeException(e);
 		}
 	}

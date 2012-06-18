@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.madthrax.ridiculousRPG;
+package com.madthrax.ridiculousRPG.util;
 
 import java.io.IOException;
 import java.io.InputStream;

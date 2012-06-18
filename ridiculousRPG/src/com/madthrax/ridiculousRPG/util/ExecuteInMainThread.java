@@ -1,6 +1,7 @@
-package com.madthrax.ridiculousRPG;
+package com.madthrax.ridiculousRPG.util;
 
 import com.badlogic.gdx.Gdx;
+import com.madthrax.ridiculousRPG.GameBase;
 
 public abstract class ExecuteInMainThread implements Runnable {
 

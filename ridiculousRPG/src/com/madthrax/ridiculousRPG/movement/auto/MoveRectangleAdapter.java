@@ -17,9 +17,9 @@
 package com.madthrax.ridiculousRPG.movement.auto;
 
 import com.badlogic.gdx.math.Rectangle;
-import com.madthrax.ridiculousRPG.event.Direction;
 import com.madthrax.ridiculousRPG.movement.CombinedMovesAdapter;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
+import com.madthrax.ridiculousRPG.util.Direction;
 
 /**
  * This {@link MovementHandler} tries to move an event around the given

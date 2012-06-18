@@ -326,5 +326,8 @@
     <property name="ontouch01" value="if (!eventState.getBool(0)) {info('What\'s that? I would click here if i where you.'); eventState.setBool(0, true)}"/>
    </properties>
   </object>
+  <object x="338" y="23">
+   <polyline points="0,0 248,272"/>
+  </object>
  </objectgroup>
 </map>

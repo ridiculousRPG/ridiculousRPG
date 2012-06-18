@@ -17,13 +17,13 @@
 package com.madthrax.ridiculousRPG.movement.misc;
 
 import com.badlogic.gdx.graphics.Color;
-import com.madthrax.ridiculousRPG.ColorSerializable;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.event.EventObject;
-import com.madthrax.ridiculousRPG.event.Speed;
 import com.madthrax.ridiculousRPG.movement.CombinedMovesAdapter;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
+import com.madthrax.ridiculousRPG.util.ColorSerializable;
+import com.madthrax.ridiculousRPG.util.Speed;
 
 /**
  * This MovementAdapter doesn't move the event. It fades the color until the

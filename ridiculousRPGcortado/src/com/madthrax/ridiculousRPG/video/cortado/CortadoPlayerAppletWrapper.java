@@ -56,8 +56,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.TextureRegionLoader;
-import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.video.VideoARGBintPixmapWrapper;
 import com.madthrax.ridiculousRPG.video.Videoplayer;
 

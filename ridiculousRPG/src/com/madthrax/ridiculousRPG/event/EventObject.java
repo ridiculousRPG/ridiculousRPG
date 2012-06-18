@@ -36,11 +36,7 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledObjectGroup;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
-import com.madthrax.ridiculousRPG.ColorSerializable;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.ObjectState;
-import com.madthrax.ridiculousRPG.TextureRegionLoader;
-import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
 import com.madthrax.ridiculousRPG.animation.TileAnimation;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
 import com.madthrax.ridiculousRPG.map.MapRenderRegion;
@@ -48,6 +44,13 @@ import com.madthrax.ridiculousRPG.map.tiled.TiledMapWithEvents;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
 import com.madthrax.ridiculousRPG.movement.input.Move4WayAdapter;
+import com.madthrax.ridiculousRPG.util.BlockingBehavior;
+import com.madthrax.ridiculousRPG.util.ColorSerializable;
+import com.madthrax.ridiculousRPG.util.Direction;
+import com.madthrax.ridiculousRPG.util.ObjectState;
+import com.madthrax.ridiculousRPG.util.Speed;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
 /**
  * @author Alexander Baumgartner

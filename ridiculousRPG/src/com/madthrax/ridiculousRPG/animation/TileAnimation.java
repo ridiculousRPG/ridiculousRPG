@@ -23,10 +23,10 @@ import java.io.Serializable;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Disposable;
-import com.madthrax.ridiculousRPG.TextureRegionLoader;
-import com.madthrax.ridiculousRPG.TextureRegionLoader.TextureRegionRef;
-import com.madthrax.ridiculousRPG.event.Direction;
-import com.madthrax.ridiculousRPG.event.Speed;
+import com.madthrax.ridiculousRPG.util.Direction;
+import com.madthrax.ridiculousRPG.util.Speed;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
 /**
  * Every Animation consists of one texture which is split up into tiles. This

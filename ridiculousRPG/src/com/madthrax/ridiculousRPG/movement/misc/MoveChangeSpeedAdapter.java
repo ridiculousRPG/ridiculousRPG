@@ -18,9 +18,9 @@ package com.madthrax.ridiculousRPG.movement.misc;
 
 import com.madthrax.ridiculousRPG.animation.TileAnimation;
 import com.madthrax.ridiculousRPG.event.EventObject;
-import com.madthrax.ridiculousRPG.event.Speed;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
+import com.madthrax.ridiculousRPG.util.Speed;
 
 /**
  * This MovementAdapter allows you to change the move speed and the animation

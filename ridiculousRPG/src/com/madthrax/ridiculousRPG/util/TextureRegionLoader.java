@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.madthrax.ridiculousRPG;
+package com.madthrax.ridiculousRPG.util;
 
 import java.util.HashMap;
 
@@ -27,6 +27,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pool;
+import com.madthrax.ridiculousRPG.GameBase;
 
 /**
  * This class is used to load and cache textures. It automatically adds a

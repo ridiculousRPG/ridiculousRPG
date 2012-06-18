@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-package com.madthrax.ridiculousRPG;
+package com.madthrax.ridiculousRPG.util;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
-
-import com.badlogic.gdx.files.FileHandle;
 
 /**
  * This class represents the state of one section of the entire game.<br>
@@ -50,36 +45,6 @@ public class ObjectState implements Serializable {
 	// actually increment by 1<<3 = 8
 	private static final int INC_SHIFT = 3; // 1<<1 = 2 1<<2 = 4 1<<3 = 8
 	private static final int INC_BY = 1 << INC_SHIFT;
-
-	/**
-	 * Writes the entire state tree with all children to a persistent storage.
-	 * 
-	 * @param file
-	 * @throws IOException
-	 */
-	public void saveAs(FileHandle file) throws IOException {
-		file.mkdirs();
-		new ObjectOutputStream(file.write(false)).writeObject(this);
-	}
-
-	/**
-	 * Loads a state tree with all children from a persistent storage.
-	 * 
-	 * @param file
-	 * @return The loaded state or an empty new {@link ObjectState} if the file
-	 *         doesn't exist
-	 * @throws IOException
-	 */
-	public static ObjectState loadFrom(FileHandle file) throws IOException {
-		try {
-			if (!file.exists())
-				return new ObjectState();
-			return (ObjectState) new ObjectInputStream(file.read())
-					.readObject();
-		} catch (ClassNotFoundException e) {
-			throw new IOException("Problem loading saved state! ", e);
-		}
-	}
 
 	/**
 	 * Reads an integer variable

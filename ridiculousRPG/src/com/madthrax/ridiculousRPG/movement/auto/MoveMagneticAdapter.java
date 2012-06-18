@@ -20,9 +20,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.madthrax.ridiculousRPG.event.Direction;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
+import com.madthrax.ridiculousRPG.util.Direction;
 
 /**
  * With this {@link MovementHandler} you are able to let one event move towards
