@@ -19,8 +19,6 @@ new ridiculousRPG.map.OnChangeMapPacker("work/map", "data/map").packOnChange();
 //Set background from pitch black to dark gray
 $.backgroundColor = new gdx.graphics.Color(0x16/0xFF, 0x16/0xFF, 0x16/0xFF, 1);
 
-//Detects tap, longPress for GameBase (useful for handy-games)
-$.serviceProvider.putService("gestureDetector", new ridiculousRPG.GestureDetectorService($));
 //Allow user to zoom in / out
 $.serviceProvider.putService("cameraZoom", new ridiculousRPG.camera.CameraZoomService());
 //Add the CameraTrackMovableService to the service provider

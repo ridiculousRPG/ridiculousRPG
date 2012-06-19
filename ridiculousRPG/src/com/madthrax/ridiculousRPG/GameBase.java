@@ -50,9 +50,8 @@ import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.Pixmap.Blending;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.input.GestureDetector.GestureListener;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.camera.CameraSimpleOrtho2D;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.map.MapRenderService;
@@ -71,7 +70,7 @@ import com.madthrax.ridiculousRPG.util.Zipper;
  * @author Alexander Baumgartner
  */
 public abstract class GameBase extends GameServiceDefaultImpl implements
-		ApplicationListener, GestureListener {
+		ApplicationListener {
 	private static GameBase instance;
 	private SpriteBatch spriteBatch;
 	private Camera camera;
@@ -97,6 +96,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	private Color backgroundColor = new ColorSerializable(0f, 0f, 0f, 1f);
 	private Color gameColorTint = new ColorSerializable(1f, 1f, 1f, 1f);
 	private float gameColorBits = gameColorTint.toFloatBits();
+	private float longPressTime;
 
 	private final String engineVersion = "0.3 prealpha (incomplete)";
 	private boolean terminating;
@@ -241,6 +241,24 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 
 	public final void render() {
 		try {
+			if (Gdx.input.isTouched(0)
+					&& Gdx.input.isButtonPressed(Buttons.LEFT)) {
+				longPressTime += Gdx.graphics.getDeltaTime();
+				if (!longPress && longPressTime > .3f) {
+					longPress = true;
+					Array<GestureDetectorService> services = serviceProvider
+							.getServices(GestureDetectorService.class);
+					for (int i = 0; i < services.size; i++) {
+						services.get(i).reset();
+					}
+				}
+			} else {
+				if (longPressTime > 0f && longPressTime <= .3f)
+					tap = true;
+				longPress = false;
+				longPressTime = 0f;
+			}
+
 			controlKeyPressedOld = controlKeyPressed;
 			controlKeyPressed = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)
 					|| Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT)
@@ -252,9 +270,6 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 
 			triggerActionKeyPressed &= !actionKeyPressedOld;
 			tap &= !actionKeyPressedOld;
-
-			longPress &= Gdx.input.isTouched(0)
-					&& Gdx.input.isButtonPressed(Buttons.LEFT);
 
 			serviceProvider.computeAll();
 			Thread.yield();
@@ -676,45 +691,6 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 */
 	public void triggerActionKeyPressed() {
 		this.triggerActionKeyPressed = true;
-	}
-
-	@Override
-	public boolean fling(float velocityX, float velocityY) {
-		return false;
-	}
-
-	@Override
-	public boolean longPress(int x, int y) {
-		this.longPress = true;
-		return false;
-	}
-
-	@Override
-	public boolean pan(int x, int y, int deltaX, int deltaY) {
-		return false;
-	}
-
-	@Override
-	public boolean pinch(Vector2 initialFirstPointer,
-			Vector2 initialSecondPointer, Vector2 firstPointer,
-			Vector2 secondPointer) {
-		return false;
-	}
-
-	@Override
-	public boolean tap(int x, int y, int count) {
-		this.tap = true;
-		return false;
-	}
-
-	@Override
-	public boolean touchDown(int x, int y, int pointer) {
-		return false;
-	}
-
-	@Override
-	public boolean zoom(float originalDistance, float currentDistance) {
-		return false;
 	}
 
 	/**

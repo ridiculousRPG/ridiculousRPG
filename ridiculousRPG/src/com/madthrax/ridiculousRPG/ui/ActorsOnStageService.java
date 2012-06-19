@@ -95,8 +95,13 @@ public class ActorsOnStageService extends Stage implements GameService,
 		this.skinFocused = skinFocused;
 	}
 
-	public void resize(int width, int height) {
+	public synchronized void resize(int width, int height) {
 		setViewport(width, height, true);
+	}
+
+	@Override
+	public synchronized void addActor(Actor actor) {
+		super.addActor(actor);
 	}
 
 	/**
@@ -131,11 +136,12 @@ public class ActorsOnStageService extends Stage implements GameService,
 		return this.fadeTime;
 	}
 
-	public void compute(float deltaTime, boolean actionKeyDown) {
+	public synchronized void compute(float deltaTime, boolean actionKeyDown) {
 		act(deltaTime);
 	}
 
-	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
+	public synchronized void draw(SpriteBatch spriteBatch, Camera camera,
+			boolean debug) {
 		getCamera().update();
 		try {
 			// draw onto OUR spriteBatch!!!
@@ -322,7 +328,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 		return false;
 	}
 
-	public void fadeOutAllActors() {
+	public synchronized void fadeOutAllActors() {
 		if (fadeTime > 0) {
 			for (Actor a2 : getActors()) {
 				a2.action(Sequence.$(FadeOut.$(fadeTime), Remove.$()));
@@ -343,7 +349,8 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	@Override
-	public void dispose() {
+	public synchronized void dispose() {
+		clear();
 		super.dispose();
 		skinNormal.dispose();
 	}

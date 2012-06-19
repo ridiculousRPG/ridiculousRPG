@@ -132,9 +132,9 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 				if (obj1.overlaps(obj2)) {
 					obj1.collision.add(obj2);
 					obj2.collision.add(obj1);
-					if (obj2.pushable)
+					if (obj2.pushable && !obj1.reachable.contains(obj2, true))
 						obj1.reachable.add(obj2);
-					if (obj1.pushable)
+					if (obj1.pushable && !obj2.reachable.contains(obj1, true))
 						obj2.reachable.add(obj1);
 					if (obj1.blockingBehavior.blocks(obj2.blockingBehavior)
 							&& (!EventObject.EVENT_TYPE_PLAYER
