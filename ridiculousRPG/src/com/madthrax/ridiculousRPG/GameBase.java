@@ -44,8 +44,15 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.PixmapIO;
+import com.badlogic.gdx.graphics.Pixmap.Blending;
+import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.input.GestureDetector.GestureListener;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.madthrax.ridiculousRPG.camera.CameraSimpleOrtho2D;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.map.MapRenderService;
@@ -64,7 +71,7 @@ import com.madthrax.ridiculousRPG.util.Zipper;
  * @author Alexander Baumgartner
  */
 public abstract class GameBase extends GameServiceDefaultImpl implements
-		ApplicationListener {
+		ApplicationListener, GestureListener {
 	private static GameBase instance;
 	private SpriteBatch spriteBatch;
 	private Camera camera;
@@ -93,6 +100,9 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 
 	private final String engineVersion = "0.3 prealpha (incomplete)";
 	private boolean terminating;
+
+	private boolean tap;
+	private boolean longPress;
 
 	public GameBase(GameOptions options) {
 		this.options = options;
@@ -234,15 +244,17 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			controlKeyPressedOld = controlKeyPressed;
 			controlKeyPressed = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)
 					|| Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT)
-					|| Gdx.input.isTouched(2);
+					|| Gdx.input.isTouched(1);
 			actionKeyPressedOld = actionKeyPressed;
-			actionKeyPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE)
-					|| Gdx.input.isKeyPressed(Input.Keys.ENTER)
-					|| Gdx.input.isTouched(1)
-					|| Gdx.input.isButtonPressed(Buttons.RIGHT)
-					|| triggerActionKeyPressed;
+			actionKeyPressed = tap || triggerActionKeyPressed
+					|| Gdx.input.isKeyPressed(Input.Keys.SPACE)
+					|| Gdx.input.isKeyPressed(Input.Keys.ENTER);
 
-			triggerActionKeyPressed = false;
+			triggerActionKeyPressed &= !actionKeyPressedOld;
+			tap &= !actionKeyPressedOld;
+
+			longPress &= Gdx.input.isTouched(0)
+					&& Gdx.input.isButtonPressed(Buttons.LEFT);
 
 			serviceProvider.computeAll();
 			Thread.yield();
@@ -407,6 +419,10 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 */
 	public boolean isActionKeyUp() {
 		return actionKeyPressedOld && !actionKeyPressed;
+	}
+
+	public boolean isLongPress() {
+		return longPress;
 	}
 
 	/**
@@ -662,6 +678,45 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		this.triggerActionKeyPressed = true;
 	}
 
+	@Override
+	public boolean fling(float velocityX, float velocityY) {
+		return false;
+	}
+
+	@Override
+	public boolean longPress(int x, int y) {
+		this.longPress = true;
+		return false;
+	}
+
+	@Override
+	public boolean pan(int x, int y, int deltaX, int deltaY) {
+		return false;
+	}
+
+	@Override
+	public boolean pinch(Vector2 initialFirstPointer,
+			Vector2 initialSecondPointer, Vector2 firstPointer,
+			Vector2 secondPointer) {
+		return false;
+	}
+
+	@Override
+	public boolean tap(int x, int y, int count) {
+		this.tap = true;
+		return false;
+	}
+
+	@Override
+	public boolean touchDown(int x, int y, int pointer) {
+		return false;
+	}
+
+	@Override
+	public boolean zoom(float originalDistance, float currentDistance) {
+		return false;
+	}
+
 	/**
 	 * You have to implement sharing the rendering context yourself.<br>
 	 * E.g. In LWJGL you can share the context by the following code:<br>
@@ -703,6 +758,10 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		return $tmpPath().child("restoreGameServiceState.ser.sav");
 	}
 
+	public String getScreenThumbnailName() {
+		return "screenShot.png";
+	}
+
 	public FileHandle getSaveFile(int i) {
 		return Gdx.files.external(GameBase.$options().savePath + "gameState"
 				+ i + ".sav");
@@ -742,8 +801,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 								&& name.endsWith(".sav");
 					}
 				});
-		// 1 quick save + 100 save files
-		FileHandle[] fh = new FileHandle[101];
+		// 1 quick save + 50 save files
+		FileHandle[] fh = new FileHandle[51];
 		int max = 0;
 		for (String nm : fileNames) {
 			int index = Integer.parseInt(nm.substring(9, nm.length() - 4));
@@ -786,14 +845,14 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		if (fh.exists()) {
 			try {
 				ObjectInputStream oIn = new ObjectInputStream(fh.read());
-				screen = (Rectangle) oIn.readObject();
+				Rectangle newScreen = (Rectangle) oIn.readObject();
 				fullscreen = oIn.readBoolean();
 				oIn.close();
-				Gdx.graphics.setDisplayMode((int) screen.width,
-						(int) screen.height, false);
+				Gdx.graphics.setDisplayMode((int) newScreen.width,
+						(int) newScreen.height, false);
 				if (fullscreen) {
-					Gdx.graphics.setDisplayMode((int) screen.width,
-							(int) screen.height, true);
+					Gdx.graphics.setDisplayMode((int) newScreen.width,
+							(int) newScreen.height, true);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -862,6 +921,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			oOut.writeObject(globalEvents);
 			oOut.writeObject(camera);
 			oOut.writeObject(plane);
+			oOut.writeObject(screen);
 			oOut.writeObject(backgroundColor);
 			oOut.writeObject(gameColorTint);
 			$serviceProvider().saveSerializableServices(oOut);
@@ -873,6 +933,34 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			e.printStackTrace();
 		}
 		return false;
+	}
+
+	public Pixmap takeScreenshot(int srcX, int srcY, int srcW, int srcH,
+			int dstW, int dstH) throws IOException {
+		Gdx.gl.glPixelStorei(GL10.GL_PACK_ALIGNMENT, 1);
+		Pixmap pixmap = new Pixmap(srcW, srcH, Format.RGBA8888);
+		Gdx.gl.glReadPixels(srcX, srcY, srcW, srcH, GL10.GL_RGBA,
+				GL10.GL_UNSIGNED_BYTE, pixmap.getPixels());
+
+		if (srcW != dstW || srcH != dstH) {
+			Pixmap scale = new Pixmap(dstW, dstH, Format.RGBA8888);
+			Blending old = Pixmap.getBlending();
+			Pixmap.setBlending(Blending.None);
+			scale.drawPixmap(pixmap, 0, 0, srcW, srcH, 0, 0, dstW, dstH);
+			Pixmap.setBlending(old);
+			pixmap.dispose();
+			pixmap = scale;
+		}
+
+		return pixmap;
+	}
+
+	public void writeScreenThumb() throws IOException {
+		Pixmap thumbnail = takeScreenshot(0, 0, Gdx.graphics.getWidth(),
+				Gdx.graphics.getHeight(), 64, 48);
+		PixmapIO
+				.writePNG($tmpPath().child(getScreenThumbnailName()), thumbnail);
+		thumbnail.dispose();
 	}
 
 	/**
@@ -895,6 +983,9 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 				globalEvents = (Map<String, EventObject>) oIn.readObject();
 				camera = (Camera) oIn.readObject();
 				plane = (Rectangle) oIn.readObject();
+				Rectangle oldScreen = screen;
+				screen = (Rectangle) oIn.readObject();
+				resize((int) oldScreen.width, (int) oldScreen.height);
 				backgroundColor = (Color) oIn.readObject();
 				gameColorTint = (Color) oIn.readObject();
 				gameColorBits = gameColorTint.toFloatBits();

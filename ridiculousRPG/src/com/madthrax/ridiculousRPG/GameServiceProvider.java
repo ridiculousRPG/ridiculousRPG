@@ -602,7 +602,8 @@ public class GameServiceProvider {
 		return old;
 	}
 
-	protected void saveSerializableServices(ObjectOutputStream oOut) throws IOException {
+	protected void saveSerializableServices(ObjectOutputStream oOut)
+			throws IOException {
 		Map<String, GameService> serializeIt = new HashMap<String, GameService>();
 		for (Map.Entry<String, GameService> es : services.entrySet()) {
 			if (es.getValue() instanceof Serializable) {
@@ -611,9 +612,12 @@ public class GameServiceProvider {
 		}
 		oOut.writeObject(serializeIt);
 	}
-	protected void loadSerializableServices(ObjectInputStream oIn) throws IOException, ClassNotFoundException {
+
+	protected void loadSerializableServices(ObjectInputStream oIn)
+			throws IOException, ClassNotFoundException {
 		@SuppressWarnings("unchecked")
-		Map<String, GameService> unserializeIt = (Map<String, GameService>) oIn.readObject();
+		Map<String, GameService> unserializeIt = (Map<String, GameService>) oIn
+				.readObject();
 		for (Map.Entry<String, GameService> es : unserializeIt.entrySet()) {
 			putService(es.getKey(), es.getValue());
 		}

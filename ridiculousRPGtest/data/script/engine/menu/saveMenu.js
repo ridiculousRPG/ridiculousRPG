@@ -18,12 +18,16 @@ function processInput(keycode, menu) {
  * Called if the MenuService switches into this state, to build the gui.
  */
 function createGui(menu) {
+	var width = Math.min(600, $.screen.width);
+	var height = Math.min(320, $.screen.height);
+	var scrollBarWidth = 14;
+
 	var skin = menu.skinNormal;
 	var w = new ui.Window("Save menu", skin);
 	var files = $.listSaveFiles();
 	var button;
 
-	var quickSave = new ui.TextButton("Quick Save - " + generateText(files[0]), skin);
+	var quickSave = generateButton("Quick Save", files[0], skin);
 	quickSave.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			if ($.quickSave()) {
@@ -47,7 +51,7 @@ function createGui(menu) {
 	for (var i = 1; i < files.length;) {
 		w.row().fill(true, true).expand(true, false).colspan(3);
 		for (var j = 0; j < 2; j++, i++) {
-			button = new ui.TextButton("Save "+i+" - " + generateText(files[i]), skin);
+			button = generateButton("Save "+i, files[i], skin);
 			button.clickListener = new ridiculousRPG.ui.ClickListenerExecScript(
 					"var menu = $.serviceProvider.getService(\"menu\"); "
 					+"if ($.saveFile("+i+")) { "
@@ -64,20 +68,23 @@ function createGui(menu) {
 	var t = new ui.tablelayout.Table();
 	w.setMovable(false);
 	w.setModal(true);
-	w.width(586);
-	w.height(420);
+	w.width(width-scrollBarWidth);
+	w.height(height);
 	t.align(ui.Align.LEFT);
 	t.add(w);
 	var scroll = new ui.ScrollPane(t, skin);
-	scroll.width = 600;
-	scroll.height = 420;
+	scroll.width = width;
+	scroll.height = height;
 	menu.center(scroll);
 	menu.addGUIcomponent(scroll);
 	menu.focus(quickSave);
 }
 
-function generateText(fileHandle) {
-	return fileHandle==null ? "EMPTY"
-			: java.text.DateFormat.getDateTimeInstance().format(
+function generateButton(buttonText, fileHandle, skin) {
+	if (fileHandle==null) {
+		return new ui.TextButton(buttonText + " - EMPTY", skin);
+	}
+	var dateText = java.text.DateFormat.getDateTimeInstance().format(
 					new java.util.Date(fileHandle.lastModified()));
+	return new ui.TextButton(buttonText + " - " + dateText, skin)
 }

@@ -12,6 +12,13 @@ function processInput(keycode, menu) {
 		$.exit();
 		return true;
 	}
+	if ($.controlKeyPressed) {
+		if (keycode == Keys.L) {
+			if ($.quickLoad()) {
+				return menu.changeState(MENU_STATE_IDLE);;
+			}
+		}
+	}
 	return false;
 }
 
@@ -32,7 +39,7 @@ function createGui(menu) {
 	w.row().fill(true, true).expand(true, false);
 	w.add(start);
 
-	var resume = new ui.TextButton("Quick load", skin);
+	var resume = new ui.TextButton("Quick load (Ctrl+L)", skin);
 	resume.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			if ($.quickLoad()) {

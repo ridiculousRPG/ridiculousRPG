@@ -11,6 +11,20 @@ function processInput(keycode, menu) {
 	if (keycode == Keys.ESCAPE || keycode == Keys.BACK) {
 		return menu.changeState(MENU_STATE_IDLE);
 	}
+	if ($.controlKeyPressed) {
+		if (keycode == Keys.S) {
+			if ($.quickSave()) {
+				menu.showInfoFocused("Quicksave successful (Ctrl+S)");
+				return menu.changeState(MENU_STATE_IDLE);;
+			}
+		}
+		if (keycode == Keys.L) {
+			if ($.quickLoad()) {
+				menu.showInfoFocused("Quickload performed (Ctrl+L)");
+				return menu.changeState(MENU_STATE_IDLE);;
+			}
+		}
+	}
 	return false;
 }
 
@@ -40,7 +54,7 @@ function createGui(menu) {
 	w.row().fill(true, true).expand(true, false);
 	w.add(bag);
 
-	var quickload = new ui.TextButton("Quick load", skin);
+	var quickload = new ui.TextButton("Quick load (Ctrl+L)", skin);
 	quickload.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			if ($.quickLoad()) {
@@ -53,7 +67,7 @@ function createGui(menu) {
 	w.row().fill(true, true).expand(true, false);
 	w.add(quickload);
 
-	var quicksave = new ui.TextButton("Quick save", skin);
+	var quicksave = new ui.TextButton("Quick save (Ctrl+S)", skin);
 	quicksave.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			if ($.quickSave()) {

@@ -327,7 +327,7 @@
    </properties>
   </object>
   <object x="338" y="23">
-   <polyline points="0,0 248,272"/>
+   <polyline points="-59,-33 248,272"/>
   </object>
  </objectgroup>
 </map>

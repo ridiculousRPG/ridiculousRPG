@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -25,6 +27,9 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.PixmapIO;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
 /**
  * @author Alexander Baumgartner
@@ -34,6 +39,7 @@ public class Zipper {
 
 	/**
 	 * Unzips one zip-file into the specified directory
+	 * 
 	 * @param fromFile
 	 * @param toDirectory
 	 * @throws ZipException
@@ -45,13 +51,16 @@ public class Zipper {
 		Enumeration<? extends ZipEntry> e = zipfile.entries();
 		while (e.hasMoreElements()) {
 			ZipEntry entry = e.nextElement();
-			toDirectory.child(entry.getName()).write(
-					zipfile.getInputStream(entry), false);
+			InputStream in = zipfile.getInputStream(entry);
+			toDirectory.child(entry.getName()).write(in, false);
+			in.close();
 		}
+		zipfile.close();
 	}
 
 	/**
 	 * Packs all files from the specified directory into one zip-file
+	 * 
 	 * @param fromDirectory
 	 * @param toFile
 	 * @throws IOException
@@ -70,5 +79,39 @@ public class Zipper {
 			in.close();
 		}
 		out.close();
+	}
+
+	public static byte[] extractFiledata(FileHandle zipContainer,
+			String fileName) throws ZipException, IOException {
+		ZipFile z = new ZipFile(zipContainer.file());
+		ZipEntry e = z.getEntry(fileName);
+		if (e == null)
+			return null;
+		InputStream in = z.getInputStream(e);
+		ByteArrayOutputStream b = new ByteArrayOutputStream(BUFFER * 32);
+		byte[] data = new byte[BUFFER];
+		int len;
+		while ((len = in.read(data)) != -1) {
+			b.write(data, 0, len);
+		}
+		in.close();
+		z.close();
+		return b.toByteArray();
+	}
+
+	public static TextureRegionRef extractCIM(FileHandle zipFile, String cimFile) {
+		try {
+			byte[] buf = Zipper.extractFiledata(zipFile, cimFile);
+			Pixmap pix = PixmapIO.readCIM(new InputStreamFileHandle(
+					new ByteArrayInputStream(buf)));
+			buf = null;
+			TextureRegionRef tRef = TextureRegionLoader.obtainEmptyRegion(pix
+					.getWidth(), pix.getHeight(), pix.getFormat());
+			tRef.draw(pix);
+			pix.dispose();
+			return tRef;
+		} catch (Exception e) {
+			return null;
+		}
 	}
 }

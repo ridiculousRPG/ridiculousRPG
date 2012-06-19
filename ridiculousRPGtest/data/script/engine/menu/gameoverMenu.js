@@ -12,6 +12,13 @@ function processInput(keycode, menu) {
 		$.exit();
 		return true;
 	}
+	if ($.controlKeyPressed) {
+		if (keycode == Keys.L) {
+			if ($.quickLoad()) {
+				return menu.changeState(MENU_STATE_IDLE);;
+			}
+		}
+	}
 	return false;
 }
 
@@ -22,7 +29,7 @@ function createGui(menu) {
 	var skin = menu.skinNormal;
 	var w = new ui.Window("Game over", skin);
 
-	var quickload = new ui.TextButton("Quick load", skin);
+	var quickload = new ui.TextButton("Quick load (Ctrl+L)", skin);
 	quickload.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			if ($.quickLoad()) {

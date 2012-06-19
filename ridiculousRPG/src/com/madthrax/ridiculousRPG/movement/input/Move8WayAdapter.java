@@ -17,6 +17,7 @@
 package com.madthrax.ridiculousRPG.movement.input;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.MovementHandler;
@@ -78,13 +79,14 @@ public class Move8WayAdapter extends MovementHandler {
 				}
 			}
 			movable.offerMove(lastDir, deltaTime);
-		} else if (Gdx.input.isTouched(0)) {
+		} else if (GameBase.$().isLongPress()) {
 			Direction touchDir = computeDirection(Gdx.input.getX(0), Gdx.input
 					.getY(0), movable);
 			movable.offerMove(touchDir, deltaTime);
 		} else {
 			lastDirKey2 = 0;
-			if (GameBase.$().isControlKeyPressed()) {
+			if (GameBase.$().isControlKeyPressed()
+					|| Gdx.input.isKeyPressed(Keys.ALT_LEFT)) {
 				lastDirKey1 = 0;
 				movable.stop();
 				return;

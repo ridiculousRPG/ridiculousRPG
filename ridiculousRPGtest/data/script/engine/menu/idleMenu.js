@@ -12,10 +12,12 @@ function processInput(keycode, menu) {
 		return menu.changeState(MENU_STATE_PAUSE);
 	}
 	if (keycode == Keys.ESCAPE || keycode == Keys.MENU) {
+		$.writeScreenThumb(); // take screen shot
 		return menu.changeState(MENU_STATE_GAME);
 	}
 	if ($.controlKeyPressed) {
 		if (keycode == Keys.S) {
+			$.writeScreenThumb(); // take screen shot
 			if ($.quickSave()) {
 				menu.showInfoFocused("Quicksave successful (Ctrl+S)");
 				return true;
