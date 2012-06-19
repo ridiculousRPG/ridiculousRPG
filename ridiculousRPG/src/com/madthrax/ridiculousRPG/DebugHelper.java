@@ -84,7 +84,10 @@ public final class DebugHelper {
 				/ GameBase.$().getScreen().width;
 		float y2 = camera.position.y + y1 * camera.viewportHeight
 				/ GameBase.$().getScreen().height;
-		text += "( " + (int) x2 + " / " + (int) y2 + " ) Camera";
+		text += "( " + (int) x2 + " / " + (int) y2 + " ) Camera\n";
+		float x3 = GameBase.$().getPlane().width - x2;
+		float y3 = GameBase.$().getPlane().height - y2;
+		text += "( " + (int) x3 + " / " + (int) y3 + " ) Origin top right";
 		f.setColor(1f, 0f, 1f, 1f);
 		TextBounds b = f.getMultiLineBounds(text);
 		f.drawMultiLine(spriteBatch, text, Math.max(Math.min(x1 + 10, GameBase
@@ -127,8 +130,7 @@ public final class DebugHelper {
 				debugRenderer.rect(ev.drawBound.x, ev.drawBound.y,
 						ev.drawBound.width, ev.drawBound.height);
 			}
-			if (!ev.blockingBehavior
-					.blocks(BlockingBehavior.BUILDING_LOW)) {
+			if (!ev.blockingBehavior.blocks(BlockingBehavior.BUILDING_LOW)) {
 				debugRenderer.setColor(0f, 1f, 0f, 1f);
 			} else if (!ev.blockingBehavior
 					.blocks(BlockingBehavior.BARRIER_LOW)) {
@@ -136,8 +138,8 @@ public final class DebugHelper {
 			} else {
 				debugRenderer.setColor(1f, 0f, 0f, 1f);
 			}
-			debugRenderer.rect(ev.getX(), ev.getY(), ev.getWidth(), ev
-					.getHeight());
+			debugRenderer.rect(ev.getX(), ev.getY(),
+					Math.max(1, ev.getWidth()), Math.max(1, ev.getHeight()));
 			if (ev.name != null) {
 				getTextMapDebugger().addMessage(ev.name,
 						getTextMapDebugger().getDefaultColor(),
