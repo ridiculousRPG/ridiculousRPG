@@ -187,15 +187,36 @@ public abstract class Movable implements Serializable {
 	}
 
 	/**
+	 * Computes the screen position of this movable
+	 * 
+	 * @return x position on the screen
+	 */
+	public float getScreenX() {
+		Camera camera = GameBase.$().getCamera();
+		float centerX = getCenterX() - camera.position.x;
+		centerX *= Gdx.graphics.getWidth() / camera.viewportWidth;
+		return centerX;
+	}
+
+	/**
 	 * Computes the relative x position from an absolute one
 	 * 
 	 * @return x position relative to this movable
 	 */
 	public float computeRelativX(int screenAbsolutX) {
+		return screenAbsolutX - getScreenX();
+	}
+
+	/**
+	 * Computes the screen position of this movable
+	 * 
+	 * @return y position on the screen
+	 */
+	public float getScreenY() {
 		Camera camera = GameBase.$().getCamera();
-		float centerX = getCenterX() - camera.position.x;
-		centerX *= Gdx.graphics.getWidth() / camera.viewportWidth;
-		return screenAbsolutX - centerX;
+		float centerY = getCenterY() - camera.position.y;
+		centerY *= Gdx.graphics.getHeight() / camera.viewportHeight;
+		return centerY;
 	}
 
 	/**
@@ -204,10 +225,7 @@ public abstract class Movable implements Serializable {
 	 * @return y position relative to this movable
 	 */
 	public float computeRelativY(int screenAbsolutY) {
-		Camera camera = GameBase.$().getCamera();
-		float centerY = getCenterY() - camera.position.y;
-		centerY *= Gdx.graphics.getHeight() / camera.viewportHeight;
-		return (Gdx.graphics.getHeight() - screenAbsolutY) - centerY;
+		return (Gdx.graphics.getHeight() - screenAbsolutY) - getScreenY();
 	}
 
 	/**

@@ -29,6 +29,7 @@ import com.madthrax.ridiculousRPG.service.GameService;
  */
 public class CameraZoomService extends InputAdapter implements GameService,
 		Serializable {
+
 	private static final long serialVersionUID = 1L;
 
 	private float zoom = 1f;
@@ -79,13 +80,13 @@ public class CameraZoomService extends InputAdapter implements GameService,
 	 *            the new zoom value to set
 	 */
 	public void setZoom(float zoom) {
-		float screenW = GameBase.$().getScreen().width;
-		float screenH = GameBase.$().getScreen().height;
 		Camera cam = GameBase.$().getCamera();
-		cam.viewportWidth = screenW * zoom;
-		cam.viewportHeight = screenH * zoom;
-		float translateX = screenW * .5f * (this.zoom - zoom);
-		float translateY = screenH * .5f * (this.zoom - zoom);
+		float viewportWidth = cam.viewportWidth * zoom / this.zoom;
+		float viewportHeight = cam.viewportHeight * zoom / this.zoom;
+		float translateX = .5f * (cam.viewportWidth - viewportWidth);
+		float translateY = .5f * (cam.viewportHeight - viewportHeight);
+		cam.viewportWidth = viewportWidth;
+		cam.viewportHeight = viewportHeight;
 		cam.translate(translateX, translateY, 0);
 		cam.update();
 		this.zoom = zoom;
@@ -181,7 +182,16 @@ public class CameraZoomService extends InputAdapter implements GameService,
 		if (interval <= 0) {
 			setZoom(1f);
 		} else {
-			setZoom(zoom * interval);
+			Camera cam = GameBase.$().getCamera();
+			float viewportWidth = cam.viewportWidth * interval;
+			float viewportHeight = cam.viewportHeight * interval;
+			float translateX = .5f * (cam.viewportWidth - viewportWidth);
+			float translateY = .5f * (cam.viewportHeight - viewportHeight);
+			cam.viewportWidth = viewportWidth;
+			cam.viewportHeight = viewportHeight;
+			cam.translate(translateX, translateY, 0);
+			cam.update();
+			zoom *= interval;
 		}
 	}
 

@@ -53,8 +53,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.camera.CameraSimpleOrtho2D;
+import com.madthrax.ridiculousRPG.camera.CameraTrackMovableService;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.map.MapRenderService;
+import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
@@ -918,6 +920,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		Gdx.gl.glReadPixels(srcX, srcY, srcW, srcH, GL10.GL_RGBA,
 				GL10.GL_UNSIGNED_BYTE, pixmap.getPixels());
 
+		// scale the picture
 		if (srcW != dstW || srcH != dstH) {
 			Pixmap scale = new Pixmap(dstW, dstH, Format.RGBA8888);
 			Blending old = Pixmap.getBlending();
@@ -931,11 +934,84 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		return pixmap;
 	}
 
+	/**
+	 * Takes a screenshot from the current player position and stores it as CIM
+	 * file into the temporary save directory.<br>
+	 * The following default values will be used:<br>
+	 * width=64, height=48, reduction=5, lookAt=player
+	 * 
+	 * @see #writeScreenThumb(int, int, float, Movable, FileHandle)
+	 * @throws IOException
+	 */
 	public void writeScreenThumb() throws IOException {
-		Pixmap thumbnail = takeScreenshot(0, 0, Gdx.graphics.getWidth(),
-				Gdx.graphics.getHeight(), 64, 48);
-		PixmapIO
-				.writePNG($tmpPath().child(getScreenThumbnailName()), thumbnail);
+		// first try with common name "cameraTrack"
+		CameraTrackMovableService s = serviceProvider.getService(
+				CameraTrackMovableService.class, "cameraTrack");
+		if (s.getTrackObj() == null)
+			s = null;
+		if (s == null) {
+			Array<CameraTrackMovableService> s2 = serviceProvider
+					.getServices(CameraTrackMovableService.class);
+			for (int i = 0; s == null && i < s2.size; i++) {
+				s = s2.get(i);
+				if (s.getTrackObj() == null)
+					s = null;
+			}
+		}
+		writeScreenThumb(64, 48, 5, s == null ? null : s.getTrackObj(),
+				$tmpPath().child(getScreenThumbnailName()));
+	}
+
+	/**
+	 * Takes a screenshot using the parameters below. If the given
+	 * {@link FileHandle} has the extension png, the image will be stored as
+	 * PNG-image. Otherwise the internal CIM format will be used.
+	 * 
+	 * @param width
+	 * @param height
+	 * @param reduction
+	 * @param lookAt
+	 * @param saveTo
+	 * @throws IOException
+	 */
+	public void writeScreenThumb(int width, int height, float reduction,
+			Movable lookAt, FileHandle saveTo) throws IOException {
+		// revise distortion from zooming and changing window size
+		float ratioX = screen.width / camera.viewportWidth;
+		float ratioY = screen.height / camera.viewportHeight;
+		float clipW = width * reduction * ratioX;
+		float clipH = height * reduction * ratioY;
+		// border at the left/right of the screen
+		float camX = Math.max(0f, -camera.position.x * ratioX);
+		// border at the top/bottom of the screen
+		float camY = Math.max(0f, -camera.position.y * ratioY);
+
+		if (clipW == 0 || clipW > Gdx.graphics.getWidth() - camX * 2f) {
+			clipW = Gdx.graphics.getWidth() - camX * 2f;
+		}
+		if (clipH == 0 || clipH > Gdx.graphics.getHeight() - camY * 2f) {
+			clipH = Gdx.graphics.getHeight() - camY * 2f;
+		}
+		int x = (int) (lookAt.getScreenX() - clipW * .5f);
+		int w = (int) clipW;
+		if (x < camX) {
+			x = (int) camX;
+		} else if (Gdx.graphics.getWidth() - camX < x + w) {
+			x = Gdx.graphics.getWidth() - (int) camX - w;
+		}
+		int y = (int) (lookAt.getScreenY() - clipH * .5f);
+		int h = (int) clipH;
+		if (y < camY) {
+			y = (int) camY;
+		} else if (Gdx.graphics.getHeight() - camY < y + h) {
+			y = Gdx.graphics.getHeight() - (int) camY - h;
+		}
+		Pixmap thumbnail = takeScreenshot(x, y, w, h, width, height);
+		if ("png".equalsIgnoreCase(saveTo.extension())) {
+			PixmapIO.writePNG(saveTo, thumbnail);
+		} else {
+			PixmapIO.writeCIM(saveTo, thumbnail);
+		}
 		thumbnail.dispose();
 	}
 
