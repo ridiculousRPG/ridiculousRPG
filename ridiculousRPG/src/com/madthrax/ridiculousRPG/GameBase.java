@@ -913,6 +913,20 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		return false;
 	}
 
+	/**
+	 * Takes a screenshot from the current frame buffer. The screenshot will be
+	 * stretched to fit into the Rectangle specified by dstW and dstH
+	 * 
+	 * @param srcX
+	 * @param srcY
+	 * @param srcW
+	 * @param srcH
+	 * @param dstW
+	 * @param dstH
+	 * @return A Pixmap containing the screenshot. The screenshot will be
+	 *         flipped at the y-axis.
+	 * @throws IOException
+	 */
 	public Pixmap takeScreenshot(int srcX, int srcY, int srcW, int srcH,
 			int dstW, int dstH) throws IOException {
 		Gdx.gl.glPixelStorei(GL10.GL_PACK_ALIGNMENT, 1);
@@ -968,14 +982,53 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 * PNG-image. Otherwise the internal CIM format will be used.
 	 * 
 	 * @param width
+	 *            The width of the screenshot
 	 * @param height
+	 *            The height of the screenshot
 	 * @param reduction
+	 *            Zoom value. The higher the value, the more the image will be
+	 *            shrinked.<br>
+	 *            1 means no shrinking. &lt; 1 will zoom in. &gt; 1 will zoom
+	 *            out.
 	 * @param lookAt
+	 *            Optional parameter. If null, the center of the screen will be
+	 *            the reference point
 	 * @param saveTo
+	 *            The path to save the image
 	 * @throws IOException
 	 */
 	public void writeScreenThumb(int width, int height, float reduction,
 			Movable lookAt, FileHandle saveTo) throws IOException {
+		Pixmap thumbnail = takeScreenshot(width, height, reduction, lookAt);
+		if ("png".equalsIgnoreCase(saveTo.extension())) {
+			PixmapIO.writePNG(saveTo, thumbnail);
+		} else {
+			PixmapIO.writeCIM(saveTo, thumbnail);
+		}
+		thumbnail.dispose();
+	}
+
+	/**
+	 * Takes a screenshot using the parameters below.
+	 * 
+	 * @param width
+	 *            The width of the screenshot
+	 * @param height
+	 *            The height of the screenshot
+	 * @param reduction
+	 *            Zoom value. The higher the value, the more the image will be
+	 *            shrinked.<br>
+	 *            1 means no shrinking. &lt; 1 will zoom in. &gt; 1 will zoom
+	 *            out.
+	 * @param lookAt
+	 *            Optional parameter. If null, the center of the screen will be
+	 *            the reference point
+	 * @return A Pixmap containing the screenshot. The screenshot will be
+	 *         flipped at the y-axis.
+	 * @throws IOException
+	 */
+	public Pixmap takeScreenshot(int width, int height, float reduction,
+			Movable lookAt) throws IOException {
 		// revise distortion from zooming and changing window size
 		float ratioX = screen.width / camera.viewportWidth;
 		float ratioY = screen.height / camera.viewportHeight;
@@ -992,27 +1045,29 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		if (clipH == 0 || clipH > Gdx.graphics.getHeight() - camY * 2f) {
 			clipH = Gdx.graphics.getHeight() - camY * 2f;
 		}
-		int x = (int) (lookAt.getScreenX() - clipW * .5f);
+		int x;
+		int y;
+		if (lookAt != null) {
+			x = (int) (lookAt.getScreenX() - clipW * .5f);
+			y = (int) (lookAt.getScreenY() - clipH * .5f);
+		} else {
+			x = (int) (Gdx.graphics.getWidth() - clipW * .5f);
+			y = (int) (Gdx.graphics.getHeight() - clipH * .5f);
+		}
 		int w = (int) clipW;
+		int h = (int) clipH;
 		if (x < camX) {
 			x = (int) camX;
 		} else if (Gdx.graphics.getWidth() - camX < x + w) {
 			x = Gdx.graphics.getWidth() - (int) camX - w;
 		}
-		int y = (int) (lookAt.getScreenY() - clipH * .5f);
-		int h = (int) clipH;
 		if (y < camY) {
 			y = (int) camY;
 		} else if (Gdx.graphics.getHeight() - camY < y + h) {
 			y = Gdx.graphics.getHeight() - (int) camY - h;
 		}
 		Pixmap thumbnail = takeScreenshot(x, y, w, h, width, height);
-		if ("png".equalsIgnoreCase(saveTo.extension())) {
-			PixmapIO.writePNG(saveTo, thumbnail);
-		} else {
-			PixmapIO.writeCIM(saveTo, thumbnail);
-		}
-		thumbnail.dispose();
+		return thumbnail;
 	}
 
 	/**
