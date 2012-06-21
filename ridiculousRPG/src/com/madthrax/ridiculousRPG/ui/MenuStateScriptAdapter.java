@@ -38,6 +38,9 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 	private boolean clearTheMenu;
 	private boolean catchBackKey;
 	private boolean catchMenuKey;
+	// TODO: Load and dispose texture when showing/hiding menu.
+	// We need a general solution for this problem, to be able to use pictures
+	// (like a preview image for a save state) within menus.
 	private TextureRegionRef background;
 
 	/**
