@@ -954,10 +954,10 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 * The following default values will be used:<br>
 	 * width=64, height=48, reduction=5, lookAt=player
 	 * 
-	 * @see #writeScreenThumb(int, int, float, Movable, FileHandle)
+	 * @see #writeScreenshot(int, int, float, Movable, FileHandle)
 	 * @throws IOException
 	 */
-	public void writeScreenThumb() throws IOException {
+	public void writeScreenshot() throws IOException {
 		// first try with common name "cameraTrack"
 		CameraTrackMovableService s = serviceProvider.getService(
 				CameraTrackMovableService.class, "cameraTrack");
@@ -972,7 +972,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 					s = null;
 			}
 		}
-		writeScreenThumb(64, 48, 5, s == null ? null : s.getTrackObj(),
+		writeScreenshot(64, 48, 5, s == null ? null : s.getTrackObj(),
 				$tmpPath().child(getScreenThumbnailName()));
 	}
 
@@ -997,7 +997,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 *            The path to save the image
 	 * @throws IOException
 	 */
-	public void writeScreenThumb(int width, int height, float reduction,
+	public void writeScreenshot(int width, int height, float reduction,
 			Movable lookAt, FileHandle saveTo) throws IOException {
 		Pixmap thumbnail = takeScreenshot(width, height, reduction, lookAt);
 		if ("png".equalsIgnoreCase(saveTo.extension())) {

@@ -233,7 +233,14 @@ public class MessagingService extends ActorsOnStageService {
 		if (lines.size > 0
 				&& GameBase.$serviceProvider().requestAttention(this, false,
 						false)) {
-			// an other box is showing up
+			// TODO: An other box is showing up. At the time we have already a
+			// problem if we reached this state because the new generated box
+			// has already disposed the textures used by the old one, which is
+			// currently showed at the screen.
+			// We should extract data class with a dispose method and at every
+			// commit a new instance of the data class should be assigned for
+			// the user. At the end of this function the entire data class with
+			// all the elements should be disposed.
 			while (getActors().size() > 0) {
 				if (dispose) {
 					GameBase.$serviceProvider().releaseAttention(this);
@@ -260,6 +267,11 @@ public class MessagingService extends ActorsOnStageService {
 			do {
 				Thread.yield();
 			} while (getActors().size() > 0 && !dispose);
+			if (face != null) {
+				face.dispose();
+				face = null;
+			}
+			removePicture(-1);
 		}
 		return resultPointer[0];
 	}
@@ -491,9 +503,6 @@ public class MessagingService extends ActorsOnStageService {
 		super.dispose();
 		if (face != null)
 			face.dispose();
-		for (PictureRef pic : pictures.values()) {
-			pic.textureRegion.dispose();
-		}
-		pictures.clear();
+		removePicture(-1);
 	}
 }
