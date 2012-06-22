@@ -779,8 +779,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 								&& name.endsWith(".sav");
 					}
 				});
-		// 1 quick save + 50 save files
-		FileHandle[] fh = new FileHandle[51];
+		// 1 quick save + 200 save files
+		FileHandle[] fh = new FileHandle[201];
 		int max = 0;
 		for (String nm : fileNames) {
 			int index = Integer.parseInt(nm.substring(9, nm.length() - 4));
