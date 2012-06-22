@@ -44,16 +44,16 @@ public interface MenuStateHandler extends Disposable {
 	 *            The {@link MenuService} associated with this state.
 	 * @return true if the keyUp event has been consumed
 	 */
-	public boolean processInput(int keycode, MenuService menu);
+	public boolean processInput(int keycode, MenuService menuService);
 
 	/**
 	 * This method is automatically called by the corresponding
 	 * {@link MenuService} if it changes into this state.
 	 * 
-	 * @param menu
+	 * @param menuService
 	 *            The {@link MenuService} associated with this state.
 	 */
-	public void createGui(MenuService menu);
+	public void createGui(MenuService menuService);
 
 	/**
 	 * Return true if you want to freeze the world while this menu is open.
@@ -105,4 +105,9 @@ public interface MenuStateHandler extends Disposable {
 	 *            whether to catch the menu button
 	 */
 	public boolean isCatchMenuKey();
+
+	/**
+	 * Frees all resources after closing the menu
+	 */
+	public void freeResources();
 }

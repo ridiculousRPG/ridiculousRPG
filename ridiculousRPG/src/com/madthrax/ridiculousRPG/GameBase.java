@@ -737,7 +737,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	}
 
 	public String getScreenThumbnailName() {
-		return "screenShot.png";
+		return "screenShot.cim";
 	}
 
 	public FileHandle getSaveFile(int i) {

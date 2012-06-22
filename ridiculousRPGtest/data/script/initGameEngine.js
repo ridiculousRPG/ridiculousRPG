@@ -45,12 +45,12 @@ initMenu($.serviceProvider.getService("menu"));
 function initMenu(menu) {
 	var execScript = internalFile("data/script/engine/menu/titleMenu.js");
 	var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, true, true, false, false);
-	handler.background = ridiculousRPG.util.TextureRegionLoader.load("data/image/Title.png");
+	handler.background = "data/image/Title.png";
 	menu.putStateHandler(MENU_STATE_TITLE, handler);
 
 	var execScript = internalFile("data/script/engine/menu/gameoverMenu.js");
 	var handler = new ridiculousRPG.ui.MenuStateScriptAdapter(execScript, true, true, true, false, false);
-	handler.background = ridiculousRPG.util.TextureRegionLoader.load("data/image/GameOver.png");
+	handler.background = "data/image/GameOver.png";
 	menu.putStateHandler(MENU_STATE_GAMEOVER, handler);
 
 	var execScript = internalFile("data/script/engine/menu/gameMenu.js");

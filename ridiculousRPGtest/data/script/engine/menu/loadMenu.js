@@ -7,9 +7,9 @@
  * Called if the MenuService is in this state, and an user input has been
  * performed.
  */
-function processInput(keycode, menu) {
+function processInput(keycode, menuService, menu) {
 	if (keycode == Keys.ESCAPE || keycode == Keys.BACK || keycode == Keys.MENU) {
-		return menu.resumeLastState();
+		return menuService.resumeLastState();
 	}
 	return false;
 }
@@ -17,23 +17,23 @@ function processInput(keycode, menu) {
 /**
  * Called if the MenuService switches into this state, to build the gui.
  */
-function createGui(menu) {
+function createGui(menuService, menu) {
 	var width = Math.min(600, $.screen.width);
 	var height = Math.min(320, $.screen.height);
 	var scrollBarWidth = 14;
 
-	var skin = menu.skinNormal;
+	var skin = menuService.skinNormal;
 	var w = new ui.Window("Load menu", skin);
 	var files = $.listSaveFiles();
 	var button;
 
-	var quickLoad = generateButton("Quick Load", files[0], skin);
+	var quickLoad = generateButton("Quick Load", files[0], skin, menu);
 	quickLoad.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			if ($.quickLoad()) {
-				menu.changeState(MENU_STATE_IDLE);
+				menuService.changeState(MENU_STATE_IDLE);
 			} else {
-				menu.showInfoFocused("Load failed!");
+				menuService.showInfoFocused("Load failed!");
 			}
 		}
 	};
@@ -43,7 +43,7 @@ function createGui(menu) {
 	button = new ui.TextButton("Cancel (Esc)", skin);
 	button.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			return menu.resumeLastState();
+			return menuService.resumeLastState();
 		}
 	};
 	w.add(button).colspan(2);
@@ -51,16 +51,15 @@ function createGui(menu) {
 	for (var i = 1; i < files.length;) {
 		w.row().fill(true, true).expand(true, false).colspan(3);
 		for (var j = 0; j < 2; j++, i++) {
-			button = generateButton("Load "+i, files[i], skin);
+			button = generateButton("Load "+i, files[i], skin, menu);
 			// button.getLabel().setAlignment(ui.Align.LEFT);
 			button.clickListener = new ridiculousRPG.ui.ClickListenerExecScript(
-					"var menu = $.serviceProvider.getService(\"menu\"); "
-					+"if ($.loadFile("+i+")) { "
-					+"	menu.changeState(MENU_STATE_IDLE); "
-					+"} else { "
-					+"	menu.showInfoFocused(\"Load failed!\"); "
-					+"} "
-				);
+				 "if ($.loadFile("+i+")) { "
+				+"	$.serviceProvider.getService(\"menu\").changeState(MENU_STATE_IDLE); "
+				+"} else { "
+				+"	$.serviceProvider.getService(\"menu\").showInfoFocused(\"Load failed!\"); "
+				+"} "
+			);
 			w.add(button);
 		}
 	}
@@ -75,16 +74,24 @@ function createGui(menu) {
 	var scroll = new ui.ScrollPane(t, skin);
 	scroll.width = width;
 	scroll.height = height;
-	menu.center(scroll);
-	menu.addGUIcomponent(scroll);
-	menu.focus(quickLoad);
+	menuService.center(scroll);
+	menuService.addGUIcomponent(scroll);
+	menuService.focus(quickLoad);
 }
 
-function generateButton(buttonText, fileHandle, skin) {
-	if (fileHandle==null) {
+function generateButton(buttonText, zipFile, skin, menu) {
+	if (zipFile==null) {
 		return new ui.TextButton(buttonText + " - EMPTY", skin);
 	}
-	var dateText = java.text.DateFormat.getDateTimeInstance().format(
-					new java.util.Date(fileHandle.lastModified()));
-	return new ui.TextButton(buttonText + " - " + dateText, skin)
+	var DF = java.text.DateFormat;
+	var dateText = DF.getDateTimeInstance(DF.MEDIUM, DF.SHORT).format(
+					new java.util.Date(zipFile.lastModified()));
+	var button = new ui.Button(skin);
+	var tRef = ridiculousRPG.util.Zipper.extractCIM(zipFile,
+			$.screenThumbnailName, false, true);
+	if (tRef != null) {
+		button.add(menu.createImage(tRef, true)).padRight(5);
+	}
+	button.add(buttonText + " - " + dateText).expand().fill();
+	return button;
 }

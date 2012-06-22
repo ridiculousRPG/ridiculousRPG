@@ -84,10 +84,16 @@ public class StandardMenuService extends ActorsOnStageService implements
 		}
 		if (newState == null) {
 			super.clear();
+			if (activeState != null)
+				activeState.freeResources();
 		} else {
 			if (newState.isClearTheMenu()) {
 				super.clear();
+				if (activeState != null && activeState != newState)
+					activeState.freeResources();
 			}
+			if (activeState != newState)
+				newState.freeResources();
 			newState.createGui(this);
 		}
 		if (activeState != newState) {

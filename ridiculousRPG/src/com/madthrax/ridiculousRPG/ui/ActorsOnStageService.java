@@ -136,6 +136,16 @@ public class ActorsOnStageService extends Stage implements GameService,
 		return this.fadeTime;
 	}
 
+	@Override
+	public synchronized void clear() {
+		super.clear();
+	}
+
+	@Override
+	public synchronized void removeActor(Actor actor) {
+		super.removeActor(actor);
+	}
+
 	public synchronized void compute(float deltaTime, boolean actionKeyDown) {
 		act(deltaTime);
 	}

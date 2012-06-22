@@ -7,7 +7,7 @@
  * Called if the MenuService is in this state, and an user input has been
  * performed.
  */
-function processInput(keycode, menu) {
+function processInput(keycode, menuService, menu) {
 	if (keycode == Keys.ESCAPE) {
 		$.exit();
 		return true;
@@ -15,7 +15,7 @@ function processInput(keycode, menu) {
 	if ($.controlKeyPressed) {
 		if (keycode == Keys.L) {
 			if ($.quickLoad()) {
-				return menu.changeState(MENU_STATE_IDLE);;
+				return menuService.changeState(MENU_STATE_IDLE);;
 			}
 		}
 	}
@@ -25,17 +25,17 @@ function processInput(keycode, menu) {
 /**
  * Called if the MenuService switches into this state, to build the gui.
  */
-function createGui(menu) {
-	var skin = menu.skinNormal;
+function createGui(menuService, menu) {
+	var skin = menuService.skinNormal;
 	var w = new ui.Window("Game over", skin);
 
 	var quickload = new ui.TextButton("Quick load (Ctrl+L)", skin);
 	quickload.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			if ($.quickLoad()) {
-				menu.changeState(MENU_STATE_IDLE);
+				menuService.changeState(MENU_STATE_IDLE);
 			} else {
-				menu.showInfoFocused("Load failed!");
+				menuService.showInfoFocused("Load failed!");
 			}
 		}
 	};
@@ -45,7 +45,7 @@ function createGui(menu) {
 	var load = new ui.TextButton("Load", skin);
 	load.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.changeState(MENU_STATE_LOAD);
+			menuService.changeState(MENU_STATE_LOAD);
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
@@ -55,7 +55,7 @@ function createGui(menu) {
 	var toTitle = new ui.TextButton("Return to title", skin);
 	toTitle.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.changeState(MENU_STATE_TITLE);
+			menuService.changeState(MENU_STATE_TITLE);
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
@@ -71,7 +71,7 @@ function createGui(menu) {
 	w.add(exit);
 
 	w.pack();
-	menu.center(w);
-	menu.addGUIcomponent(w);
-	menu.focus(resume);
+	menuService.center(w);
+	menuService.addGUIcomponent(w);
+	menuService.focus(resume);
 }

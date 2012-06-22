@@ -99,18 +99,23 @@ public class Zipper {
 		return b.toByteArray();
 	}
 
-	public static TextureRegionRef extractCIM(FileHandle zipFile, String cimFile) {
+	public static TextureRegionRef extractCIM(FileHandle zipFile,
+			String cimFile, boolean flipX, boolean flipY) {
 		try {
 			byte[] buf = Zipper.extractFiledata(zipFile, cimFile);
+			if (buf == null)
+				return null;
 			Pixmap pix = PixmapIO.readCIM(new InputStreamFileHandle(
 					new ByteArrayInputStream(buf)));
 			buf = null;
 			TextureRegionRef tRef = TextureRegionLoader.obtainEmptyRegion(pix
 					.getWidth(), pix.getHeight(), pix.getFormat());
 			tRef.draw(pix);
+			tRef.flip(flipX, flipY);
 			pix.dispose();
 			return tRef;
 		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
 	}

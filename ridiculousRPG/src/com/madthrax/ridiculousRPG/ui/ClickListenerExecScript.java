@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
+import java.text.DateFormat;
+
 import javax.script.ScriptException;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;

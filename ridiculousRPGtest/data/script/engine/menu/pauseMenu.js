@@ -7,9 +7,9 @@
  * Called if the MenuService is in this state, and an user input has been
  * performed.
  */
-function processInput(keycode, menu) {
+function processInput(keycode, menuService, menu) {
 	if (keycode == Keys.P || keycode == Keys.ESCAPE || keycode == Keys.BACK || keycode == Keys.MENU) {
-		return menu.changeState(MENU_STATE_IDLE);
+		return menuService.changeState(MENU_STATE_IDLE);
 	}
 	return false;
 }
@@ -17,14 +17,14 @@ function processInput(keycode, menu) {
 /**
  * Called if the MenuService switches into this state, to build the gui.
  */
-function createGui(menu) {
-	var skin = menu.skinNormal;
+function createGui(menuService, menu) {
+	var skin = menuService.skinNormal;
 	var w = new ui.Window("PAUSE", skin);
 
 	var resume = new ui.TextButton("Resume (P)", skin);
 	resume.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.changeState(MENU_STATE_IDLE);
+			menuService.changeState(MENU_STATE_IDLE);
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
@@ -33,14 +33,14 @@ function createGui(menu) {
 	var exit = new ui.TextButton("Return to title", skin);
 	exit.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.changeState(MENU_STATE_TITLE);
+			menuService.changeState(MENU_STATE_TITLE);
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
 	w.add(exit);
 
 	w.pack();
-	menu.center(w);
-	menu.addGUIcomponent(w);
-	menu.focus(resume);
+	menuService.center(w);
+	menuService.addGUIcomponent(w);
+	menuService.focus(resume);
 }

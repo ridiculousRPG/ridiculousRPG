@@ -23,7 +23,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.GameBase;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
 /**
@@ -38,10 +40,8 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 	private boolean clearTheMenu;
 	private boolean catchBackKey;
 	private boolean catchMenuKey;
-	// TODO: Load and dispose texture when showing/hiding menu.
-	// We need a general solution for this problem, to be able to use pictures
-	// (like a preview image for a save state) within menus.
-	private TextureRegionRef background;
+	private String background;
+	private Array<TextureRegionRef> managedTextures = new Array<TextureRegionRef>();
 
 	/**
 	 * Creates a new {@link MenuStateHandler} which is customizable via a call
@@ -74,25 +74,25 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 	}
 
 	@Override
-	public void createGui(MenuService menu) {
+	public void createGui(MenuService menuService) {
 		try {
 			if (background != null) {
-				Image bg = new Image(background);
-				bg.width = menu.getWidth();
-				bg.height = menu.getHeight();
-				menu.addGUIcomponent(bg);
+				Image bg = createImage(background);
+				bg.width = menuService.getWidth();
+				bg.height = menuService.getHeight();
+				menuService.addGUIcomponent(bg);
 			}
-			scriptEngine.invokeFunction("createGui", menu);
+			scriptEngine.invokeFunction("createGui", menuService, this);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public boolean processInput(int keycode, MenuService menu) {
+	public boolean processInput(int keycode, MenuService menuService) {
 		try {
 			Object ret = scriptEngine.invokeFunction("processInput", keycode,
-					menu);
+					menuService, this);
 			return (ret instanceof Boolean) && ((Boolean) ret);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -115,18 +115,51 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 		return freezeTheWorld;
 	}
 
-	public void setBackground(TextureRegionRef background) {
+	public void setBackground(String background) {
 		this.background = background;
 	}
 
-	public TextureRegionRef getBackground() {
+	public String getBackground() {
 		return background;
+	}
+
+	/**
+	 * Creates an image, which will automatically disposed when the menu is
+	 * closed.
+	 * 
+	 * @param internalPath
+	 * @return An image, which can be added to the menu.
+	 */
+	public Image createImage(String internalPath) {
+		return createImage(TextureRegionLoader.load(internalPath), true);
+	}
+
+	/**
+	 * Creates an image from a texture. Disposing the texture can be managed
+	 * automatically when the menu is closed.<br>
+	 * Use autoFree=true if you don't know what to do!
+	 * 
+	 * @param tRef
+	 * @param autoFree
+	 * @return An image, which can be added to the menu.
+	 */
+	public Image createImage(TextureRegionRef tRef, boolean autoFree) {
+		if (autoFree)
+			managedTextures.add(tRef);
+		return new Image(tRef);
+	}
+
+	@Override
+	public void freeResources() {
+		for (TextureRegionRef tRef : managedTextures) {
+			tRef.dispose();
+		}
+		managedTextures.clear();
 	}
 
 	@Override
 	public void dispose() {
-		if (background != null)
-			background.dispose();
+		freeResources();
 	}
 
 	@Override

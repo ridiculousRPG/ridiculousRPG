@@ -7,21 +7,21 @@
  * Called if the MenuService is in this state, and an user input has been
  * performed.
  */
-function processInput(keycode, menu) {
+function processInput(keycode, menuService, menuHandler) {
 	if (keycode == Keys.ESCAPE || keycode == Keys.BACK) {
-		return menu.changeState(MENU_STATE_IDLE);
+		return menuService.changeState(MENU_STATE_IDLE);
 	}
 	if ($.controlKeyPressed) {
 		if (keycode == Keys.S) {
 			if ($.quickSave()) {
-				menu.showInfoFocused("Quicksave successful (Ctrl+S)");
-				return menu.changeState(MENU_STATE_IDLE);;
+				menuService.showInfoFocused("Quicksave successful (Ctrl+S)");
+				return menuService.changeState(MENU_STATE_IDLE);;
 			}
 		}
 		if (keycode == Keys.L) {
 			if ($.quickLoad()) {
-				menu.showInfoFocused("Quickload performed (Ctrl+L)");
-				return menu.changeState(MENU_STATE_IDLE);;
+				menuService.showInfoFocused("Quickload performed (Ctrl+L)");
+				return menuService.changeState(MENU_STATE_IDLE);;
 			}
 		}
 	}
@@ -31,14 +31,14 @@ function processInput(keycode, menu) {
 /**
  * Called if the MenuService switches into this state, to build the gui.
  */
-function createGui(menu) {
-	var skin = menu.skinNormal;
+function createGui(menuService, menuHandler) {
+	var skin = menuService.skinNormal;
 	var w = new ui.Window("Game menu", skin);
 
 	var resume = new ui.TextButton("Resume (Esc)", skin);
 	resume.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.changeState(MENU_STATE_IDLE);
+			menuService.changeState(MENU_STATE_IDLE);
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
@@ -47,7 +47,7 @@ function createGui(menu) {
 	var bag = new ui.TextButton("Open bag", skin);
 	bag.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.showInfoFocused("Bag is not implemented yet.\n"
+			menuService.showInfoFocused("Bag is not implemented yet.\n"
 					+ "This is an early alpha release!");
 		}
 	};
@@ -58,9 +58,9 @@ function createGui(menu) {
 	quickload.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			if ($.quickLoad()) {
-				menu.changeState(MENU_STATE_IDLE);
+				menuService.changeState(MENU_STATE_IDLE);
 			} else {
-				menu.showInfoFocused("Load failed!");
+				menuService.showInfoFocused("Load failed!");
 			}
 		}
 	};
@@ -71,9 +71,9 @@ function createGui(menu) {
 	quicksave.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			if ($.quickSave()) {
-				menu.changeState(MENU_STATE_IDLE);
+				menuService.changeState(MENU_STATE_IDLE);
 			} else {
-				menu.showInfoFocused("Save failed!");
+				menuService.showInfoFocused("Save failed!");
 			}
 		}
 	};
@@ -83,7 +83,7 @@ function createGui(menu) {
 	var load = new ui.TextButton("Load", skin);
 	load.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.changeState(MENU_STATE_LOAD);
+			menuService.changeState(MENU_STATE_LOAD);
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
@@ -92,7 +92,7 @@ function createGui(menu) {
 	var save = new ui.TextButton("Save", skin);
 	save.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.changeState(MENU_STATE_SAVE);
+			menuService.changeState(MENU_STATE_SAVE);
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
@@ -101,7 +101,7 @@ function createGui(menu) {
 	var toTitle = new ui.TextButton("Return to title", skin);
 	toTitle.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
-			menu.changeState(MENU_STATE_TITLE);
+			menuService.changeState(MENU_STATE_TITLE);
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
@@ -117,7 +117,7 @@ function createGui(menu) {
 	w.add(exit);
 
 	w.pack();
-	w.height = menu.getHeight();
-	menu.addGUIcomponent(w);
-	menu.focus(resume);
+	w.height = menuService.getHeight();
+	menuService.addGUIcomponent(w);
+	menuService.focus(resume);
 }
