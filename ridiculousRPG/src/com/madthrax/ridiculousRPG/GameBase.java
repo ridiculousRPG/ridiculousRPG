@@ -747,13 +747,13 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 
 	/**
 	 * Calls {@link #listSaveFiles(int, int, int)} with the default values (2,
-	 * 1, 5)
+	 * 1, 1)
 	 * 
 	 * @see #listSaveFiles(int, int)
 	 * @return An array of files, containing null values for empty save slots
 	 */
 	public FileHandle[] listSaveFiles() {
-		return listSaveFiles(2, 1, 5);
+		return listSaveFiles(2, 1, 1);
 	}
 
 	/**

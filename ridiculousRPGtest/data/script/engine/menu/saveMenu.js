@@ -25,6 +25,8 @@ function createGui(menuService, menu) {
 	var skin = menuService.skinNormal;
 	var w = new ui.Window("Save menu", skin);
 	var files = $.listSaveFiles();
+	// ADVANCED LIST GENERATION: listSaveFiles(int cols, int emptyTailRows, int minRows)
+	// var files = $.listSaveFiles(2, 1, 10);
 	var button;
 
 	var quickSave = generateButton("Quick Save", files[0], skin, menu);
@@ -48,12 +50,21 @@ function createGui(menuService, menu) {
 	};
 	w.add(button).colspan(2);
 
+	/* Use this loop if you prefer a "normal" top down menu for your game
 	for (var i = 1; i < files.length;) {
 		w.row().fill(true, true).expand(true, false).colspan(3);
 		for (var j = 0; j < 2; j++, i++) {
 			button = generateButton("Save "+i, files[i], skin, menu);
 			button.clickListener = new ridiculousRPG.ui.ClickListenerExecScript(
 				 "if ($.saveFile("+i+")) { "
+	*/
+	for (var i = files.length-1; i > 0;) {
+		w.row().fill(true, true).expand(true, false).colspan(3);
+		for (var j = 2; j >= 0; j-=2, i--) {
+			var index = (i+1-j);
+			button = generateButton("Save "+index, files[index], skin, menu);
+			button.clickListener = new ridiculousRPG.ui.ClickListenerExecScript(
+				 "if ($.saveFile("+index+")) { "
 				+"	$.serviceProvider.getService(\"menu\").resumeLastState(); "
 				+"} else { "
 				+"	$.serviceProvider.getService(\"menu\").showInfoFocused(\"Save failed!\"); "
@@ -81,6 +92,7 @@ function createGui(menuService, menu) {
 
 function generateButton(buttonText, zipFile, skin, menu) {
 	if (zipFile==null) {
+		// button.getLabel().setAlignment(ui.Align.LEFT);
 		return new ui.TextButton(buttonText + " - EMPTY", skin);
 	}
 	var DF = java.text.DateFormat;
