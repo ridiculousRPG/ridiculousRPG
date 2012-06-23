@@ -28,6 +28,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.FlickScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 /**
@@ -53,14 +54,20 @@ public final class ActorFocusUtil {
 			boolean left, Stage stage) {
 		if (focused.parent == null)
 			return false;
+		List<Actor> allActors = focused.parent.getActors();
 
+		return tryFocusPrevChild(focused, up, left, stage, allActors)
+				|| focusPrevIntern(focused.parent, up, left, stage);
+	}
+
+	private static boolean tryFocusPrevChild(Actor focused, boolean up,
+			boolean left, Stage stage, List<Actor> allActors) {
 		Vector2 tmpPoint = ActorFocusUtil.tmpPoint;
 		focused.toLocalCoordinates(tmpPoint.set(focused.x, focused.y));
 		float fX1 = focused.x - tmpPoint.x;
 		float fY1 = focused.y - tmpPoint.y;
 		float fX2 = fX1 + focused.width * .5f;
 		float fY2 = fY1 + focused.height * .5f;
-		List<Actor> allActors = focused.parent.getActors();
 		for (int i = allActors.size() - 1; i > -1; i--) {
 			Actor a = allActors.get(i);
 			if (a == focused)
@@ -79,10 +86,15 @@ public final class ActorFocusUtil {
 						return focus(a, true, stage);
 				} else if (aY1 >= fY2 || (aX2 <= fX1 && aY1 < fY2 && aY2 > fY1))
 					return focus(a, true, stage);
+			} else if (a instanceof WidgetGroup) {
+				if (tryFocusPrevChild(focused, up, left, stage,
+						((WidgetGroup) a).getActors())) {
+					return true;
+				}
 			}
 		}
 
-		return focusPrevIntern(focused.parent, up, left, stage);
+		return false;
 	}
 
 	public static boolean focusNext(Actor focused, Actor root, boolean down,
@@ -96,14 +108,20 @@ public final class ActorFocusUtil {
 			boolean right, Stage stage) {
 		if (focused.parent == null)
 			return false;
+		List<Actor> allActors = focused.parent.getActors();
 
+		return tryFocusNextChild(focused, down, right, stage, allActors)
+				|| focusNextIntern(focused.parent, down, right, stage);
+	}
+
+	private static boolean tryFocusNextChild(Actor focused, boolean down,
+			boolean right, Stage stage, List<Actor> allActors) {
 		Vector2 tmpPoint = ActorFocusUtil.tmpPoint;
 		focused.toLocalCoordinates(tmpPoint.set(focused.x, focused.y));
 		float fX1 = focused.x - tmpPoint.x;
 		float fY1 = focused.y - tmpPoint.y;
 		float fX2 = fX1 + focused.width * .5f;
 		float fY2 = fY1 + focused.height * .5f;
-		List<Actor> allActors = focused.parent.getActors();
 		for (int i = 0, len = allActors.size(); i < len; i++) {
 			Actor a = allActors.get(i);
 			if (a == focused)
@@ -122,10 +140,14 @@ public final class ActorFocusUtil {
 						return focus(a, false, stage);
 				} else if (aY2 <= fY1 || (aX1 >= fX2 && aY1 < fY2 && aY2 > fY1))
 					return focus(a, false, stage);
+			} else if (a instanceof WidgetGroup) {
+				if (tryFocusNextChild(focused, down, right, stage,
+						((WidgetGroup) a).getActors())) {
+					return true;
+				}
 			}
 		}
-
-		return focusNextIntern(focused.parent, down, right, stage);
+		return false;
 	}
 
 	public static boolean focusFirstChild(Group actorGrp, Stage stage) {

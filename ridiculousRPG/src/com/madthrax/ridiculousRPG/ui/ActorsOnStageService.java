@@ -221,24 +221,24 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	private boolean checkScroll(boolean focusChanged) {
 		if (focusChanged) {
-			Actor a = getKeyboardFocus();
-			Rectangle rect = new Rectangle();
-			while (a != null) {
-				if (a.parent instanceof FlickScrollPane) {
-					rect.width = getKeyboardFocus().width;
-					rect.height = getKeyboardFocus().height;
-					ActorFocusUtil.scrollIntoView((FlickScrollPane) a.parent,
-							rect);
-					return focusChanged;
-				} else if (a.parent instanceof ScrollPane) {
-					rect.width = getKeyboardFocus().width;
-					rect.height = getKeyboardFocus().height;
-					ActorFocusUtil.scrollIntoView((ScrollPane) a.parent, rect);
-					return focusChanged;
+			Actor actor = getKeyboardFocus();
+			if (actor != null) {
+				Rectangle rect = new Rectangle();
+				rect.width = actor.width;
+				rect.height = actor.height;
+				for (Actor a = actor; a != null; a = a.parent) {
+					if (a.parent instanceof FlickScrollPane) {
+						ActorFocusUtil.scrollIntoView(
+								(FlickScrollPane) a.parent, rect);
+						return true;
+					} else if (a.parent instanceof ScrollPane) {
+						ActorFocusUtil.scrollIntoView((ScrollPane) a.parent,
+								rect);
+						return true;
+					}
+					rect.x += a.x;
+					rect.y += a.y;
 				}
-				rect.x += a.x;
-				rect.y += a.y;
-				a = a.parent;
 			}
 		}
 		return focusChanged;
