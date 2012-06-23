@@ -157,13 +157,13 @@ public final class ActorFocusUtil {
 		float y = scroll.getMaxY() + scroll.height - rect.y;
 
 		// x direction
-		if (x < scroll.getScrollX())
+		if (x <= scroll.getScrollX())
 			scroll.setScrollX(x);
 		else if (x + rect.width > scroll.getScrollX() + scroll.width)
 			scroll.setScrollX(x + rect.width - scroll.width);
 
 		// y direction
-		if (y > scroll.getScrollY() + scroll.height)
+		if (y >= scroll.getScrollY() + scroll.height)
 			scroll.setScrollY(y - scroll.height);
 		else if (y - rect.height < scroll.getScrollY())
 			scroll.setScrollY(y - rect.height);

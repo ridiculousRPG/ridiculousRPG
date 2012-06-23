@@ -257,7 +257,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	public void focus(Actor actor) {
-		ActorFocusUtil.focus(actor, false, this);
+		checkScroll(ActorFocusUtil.focus(actor, false, this));
 		checkFocusChanged(false);
 	}
 
