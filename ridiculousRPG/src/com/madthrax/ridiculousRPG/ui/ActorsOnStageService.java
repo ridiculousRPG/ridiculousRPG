@@ -29,6 +29,8 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.FadeOut;
 import com.badlogic.gdx.scenes.scene2d.actions.Remove;
 import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
+import com.badlogic.gdx.scenes.scene2d.ui.FlickScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.madthrax.ridiculousRPG.GameBase;
@@ -179,13 +181,13 @@ public class ActorsOnStageService extends Stage implements GameService,
 		if (keycode == Keys.TAB) {
 			if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)
 					|| Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT)) {
-				return ActorFocusUtil.focusPrev(focusedActor, root, false,
-						false, this)
-						|| ActorFocusUtil.focusLastChild(root, this);
+				return checkScroll(ActorFocusUtil.focusPrev(focusedActor, root,
+						false, false, this)
+						|| ActorFocusUtil.focusLastChild(root, this));
 			}
-			return ActorFocusUtil.focusNext(focusedActor, root, false, false,
-					this)
-					|| ActorFocusUtil.focusFirstChild(root, this);
+			return checkScroll(ActorFocusUtil.focusNext(focusedActor, root,
+					false, false, this)
+					|| ActorFocusUtil.focusFirstChild(root, this));
 		}
 		// alowed childs to consume key down
 		boolean consumed = super.keyDown(keycode);
@@ -200,20 +202,39 @@ public class ActorsOnStageService extends Stage implements GameService,
 				}
 				return false;
 			case Keys.UP:
-				return ActorFocusUtil.focusPrev(focusedActor, root, true,
-						false, this);
+				return checkScroll(ActorFocusUtil.focusPrev(focusedActor, root,
+						true, false, this));
 			case Keys.DOWN:
-				return ActorFocusUtil.focusNext(focusedActor, root, true,
-						false, this);
+				return checkScroll(ActorFocusUtil.focusNext(focusedActor, root,
+						true, false, this));
 			case Keys.LEFT:
-				return ActorFocusUtil.focusPrev(focusedActor, root, false,
-						true, this);
+				return checkScroll(ActorFocusUtil.focusPrev(focusedActor, root,
+						false, true, this));
 			case Keys.RIGHT:
-				return ActorFocusUtil.focusNext(focusedActor, root, false,
-						true, this);
+				return checkScroll(ActorFocusUtil.focusNext(focusedActor, root,
+						false, true, this));
 			}
 		}
 		return consumed;
+	}
+
+	private boolean checkScroll(boolean focusChanged) {
+		if (focusChanged) {
+			Actor a = getKeyboardFocus();
+			while (a != null) {
+				if (a instanceof FlickScrollPane) {
+					ActorFocusUtil.scrollIntoView((FlickScrollPane) a,
+							getKeyboardFocus());
+					return focusChanged;
+				} else if (a instanceof ScrollPane) {
+					ActorFocusUtil.scrollIntoView((ScrollPane) a,
+							getKeyboardFocus());
+					return focusChanged;
+				}
+				a = a.parent;
+			}
+		}
+		return focusChanged;
 	}
 
 	@Override

@@ -23,7 +23,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.FlickScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 /**
  * This class offers some static methods to change the keyboard focused actor.<br>
@@ -129,6 +133,8 @@ public final class ActorFocusUtil {
 			Actor a = allActors.get(i);
 			if (isFocusable(a))
 				return focus(a, false, stage);
+			if (a instanceof Group && focusFirstChild((Group) a, stage))
+				return true;
 		}
 		return false;
 	}
@@ -139,8 +145,44 @@ public final class ActorFocusUtil {
 			Actor a = allActors.get(i);
 			if (isFocusable(a))
 				return focus(a, true, stage);
+			if (a instanceof Group && focusLastChild((Group) a, stage))
+				return true;
 		}
 		return false;
+	}
+
+	public static void scrollIntoView(FlickScrollPane scroll, Actor a) {
+		float x = a.x;
+		float y = scroll.getWidget().height - a.y;
+
+		// x direction
+		if (x < scroll.getScrollX())
+			scroll.setScrollX(x);
+		else if (x + a.width > scroll.getScrollX() + scroll.width)
+			scroll.setScrollX(x + a.width - scroll.width);
+
+		// y direction
+		if (y > scroll.getScrollY() + scroll.height)
+			scroll.setScrollY(y - scroll.height);
+		else if (y - a.height < scroll.getScrollY())
+			scroll.setScrollY(y - a.height);
+	}
+
+	public static void scrollIntoView(ScrollPane scroll, Actor a) {
+		float x = a.x;
+		float y = a.parent.height - a.y;
+
+		// x direction
+		if (x < scroll.getScrollX())
+			scroll.setScrollX(x);
+		else if (x + a.width > scroll.getScrollX() + scroll.width)
+			scroll.setScrollX(x + a.width - scroll.width);
+
+		// y direction
+		if (y > scroll.getScrollY() + scroll.height)
+			scroll.setScrollY(y - scroll.height);
+		else if (y - a.height < scroll.getScrollY())
+			scroll.setScrollY(y - a.height);
 	}
 
 	/**
@@ -195,7 +237,9 @@ public final class ActorFocusUtil {
 
 	private static boolean isFocusable(Actor a) {
 		return a.touchable && a.visible && styleGetter(a.getClass()) != null
-				&& !(a instanceof Label);
+				&& !(a instanceof Label) && !(a instanceof ScrollPane)
+				&& !(a instanceof Image) && !(a instanceof FlickScrollPane)
+				&& !(a instanceof Window);
 	}
 
 	public static Method styleGetter(Class<? extends Actor> actorClass) {
