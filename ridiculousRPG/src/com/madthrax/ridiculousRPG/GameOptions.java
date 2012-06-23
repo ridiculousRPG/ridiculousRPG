@@ -37,6 +37,8 @@ public class GameOptions {
 	public boolean vSyncEnabled = false;
 	public boolean debug = false;
 	public String savePath = "ridiculousRPG/";
+	public String i18nPath = "data/i18n";
+	public String i18nDefault = "en";
 	public ScriptFactory scriptFactory = new ScriptFactory();
 	public String scriptLanguage = "JavaScript";
 	public String[] scriptFileExtension = { ".js", ".jscript" };

@@ -18,31 +18,31 @@ function processInput(keycode, menuService, menu) {
  * Called if the MenuService switches into this state, to build the gui.
  */
 function createGui(menuService, menu) {
-	var width = Math.min(600, $.screen.width);
-	var height = Math.min(320, $.screen.height);
-	var scrollBarWidth = 14;
+	i18nContainer = "engineMenuText";
+	var width = 700;
+	var height = 480;
 
 	var skin = menuService.skinNormal;
-	var w = new ui.Window("Save menu", skin);
+	var w = new ui.Window(i18nText("savemenu.title"), skin);
 	var files = $.listSaveFiles();
 	// ADVANCED LIST GENERATION: listSaveFiles(int cols, int emptyTailRows, int minRows)
 	// var files = $.listSaveFiles(2, 1, 10);
 	var button;
 
-	var quickSave = generateButton("Quick Save", files[0], skin, menu);
+	var quickSave = generateButton(i18nText("savemenu.quicksave"), files[0], skin, menu);
 	quickSave.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			if ($.quickSave()) {
 				menuService.resumeLastState();
 			} else {
-				menuService.showInfoFocused("Save failed!");
+				menuService.showInfoFocused(i18nText("savemenu.savefailed"));
 			}
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
 	w.add(quickSave).colspan(4);
 
-	button = new ui.TextButton("Cancel (Esc)", skin);
+	button = new ui.TextButton(i18nText("savemenu.cancel"), skin);
 	button.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			return menuService.resumeLastState();
@@ -50,6 +50,8 @@ function createGui(menuService, menu) {
 	};
 	w.add(button).colspan(2);
 
+	var failedText = i18nText("savemenu.savefailed");
+	var buttonText = i18nText("savemenu.save");
 	/* Use this loop if you prefer a "normal" top down menu for your game
 	for (var i = 1; i < files.length;) {
 		w.row().fill(true, true).expand(true, false).colspan(3);
@@ -62,29 +64,25 @@ function createGui(menuService, menu) {
 		w.row().fill(true, true).expand(true, false).colspan(3);
 		for (var j = 2; j >= 0; j-=2, i--) {
 			var index = (i+1-j);
-			button = generateButton("Save "+index, files[index], skin, menu);
+			button = generateButton(buttonText+" "+index, files[index], skin, menu);
 			button.clickListener = new ridiculousRPG.ui.ClickListenerExecScript(
 				 "if ($.saveFile("+index+")) { "
 				+"	$.serviceProvider.getService(\"menu\").resumeLastState(); "
 				+"} else { "
-				+"	$.serviceProvider.getService(\"menu\").showInfoFocused(\"Save failed!\"); "
+				+"	$.serviceProvider.getService(\"menu\").showInfoFocused(\""+failedText+"\"); "
 				+"} "
 			);
 			w.add(button);
 		}
 	}
 
-	
-	var t = new ui.tablelayout.Table();
 	w.setMovable(false);
 	w.setModal(true);
-	w.width(width-scrollBarWidth);
+	w.width(width);
 	w.height(height);
-	t.align(ui.Align.LEFT);
-	t.add(w);
-	var scroll = new ui.ScrollPane(t, skin);
-	scroll.width = width;
-	scroll.height = height;
+	var scroll = new ui.FlickScrollPane(w, skin);
+	scroll.width = Math.min(width, $.screen.width);
+	scroll.height = Math.min(height, $.screen.height);
 	menuService.center(scroll);
 	menuService.addGUIcomponent(scroll);
 	menuService.focus(quickSave);

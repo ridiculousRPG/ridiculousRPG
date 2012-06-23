@@ -100,6 +100,16 @@ public class GameOptionsDefaultConfigReader {
 				options.encoding = propTmp.trim();
 			}
 
+			propTmp = props.getProperty("I18N_PATH");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				options.i18nPath = propTmp.trim();
+			}
+
+			propTmp = props.getProperty("I18N_DEFAULT_LANG");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				options.i18nDefault = propTmp.trim();
+			}
+
 			propTmp = props.getProperty("SAVE_PATH");
 			if (propTmp != null && propTmp.trim().length() > 0) {
 				options.savePath = propTmp.trim();

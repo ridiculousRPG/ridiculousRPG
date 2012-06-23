@@ -1,0 +1,57 @@
+# title menu
+titlemenu.title=Start menu
+titlemenu.new=Start new game
+titlemenu.quickload=Quick load \n\
+                    (Ctrl+L)
+titlemenu.loadfailed=Load failed!
+titlemenu.load=Load
+titlemenu.fullscreen=Fullscreen mode
+titlemenu.windowed=Window mode
+titlemenu.exit=Exit game (Esc)
+
+# game menu
+gamemenu.quicksave.succeed=Quick save successful (Ctrl+S)
+gamemenu.quickload.succeed=Quick load performed (Ctrl+L)
+
+gamemenu.title=Game menu
+gamemenu.resume=Resume (Esc)
+gamemenu.openbag=Open bag
+gamemenu.quickload=Quick load (Ctrl+L)
+gamemenu.quicksave=Quick save (Ctrl+S)
+gamemenu.loadfailed=Load failed!
+gamemenu.savefailed=Save failed!
+gamemenu.load=Load
+gamemenu.save=Save
+gamemenu.return=Return to title
+gamemenu.exit=Exit game
+
+# game over menu
+gameovermenu.title=Game over
+gameovermenu.quickload=Quick load (Ctrl+L)
+gameovermenu.loadfailed=Load failed!
+gameovermenu.load=Load
+gameovermenu.return=Return to title
+gameovermenu.exit=Exit game (Esc)
+
+# idle menu
+idlemenu.quicksave.succeed=Quick save successful (Ctrl+S)
+idlemenu.quickload.succeed=Quick load performed (Ctrl+L)
+
+# pause menu
+pausemenu.title=Pause
+pausemenu.resume=Resume (P)
+pausemenu.return=Return to title
+
+# load menu
+loadmenu.title=Load menu
+loadmenu.quickload=Quick load
+loadmenu.loadfailed=Load failed!
+loadmenu.load=Load
+loadmenu.cancel=Cancel (Esc)
+
+# save menu
+savemenu.title=Save menu
+savemenu.quicksave=Quick save
+savemenu.savefailed=Save failed!
+savemenu.save=Save
+savemenu.cancel=Cancel (Esc)

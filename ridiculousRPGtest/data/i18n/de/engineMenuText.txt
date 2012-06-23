@@ -1,0 +1,56 @@
+# title menu
+titlemenu.title=Startmenü
+titlemenu.new=Neues Spiel
+titlemenu.quickload=Quickload (Ctrl+L)
+titlemenu.loadfailed=Laden fehlgeschlagen!
+titlemenu.load=Spiel laden
+titlemenu.fullscreen=Vollbildmodus
+titlemenu.windowed=Fenstermodus
+titlemenu.exit=Spiel verlassen (Esc)
+
+# game menu
+gamemenu.quicksave.succeed=Spielstand wurde gespeichert (Ctrl+S)
+gamemenu.quickload.succeed=Spielstand wurde geladen (Ctrl+L)
+
+gamemenu.title=Menü
+gamemenu.resume=Fortsetzen (Esc)
+gamemenu.openbag=Tasche öffnen
+gamemenu.quickload=Quickload (Ctrl+L)
+gamemenu.quicksave=Quicksave (Ctrl+S)
+gamemenu.loadfailed=Laden fehlgeschlagen!
+gamemenu.savefailed=Speichern fehlgeschlagen!
+gamemenu.load=Spiel laden
+gamemenu.save=Spiel speichern
+gamemenu.return=Zurück zum Titel
+gamemenu.exit=Spiel verlassen
+
+# game over menu
+gameovermenu.title=Game over
+gameovermenu.quickload=Quickload (Ctrl+L)
+gameovermenu.loadfailed=Laden fehlgeschlagen!
+gameovermenu.load=Spiel laden
+gameovermenu.return=Zurück zum Titel
+gameovermenu.exit=Spiel verlassen (Esc)
+
+# idle menu
+idlemenu.quicksave.succeed=Spielstand wurde gespeichert (Ctrl+S)
+idlemenu.quickload.succeed=Spielstand wurde geladen (Ctrl+L)
+
+# pause menu
+pausemenu.title=Pause
+pausemenu.resume=Fortsetzen (P)
+pausemenu.return=Zurück zum Titel
+
+# load menu
+loadmenu.title=Spielstand laden
+loadmenu.quickload=Quickload
+loadmenu.loadfailed=Laden fehlgeschlagen!
+loadmenu.load=Laden
+loadmenu.cancel=Abbrechen (Esc)
+
+# save menu
+savemenu.title=Spielstand speichern
+savemenu.quicksave=Quicksave
+savemenu.savefailed=Speichern fehlgeschlagen!
+savemenu.save=Speichern
+savemenu.cancel=Abbrechen (Esc)

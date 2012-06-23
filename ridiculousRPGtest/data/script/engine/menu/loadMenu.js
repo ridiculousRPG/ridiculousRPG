@@ -18,31 +18,31 @@ function processInput(keycode, menuService, menu) {
  * Called if the MenuService switches into this state, to build the gui.
  */
 function createGui(menuService, menu) {
-	var width = Math.min(600, $.screen.width);
-	var height = Math.min(320, $.screen.height);
-	var scrollBarWidth = 14;
+	i18nContainer = "engineMenuText";
+	var width = 700;
+	var height = 480;
 
 	var skin = menuService.skinNormal;
-	var w = new ui.Window("Load menu", skin);
+	var w = new ui.Window(i18nText("loadmenu.title"), skin);
 	var files = $.listSaveFiles();
 	// ADVANCED LIST GENERATION: listSaveFiles(int cols, int emptyTailRows, int minRows)
 	// var files = $.listSaveFiles(2, 1, 10);
 	var button;
 
-	var quickLoad = generateButton("Quick Load", files[0], skin, menu);
+	var quickLoad = generateButton(i18nText("loadmenu.quickload"), files[0], skin, menu);
 	quickLoad.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			if ($.quickLoad()) {
 				menuService.changeState(MENU_STATE_IDLE);
 			} else {
-				menuService.showInfoFocused("Load failed!");
+				menuService.showInfoFocused(i18nText("loadmenu.loadfailed"));
 			}
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
 	w.add(quickLoad).colspan(4);
 
-	button = new ui.TextButton("Cancel (Esc)", skin);
+	button = new ui.TextButton(i18nText("loadmenu.cancel"), skin);
 	button.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			return menuService.resumeLastState();
@@ -50,6 +50,8 @@ function createGui(menuService, menu) {
 	};
 	w.add(button).colspan(2);
 
+	var failedText = i18nText("loadmenu.loadfailed");
+	var buttonText = i18nText("loadmenu.load");
 	/* Use this loop if you prefer a "normal" top down menu for your game
 	for (var i = 1; i < files.length;) {
 		w.row().fill(true, true).expand(true, false).colspan(3);
@@ -62,28 +64,25 @@ function createGui(menuService, menu) {
 		w.row().fill(true, true).expand(true, false).colspan(3);
 		for (var j = 2; j >= 0; j-=2, i--) {
 			var index = (i+1-j);
-			button = generateButton("Load "+index, files[index], skin, menu);
+			button = generateButton(buttonText+" "+index, files[index], skin, menu);
 			button.clickListener = new ridiculousRPG.ui.ClickListenerExecScript(
 				 "if ($.loadFile("+index+")) { "
 				+"	$.serviceProvider.getService(\"menu\").changeState(MENU_STATE_IDLE); "
 				+"} else { "
-				+"	$.serviceProvider.getService(\"menu\").showInfoFocused(\"Load failed!\"); "
+				+"	$.serviceProvider.getService(\"menu\").showInfoFocused(\""+failedText+"\"); "
 				+"} "
 			);
 			w.add(button);
 		}
 	}
 
-	var t = new ui.tablelayout.Table();
 	w.setMovable(false);
 	w.setModal(true);
-	w.width(width-scrollBarWidth);
+	w.width(width);
 	w.height(height);
-	t.align(ui.Align.LEFT);
-	t.add(w);
-	var scroll = new ui.ScrollPane(t, skin);
-	scroll.width = width;
-	scroll.height = height;
+	var scroll = new ui.FlickScrollPane(w, skin);
+	scroll.width = Math.min(width, $.screen.width);
+	scroll.height = Math.min(height, $.screen.height);
 	menuService.center(scroll);
 	menuService.addGUIcomponent(scroll);
 	menuService.focus(quickLoad);

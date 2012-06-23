@@ -16,16 +16,17 @@ function processInput(keycode, menuService, menu) {
 		return menuService.changeState(MENU_STATE_GAME);
 	}
 	if ($.controlKeyPressed) {
+		i18nContainer = "engineMenuText";
 		if (keycode == Keys.S) {
 			$.writeScreenshot(); // take screen shot
 			if ($.quickSave()) {
-				menuService.showInfoFocused("Quicksave successful (Ctrl+S)");
+				menuService.showInfoFocused(i18nText("idlemenu.quicksave.succeed"));
 				return true;
 			}
 		}
 		if (keycode == Keys.L) {
 			if ($.quickLoad()) {
-				menuService.showInfoFocused("Quickload performed (Ctrl+L)");
+				menuService.showInfoFocused(i18nText("idlemenu.quickload.succeed"));
 				return true;
 			}
 		}

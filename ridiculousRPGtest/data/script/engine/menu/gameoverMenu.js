@@ -26,23 +26,24 @@ function processInput(keycode, menuService, menu) {
  * Called if the MenuService switches into this state, to build the gui.
  */
 function createGui(menuService, menu) {
+	i18nContainer = "engineMenuText";
 	var skin = menuService.skinNormal;
-	var w = new ui.Window("Game over", skin);
+	var w = new ui.Window(i18nText("gameovermenu.title"), skin);
 
-	var quickload = new ui.TextButton("Quick load (Ctrl+L)", skin);
+	var quickload = new ui.TextButton(i18nText("gameovermenu.quickload"), skin);
 	quickload.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			if ($.quickLoad()) {
 				menuService.changeState(MENU_STATE_IDLE);
 			} else {
-				menuService.showInfoFocused("Load failed!");
+				menuService.showInfoFocused(i18nText("gameovermenu.loadfailed"));
 			}
 		}
 	};
 	w.row().fill(true, true).expand(true, false);
 	w.add(quickload);
 
-	var load = new ui.TextButton("Load", skin);
+	var load = new ui.TextButton(i18nText("gameovermenu.load"), skin);
 	load.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			menuService.changeState(MENU_STATE_LOAD);
@@ -52,7 +53,7 @@ function createGui(menuService, menu) {
 	w.add(load);
 
 
-	var toTitle = new ui.TextButton("Return to title", skin);
+	var toTitle = new ui.TextButton(i18nText("gameovermenu.return"), skin);
 	toTitle.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			menuService.changeState(MENU_STATE_TITLE);
@@ -61,7 +62,7 @@ function createGui(menuService, menu) {
 	w.row().fill(true, true).expand(true, false);
 	w.add(toTitle);
 
-	var exit = new ui.TextButton("Exit game (Esc)", skin);
+	var exit = new ui.TextButton(i18nText("gameovermenu.exit"), skin);
 	exit.clickListener = new ui.ClickListener() {
 		click: function (actor, x, y) {
 			$.exit();

@@ -28,6 +28,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.script.Invocable;
@@ -55,6 +56,7 @@ import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.camera.CameraSimpleOrtho2D;
 import com.madthrax.ridiculousRPG.camera.CameraTrackMovableService;
 import com.madthrax.ridiculousRPG.event.EventObject;
+import com.madthrax.ridiculousRPG.i18n.TextLoader;
 import com.madthrax.ridiculousRPG.map.MapRenderService;
 import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
@@ -81,6 +83,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	private ScriptFactory scriptFactory;
 	private ScriptEngine sharedEngine;
 	private GameOptions options;
+	private TextLoader i18n;
 
 	private Rectangle plane = new Rectangle();
 	private Rectangle screen = new Rectangle();
@@ -124,6 +127,18 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 				.getWidth();
 		plane.height = camera.viewportHeight = screen.height = Gdx.graphics
 				.getHeight();
+		// Compute language locale
+		FileHandle fh = Gdx.files.internal(options.i18nPath);
+		FileHandle i18nPath = fh.child(options.i18nDefault);
+		if (!i18nPath.exists() && options.i18nDefault.length() > 2) {
+			i18nPath = fh.child(options.i18nDefault.substring(0, 2));
+		}
+		if (!i18nPath.exists()) {
+			Gdx.app.error("i18ndefaultmissing",
+					"The default language file is missing");
+		}
+		i18n = new TextLoader(i18nPath, 5);
+		setLanguage(Locale.getDefault());
 
 		// instance != null indicates that GameBase is initialized
 		if (!isInitialized())
@@ -146,6 +161,26 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		// restore last display mode
 		loadDisplayMode();
 		camera.update();
+	}
+
+	public String getText(String container, String key) throws IOException {
+		return i18n.getText(container, key);
+	}
+
+	public void setLanguage(Locale locale) {
+		FileHandle fh = Gdx.files.internal(options.i18nPath);
+		FileHandle i18nPath = fh.child(Locale.getDefault().getISO3Language());
+		if (i18nPath.exists()) {
+			i18n.setDirectory(i18nPath);
+		} else {
+			i18nPath = fh.child(Locale.getDefault().getLanguage());
+			if (i18nPath.exists())
+				i18n.setDirectory(i18nPath);
+		}
+	}
+
+	public void setLanguageDir(FileHandle directory) {
+		i18n.setDirectory(directory);
 	}
 
 	public void rebuildSpriteBatch() {
@@ -812,6 +847,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			ObjectOutputStream oOut = new ObjectOutputStream(fh.write(false));
 			oOut.writeObject(screen);
 			oOut.writeBoolean(fullscreen);
+			oOut.writeObject(i18n.getDirectory().path());
 			oOut.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -825,7 +861,9 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 				ObjectInputStream oIn = new ObjectInputStream(fh.read());
 				Rectangle newScreen = (Rectangle) oIn.readObject();
 				fullscreen = oIn.readBoolean();
+				String i18nPath = (String) oIn.readObject();
 				oIn.close();
+				i18n.setDirectory(Gdx.files.internal(i18nPath));
 				Gdx.graphics.setDisplayMode((int) newScreen.width,
 						(int) newScreen.height, false);
 				if (fullscreen) {

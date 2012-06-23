@@ -21,3 +21,13 @@ function internalFile(pathName) {
 function externalFile(pathName) {
 	return gdx.Gdx.files.external(pathName);
 }
+
+i18nContainer="UNDEFINED";
+// Returns a text from the given container and key
+function i18nText(container, key) {
+	if (key==null) {
+		key = container;
+		container = i18nContainer;
+	}
+	return $.getText(container, key);
+}
