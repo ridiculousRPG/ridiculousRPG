@@ -19,6 +19,7 @@ package com.madthrax.ridiculousRPG.ui;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -151,38 +152,38 @@ public final class ActorFocusUtil {
 		return false;
 	}
 
-	public static void scrollIntoView(FlickScrollPane scroll, Actor a) {
-		float x = a.x;
-		float y = scroll.getWidget().height - a.y;
+	public static void scrollIntoView(FlickScrollPane scroll, Rectangle rect) {
+		float x = rect.x;
+		float y = scroll.getMaxY() + scroll.height - rect.y;
 
 		// x direction
 		if (x < scroll.getScrollX())
 			scroll.setScrollX(x);
-		else if (x + a.width > scroll.getScrollX() + scroll.width)
-			scroll.setScrollX(x + a.width - scroll.width);
+		else if (x + rect.width > scroll.getScrollX() + scroll.width)
+			scroll.setScrollX(x + rect.width - scroll.width);
 
 		// y direction
 		if (y > scroll.getScrollY() + scroll.height)
 			scroll.setScrollY(y - scroll.height);
-		else if (y - a.height < scroll.getScrollY())
-			scroll.setScrollY(y - a.height);
+		else if (y - rect.height < scroll.getScrollY())
+			scroll.setScrollY(y - rect.height);
 	}
 
-	public static void scrollIntoView(ScrollPane scroll, Actor a) {
-		float x = a.x;
-		float y = a.parent.height - a.y;
+	public static void scrollIntoView(ScrollPane scroll, Rectangle rect) {
+		float x = rect.x;
+		float y = scroll.getMaxY() + scroll.height - rect.y;
 
 		// x direction
 		if (x < scroll.getScrollX())
 			scroll.setScrollX(x);
-		else if (x + a.width > scroll.getScrollX() + scroll.width)
-			scroll.setScrollX(x + a.width - scroll.width);
+		else if (x + rect.width > scroll.getScrollX() + scroll.width)
+			scroll.setScrollX(x + rect.width - scroll.width);
 
 		// y direction
 		if (y > scroll.getScrollY() + scroll.height)
 			scroll.setScrollY(y - scroll.height);
-		else if (y - a.height < scroll.getScrollY())
-			scroll.setScrollY(y - a.height);
+		else if (y - rect.height < scroll.getScrollY())
+			scroll.setScrollY(y - rect.height);
 	}
 
 	/**

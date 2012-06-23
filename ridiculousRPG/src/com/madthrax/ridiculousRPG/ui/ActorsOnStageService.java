@@ -24,6 +24,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.FadeOut;
@@ -221,16 +222,22 @@ public class ActorsOnStageService extends Stage implements GameService,
 	private boolean checkScroll(boolean focusChanged) {
 		if (focusChanged) {
 			Actor a = getKeyboardFocus();
+			Rectangle rect = new Rectangle();
 			while (a != null) {
-				if (a instanceof FlickScrollPane) {
-					ActorFocusUtil.scrollIntoView((FlickScrollPane) a,
-							getKeyboardFocus());
+				if (a.parent instanceof FlickScrollPane) {
+					rect.width = getKeyboardFocus().width;
+					rect.height = getKeyboardFocus().height;
+					ActorFocusUtil.scrollIntoView((FlickScrollPane) a.parent,
+							rect);
 					return focusChanged;
-				} else if (a instanceof ScrollPane) {
-					ActorFocusUtil.scrollIntoView((ScrollPane) a,
-							getKeyboardFocus());
+				} else if (a.parent instanceof ScrollPane) {
+					rect.width = getKeyboardFocus().width;
+					rect.height = getKeyboardFocus().height;
+					ActorFocusUtil.scrollIntoView((ScrollPane) a.parent, rect);
 					return focusChanged;
 				}
+				rect.x += a.x;
+				rect.y += a.y;
 				a = a.parent;
 			}
 		}
