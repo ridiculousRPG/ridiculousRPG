@@ -31,7 +31,6 @@ import com.badlogic.gdx.scenes.scene2d.actions.FadeOut;
 import com.badlogic.gdx.scenes.scene2d.actions.Remove;
 import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
 import com.badlogic.gdx.scenes.scene2d.ui.FlickScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.madthrax.ridiculousRPG.GameBase;
@@ -222,23 +221,17 @@ public class ActorsOnStageService extends Stage implements GameService,
 	private boolean checkScroll(boolean focusChanged) {
 		if (focusChanged) {
 			Actor actor = getKeyboardFocus();
-			if (actor != null) {
-				Rectangle rect = new Rectangle();
-				rect.width = actor.width;
-				rect.height = actor.height;
-				for (Actor a = actor; a != null; a = a.parent) {
-					if (a.parent instanceof FlickScrollPane) {
-						ActorFocusUtil.scrollIntoView(
-								(FlickScrollPane) a.parent, rect);
-						return true;
-					} else if (a.parent instanceof ScrollPane) {
-						ActorFocusUtil.scrollIntoView((ScrollPane) a.parent,
-								rect);
-						return true;
-					}
-					rect.x += a.x;
-					rect.y += a.y;
+			Rectangle rect = new Rectangle();
+			for (Actor a = actor; a != null; a = a.parent) {
+				if (a.parent instanceof FlickScrollPane) {
+					rect.width = actor.width;
+					rect.height = actor.height;
+					ActorFocusUtil.scrollIntoView(
+							(FlickScrollPane) a.parent, rect);
+					return true;
 				}
+				rect.x += a.x;
+				rect.y += a.y;
 			}
 		}
 		return focusChanged;
