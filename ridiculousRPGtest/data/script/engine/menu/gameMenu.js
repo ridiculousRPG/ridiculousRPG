@@ -38,88 +38,88 @@ function createGui(menuService, menuHandler) {
 	var w = new ui.Window(i18nText("gamemenu.title"), skin);
 
 	var resume = new ui.TextButton(i18nText("gamemenu.resume"), skin);
-	resume.addListener(new ui.ClickListener() {
-		clicked: function (actorEv, x, y) {
+	resume.addListener(new ClickAdapter(
+		function (actorEv, x, y) {
 			menuService.changeState(MENU_STATE_IDLE);
 		}
-	});
+	));
 	w.row().fill(true, true).expand(true, false);
 	w.add(resume);
 
 	var bag = new ui.TextButton(i18nText("gamemenu.openbag"), skin);
-	bag.addListener(new ui.ClickListener() {
-		clicked: function (actorEv, x, y) {
+	bag.addListener(new ClickAdapter(
+		function (actorEv, x, y) {
 			menuService.showInfoFocused("Bag is not implemented yet.\n"
 					+ "This is an early alpha release!");
 		}
-	});
+	));
 	w.row().fill(true, true).expand(true, false);
 	w.add(bag);
 
 	var quickload = new ui.TextButton(i18nText("gamemenu.quickload"), skin);
-	quickload.addListener(new ui.ClickListener() {
-		clicked: function (actorEv, x, y) {
+	quickload.addListener(new ClickAdapter(
+		function (actorEv, x, y) {
 			if ($.quickLoad()) {
 				menuService.changeState(MENU_STATE_IDLE);
 			} else {
 				menuService.showInfoFocused(i18nText("gamemenu.loadfailed"));
 			}
 		}
-	});
+	));
 	w.row().fill(true, true).expand(true, false);
 	w.add(quickload);
 
 	var quicksave = new ui.TextButton(i18nText("gamemenu.quicksave"), skin);
-	quicksave.addListener(new ui.ClickListener() {
-		clicked: function (actorEv, x, y) {
+	quicksave.addListener(new ClickAdapter(
+		function (actorEv, x, y) {
 			if ($.quickSave()) {
 				menuService.changeState(MENU_STATE_IDLE);
 			} else {
 				menuService.showInfoFocused(i18nText("gamemenu.savefailed"));
 			}
 		}
-	});
+	));
 	w.row().fill(true, true).expand(true, false);
 	w.add(quicksave);
 
 	var load = new ui.TextButton(i18nText("gamemenu.load"), skin);
-	load.addListener(new ui.ClickListener() {
-		clicked: function (actorEv, x, y) {
+	load.addListener(new ClickAdapter(
+		function (actorEv, x, y) {
 			menuService.changeState(MENU_STATE_LOAD);
 		}
-	});
+	));
 	w.row().fill(true, true).expand(true, false);
 	w.add(load);
 
 	var save = new ui.TextButton(i18nText("gamemenu.save"), skin);
-	save.addListener(new ui.ClickListener() {
-		clicked: function (actorEv, x, y) {
+	save.addListener(new ClickAdapter(
+		function (actorEv, x, y) {
 			menuService.changeState(MENU_STATE_SAVE);
 		}
-	});
+	));
 	w.row().fill(true, true).expand(true, false);
 	w.add(save);
 
 	var toTitle = new ui.TextButton(i18nText("gamemenu.return"), skin);
-	toTitle.addListener(new ui.ClickListener() {
-		clicked: function (actorEv, x, y) {
+	toTitle.addListener(new ClickAdapter(
+		function (actorEv, x, y) {
 			menuService.changeState(MENU_STATE_TITLE);
 		}
-	});
+	));
 	w.row().fill(true, true).expand(true, false);
 	w.add(toTitle);
 
 	var exit = new ui.TextButton(i18nText("gamemenu.exit"), skin);
-	exit.addListener(new ui.ClickListener() {
-		clicked: function (actorEv, x, y) {
+	exit.addListener(new ClickAdapter(
+		function (actorEv, x, y) {
 			$.exit();
 		}
-	});
+	));
 	w.row().fill(true, true).expand(true, false);
 	w.add(exit);
 
+	w.height(menuService.getHeight());
 	w.pack();
-	w.height = menuService.getHeight();
 	menuService.addGUIcomponent(w);
 	menuService.focus(resume);
 }

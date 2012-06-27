@@ -664,7 +664,6 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		serviceProvider.dispose();
 		if (spriteBatch != null)
 			spriteBatch.dispose();
-		GameConfig.get().dispose();
 		clearTmpFiles();
 	}
 

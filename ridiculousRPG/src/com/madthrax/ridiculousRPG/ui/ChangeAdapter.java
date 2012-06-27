@@ -18,27 +18,41 @@ package com.madthrax.ridiculousRPG.ui;
 
 import javax.script.ScriptException;
 
-import com.badlogic.gdx.scenes.scene2d.ActorEvent;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.madthrax.ridiculousRPG.GameBase;
 
 /**
- * Executes the given script on click
+ * Executes the given script or closure-event on change.<br>
+ * This implementation is jdk6-rhino friendly ;)
  * 
  * @author Alexander Baumgartner
  */
-public class ClickListenerExecScript extends ClickListener {
+public class ChangeAdapter extends
+		com.badlogic.gdx.scenes.scene2d.utils.ChangeListener {
 	private String scriptCode;
+	private ChangeListener listener;
 
-	public ClickListenerExecScript(String scriptCode) {
+	public ChangeAdapter(String scriptCode) {
 		this.scriptCode = scriptCode;
 	}
+
+	public ChangeAdapter(ChangeListener listener) {
+		this.listener = listener;
+	}
+
 	@Override
-	public void clicked(ActorEvent actor, float x, float y) {
+	public void changed(ChangeEvent event, Actor actor) {
 		try {
-			GameBase.$().eval(scriptCode);
+			if (listener != null)
+				listener.changed(event, actor);
+			else if (scriptCode != null)
+				GameBase.$().eval(scriptCode);
 		} catch (ScriptException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public interface ChangeListener {
+		public void changed(ChangeEvent event, Actor actor);
 	}
 }

@@ -30,24 +30,24 @@ function createGui(menuService, menu) {
 	var button;
 
 	var quickLoad = generateButton(i18nText("loadmenu.quickload"), files[0], skin, menu);
-	quickLoad.addListener(new ui.ClickListener() {
-		clicked: function (actorEv, x, y) {
+	quickLoad.addListener(new ClickAdapter(
+		function (actorEv, x, y) {
 			if ($.quickLoad()) {
 				menuService.changeState(MENU_STATE_IDLE);
 			} else {
 				menuService.showInfoFocused(i18nText("loadmenu.loadfailed"));
 			}
 		}
-	});
+	));
 	w.row().fill(true, true).expand(true, false);
 	w.add(quickLoad).colspan(4);
 
 	button = new ui.TextButton(i18nText("loadmenu.cancel"), skin);
-	button.addListener(new ui.ClickListener() {
-		clicked: function (actorEv, x, y) {
+	button.addListener(new ClickAdapter(
+		function (actorEv, x, y) {
 			return menuService.resumeLastState();
 		}
-	});
+	));
 	w.add(button).colspan(2);
 
 	var failedText = i18nText("loadmenu.loadfailed");
@@ -57,7 +57,7 @@ function createGui(menuService, menu) {
 		w.row().fill(true, true).expand(true, false).colspan(3);
 		for (var j = 0; j < 2; j++, i++) {
 			button = generateButton("Load "+i, files[i], skin, menu);
-			button.addListener(new ridiculousRPG.ui.ClickListenerExecScript(
+			button.addListener(new ClickAdapter(
 				 "if ($.loadFile("+i+")) { "
 	*/
 	for (var i = files.length-1; i > 0;) {
@@ -65,7 +65,7 @@ function createGui(menuService, menu) {
 		for (var j = 2; j >= 0; j-=2, i--) {
 			var index = (i+1-j);
 			button = generateButton(buttonText+" "+index, files[index], skin, menu);
-			button.addListener(new ridiculousRPG.ui.ClickListenerExecScript(
+			button.addListener(new ClickAdapter(
 				 "if ($.loadFile("+index+")) { "
 				+"	$.serviceProvider.getService(\"menu\").changeState(MENU_STATE_IDLE); "
 				+"} else { "
