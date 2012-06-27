@@ -23,20 +23,20 @@ function createGui(menuService, menu) {
 	var w = new ui.Window(i18nText("pausemenu.title"), skin);
 
 	var resume = new ui.TextButton(i18nText("pausemenu.resume"), skin);
-	resume.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
+	resume.addListener(new ui.ClickListener() {
+		clicked: function (actorEv, x, y) {
 			menuService.changeState(MENU_STATE_IDLE);
 		}
-	};
+	});
 	w.row().fill(true, true).expand(true, false);
 	w.add(resume);
 
 	var exit = new ui.TextButton(i18nText("pausemenu.return"), skin);
-	exit.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
+	exit.addListener(new ui.ClickListener() {
+		clicked: function (actorEv, x, y) {
 			menuService.changeState(MENU_STATE_TITLE);
 		}
-	};
+	});
 	w.row().fill(true, true).expand(true, false);
 	w.add(exit);
 

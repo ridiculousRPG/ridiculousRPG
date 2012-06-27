@@ -19,13 +19,8 @@ package com.madthrax.ridiculousRPG.ui;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.actions.Delay;
-import com.badlogic.gdx.scenes.scene2d.actions.FadeIn;
-import com.badlogic.gdx.scenes.scene2d.actions.FadeOut;
-import com.badlogic.gdx.scenes.scene2d.actions.Remove;
-import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
-import com.badlogic.gdx.scenes.scene2d.ui.Align;
-import com.badlogic.gdx.scenes.scene2d.ui.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.ActorEvent;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -34,6 +29,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 import com.esotericsoftware.tablelayout.Cell;
@@ -78,8 +75,8 @@ public class MessagingService extends ActorsOnStageService {
 	public void center(Object obj) {
 		if (obj instanceof Actor) {
 			Actor actor = (Actor) obj;
-			actor.x = (int) (centerX() - actor.width * .5f);
-			actor.y = (int) (centerY() - actor.height * .5f);
+			actor.setX((int) (centerX() - actor.getWidth() * .5f));
+			actor.setY((int) (centerY() - actor.getHeight() * .5f));
 		}
 	}
 
@@ -97,14 +94,6 @@ public class MessagingService extends ActorsOnStageService {
 			return true;
 		}
 		return super.keyDown(keycode);
-	}
-
-	public float getHeight() {
-		return height;
-	}
-
-	public float getWidth() {
-		return width;
 	}
 
 	/*
@@ -136,10 +125,11 @@ public class MessagingService extends ActorsOnStageService {
 		try {
 			final Window w = new Window(skin);
 
-			w.touchable = false;
-			w.color.a = .1f;
-			w.action(Sequence.$(FadeIn.$(getFadeTime()), Delay.$(FadeOut
-					.$(getFadeTime()), displayInfoTime), Remove.$()));
+			w.setTouchable(false);
+			w.getColor().a = .1f;
+			w.addAction(Actions.sequence(Actions.fadeIn(getFadeTime()), 
+					Actions.delay(displayInfoTime, Actions.fadeOut(getFadeTime())),
+					Actions.removeActor()));
 			w.add(info);
 
 			w.pack();
@@ -241,7 +231,7 @@ public class MessagingService extends ActorsOnStageService {
 			// commit a new instance of the data class should be assigned for
 			// the user. At the end of this function the entire data class with
 			// all the elements should be disposed.
-			while (getActors().size() > 0) {
+			while (getActors().size > 0) {
 				if (dispose) {
 					GameBase.$serviceProvider().releaseAttention(this);
 					return null;
@@ -254,7 +244,7 @@ public class MessagingService extends ActorsOnStageService {
 
 			lines.clear();
 
-			while (resultPointer[0] == null && getActors().size() > 0
+			while (resultPointer[0] == null && getActors().size > 0
 					&& !dispose)
 				Thread.yield();
 			if (!GameBase.$serviceProvider().releaseAttention(this)) {
@@ -266,7 +256,7 @@ public class MessagingService extends ActorsOnStageService {
 			// sleep until box has disappeared
 			do {
 				Thread.yield();
-			} while (getActors().size() > 0 && !dispose);
+			} while (getActors().size > 0 && !dispose);
 			if (face != null) {
 				face.dispose();
 				face = null;
@@ -280,8 +270,8 @@ public class MessagingService extends ActorsOnStageService {
 		try {
 			for (PictureRef pic : pictures.values()) {
 				Image p = new Image(pic.textureRegion);
-				p.x = pic.x;
-				p.y = pic.y;
+				p.setX(pic.x);
+				p.setY(pic.y);
 				addActor(p);
 			}
 
@@ -290,9 +280,9 @@ public class MessagingService extends ActorsOnStageService {
 			if (title != null) {
 				w.setTitle(title);
 			}
-			w.color.a = .1f;
+			w.getColor().a = .1f;
 			w.align(Align.TOP);
-			w.action(Sequence.$(FadeIn.$(getFadeTime())));
+			w.addAction(Actions.fadeIn(getFadeTime()));
 			int paddingLeft = Math.max(FACE_MARGIN,
 					(int) (w.getStyle().background.getLeftWidth() + .5f));
 			int textPadding = face == null ? 0 : face.getRegionWidth()
@@ -314,15 +304,15 @@ public class MessagingService extends ActorsOnStageService {
 
 			if (face != null) {
 				Image f = new Image(face);
-				f.x = w.x + paddingLeft;
+				f.setX(w.getX() + paddingLeft);
 				int paddingBottom = Math
 						.max(FACE_MARGIN, (int) (w.getStyle().background
 								.getBottomHeight() + .5f));
-				int centerFace = (int) ((w.height
+				int centerFace = (int) ((w.getHeight()
 						- w.getStyle().background.getTopHeight()
 						- w.getStyle().background.getBottomHeight() - face
 						.getRegionHeight()) * .5f);
-				f.y = w.y + Math.max(paddingBottom, centerFace);
+				f.setY(w.getY() + Math.max(paddingBottom, centerFace));
 				addActor(f);
 			}
 		} catch (Exception e) {
@@ -331,43 +321,43 @@ public class MessagingService extends ActorsOnStageService {
 	}
 
 	private void computeWindowPos(final Window w) {
-		w.x = boxPosition.x;
-		w.y = boxPosition.y;
+		w.setX(boxPosition.x);
+		w.setY(boxPosition.y);
 		if (boxPosition.width == 0) {
 			// width defined by margin x
-			w.width = GameBase.$().getScreen().width - 2 * w.x;
+			w.setWidth(GameBase.$().getScreen().width - 2 * w.getX());
 		} else if (boxPosition.width < 0) {
 			// bind box at the top edge of the screen
-			if (w.width < -boxPosition.width) {
+			if (w.getWidth() < -boxPosition.width) {
 				// set preferred width
-				w.width = -boxPosition.width;
+				w.setWidth(-boxPosition.width);
 			}
-			w.x = GameBase.$().getScreen().width - w.width - w.x;
-		} else if (w.width < boxPosition.width) {
+			w.setX(GameBase.$().getScreen().width - w.getWidth() - w.getX());
+		} else if (w.getWidth() < boxPosition.width) {
 			// set preferred width
-			w.width = boxPosition.width;
+			w.setWidth(boxPosition.width);
 		}
 		if (boxPosition.height == 0) {
 			// height defined by margin y
-			w.height = GameBase.$().getScreen().height - 2 * w.y;
+			w.setHeight(GameBase.$().getScreen().height - 2 * w.getY());
 		} else if (boxPosition.height < 0) {
 			// bind box at the right edge of the screen
-			if (w.height < -boxPosition.height) {
+			if (w.getHeight() < -boxPosition.height) {
 				// set preferred height
-				w.height = -boxPosition.height;
+				w.setHeight(-boxPosition.height);
 			}
-			w.y = GameBase.$().getScreen().height - w.height - w.y;
-		} else if (w.height < boxPosition.height) {
+			w.setY(GameBase.$().getScreen().height - w.getHeight() - w.getY());
+		} else if (w.getHeight() < boxPosition.height) {
 			// set preferred height
-			w.height = boxPosition.height;
+			w.setHeight(boxPosition.height);
 		}
 		if (boxPosition.x < 0) {
 			// center horizontal
-			w.x = (int) (centerX() - w.width * .5f);
+			w.setX((int) (centerX() - w.getWidth() * .5f));
 		}
 		if (boxPosition.y < 0) {
 			// center vertical
-			w.y = (int) (centerY() - w.height * .5f);
+			w.setY((int) (centerY() - w.getHeight() * .5f));
 		}
 	}
 
@@ -461,9 +451,9 @@ public class MessagingService extends ActorsOnStageService {
 		@Override
 		public Actor getActor() {
 			TextButton tb = new TextButton(text, getSkinNormal());
-			tb.setClickListener(new ClickListener() {
+			tb.addListener(new ClickListener() {
 				@Override
-				public void click(Actor actor, float x, float y) {
+				public void clicked(ActorEvent actorEv, float x, float y) {
 					resultPointer[0] = value;
 				}
 			});

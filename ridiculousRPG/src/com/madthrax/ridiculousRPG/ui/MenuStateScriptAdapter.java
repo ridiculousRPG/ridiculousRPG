@@ -78,8 +78,8 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 		try {
 			if (background != null) {
 				Image bg = createImage(background);
-				bg.width = menuService.getWidth();
-				bg.height = menuService.getHeight();
+				bg.setWidth(menuService.getWidth());
+				bg.setHeight(menuService.getHeight());
 				menuService.addGUIcomponent(bg);
 			}
 			scriptEngine.invokeFunction("createGui", menuService, this);

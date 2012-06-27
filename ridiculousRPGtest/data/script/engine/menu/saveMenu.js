@@ -30,24 +30,24 @@ function createGui(menuService, menu) {
 	var button;
 
 	var quickSave = generateButton(i18nText("savemenu.quicksave"), files[0], skin, menu);
-	quickSave.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
+	quickSave.addListener(new ui.ClickListener() {
+		clicked: function (actorEv, x, y) {
 			if ($.quickSave()) {
 				menuService.resumeLastState();
 			} else {
 				menuService.showInfoFocused(i18nText("savemenu.savefailed"));
 			}
 		}
-	};
+	});
 	w.row().fill(true, true).expand(true, false);
 	w.add(quickSave).colspan(4);
 
 	button = new ui.TextButton(i18nText("savemenu.cancel"), skin);
-	button.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
+	button.addListener(new ui.ClickListener() {
+		clicked: function (actorEv, x, y) {
 			return menuService.resumeLastState();
 		}
-	};
+	});
 	w.add(button).colspan(2);
 
 	var failedText = i18nText("savemenu.savefailed");
@@ -57,7 +57,7 @@ function createGui(menuService, menu) {
 		w.row().fill(true, true).expand(true, false).colspan(3);
 		for (var j = 0; j < 2; j++, i++) {
 			button = generateButton("Save "+i, files[i], skin, menu);
-			button.clickListener = new ridiculousRPG.ui.ClickListenerExecScript(
+			button.addListener(new ridiculousRPG.ui.ClickListenerExecScript(
 				 "if ($.saveFile("+i+")) { "
 	*/
 	for (var i = files.length-1; i > 0;) {
@@ -65,13 +65,13 @@ function createGui(menuService, menu) {
 		for (var j = 2; j >= 0; j-=2, i--) {
 			var index = (i+1-j);
 			button = generateButton(buttonText+" "+index, files[index], skin, menu);
-			button.clickListener = new ridiculousRPG.ui.ClickListenerExecScript(
+			button.addListener(new ridiculousRPG.ui.ClickListenerExecScript(
 				 "if ($.saveFile("+index+")) { "
 				+"	$.serviceProvider.getService(\"menu\").resumeLastState(); "
 				+"} else { "
 				+"	$.serviceProvider.getService(\"menu\").showInfoFocused(\""+failedText+"\"); "
 				+"} "
-			);
+			));
 			w.add(button);
 		}
 	}

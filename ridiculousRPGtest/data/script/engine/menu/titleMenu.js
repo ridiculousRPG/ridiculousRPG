@@ -31,54 +31,54 @@ function createGui(menuService, menu) {
 	var w = new ui.Window(i18nText("titlemenu.title"), skin);
 
 	var start = new ui.TextButton(i18nText("titlemenu.new"), skin);
-	start.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
+	start.addListener(new ui.ClickListener() {
+		clicked: function (actorEv, x, y) {
 			menuService.changeState(MENU_STATE_IDLE);
 			menuService.startNewGame();
 		}
-	};
+	});
 	w.row().fill(true, true).expand(true, false);
 	w.add(start);
 
 	var resume = new ui.TextButton(i18nText("titlemenu.quickload"), skin);
-	resume.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
+	resume.addListener(new ui.ClickListener() {
+		clicked: function (actorEv, x, y) {
 			if ($.quickLoad()) {
 				menuService.changeState(MENU_STATE_IDLE);
 			} else {
 				menuService.showInfoFocused(i18nText("titlemenu.loadfailed"));
 			}
 		}
-	};
+	});
 	w.row().fill(true, true).expand(true, false);
 	w.add(resume);
 
 	var load = new ui.TextButton(i18nText("titlemenu.load"), skin);
-	load.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
+	load.addListener(new ui.ClickListener() {
+		clicked: function (actorEv, x, y) {
 			menuService.changeState(MENU_STATE_LOAD);
 		}
-	};
+	});
 	w.row().fill(true, true).expand(true, false);
 	w.add(load);
 
 
 	var toggleFull = new ui.TextButton(
 			$.isFullscreen() ? i18nText("titlemenu.windowed") : i18nText("titlemenu.fullscreen"), skin);
-	toggleFull.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
+	toggleFull.addListener(new ui.ClickListener() {
+		clicked: function (actorEv, x, y) {
 			$.toggleFullscreen();
 		}
-	};
+	});
 	w.row().fill(true, true).expand(true, false);
 	w.add(toggleFull);
 
 	var exit = new ui.TextButton(i18nText("titlemenu.exit"), skin);
-	exit.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
+	exit.addListener(new ui.ClickListener() {
+		clicked: function (actorEv, x, y) {
 			$.exit();
 		}
-	};
+	});
 	w.row().fill(true, true).expand(true, false);
 	w.add(exit);
 

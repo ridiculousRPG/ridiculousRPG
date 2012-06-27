@@ -17,19 +17,18 @@
 package com.madthrax.ridiculousRPG.ui;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.FlickScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.utils.Array;
 
 /**
  * This class offers some static methods to change the keyboard focused actor.<br>
@@ -52,31 +51,31 @@ public final class ActorFocusUtil {
 
 	private static boolean focusPrevIntern(Actor focused, boolean up,
 			boolean left, Stage stage) {
-		if (focused.parent == null)
+		if (focused.getParent() == null)
 			return false;
-		List<Actor> allActors = focused.parent.getActors();
+		Array<Actor> allActors = focused.getParent().getChildren();
 
 		return tryFocusPrevChild(focused, up, left, stage, allActors)
-				|| focusPrevIntern(focused.parent, up, left, stage);
+				|| focusPrevIntern(focused.getParent(), up, left, stage);
 	}
 
 	private static boolean tryFocusPrevChild(Actor focused, boolean up,
-			boolean left, Stage stage, List<Actor> allActors) {
+			boolean left, Stage stage, Array<Actor> allActors) {
 		Vector2 tmpPoint = ActorFocusUtil.tmpPoint;
-		focused.toLocalCoordinates(tmpPoint.set(focused.x, focused.y));
-		float fX1 = focused.x - tmpPoint.x;
-		float fY1 = focused.y - tmpPoint.y;
-		float fX2 = fX1 + focused.width * .5f;
-		float fY2 = fY1 + focused.height * .5f;
-		for (int i = allActors.size() - 1; i > -1; i--) {
+		focused.stageToLocalCoordinates(tmpPoint.set(focused.getX(), focused.getY()));
+		float fX1 = focused.getX() - tmpPoint.x;
+		float fY1 = focused.getY() - tmpPoint.y;
+		float fX2 = fX1 + focused.getWidth() * .5f;
+		float fY2 = fY1 + focused.getHeight() * .5f;
+		for (int i = allActors.size - 1; i > -1; i--) {
 			Actor a = allActors.get(i);
 			if (a == focused)
 				continue;
-			a.toLocalCoordinates(tmpPoint.set(a.x, a.y));
-			float aX1 = a.x - tmpPoint.x;
-			float aY1 = a.y - tmpPoint.y;
-			float aX2 = aX1 + a.width * .5f;
-			float aY2 = aY1 + a.height * .5f;
+			a.stageToLocalCoordinates(tmpPoint.set(a.getX(), a.getY()));
+			float aX1 = a.getX() - tmpPoint.x;
+			float aY1 = a.getY() - tmpPoint.y;
+			float aX2 = aX1 + a.getWidth() * .5f;
+			float aY2 = aY1 + a.getHeight() * .5f;
 			if (isFocusable(a)) {
 				if (up) {
 					if (aY1 >= fY2 && aX2 > fX1 && aX1 < fX2)
@@ -88,7 +87,7 @@ public final class ActorFocusUtil {
 					return focus(a, true, stage);
 			} else if (a instanceof WidgetGroup) {
 				if (tryFocusPrevChild(focused, up, left, stage,
-						((WidgetGroup) a).getActors())) {
+						((WidgetGroup) a).getChildren())) {
 					return true;
 				}
 			}
@@ -106,31 +105,31 @@ public final class ActorFocusUtil {
 
 	private static boolean focusNextIntern(Actor focused, boolean down,
 			boolean right, Stage stage) {
-		if (focused.parent == null)
+		if (focused.getParent() == null)
 			return false;
-		List<Actor> allActors = focused.parent.getActors();
+		Array<Actor> allActors = focused.getParent().getChildren();
 
 		return tryFocusNextChild(focused, down, right, stage, allActors)
-				|| focusNextIntern(focused.parent, down, right, stage);
+				|| focusNextIntern(focused.getParent(), down, right, stage);
 	}
 
 	private static boolean tryFocusNextChild(Actor focused, boolean down,
-			boolean right, Stage stage, List<Actor> allActors) {
+			boolean right, Stage stage, Array<Actor> allActors) {
 		Vector2 tmpPoint = ActorFocusUtil.tmpPoint;
-		focused.toLocalCoordinates(tmpPoint.set(focused.x, focused.y));
-		float fX1 = focused.x - tmpPoint.x;
-		float fY1 = focused.y - tmpPoint.y;
-		float fX2 = fX1 + focused.width * .5f;
-		float fY2 = fY1 + focused.height * .5f;
-		for (int i = 0, len = allActors.size(); i < len; i++) {
+		focused.stageToLocalCoordinates(tmpPoint.set(focused.getX(), focused.getY()));
+		float fX1 = focused.getX() - tmpPoint.x;
+		float fY1 = focused.getY() - tmpPoint.y;
+		float fX2 = fX1 + focused.getWidth() * .5f;
+		float fY2 = fY1 + focused.getHeight() * .5f;
+		for (int i = 0, len = allActors.size; i < len; i++) {
 			Actor a = allActors.get(i);
 			if (a == focused)
 				continue;
-			a.toLocalCoordinates(tmpPoint.set(a.x, a.y));
-			float aX1 = a.x - tmpPoint.x;
-			float aY1 = a.y - tmpPoint.y;
-			float aX2 = aX1 + a.width * .5f;
-			float aY2 = aY1 + a.height * .5f;
+			a.stageToLocalCoordinates(tmpPoint.set(a.getX(), a.getY()));
+			float aX1 = a.getX() - tmpPoint.x;
+			float aY1 = a.getY() - tmpPoint.y;
+			float aX2 = aX1 + a.getWidth() * .5f;
+			float aY2 = aY1 + a.getHeight() * .5f;
 			if (isFocusable(a)) {
 				if (down) {
 					if (aY2 <= fY1 && aX2 > fX1 && aX1 < fX2)
@@ -142,7 +141,7 @@ public final class ActorFocusUtil {
 					return focus(a, false, stage);
 			} else if (a instanceof WidgetGroup) {
 				if (tryFocusNextChild(focused, down, right, stage,
-						((WidgetGroup) a).getActors())) {
+						((WidgetGroup) a).getChildren())) {
 					return true;
 				}
 			}
@@ -151,8 +150,8 @@ public final class ActorFocusUtil {
 	}
 
 	public static boolean focusFirstChild(Group actorGrp, Stage stage) {
-		List<Actor> allActors = actorGrp.getActors();
-		for (int i = 0, len = allActors.size(); i < len; i++) {
+		Array<Actor> allActors = actorGrp.getChildren();
+		for (int i = 0, len = allActors.size; i < len; i++) {
 			Actor a = allActors.get(i);
 			if (isFocusable(a))
 				return focus(a, false, stage);
@@ -163,8 +162,8 @@ public final class ActorFocusUtil {
 	}
 
 	public static boolean focusLastChild(Group actorGrp, Stage stage) {
-		List<Actor> allActors = actorGrp.getActors();
-		for (int i = allActors.size() - 1; i > -1; i--) {
+		Array<Actor> allActors = actorGrp.getChildren();
+		for (int i = allActors.size- 1; i > -1; i--) {
 			Actor a = allActors.get(i);
 			if (isFocusable(a))
 				return focus(a, true, stage);
@@ -174,21 +173,21 @@ public final class ActorFocusUtil {
 		return false;
 	}
 
-	public static void scrollIntoView(FlickScrollPane scroll, Rectangle rect) {
+	public static void scrollIntoView(ScrollPane scroll, Rectangle rect) {
 		float x = rect.x;
-		float y = scroll.getMaxY() + scroll.height - rect.y;
+		float y = scroll.getMaxY()*scroll.getHeight() + scroll.getHeight() - rect.y;
 
 		// x direction
-		if (x <= scroll.getScrollX())
-			scroll.setScrollX(x);
-		else if (x + rect.width > scroll.getScrollX() + scroll.width)
-			scroll.setScrollX(x + rect.width - scroll.width);
+		if (x <= scroll.getScrollX()*scroll.getWidth())
+			scroll.setScrollX(x/scroll.getWidth());
+		else if (x + rect.width > scroll.getScrollX()*scroll.getWidth() + scroll.getWidth())
+			scroll.setScrollX((x + rect.width - scroll.getWidth())/scroll.getWidth());
 
 		// y direction
-		if (y >= scroll.getScrollY() + scroll.height)
-			scroll.setScrollY(y - scroll.height);
-		else if (y - rect.height < scroll.getScrollY())
-			scroll.setScrollY(y - rect.height);
+		if (y >= scroll.getScrollY()*scroll.getHeight() + scroll.getHeight())
+			scroll.setScrollY((y - scroll.getHeight())/scroll.getHeight());
+		else if (y - rect.height < scroll.getScrollY()*scroll.getHeight())
+			scroll.setScrollY((y - rect.height)/scroll.getHeight());
 	}
 
 	/**
@@ -216,7 +215,7 @@ public final class ActorFocusUtil {
 			}
 		}
 		// focus self
-		if (actor == null || actor.parent == null)
+		if (actor == null || actor.getParent() == null)
 			return false;
 		stage.setKeyboardFocus(actor);
 		return true;
@@ -225,15 +224,15 @@ public final class ActorFocusUtil {
 	public static boolean isActorOnStage(Actor actor, Group root) {
 		if (actor == null)
 			return false;
-		for (Group bottom = actor.parent; bottom != null; bottom = (actor = bottom).parent) {
-			if (!isActorInList(actor, bottom.getActors()))
+		for (Group bottom = actor.getParent(); bottom != null; bottom = (actor = bottom).getParent()) {
+			if (!isActorInList(actor, bottom.getChildren()))
 				return false;
 		}
 		return actor == root;
 	}
 
-	private static boolean isActorInList(Actor actor, List<Actor> actors) {
-		int i = actors.size();
+	private static boolean isActorInList(Actor actor, Array<Actor> actors) {
+		int i = actors.size;
 		while (i > 0) {
 			if (actors.get(--i) == actor)
 				return true;
@@ -242,10 +241,9 @@ public final class ActorFocusUtil {
 	}
 
 	private static boolean isFocusable(Actor a) {
-		return a.touchable && a.visible && styleGetter(a.getClass()) != null
+		return a.isTouchable() && a.isVisible() && styleGetter(a.getClass()) != null
 				&& !(a instanceof Label) && !(a instanceof ScrollPane)
-				&& !(a instanceof Image) && !(a instanceof FlickScrollPane)
-				&& !(a instanceof Window);
+				&& !(a instanceof Image) && !(a instanceof Window);
 	}
 
 	public static Method styleGetter(Class<? extends Actor> actorClass) {

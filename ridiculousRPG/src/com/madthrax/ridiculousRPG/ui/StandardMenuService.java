@@ -20,11 +20,7 @@ import javax.script.ScriptException;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.actions.Delay;
-import com.badlogic.gdx.scenes.scene2d.actions.FadeIn;
-import com.badlogic.gdx.scenes.scene2d.actions.FadeOut;
-import com.badlogic.gdx.scenes.scene2d.actions.Remove;
-import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
@@ -116,8 +112,8 @@ public class StandardMenuService extends ActorsOnStageService implements
 	public void center(Object obj) {
 		if (obj instanceof Actor) {
 			Actor actor = (Actor) obj;
-			actor.x = (int) (centerX() - actor.width * .5f);
-			actor.y = (int) (centerY() - actor.height * .5f);
+			actor.setX((int) (centerX() - actor.getWidth() * .5f));
+			actor.setY((int) (centerY() - actor.getHeight() * .5f));
 		}
 	}
 
@@ -136,16 +132,6 @@ public class StandardMenuService extends ActorsOnStageService implements
 			rebuildMenu();
 	}
 
-	@Override
-	public float getHeight() {
-		return height;
-	}
-
-	@Override
-	public float getWidth() {
-		return width;
-	}
-
 	public void showInfoNormal(String info) {
 		showInfo(getSkinNormal(), info);
 	}
@@ -158,10 +144,10 @@ public class StandardMenuService extends ActorsOnStageService implements
 		final Window w = new Window(skin);
 		addActor(w);
 
-		w.touchable = false;
-		w.color.a = .1f;
-		w.action(Sequence.$(FadeIn.$(.3f), Delay.$(FadeOut.$(.3f), 2f), Remove
-				.$()));
+		w.setTouchable(false);
+		w.getColor().a = .1f;
+		w.addAction(Actions.sequence(Actions.fadeIn(.3f), Actions.delay(2f, Actions.fadeOut(.3f)), Actions.removeActor()
+				));
 		w.add(new Label(info, skin));
 
 		w.pack();

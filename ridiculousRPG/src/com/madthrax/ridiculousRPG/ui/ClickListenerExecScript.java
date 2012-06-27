@@ -18,8 +18,8 @@ package com.madthrax.ridiculousRPG.ui;
 
 import javax.script.ScriptException;
 
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ui.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.ActorEvent;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.madthrax.ridiculousRPG.GameBase;
 
 /**
@@ -27,14 +27,14 @@ import com.madthrax.ridiculousRPG.GameBase;
  * 
  * @author Alexander Baumgartner
  */
-public class ClickListenerExecScript implements ClickListener {
+public class ClickListenerExecScript extends ClickListener {
 	private String scriptCode;
 
 	public ClickListenerExecScript(String scriptCode) {
 		this.scriptCode = scriptCode;
 	}
 	@Override
-	public void click(Actor actor, float x, float y) {
+	public void clicked(ActorEvent actor, float x, float y) {
 		try {
 			GameBase.$().eval(scriptCode);
 		} catch (ScriptException e) {

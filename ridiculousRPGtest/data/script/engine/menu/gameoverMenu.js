@@ -31,43 +31,43 @@ function createGui(menuService, menu) {
 	var w = new ui.Window(i18nText("gameovermenu.title"), skin);
 
 	var quickload = new ui.TextButton(i18nText("gameovermenu.quickload"), skin);
-	quickload.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
+	quickload.addListener(new ui.ClickListener() {
+		clicked: function (actorEv, x, y) {
 			if ($.quickLoad()) {
 				menuService.changeState(MENU_STATE_IDLE);
 			} else {
 				menuService.showInfoFocused(i18nText("gameovermenu.loadfailed"));
 			}
 		}
-	};
+	});
 	w.row().fill(true, true).expand(true, false);
 	w.add(quickload);
 
 	var load = new ui.TextButton(i18nText("gameovermenu.load"), skin);
-	load.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
+	load.addListener(new ui.ClickListener() {
+		clicked: function (actorEv, x, y) {
 			menuService.changeState(MENU_STATE_LOAD);
 		}
-	};
+	});
 	w.row().fill(true, true).expand(true, false);
 	w.add(load);
 
 
 	var toTitle = new ui.TextButton(i18nText("gameovermenu.return"), skin);
-	toTitle.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
+	toTitle.addListener(new ui.ClickListener() {
+		clicked: function (actorEv, x, y) {
 			menuService.changeState(MENU_STATE_TITLE);
 		}
-	};
+	});
 	w.row().fill(true, true).expand(true, false);
 	w.add(toTitle);
 
 	var exit = new ui.TextButton(i18nText("gameovermenu.exit"), skin);
-	exit.clickListener = new ui.ClickListener() {
-		click: function (actor, x, y) {
+	exit.addListener(new ui.ClickListener() {
+		clicked: function (actorEv, x, y) {
 			$.exit();
 		}
-	};
+	});
 	w.row().fill(true, true).expand(true, false);
 	w.add(exit);
 

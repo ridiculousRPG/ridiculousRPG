@@ -25,12 +25,11 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.actions.FadeOut;
-import com.badlogic.gdx.scenes.scene2d.actions.Remove;
-import com.badlogic.gdx.scenes.scene2d.actions.Sequence;
-import com.badlogic.gdx.scenes.scene2d.ui.FlickScrollPane;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.madthrax.ridiculousRPG.GameBase;
@@ -51,6 +50,8 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	private boolean awaitingKeyUp;
 	private Actor focusedActor = null;
+
+	private Vector2 tmp = new Vector2();
 
 	public ActorsOnStageService() {
 		super(GameBase.$().getScreen().width, GameBase.$().getScreen().height,
@@ -143,9 +144,12 @@ public class ActorsOnStageService extends Stage implements GameService,
 		super.clear();
 	}
 
-	@Override
+	// @Override
 	public synchronized void removeActor(Actor actor) {
-		super.removeActor(actor);
+		// TODO: double check old method
+		// super.removeActor(actor);
+		actor.clearActions();
+		actor.remove();
 	}
 
 	public synchronized void compute(float deltaTime, boolean actionKeyDown) {
@@ -172,7 +176,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 	public boolean keyDown(int keycode) {
 		// unfocus if actor is removed
 		if (focusedActor != null
-				&& !ActorFocusUtil.isActorOnStage(focusedActor, root)) {
+				&& !ActorFocusUtil.isActorOnStage(focusedActor, getRoot())) {
 			setKeyboardFocus(null);
 			focusedActor = null;
 			awaitingKeyUp = false;
@@ -181,13 +185,13 @@ public class ActorsOnStageService extends Stage implements GameService,
 		if (keycode == Keys.TAB) {
 			if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)
 					|| Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT)) {
-				return checkScroll(ActorFocusUtil.focusPrev(focusedActor, root,
-						false, false, this)
-						|| ActorFocusUtil.focusLastChild(root, this));
+				return checkScroll(ActorFocusUtil.focusPrev(focusedActor,
+						getRoot(), false, false, this)
+						|| ActorFocusUtil.focusLastChild(getRoot(), this));
 			}
-			return checkScroll(ActorFocusUtil.focusNext(focusedActor, root,
-					false, false, this)
-					|| ActorFocusUtil.focusFirstChild(root, this));
+			return checkScroll(ActorFocusUtil.focusNext(focusedActor,
+					getRoot(), false, false, this)
+					|| ActorFocusUtil.focusFirstChild(getRoot(), this));
 		}
 		// alowed childs to consume key down
 		boolean consumed = super.keyDown(keycode);
@@ -202,17 +206,17 @@ public class ActorsOnStageService extends Stage implements GameService,
 				}
 				return false;
 			case Keys.UP:
-				return checkScroll(ActorFocusUtil.focusPrev(focusedActor, root,
-						true, false, this));
+				return checkScroll(ActorFocusUtil.focusPrev(focusedActor,
+						getRoot(), true, false, this));
 			case Keys.DOWN:
-				return checkScroll(ActorFocusUtil.focusNext(focusedActor, root,
-						true, false, this));
+				return checkScroll(ActorFocusUtil.focusNext(focusedActor,
+						getRoot(), true, false, this));
 			case Keys.LEFT:
-				return checkScroll(ActorFocusUtil.focusPrev(focusedActor, root,
-						false, true, this));
+				return checkScroll(ActorFocusUtil.focusPrev(focusedActor,
+						getRoot(), false, true, this));
 			case Keys.RIGHT:
-				return checkScroll(ActorFocusUtil.focusNext(focusedActor, root,
-						false, true, this));
+				return checkScroll(ActorFocusUtil.focusNext(focusedActor,
+						getRoot(), false, true, this));
 			}
 		}
 		return consumed;
@@ -222,16 +226,16 @@ public class ActorsOnStageService extends Stage implements GameService,
 		if (focusChanged) {
 			Actor actor = getKeyboardFocus();
 			Rectangle rect = new Rectangle();
-			for (Actor a = actor; a != null; a = a.parent) {
-				if (a.parent instanceof FlickScrollPane) {
-					rect.width = actor.width;
-					rect.height = actor.height;
-					ActorFocusUtil.scrollIntoView(
-							(FlickScrollPane) a.parent, rect);
+			for (Actor a = actor; a != null; a = a.getParent()) {
+				if (a.getParent() instanceof ScrollPane) {
+					rect.width = actor.getWidth();
+					rect.height = actor.getHeight();
+					ActorFocusUtil.scrollIntoView((ScrollPane) a.getParent(),
+							rect);
 					return true;
 				}
-				rect.x += a.x;
-				rect.y += a.y;
+				rect.x += a.getX();
+				rect.y += a.getY();
 			}
 		}
 		return focusChanged;
@@ -241,7 +245,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 	public boolean keyUp(int keycode) {
 		// unfocus if actor is removed
 		if (focusedActor != null
-				&& !ActorFocusUtil.isActorOnStage(focusedActor, root)) {
+				&& !ActorFocusUtil.isActorOnStage(focusedActor, getRoot())) {
 			setKeyboardFocus(null);
 			focusedActor = null;
 			awaitingKeyUp = false;
@@ -320,13 +324,13 @@ public class ActorsOnStageService extends Stage implements GameService,
 	private boolean actionKeyPressed(boolean down) {
 		Actor a = focusedActor;
 		if (a == null || a instanceof Window) {
-			if (closeOnAction && getActors().size() > 0) {
+			if (closeOnAction && getActors().size > 0) {
 				fadeOutAllActors();
 				return true;
 			}
 		} else {
 			// unfocus if actor is removed
-			if (!ActorFocusUtil.isActorOnStage(a, root)) {
+			if (!ActorFocusUtil.isActorOnStage(a, getRoot())) {
 				setKeyboardFocus(null);
 				focusedActor = null;
 				awaitingKeyUp = false;
@@ -341,8 +345,12 @@ public class ActorsOnStageService extends Stage implements GameService,
 					}
 					releaseAttention = true;
 				}
-				a.touchDown(a.width / 2, a.height / 2, 0);
-				if (a.parent != null)
+				tmp.set(a.getWidth() * .5f, a.getHeight() * .5f);
+				a.localToStageCoordinates(tmp);
+				stageToScreenCoordinates(tmp);
+				super.touchDown((int) tmp.x, (int) tmp.y, 0, Buttons.LEFT);
+				// a.touchDown(a.getWidth() / 2, a.getHeight() / 2, 0);
+				if (a.getParent() != null)
 					setKeyboardFocus(a);
 				return true;
 			} else {
@@ -352,7 +360,11 @@ public class ActorsOnStageService extends Stage implements GameService,
 					}
 					releaseAttention = false;
 				}
-				a.touchUp(a.width / 2, a.height / 2, 0);
+				tmp.set(a.getWidth() * .5f, a.getHeight() * .5f);
+				a.localToStageCoordinates(tmp);
+				stageToScreenCoordinates(tmp);
+				super.touchUp((int) tmp.x, (int) tmp.y, 0, Buttons.LEFT);
+				// a.touchUp(a.getWidth() / 2, a.getHeight() / 2, 0);
 				return true;
 			}
 		}
@@ -362,11 +374,24 @@ public class ActorsOnStageService extends Stage implements GameService,
 	public synchronized void fadeOutAllActors() {
 		if (fadeTime > 0) {
 			for (Actor a2 : getActors()) {
-				a2.action(Sequence.$(FadeOut.$(fadeTime), Remove.$()));
+				a2.addAction(Actions.sequence(Actions.fadeOut(fadeTime),
+						Actions.removeActor()));
 			}
 		} else {
 			clear();
 		}
+	}
+
+	public float centerX() {
+		// TODO maybe centerX will be offered again, because there is a
+		// needless private variable called centerX within the class Stage.
+		return getWidth() / 2;
+	}
+
+	public float centerY() {
+		// TODO maybe centerY will be offered again, because there is a
+		// needless private variable called centerX within the class Stage.
+		return getHeight() / 2;
 	}
 
 	public void freeze() {
