@@ -118,8 +118,8 @@ function createGui(menuService, menuHandler) {
 	w.row().fill(true, true).expand(true, false);
 	w.add(exit);
 
-	w.height(menuService.getHeight());
 	w.pack();
+	w.height = menuService.height;
 	menuService.addGUIcomponent(w);
 	menuService.focus(resume);
 }

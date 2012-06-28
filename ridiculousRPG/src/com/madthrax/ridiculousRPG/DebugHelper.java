@@ -20,12 +20,14 @@ import java.util.List;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.service.Computable;
@@ -53,7 +55,12 @@ public final class DebugHelper {
 			Array<Drawable> drawables, GameService holdsAttention) {
 		spriteBatch.setProjectionMatrix(camera.view);
 		spriteBatch.begin();
-		String text = "Execution order of Computable services";
+		String text = "";
+		if (holdsAttention != null) {
+			text += holdsAttention.getClass().getName()
+					+ " holds attention!\n\n";
+		}
+		text += "Execution order of Computable services";
 		for (Computable c : computables) {
 			text += "\n        " + c.getClass().getName();
 		}
@@ -61,11 +68,7 @@ public final class DebugHelper {
 		for (Drawable d : drawables) {
 			text += "\n        " + d.getClass().getName();
 		}
-		if (holdsAttention != null) {
-			text += "\n\n" + holdsAttention.getClass().getName()
-					+ " holds attention!";
-		}
-		f.setColor(1f, 1f, 0f, 1f);
+		f.setColor(1f, 1f, 0f, .5f);
 		TextBounds b = f.getMultiLineBounds(text);
 		f.drawMultiLine(spriteBatch, text,
 				(GameBase.$().getScreen().width - b.width) * .5f, GameBase.$()
@@ -147,6 +150,23 @@ public final class DebugHelper {
 						ev.drawBound.y + ev.drawBound.height - 2, 0f, true);
 			}
 		}
+		debugRenderer.end();
+	}
+
+	public static void debugRectangle(Color color, Matrix4 transform,
+			Rectangle... rects) {
+		if (debugRenderer == null)
+			debugRenderer = new ShapeRenderer();
+		debugRenderer.setProjectionMatrix(GameBase.$().getCamera().projection);
+		if (transform != null)
+			debugRenderer.setTransformMatrix(transform);
+		debugRenderer.begin(ShapeType.Rectangle);
+		debugRenderer.setColor(color);
+		for (Rectangle r : rects) {
+			debugRenderer.rect(r.x, r.y, r.width, r.height);
+		}
+		if (transform != null)
+			debugRenderer.identity();
 		debugRenderer.end();
 	}
 

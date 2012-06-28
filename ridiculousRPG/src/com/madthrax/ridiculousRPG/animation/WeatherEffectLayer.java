@@ -28,6 +28,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.madthrax.ridiculousRPG.util.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
@@ -221,7 +222,7 @@ public class WeatherEffectLayer extends EffectLayer {
 	@Override
 	public boolean isFinished() {
 		List<List<Rectangle>> tileLayer = this.tileLayer;
-		return tileLayer==null || tileLayer.isEmpty();
+		return tileLayer == null || tileLayer.isEmpty();
 	}
 
 	/**
@@ -436,9 +437,7 @@ public class WeatherEffectLayer extends EffectLayer {
 	 */
 	public void draw(SpriteBatch batch, Camera cam, boolean debug) {
 		if (flip) {
-			batch.setTransformMatrix(batch.getTransformMatrix().translate(0,
-					cam.viewportHeight + 2 * cam.position.y, 0).rotate(1, 0, 0,
-					180));
+			batch.setTransformMatrix(compTransMatrix(batch, cam));
 		}
 		if (fadeAlpha < 1f) {
 			Color c = batch.getColor();
@@ -461,7 +460,7 @@ public class WeatherEffectLayer extends EffectLayer {
 		float x4 = x2 - tWidth;
 		float y4 = y2 - tHeight;
 
-		for (List<Rectangle> row : tileLayer)
+		for (List<Rectangle> row : tileLayer) {
 			for (Rectangle clip : row) {
 				float x = clip.x;
 				float y = clip.y;
@@ -492,9 +491,29 @@ public class WeatherEffectLayer extends EffectLayer {
 					batch.draw(t, x, y, srcX, srcY, srcWidth, srcHeight);
 				}
 			}
+		}
 		if (flip) {
 			batch.setTransformMatrix(batch.getTransformMatrix().idt());
 		}
+/*
+		if (debug) {
+			batch.end();
+			List<Rectangle> rects = new ArrayList<Rectangle>();
+			for (List<Rectangle> row : tileLayer)
+				for (Rectangle clip : row)
+					rects.add(new Rectangle(clip.x, clip.y, Math.abs(tWidth),
+							Math.abs(tHeight)));
+			DebugHelper.debugRectangle(new Color(1f, 0.67f, 0f, .4f),
+					flip ? compTransMatrix(batch, cam) : null, rects
+							.toArray(new Rectangle[0]));
+			batch.begin();
+		}*/
+	}
+
+	private Matrix4 compTransMatrix(SpriteBatch batch, Camera cam) {
+		return batch.getTransformMatrix().translate(0,
+				cam.viewportHeight + 2 * cam.position.y, 0)
+				.rotate(1, 0, 0, 180);
 	}
 
 	public void dispose() {
