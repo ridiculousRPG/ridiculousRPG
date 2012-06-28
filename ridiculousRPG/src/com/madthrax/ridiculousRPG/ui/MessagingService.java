@@ -281,7 +281,7 @@ public class MessagingService extends ActorsOnStageService {
 				w.setTitle(title);
 			}
 			w.getColor().a = .1f;
-			w.align(Align.TOP);
+			w.align(Align.top);
 			w.addAction(Actions.fadeIn(getFadeTime()));
 			int paddingLeft = Math.max(FACE_MARGIN,
 					(int) (w.getStyle().background.getLeftWidth() + .5f));

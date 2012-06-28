@@ -27,11 +27,15 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.utils.Array;
+import com.esotericsoftware.tablelayout.BaseTableLayout.Debug;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
@@ -162,10 +166,32 @@ public class ActorsOnStageService extends Stage implements GameService,
 		try {
 			// draw onto OUR spriteBatch!!!
 			getRoot().draw(spriteBatch, 1f);
+			if (debug) {
+				debugTableLayout(getActors());
+			}
 		} catch (RuntimeException e) {
 			clear();
 			throw e;
 		}
+	}
+
+	private void debugTableLayout(Array<Actor> actors) {
+		if (actors == null)
+			return;
+		for (int i = 0, n = actors.size; i < n; i++) {
+			Actor a = actors.get(i);
+			if (a instanceof Table) {
+				Table tbl = (Table) a;
+				if (tbl.getDebug() != Debug.all) {
+					tbl.debug(Debug.all);
+					tbl.layout();
+				}
+			}
+			if (a instanceof Group) {
+				debugTableLayout(((Group) a).getChildren());
+			}
+		}
+		Table.drawDebug(this);
 	}
 
 	public Matrix4 projectionMatrix(Camera camera) {
