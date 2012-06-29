@@ -48,6 +48,7 @@ loadmenu.quickload=Quick load
 loadmenu.loadfailed=Load failed!
 loadmenu.load=Load
 loadmenu.cancel=Cancel (Esc)
+loadmenu.empty=EMPTY
 
 # save menu
 savemenu.title=Save menu
@@ -55,3 +56,4 @@ savemenu.quicksave=Quick save
 savemenu.savefailed=Save failed!
 savemenu.save=Save
 savemenu.cancel=Cancel (Esc)
+savemenu.empty=EMPTY

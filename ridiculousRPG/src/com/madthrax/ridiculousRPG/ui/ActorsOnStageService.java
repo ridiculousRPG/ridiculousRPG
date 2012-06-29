@@ -24,7 +24,6 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -251,17 +250,16 @@ public class ActorsOnStageService extends Stage implements GameService,
 	private boolean checkScroll(boolean focusChanged) {
 		if (focusChanged) {
 			Actor actor = getKeyboardFocus();
-			Rectangle rect = new Rectangle();
+			float x = 0f;
+			float y = 0f;
 			for (Actor a = actor; a != null; a = a.getParent()) {
 				if (a.getParent() instanceof ScrollPane) {
-					rect.width = actor.getWidth();
-					rect.height = actor.getHeight();
-					ActorFocusUtil.scrollIntoView((ScrollPane) a.getParent(),
-							rect);
+					((ScrollPane) a.getParent()).scrollTo(x, y, actor
+							.getWidth(), actor.getHeight());
 					return true;
 				}
-				rect.x += a.getX();
-				rect.y += a.getY();
+				x += a.getX();
+				y += a.getY();
 			}
 		}
 		return focusChanged;
@@ -371,11 +369,8 @@ public class ActorsOnStageService extends Stage implements GameService,
 					}
 					releaseAttention = true;
 				}
-				tmp.set(a.getWidth() * .5f, a.getHeight() * .5f);
-				a.localToStageCoordinates(tmp);
-				stageToScreenCoordinates(tmp);
+				computeTouchPoint(a, tmp);
 				super.touchDown((int) tmp.x, (int) tmp.y, 0, Buttons.LEFT);
-				// a.touchDown(a.getWidth() / 2, a.getHeight() / 2, 0);
 				if (a.getParent() != null)
 					setKeyboardFocus(a);
 				return true;
@@ -386,15 +381,18 @@ public class ActorsOnStageService extends Stage implements GameService,
 					}
 					releaseAttention = false;
 				}
-				tmp.set(a.getWidth() * .5f, a.getHeight() * .5f);
-				a.localToStageCoordinates(tmp);
-				stageToScreenCoordinates(tmp);
+				computeTouchPoint(a, tmp);
 				super.touchUp((int) tmp.x, (int) tmp.y, 0, Buttons.LEFT);
-				// a.touchUp(a.getWidth() / 2, a.getHeight() / 2, 0);
 				return true;
 			}
 		}
 		return false;
+	}
+
+	private void computeTouchPoint(Actor a, Vector2 point) {
+		point.set(a.getWidth() * .5f, a.getHeight() * .5f);
+		a.localToStageCoordinates(point);
+		screenToStageCoordinates(point);
 	}
 
 	public synchronized void fadeOutAllActors() {

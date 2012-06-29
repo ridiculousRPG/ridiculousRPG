@@ -18,7 +18,6 @@ package com.madthrax.ridiculousRPG.ui;
 
 import java.lang.reflect.Method;
 
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -171,23 +170,6 @@ public final class ActorFocusUtil {
 				return true;
 		}
 		return false;
-	}
-
-	public static void scrollIntoView(ScrollPane scroll, Rectangle rect) {
-		float x = rect.x;
-		float y = scroll.getMaxY()*scroll.getHeight() + scroll.getHeight() - rect.y;
-
-		// x direction
-		if (x <= scroll.getScrollX()*scroll.getWidth())
-			scroll.setScrollX(x/scroll.getWidth());
-		else if (x + rect.width > scroll.getScrollX()*scroll.getWidth() + scroll.getWidth())
-			scroll.setScrollX((x + rect.width - scroll.getWidth())/scroll.getWidth());
-
-		// y direction
-		if (y >= scroll.getScrollY()*scroll.getHeight() + scroll.getHeight())
-			scroll.setScrollY((y - scroll.getHeight())/scroll.getHeight());
-		else if (y - rect.height < scroll.getScrollY()*scroll.getHeight())
-			scroll.setScrollY((y - rect.height)/scroll.getHeight());
 	}
 
 	/**

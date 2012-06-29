@@ -7,39 +7,6 @@ resources: {
 		default-slider-knob: { width: 9, height: 18, x: 2, y: 77 }
 	},
 	com.badlogic.gdx.graphics.g2d.NinePatch: {
-		default-window2: [
-			{ width: 16, height: 3, x: 39, y: 34 },
-			{ width: 171, height: 3, x: 55, y: 34 },
-			{ width: 24, height: 3, x: 226, y: 34 },
-			{ width: 16, height: 62, x: 39, y: 37 },
-			{ width: 171, height: 62, x: 55, y: 37 },
-			{ width: 24, height: 62, x: 226, y: 37 },
-			{ width: 16, height: 24, x: 39, y: 99 },
-			{ width: 171, height: 24, x: 55, y: 99 },
-			{ width: 24, height: 24, x: 226, y: 99 }
-		],
-		default-window2-title: [
-			{ width: 39, height: 6, x: 39, y: 4 },
-			{ width: 82, height: 6, x: 78, y: 4 },
-			{ width: 6, height: 6, x: 160, y: 4 },
-			{ width: 39, height: 12, x: 39, y: 10 },
-			{ width: 82, height: 12, x: 78, y: 10 },
-			{ width: 6, height: 12, x: 160, y: 10 },
-			{ width: 39, height: 12, x: 39, y: 22 },
-			{ width: 82, height: 12, x: 78, y: 22 },
-			{ width: 6, height: 12, x: 160, y: 22 }
-		],
-		default-window2-title-stretch: [
-			{ width: 10, height: 6, x: 166, y: 4 },
-			{ width: 50, height: 6, x: 176, y: 4 },
-			{ width: 24, height: 6, x: 226, y: 4 },
-			{ width: 10, height: 12, x: 166, y: 10 },
-			{ width: 50, height: 12, x: 176, y: 10 },
-			{ width: 24, height: 12, x: 226, y: 10 },
-			{ width: 10, height: 12, x: 166, y: 22 },
-			{ width: 50, height: 12, x: 176, y: 22 },
-			{ width: 24, height: 12, x: 226, y: 22 }
-		],
 		default-select-selection: [
 			{ width: 1, height: 1, x: 7, y: 118 },
 			{ width: 1, height: 1, x: 8, y: 118 },
@@ -61,6 +28,17 @@ resources: {
 			{ width: 5, height: 4, x: 2, y: 71 },
 			{ width: 2, height: 4, x: 7, y: 71 },
 			{ width: 5, height: 4, x: 9, y: 71 }
+		],
+		default-round-large: [
+			{ width: 5, height: 5, x: 12, y: 113 },
+			{ width: 5, height: 5, x: 17, y: 113 },
+			{ width: 5, height: 5, x: 22, y: 113 },
+			{ width: 5, height: 5, x: 12, y: 118 },
+			{ width: 5, height: 5, x: 17, y: 118 },
+			{ width: 5, height: 5, x: 22, y: 118 },
+			{ width: 5, height: 5, x: 12, y: 123 },
+			{ width: 5, height: 5, x: 17, y: 123 },
+			{ width: 5, height: 5, x: 22, y: 123 }
 		],
 		default-pane-noborder: [
 			{ width: 0, height: 0, x: 29, y: 77 },
@@ -206,7 +184,7 @@ resources: {
 			{ width: 1, height: 1, x: 9, y: 115 }
 		]
 	},
-	com.badlogic.gdx.graphics.g2d.BitmapFont: { default-font: { file: fontDefault.fnt } },
+	com.badlogic.gdx.graphics.g2d.BitmapFont: { default-font: { file: arial-15.fnt } },
 	com.badlogic.gdx.graphics.Color: {
 		green: { a: 1, b: 0, g: 1, r: 0 },
 		white: { a: 1, b: 1, g: 1, r: 1 },
@@ -215,9 +193,6 @@ resources: {
 	}
 },
 styles: {
-	com.madthrax.ridiculousRPG.ui.WindowWithVariableTitlebox$WindowWithVariableTitleboxStyle: {
-		default: { titleFont: default-font, background: default-window2, titleBackground: default-window2-title, titleBackgroundStretch: default-window2-title-stretch, titleFontColor: white }
-	},
 	com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
 		default: { down: default-round-down, up: default-round },
 		toggle: { down: default-round-down, checked: default-round-down, up: default-round }
@@ -234,7 +209,7 @@ styles: {
 		default-horizontal: { handle: default-splitpane }
 	},
 	com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
-		default: { vScroll: default-slider, hScrollKnob: default-round, background: default-rect, hScroll: default-slider, vScrollKnob: default-round }
+		default: { vScroll: default-slider, hScrollKnob: default-round-large, background: default-rect, hScroll: default-slider, vScrollKnob: default-round-large }
 	},
 	com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
 		default: { titleFont: default-font, background: default-window, titleFontColor: white }
@@ -252,7 +227,7 @@ styles: {
 		default: { checkboxOn: check-on, checkboxOff: check-off, font: default-font, fontColor: white }
 	},
 	com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
-		default: { fontColorUnselected: white, selectedPatch: default-rect-pad, fontColorSelected: white, font: default-font }
+		default: { fontColorUnselected: white, selection: default-rect-pad, fontColorSelected: white, font: default-font }
 	}
 }
 }

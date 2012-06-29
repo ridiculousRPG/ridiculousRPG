@@ -91,7 +91,7 @@ function createGui(menuService, menu) {
 function generateButton(buttonText, zipFile, skin, menu) {
 	if (zipFile==null) {
 		// button.getLabel().setAlignment(ui.Align.LEFT);
-		return new ui.TextButton(buttonText + " - EMPTY", skin);
+		return new ui.TextButton(buttonText + " - " + i18nText("loadmenu.empty"), skin);
 	}
 	var DF = java.text.DateFormat;
 	var dateText = DF.getDateTimeInstance(DF.MEDIUM, DF.SHORT).format(

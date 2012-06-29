@@ -47,6 +47,7 @@ loadmenu.quickload=Quickload
 loadmenu.loadfailed=Laden fehlgeschlagen!
 loadmenu.load=Laden
 loadmenu.cancel=Abbrechen (Esc)
+loadmenu.empty=LEER
 
 # save menu
 savemenu.title=Spielstand speichern
@@ -54,3 +55,4 @@ savemenu.quicksave=Quicksave
 savemenu.savefailed=Speichern fehlgeschlagen!
 savemenu.save=Speichern
 savemenu.cancel=Abbrechen (Esc)
+loadmenu.empty=LEER
