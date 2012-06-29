@@ -78,8 +78,8 @@ function createGui(menuService, menu) {
 
 	w.setMovable(false);
 	w.setModal(true);
-	w.width(width);
-	w.height(height);
+	w.width = width;
+	w.height = height;
 	var scroll = new ui.ScrollPane(w, skin);
 	scroll.width = Math.min(width, $.screen.width);
 	scroll.height = Math.min(height, $.screen.height);
