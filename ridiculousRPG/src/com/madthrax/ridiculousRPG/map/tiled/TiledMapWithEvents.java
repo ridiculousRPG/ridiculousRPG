@@ -34,6 +34,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g2d.tiled.TileAtlas;
+import com.badlogic.gdx.graphics.g2d.tiled.TiledLayer;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledLoader;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObject;
@@ -92,6 +93,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final char EVENT_CUSTOM_PROP_KZ = '$';
 	// the key is translated to lower case -> we are case insensitive
 	private static final String EVENT_PROP_ID = "id";
+	private static final String EVENT_PROP_DISPLAY = "display";
 	private static final String EVENT_PROP_HEIGHT = "height";
 	private static final String EVENT_PROP_OUTREACH = "outreach";
 	private static final String EVENT_PROP_ROTATION = "rotation";
@@ -153,8 +155,11 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		int z;
 		ArrayList<MapRenderRegion> alTmp = new ArrayList<MapRenderRegion>(1000);
 		for (i = 0, len_i = map.layers.size(); i < len_i; i++) {
-			int[][] layerTiles = map.layers.get(i).tiles;
-			String prop = map.layers.get(i).properties.get(EVENT_PROP_HEIGHT);
+			TiledLayer l = map.layers.get(i);
+			if ("false".equals(l.properties.get(EVENT_PROP_DISPLAY)))
+				continue;
+			int[][] layerTiles = l.tiles;
+			String prop = l.properties.get(EVENT_PROP_HEIGHT);
 			int layer_z = 0;
 			if (prop != null && prop.length() > 0)
 				try {
@@ -202,8 +207,12 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		Map<Integer, ObjectState> eventsById = loadStateFromFS();
 		for (i = 0, len_i = map.objectGroups.size(); i < len_i; i++) {
 			TiledObjectGroup group = map.objectGroups.get(i);
+			if ("false".equals(group.properties.get(EVENT_PROP_DISPLAY)))
+				continue;
 			for (j = 0, len_j = group.objects.size(); j < len_j; j++) {
 				TiledObject object = group.objects.get(j);
+				if ("false".equals(object.properties.get(EVENT_PROP_DISPLAY)))
+					continue;
 				ev = new EventObject(object, group, atlas, map);
 				if (object.gid > 0) {
 					prop = map.getTileProperty(object.gid, EVENT_PROP_HEIGHT);
