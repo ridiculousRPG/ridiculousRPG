@@ -14,6 +14,7 @@ WeatherEffectUtil = ridiculousRPG.animation.WeatherEffectUtil;
 Speed = ridiculousRPG.util.Speed;
 Direction = ridiculousRPG.util.Direction;
 Color = gdx.graphics.Color;
+desktopMode = gdx.Gdx.app.type == gdx.Application.ApplicationType.Desktop;
 
 // Convenience method to obtain internal files from pathname
 function internalFile(pathName) {

@@ -6,6 +6,8 @@ titlemenu.loadfailed=Laden fehlgeschlagen!
 titlemenu.load=Spiel laden
 titlemenu.fullscreen=Vollbildmodus
 titlemenu.windowed=Fenstermodus
+titlemenu.language=Sprache ändern
+titlemenu.defaultresolution=Standardauflösung wiederherstellen
 titlemenu.exit=Spiel verlassen (Esc)
 
 # game menu
@@ -56,3 +58,7 @@ savemenu.savefailed=Speichern fehlgeschlagen!
 savemenu.save=Speichern
 savemenu.cancel=Abbrechen (Esc)
 loadmenu.empty=LEER
+
+# change language menu
+changelangmenu.title=Sprache wählen
+changelangmenu.cancel=Abbrechen (Esc)

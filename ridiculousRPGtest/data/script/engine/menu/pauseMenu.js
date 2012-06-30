@@ -43,5 +43,5 @@ function createGui(menuService, menu) {
 	w.pack();
 	menuService.center(w);
 	menuService.addGUIcomponent(w);
-	menuService.focus(resume);
+	if (desktopMode) menuService.focus(resume);
 }

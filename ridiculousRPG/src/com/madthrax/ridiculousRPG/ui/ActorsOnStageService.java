@@ -164,6 +164,11 @@ public class ActorsOnStageService extends Stage implements GameService,
 		getCamera().update();
 		try {
 			// draw onto OUR spriteBatch!!!
+			if (getRoot().getChildren().size == 1
+					&& getRoot().getChildren().get(0) instanceof ScrollPane) {
+				((ScrollPane) getRoot().getChildren().get(0)).getChildren()
+						.get(0).setY(0);
+			}
 			getRoot().draw(spriteBatch, 1f);
 			if (debug) {
 				debugTableLayout(getActors());
@@ -195,6 +200,18 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	public Matrix4 projectionMatrix(Camera camera) {
 		return camera.view;
+	}
+
+	@Override
+	public boolean scrolled(int amount) {
+		boolean consumed = super.scrolled(amount);
+		if (!consumed) {
+			consumed = keyDown(amount == 1 ? Keys.DOWN : Keys.UP);
+			if (consumed) {
+				keyUp(amount == 1 ? Keys.DOWN : Keys.UP);
+			}
+		}
+		return consumed;
 	}
 
 	@Override

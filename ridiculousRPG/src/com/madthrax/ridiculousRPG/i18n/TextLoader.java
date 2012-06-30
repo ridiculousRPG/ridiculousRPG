@@ -1,7 +1,9 @@
 package com.madthrax.ridiculousRPG.i18n;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Properties;
 
 import com.badlogic.gdx.files.FileHandle;
@@ -27,6 +29,11 @@ public class TextLoader {
 
 	public synchronized void setDirectory(FileHandle directory) {
 		this.directory = directory;
+		Locale l = new Locale(directory.name());
+		String checkExistence = l.getDisplayLanguage();
+		if (checkExistence != null && checkExistence.length() > 0) {
+			Locale.setDefault(l);
+		}
 		i18n.clear();
 	}
 
@@ -38,26 +45,29 @@ public class TextLoader {
 			p = i18n.get(container + DEFAULT_EXTENSION);
 
 		if (p == null) {
-			FileHandle fh = directory.child(container);
-			if (!fh.exists()) {
-				fh = fallbackDir.child(container);
-			}
-			if (!fh.exists() && !container.endsWith(DEFAULT_EXTENSION)) {
-				fh = directory.child(container + DEFAULT_EXTENSION);
-				if (!fh.exists()) {
-					fh = fallbackDir.child(container + DEFAULT_EXTENSION);
-				}
-			}
+			p = new Properties();
+			load(container, fallbackDir, p);
+			if (!fallbackDir.file().equals(directory.file()))
+				load(container, directory, p);
 
-			if (!fh.exists())
-				return null;
 			if (i18n.size() == filesInCacheSize) {
 				i18n.clear();
 			}
-			p = new Properties();
-			p.load(fh.reader(GameBase.$options().encoding));
 			i18n.put(container, p);
 		}
 		return p.getProperty(key, key);
+	}
+
+	private void load(String container, FileHandle langDir, Properties p)
+			throws IOException {
+		FileHandle fh = langDir.child(container);
+		if (!fh.exists() && !container.endsWith(DEFAULT_EXTENSION)) {
+			fh = langDir.child(container + DEFAULT_EXTENSION);
+		}
+		if (!fh.exists())
+			return;
+		Reader r = fh.reader(GameBase.$options().encoding);
+		p.load(r);
+		r.close();
 	}
 }

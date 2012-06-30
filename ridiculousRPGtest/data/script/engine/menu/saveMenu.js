@@ -24,9 +24,9 @@ function createGui(menuService, menu) {
 
 	var skin = menuService.skinNormal;
 	var w = new ui.Window(i18nText("savemenu.title"), skin);
-	var files = $.listSaveFiles();
 	// ADVANCED LIST GENERATION: listSaveFiles(int cols, int emptyTailRows, int minRows)
 	// var files = $.listSaveFiles(2, 1, 10);
+	var files = $.listSaveFiles();
 	var button;
 
 	var quickSave = generateButton(i18nText("savemenu.quicksave"), files[0], skin, menu);
@@ -39,7 +39,7 @@ function createGui(menuService, menu) {
 			}
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
+	w.row().fill(true, true).expand(true, false).padBottom(10);
 	w.add(quickSave).colspan(4);
 
 	button = new ui.TextButton(i18nText("savemenu.cancel"), skin);
@@ -76,16 +76,13 @@ function createGui(menuService, menu) {
 		}
 	}
 
-	w.setMovable(false);
-	w.setModal(true);
-	w.width = width;
-	w.height = height;
 	var scroll = new ui.ScrollPane(w, skin);
+	scroll.setFadeScrollBars(false);
 	scroll.width = Math.min(width, $.screen.width);
 	scroll.height = Math.min(height, $.screen.height);
 	menuService.center(scroll);
 	menuService.addGUIcomponent(scroll);
-	menuService.focus(quickSave);
+	if (desktopMode) menuService.focus(quickSave);
 }
 
 function generateButton(buttonText, zipFile, skin, menu) {

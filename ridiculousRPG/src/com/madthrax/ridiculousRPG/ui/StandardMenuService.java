@@ -87,9 +87,11 @@ public class StandardMenuService extends ActorsOnStageService implements
 				super.clear();
 				if (activeState != null && activeState != newState)
 					activeState.freeResources();
+			} else {
+				setKeyboardFocus(null);
+				ActorFocusUtil.disableRecursive(getActors());
 			}
-			if (activeState != newState)
-				newState.freeResources();
+			newState.freeResources();
 			newState.createGui(this);
 		}
 		if (activeState != newState) {
@@ -146,8 +148,8 @@ public class StandardMenuService extends ActorsOnStageService implements
 
 		w.setTouchable(false);
 		w.getColor().a = .1f;
-		w.addAction(Actions.sequence(Actions.fadeIn(.3f), Actions.delay(2f, Actions.fadeOut(.3f)), Actions.removeActor()
-				));
+		w.addAction(Actions.sequence(Actions.fadeIn(.3f), Actions.delay(2f,
+				Actions.fadeOut(.3f)), Actions.removeActor()));
 		w.add(new Label(info, skin));
 
 		w.pack();

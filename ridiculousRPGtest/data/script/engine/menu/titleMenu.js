@@ -29,6 +29,7 @@ function createGui(menuService, menu) {
 	i18nContainer = "engineMenuText";
 	var skin = menuService.skinNormal;
 	var w = new ui.Window(i18nText("titlemenu.title"), skin);
+	var button;
 
 	var start = new ui.TextButton(i18nText("titlemenu.new"), skin);
 	start.addListener(new ClickAdapter(
@@ -37,7 +38,7 @@ function createGui(menuService, menu) {
 			menuService.startNewGame();
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
+	w.row().fill(true, true).expand(true, false).padBottom(10);
 	w.add(start);
 
 	var resume = new ui.TextButton(i18nText("titlemenu.quickload"), skin);
@@ -53,37 +54,57 @@ function createGui(menuService, menu) {
 	w.row().fill(true, true).expand(true, false);
 	w.add(resume);
 
-	var load = new ui.TextButton(i18nText("titlemenu.load"), skin);
-	load.addListener(new ClickAdapter(
+	button = new ui.TextButton(i18nText("titlemenu.load"), skin);
+	button.addListener(new ClickAdapter(
 		function (actorEv, x, y) {
 			menuService.changeState(MENU_STATE_LOAD);
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
-	w.add(load);
+	w.row().fill(true, true).expand(true, false).padBottom(10);
+	w.add(button);
 
+	// Only useful for desktop mode
+	if (desktopMode) {
+		button = new ui.TextButton(
+				$.isFullscreen() ? i18nText("titlemenu.windowed") : i18nText("titlemenu.fullscreen"), skin);
+		button.addListener(new ClickAdapter(
+			function (actorEv, x, y) {
+				$.toggleFullscreen();
+			}
+		));
+		w.row().fill(true, true).expand(true, false);
+		w.add(button);
 
-	var toggleFull = new ui.TextButton(
-			$.isFullscreen() ? i18nText("titlemenu.windowed") : i18nText("titlemenu.fullscreen"), skin);
-	toggleFull.addListener(new ClickAdapter(
+		button = new ui.TextButton(i18nText("titlemenu.defaultresolution"), skin);
+		button.addListener(new ClickAdapter(
+			function (actorEv, x, y) {
+				$.restoreDefaultResolution();
+			}
+		));
+		w.row().fill(true, true).expand(true, false);
+		w.add(button);
+	}
+
+	button = new ui.TextButton(i18nText("titlemenu.language"), skin);
+	button.addListener(new ClickAdapter(
 		function (actorEv, x, y) {
-			$.toggleFullscreen();
+			menuService.changeState(MENU_STATE_CHANGELANG);
 		}
 	));
 	w.row().fill(true, true).expand(true, false);
-	w.add(toggleFull);
+	w.add(button);
 
-	var exit = new ui.TextButton(i18nText("titlemenu.exit"), skin);
-	exit.addListener(new ClickAdapter(
+	var button = new ui.TextButton(i18nText("titlemenu.exit"), skin);
+	button.addListener(new ClickAdapter(
 		function (actorEv, x, y) {
 			$.exit();
 		}
 	));
 	w.row().fill(true, true).expand(true, false);
-	w.add(exit);
+	w.add(button);
 
 	w.pack();
 	menuService.center(w);
 	menuService.addGUIcomponent(w);
-	menuService.focus(start);
+	if (desktopMode) menuService.focus(start);
 }

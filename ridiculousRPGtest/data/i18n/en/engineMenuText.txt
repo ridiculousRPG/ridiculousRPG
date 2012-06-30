@@ -1,12 +1,13 @@
 # title menu
 titlemenu.title=Start menu
 titlemenu.new=Start new game
-titlemenu.quickload=Quick load \n\
-                    (Ctrl+L)
+titlemenu.quickload=Quick load (Ctrl+L)
 titlemenu.loadfailed=Load failed!
 titlemenu.load=Load
 titlemenu.fullscreen=Fullscreen mode
 titlemenu.windowed=Window mode
+titlemenu.language=Change language
+titlemenu.defaultresolution=Restore default resolution
 titlemenu.exit=Exit game (Esc)
 
 # game menu
@@ -57,3 +58,7 @@ savemenu.savefailed=Save failed!
 savemenu.save=Save
 savemenu.cancel=Cancel (Esc)
 savemenu.empty=EMPTY
+
+# change language menu
+changelangmenu.title=Select language
+changelangmenu.cancel=Cancel (Esc)

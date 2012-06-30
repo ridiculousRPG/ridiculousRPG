@@ -159,7 +159,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		}
 
 		// restore last display mode
-		loadDisplayMode();
+		loadUserContext();
 		camera.update();
 	}
 
@@ -169,18 +169,24 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 
 	public void setLanguage(Locale locale) {
 		FileHandle fh = Gdx.files.internal(options.i18nPath);
-		FileHandle i18nPath = fh.child(Locale.getDefault().getISO3Language());
+		FileHandle i18nPath = fh.child(locale.getISO3Language());
 		if (i18nPath.exists()) {
-			i18n.setDirectory(i18nPath);
+			setLanguageDir(i18nPath);
 		} else {
-			i18nPath = fh.child(Locale.getDefault().getLanguage());
+			i18nPath = fh.child(locale.getLanguage());
 			if (i18nPath.exists())
-				i18n.setDirectory(i18nPath);
+				setLanguageDir(i18nPath);
 		}
 	}
 
 	public void setLanguageDir(FileHandle directory) {
 		i18n.setDirectory(directory);
+		if (isInitialized())
+			saveUserContext();
+	}
+
+	public void setLanguageISO(String iso639_1) {
+		setLanguage(new Locale(iso639_1));
 	}
 
 	public void rebuildSpriteBatch() {
@@ -504,7 +510,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		cam.update();
 		serviceProvider.resize(width, height);
 		if (!terminating)
-			saveDisplayMode();
+			saveUserContext();
 	}
 
 	public void restoreDefaultResolution() {
@@ -762,8 +768,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		return glAsyncLoadable;
 	}
 
-	private String getDisplayStateSavePath() {
-		return GameBase.$options().savePath + "displayState.sav";
+	private String getUserContextPath() {
+		return GameBase.$options().savePath + "userContext.sav";
 	}
 
 	private FileHandle getServiceStateTmpPath() {
@@ -840,8 +846,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		return fh;
 	}
 
-	private void saveDisplayMode() {
-		FileHandle fh = Gdx.files.external(getDisplayStateSavePath());
+	private void saveUserContext() {
+		FileHandle fh = Gdx.files.external(getUserContextPath());
 		try {
 			ObjectOutputStream oOut = new ObjectOutputStream(fh.write(false));
 			oOut.writeObject(screen);
@@ -853,8 +859,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		}
 	}
 
-	private void loadDisplayMode() {
-		FileHandle fh = Gdx.files.external(getDisplayStateSavePath());
+	private void loadUserContext() {
+		FileHandle fh = Gdx.files.external(getUserContextPath());
 		if (fh.exists()) {
 			try {
 				ObjectInputStream oIn = new ObjectInputStream(fh.read());

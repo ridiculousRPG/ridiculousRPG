@@ -61,7 +61,8 @@ public final class ActorFocusUtil {
 	private static boolean tryFocusPrevChild(Actor focused, boolean up,
 			boolean left, Stage stage, Array<Actor> allActors) {
 		Vector2 tmpPoint = ActorFocusUtil.tmpPoint;
-		focused.stageToLocalCoordinates(tmpPoint.set(focused.getX(), focused.getY()));
+		focused.stageToLocalCoordinates(tmpPoint.set(focused.getX(), focused
+				.getY()));
 		float fX1 = focused.getX() - tmpPoint.x;
 		float fY1 = focused.getY() - tmpPoint.y;
 		float fX2 = fX1 + focused.getWidth() * .5f;
@@ -115,7 +116,8 @@ public final class ActorFocusUtil {
 	private static boolean tryFocusNextChild(Actor focused, boolean down,
 			boolean right, Stage stage, Array<Actor> allActors) {
 		Vector2 tmpPoint = ActorFocusUtil.tmpPoint;
-		focused.stageToLocalCoordinates(tmpPoint.set(focused.getX(), focused.getY()));
+		focused.stageToLocalCoordinates(tmpPoint.set(focused.getX(), focused
+				.getY()));
 		float fX1 = focused.getX() - tmpPoint.x;
 		float fY1 = focused.getY() - tmpPoint.y;
 		float fX2 = fX1 + focused.getWidth() * .5f;
@@ -162,7 +164,7 @@ public final class ActorFocusUtil {
 
 	public static boolean focusLastChild(Group actorGrp, Stage stage) {
 		Array<Actor> allActors = actorGrp.getChildren();
-		for (int i = allActors.size- 1; i > -1; i--) {
+		for (int i = allActors.size - 1; i > -1; i--) {
 			Actor a = allActors.get(i);
 			if (isFocusable(a))
 				return focus(a, true, stage);
@@ -206,7 +208,8 @@ public final class ActorFocusUtil {
 	public static boolean isActorOnStage(Actor actor, Group root) {
 		if (actor == null)
 			return false;
-		for (Group bottom = actor.getParent(); bottom != null; bottom = (actor = bottom).getParent()) {
+		for (Group bottom = actor.getParent(); bottom != null; bottom = (actor = bottom)
+				.getParent()) {
 			if (!isActorInList(actor, bottom.getChildren()))
 				return false;
 		}
@@ -223,9 +226,22 @@ public final class ActorFocusUtil {
 	}
 
 	private static boolean isFocusable(Actor a) {
-		return a.isTouchable() && a.isVisible() && styleGetter(a.getClass()) != null
-				&& !(a instanceof Label) && !(a instanceof ScrollPane)
-				&& !(a instanceof Image) && !(a instanceof Window);
+		return a.isTouchable() && a.isVisible()
+				&& styleGetter(a.getClass()) != null && !(a instanceof Label)
+				&& !(a instanceof ScrollPane) && !(a instanceof Image)
+				&& !(a instanceof Window);
+	}
+
+	public static void disableRecursive(Array<Actor> actors) {
+		if (actors == null)
+			return;
+		for (int i = actors.size - 1; i > -1; i--) {
+			Actor a = actors.get(i);
+			a.setTouchable(false);
+			if (a instanceof Group) {
+				disableRecursive(((Group) a).getChildren());
+			}
+		}
 	}
 
 	public static Method styleGetter(Class<? extends Actor> actorClass) {

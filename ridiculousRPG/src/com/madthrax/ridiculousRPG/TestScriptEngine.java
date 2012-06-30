@@ -26,8 +26,8 @@ import javax.script.ScriptException;
  * This class tests if the script engine works properly and may be used with this
  * game engine.<br>
  * You should see the following output:<br>
- * <code><pre> madthrax: 5
- * ridiculous: -22
+ * <code><pre> testOut1: 5
+ * testOut2: -22
  * engine1: 5.0
  * engine2: 15.0
  * engine1: -5.0
@@ -49,9 +49,9 @@ public class TestScriptEngine {
 	 * script language
 	 */
 	public String testScript1 = "function push(eventSelf, eventPushed) "
-			+ "{ eventSelf.x = 5; eventPushed.setName('ridiculous') }\n"
+			+ "{ eventSelf.x = 5; eventPushed.setName('testOut2') }\n"
 			+ "function touch(eventSelf, eventPushed) "
-			+ "{ eventPushed.x = -22; eventSelf.setName('madthrax') }";
+			+ "{ eventPushed.x = -22; eventSelf.setName('testOut1') }";
 	/**
 	 * Maybe you have to change the test, if it doesn't match the syntax of your
 	 * script language
@@ -83,8 +83,8 @@ public class TestScriptEngine {
 	 * {@link #scriptLanguage}<br>
 	 * <br>
 	 * You should see the following output:<br>
-	 * <code><pre> madthrax: 5
-	 * ridiculous: -22
+	 * <code><pre> testOut1: 5
+	 * testOut2: -22
 	 * engine1: 5.0
 	 * engine2: 15.0
 	 * engine1: -5.0

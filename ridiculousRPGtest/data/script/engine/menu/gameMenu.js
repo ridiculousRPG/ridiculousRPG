@@ -53,7 +53,7 @@ function createGui(menuService, menuHandler) {
 					+ "This is an early alpha release!");
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
+	w.row().fill(true, true).expand(true, false).padBottom(10);
 	w.add(bag);
 
 	var quickload = new ui.TextButton(i18nText("gamemenu.quickload"), skin);
@@ -97,7 +97,7 @@ function createGui(menuService, menuHandler) {
 			menuService.changeState(MENU_STATE_SAVE);
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
+	w.row().fill(true, true).expand(true, false).padBottom(10);
 	w.add(save);
 
 	var toTitle = new ui.TextButton(i18nText("gamemenu.return"), skin);
@@ -121,5 +121,5 @@ function createGui(menuService, menuHandler) {
 	w.pack();
 	w.height = menuService.height;
 	menuService.addGUIcomponent(w);
-	menuService.focus(resume);
+	if (desktopMode) menuService.focus(resume);
 }
