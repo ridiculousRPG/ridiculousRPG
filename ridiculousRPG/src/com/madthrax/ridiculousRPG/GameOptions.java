@@ -52,4 +52,7 @@ public class GameOptions {
 	public String eventPushTemplate = "data/script/engine/eventTemplate/onPush.template";
 	public String eventTimerTemplate = "data/script/engine/eventTemplate/onTimer.template";
 	public String eventTouchTemplate = "data/script/engine/eventTemplate/onTouch.template";
+	public String weatherEffectSnow = "data/effect/weather/snow.png";
+	public String weatherEffectRainNE = "data/effect/weather/rainNE.png";
+	public String weatherEffectRainNW = "data/effect/weather/rainNW.png";
 }

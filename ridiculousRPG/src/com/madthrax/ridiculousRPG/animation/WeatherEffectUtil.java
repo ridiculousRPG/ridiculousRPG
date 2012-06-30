@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.animation;
 
+import com.madthrax.ridiculousRPG.GameBase;
+
 /**
  * This class simplifies the usage of some frequently used weather effects. It
  * defines default implementations for rain and snow.
@@ -33,10 +35,6 @@ public abstract class WeatherEffectUtil {
 		}
 	}
 
-	public static String SNOW_TEXTURE_PATH = "data/weatherEffect/snow.png";
-	public static String RAIN_NW_TEXTURE_PATH = "data/weatherEffect/rainNW.png";
-	public static String RAIN_NE_TEXTURE_PATH = "data/weatherEffect/rainNE.png";
-
 	/**
 	 * Generates snow with default parameters.<br>
 	 * You don't need to worry about calibrating the parameters.
@@ -45,8 +43,9 @@ public abstract class WeatherEffectUtil {
 	 *            Use the enum inner class WeatherEffectUtil.Wind
 	 */
 	public static void generateSnow(ParticleEffectService engine, Wind wind) {
-		engine.addWeatherLayerTimes(SNOW_TEXTURE_PATH, 50, .2f + .1f * Math
-				.abs(wind.val), .07f * wind.val, 3, 10 + 30 / wind.val);
+		engine.addWeatherLayerTimes(GameBase.$options().weatherEffectSnow, 50,
+				.2f + .1f * Math.abs(wind.val), .07f * wind.val, 3,
+				10 + 30 / wind.val);
 	}
 
 	/**
@@ -57,9 +56,11 @@ public abstract class WeatherEffectUtil {
 	 *            Use the enum inner class WeatherEffectUtil.Wind
 	 */
 	public static void generateRain(ParticleEffectService engine, Wind wind) {
-		engine.addWeatherLayerTimes(wind.val > 0 ? RAIN_NW_TEXTURE_PATH
-				: RAIN_NE_TEXTURE_PATH, 50, 1f + .67f * Math.abs(wind.val),
-				.33f * wind.val, 2, 10 + 30 / wind.val);
+		engine.addWeatherLayerTimes(
+				wind.val > 0 ? GameBase.$options().weatherEffectRainNW
+						: GameBase.$options().weatherEffectRainNE, 50,
+				1f + .67f * Math.abs(wind.val), .33f * wind.val, 2,
+				10 + 30 / wind.val);
 	}
 
 	/**
@@ -78,8 +79,8 @@ public abstract class WeatherEffectUtil {
 	 *            Use the enum inner class WeatherEffectUtil.Wind
 	 */
 	public static void increaseSnow(ParticleEffectService engine, Wind wind) {
-		engine.addWeatherLayer(SNOW_TEXTURE_PATH, 50, .2f + .1f * Math.abs(wind.val),
-				.07f * wind.val);
+		engine.addWeatherLayer(GameBase.$options().weatherEffectSnow, 50,
+				.2f + .1f * Math.abs(wind.val), .07f * wind.val);
 	}
 
 	/**
@@ -89,9 +90,10 @@ public abstract class WeatherEffectUtil {
 	 *            Use the enum inner class WeatherEffectUtil.Wind
 	 */
 	public static void increaseRain(ParticleEffectService engine, Wind wind) {
-		engine.addWeatherLayer(wind.val > 0 ? RAIN_NW_TEXTURE_PATH
-				: RAIN_NE_TEXTURE_PATH, 50, 1f + .67f * Math.abs(wind.val),
-				.33f * wind.val);
+		engine.addWeatherLayer(
+				wind.val > 0 ? GameBase.$options().weatherEffectRainNW
+						: GameBase.$options().weatherEffectRainNE, 50,
+				1f + .67f * Math.abs(wind.val), .33f * wind.val);
 	}
 
 	/**

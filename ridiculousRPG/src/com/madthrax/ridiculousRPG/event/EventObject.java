@@ -25,7 +25,10 @@ import java.util.HashMap;
 
 import javax.script.ScriptException;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
@@ -63,6 +66,10 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 
 	private TileAnimation animation;
 	private String texturePath;
+	private String effectFrontPath;
+	private String effectRearPath;
+	private transient ParticleEffect effectFront;
+	private transient ParticleEffect effectRear;
 	private transient TextureRegionRef imageRef;
 	private transient TextureRegion image;
 	private Point2D.Float softMove = new Point2D.Float(0f, 0f);
@@ -241,6 +248,56 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 				anzCols, anzRows, x, y, Move4WayAdapter.$());
 	}
 
+	public ParticleEffect setEffectFront(String internalPath) {
+		if (effectFront != null) {
+			effectFront.dispose();
+			effectFront = null;
+		}
+		if (internalPath != null) {
+			FileHandle fh = Gdx.files.internal(internalPath);
+			if (fh.exists()) {
+				effectFrontPath = internalPath;
+				effectFront = new ParticleEffect();
+				effectFront.load(fh, fh.parent());
+				effectFront.setPosition(drawBound.x + drawBound.width * .5f,
+						drawBound.y);
+				visible = true;
+			}
+		}
+		return effectFront;
+	}
+
+	public void startEffectFront() {
+		if (effectFront != null) {
+			effectFront.start();
+		}
+	}
+
+	public ParticleEffect setEffectRear(String internalPath) {
+		if (effectRear != null) {
+			effectRear.dispose();
+			effectRear = null;
+		}
+		if (internalPath != null) {
+			FileHandle fh = Gdx.files.internal(internalPath);
+			if (fh.exists()) {
+				effectRearPath = internalPath;
+				effectRear = new ParticleEffect();
+				effectRear.load(fh, fh.parent());
+				effectRear.setPosition(drawBound.x + drawBound.width * .5f,
+						drawBound.y);
+				visible = true;
+			}
+		}
+		return effectRear;
+	}
+
+	public void startEffectRear() {
+		if (effectRear != null) {
+			effectRear.start();
+		}
+	}
+
 	/**
 	 * Creates a new event.<br>
 	 * For the undocumented parameters see
@@ -351,12 +408,12 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 
 	private void addX(float value) {
 		touchBound.x += value;
-		drawBound.x += value;
+		setDrawbounds(drawBound.x + value, drawBound.y);
 	}
 
 	private void addY(float value) {
 		touchBound.y += value;
-		drawBound.y += value;
+		setDrawbounds(drawBound.x, drawBound.y + value);
 	}
 
 	/**
@@ -374,9 +431,20 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * centering the draw bound.
 	 */
 	public void centerDrawbound() {
-		drawBound.x = touchBound.x + (touchBound.width - drawBound.width) * .5f;
-		drawBound.y = touchBound.y + (touchBound.height - drawBound.height)
-				* .5f;
+		setDrawbounds(
+				touchBound.x + (touchBound.width - drawBound.width) * .5f,
+				touchBound.y + (touchBound.height - drawBound.height) * .5f);
+	}
+
+	private void setDrawbounds(float x, float y) {
+		drawBound.x = x;
+		drawBound.y = y;
+		if (effectRear != null) {
+			effectRear.setPosition(x + drawBound.width * .5f, y);
+		}
+		if (effectFront != null) {
+			effectFront.setPosition(x + drawBound.width * .5f, y);
+		}
 	}
 
 	/**
@@ -462,7 +530,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	}
 
 	public void draw(SpriteBatch spriteBatch) {
-		if (visible && image != null) {
+		if (visible) {
 			float eventColorBits = this.colorFloatBits;
 			float gameColorBits = GameBase.$().getGameColorBits();
 			if (gameColorBits != COLOR_WHITE_BITS) {
@@ -480,8 +548,13 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			float h = drawBound.height;
 			float w = drawBound.width;
 			spriteBatch.setColor(eventColorBits);
-			spriteBatch.draw(image, x, y, w * .5f, h * .5f, w, h, scaleX,
-					scaleY, rotation);
+			if (effectRear != null)
+				effectRear.draw(spriteBatch);
+			if (image != null)
+				spriteBatch.draw(image, x, y, w * .5f, h * .5f, w, h, scaleX,
+						scaleY, rotation);
+			if (effectFront != null)
+				effectFront.draw(spriteBatch);
 			spriteBatch.setColor(gameColorBits);
 		}
 	}
@@ -720,8 +793,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		if (estimateTouchBound) {
 			estimateTouchBound();
 		} else if (estimateDrawBound) {
-			drawBound.x = touchBound.x - (tileWidth - getWidth()) / 2;
-			drawBound.y = touchBound.y;
+			setDrawbounds(touchBound.x - (tileWidth - getWidth()) / 2,
+					touchBound.y);
 		}
 	}
 
@@ -754,8 +827,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		if (estimateTouchBound) {
 			estimateTouchBound();
 		} else if (estimateDrawBound) {
-			drawBound.x = touchBound.x - (width - getWidth()) / 2;
-			drawBound.y = touchBound.y;
+			setDrawbounds(touchBound.x - (width - getWidth()) / 2, touchBound.y);
 		}
 		return old;
 	}
@@ -794,14 +866,9 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		if (estimateTouchBound) {
 			estimateTouchBound();
 		} else if (estimateDrawBound) {
-			drawBound.x = touchBound.x - (drawBound.width - getWidth()) / 2;
-			drawBound.y = touchBound.y;
+			setDrawbounds(touchBound.x - (drawBound.width - getWidth()) / 2,
+					touchBound.y);
 		}
-	}
-
-	public void centerDrawBound() {
-		drawBound.x = touchBound.x - (drawBound.width - getWidth()) / 2;
-		drawBound.y = touchBound.y - (drawBound.height - getHeight()) / 2;
 	}
 
 	public void setEventHandler(EventHandler eventHandler) {
@@ -809,6 +876,14 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	}
 
 	public void dispose() {
+		if (effectFront != null) {
+			effectFront.dispose();
+			effectFront = null;
+		}
+		if (effectRear != null) {
+			effectRear.dispose();
+			effectRear = null;
+		}
 		if (animation != null) {
 			animation.dispose();
 			animation = null;
@@ -869,6 +944,12 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		if (animation != null) {
 			image = animation.getActualTextureRegion();
 		}
+		if (effectFrontPath != null) {
+			setEffectFront(effectFrontPath);
+		}
+		if (effectRearPath != null) {
+			setEffectRear(effectRearPath);
+		}
 		try {
 			init();
 		} catch (ScriptException e) {
@@ -885,5 +966,14 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 
 	public void setImage(AtlasRegion region) {
 		image = region;
+	}
+
+	public void computeParticleEffect(float deltaTime) {
+		if (effectFront != null) {
+			effectFront.update(deltaTime);
+		}
+		if (effectRear != null) {
+			effectRear.update(deltaTime);
+		}
 	}
 }

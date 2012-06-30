@@ -16,7 +16,6 @@ public class ParticleEffectLayer extends EffectLayer {
 	private String effectFile;
 	private String imagesDir;
 	private boolean started;
-	private float deltaTime;
 
 	/**
 	 * Creates a particle effect from a configuration file
@@ -60,12 +59,13 @@ public class ParticleEffectLayer extends EffectLayer {
 	public void compute(float deltaTime, boolean actionKeyDown) {
 		if (!started)
 			effect.start();
-		this.deltaTime = deltaTime;
+		else
+			effect.update(deltaTime);
 	}
 
 	@Override
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
-		effect.draw(spriteBatch, deltaTime);
+		effect.draw(spriteBatch);
 	}
 
 	@Override

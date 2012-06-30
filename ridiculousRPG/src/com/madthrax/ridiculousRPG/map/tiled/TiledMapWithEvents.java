@@ -98,6 +98,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private static final String EVENT_PROP_SCALEX = "scalex";
 	private static final String EVENT_PROP_SCALEY = "scaley";
 	private static final String EVENT_PROP_IMAGE = "image";
+	private static final String EVENT_PROP_EFFECTFRONT = "effectfront";
+	private static final String EVENT_PROP_EFFECTREAR = "effectrear";
 	private static final String EVENT_PROP_CENTERIMAGE = "centerimage";
 	private static final String EVENT_PROP_BLOCKING = "blocking";
 	private static final String EVENT_PROP_MOVEHANDLER = "movehandler";
@@ -370,6 +372,20 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 							.get(EVENT_PROP_ESTIMATETOUCHBOUNDS));
 					ev.setImage(val, estimateTouch, !estimateTouch);
 					initVisibleEvent(ev, props);
+				}
+			} else if (EVENT_PROP_EFFECTFRONT.equals(key)) {
+				if (Gdx.files.internal(val).exists()) {
+					ev.setEffectFront(val);
+					if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
+						ev.z = .1f;
+					}
+				}
+			} else if (EVENT_PROP_EFFECTREAR.equals(key)) {
+				if (Gdx.files.internal(val).exists()) {
+					ev.setEffectRear(val);
+					if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
+						ev.z = .1f;
+					}
 				}
 			} else if (EVENT_PROP_ANIMATION.equals(key)) {
 				FileHandle fh = Gdx.files.internal(val);

@@ -281,6 +281,8 @@
    <properties>
     <property name="animation" value="data/charset/Daisy.png"/>
     <property name="blocking" value="PASSES_LOW_BARRIER"/>
+    <property name="effectFront" value="data/effect/particle/fireContinuous2.effect"/>
+    <property name="effectRear" value="data/effect/particle/fireContinuous2.effect"/>
     <property name="movehandler" value="Move4WayAdapter"/>
     <property name="speed" value="S07_NORMAL"/>
    </properties>

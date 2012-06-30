@@ -125,6 +125,21 @@ public class GameOptionsDefaultConfigReader {
 				options.scriptFileExtension = propTmp.trim().split("\\s*,\\s*");
 			}
 
+			propTmp = props.getProperty("WEATHER_EFFECT_SNOW");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				options.weatherEffectSnow = propTmp.trim();
+			}
+
+			propTmp = props.getProperty("WEATHER_EFFECT_RAIN_NE");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				options.weatherEffectRainNE = propTmp.trim();
+			}
+
+			propTmp = props.getProperty("WEATHER_EFFECT_RAIN_NW");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				options.weatherEffectRainNW = propTmp.trim();
+			}
+
 			propTmp = props.getProperty("SCRIPT_FACTORY");
 			if (propTmp != null && propTmp.trim().length() > 0) {
 				options.scriptFactory = ((Constructor<ScriptFactory>) Class

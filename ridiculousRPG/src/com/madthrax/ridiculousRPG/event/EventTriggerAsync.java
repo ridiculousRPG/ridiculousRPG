@@ -171,6 +171,7 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 				}
 			}
 			obj1.commitMove();
+			obj1.computeParticleEffect(deltaTime);
 		}
 		synchronized (this) {
 			// shared variables for parallel computation
