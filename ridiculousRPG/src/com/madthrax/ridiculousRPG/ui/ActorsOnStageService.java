@@ -56,6 +56,8 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	private Vector2 tmp = new Vector2();
 
+	private static final int SCROLL_PIXEL_AMOUNT = 64;
+
 	public ActorsOnStageService() {
 		super(GameBase.$().getScreen().width, GameBase.$().getScreen().height,
 				true, GameBase.$().getSpriteBatch());
@@ -204,14 +206,16 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	@Override
 	public boolean scrolled(int amount) {
-		boolean consumed = super.scrolled(amount);
-		if (!consumed) {
-			consumed = keyDown(amount == 1 ? Keys.DOWN : Keys.UP);
-			if (consumed) {
-				keyUp(amount == 1 ? Keys.DOWN : Keys.UP);
+		Array<Actor> aa = getActors();
+		for (int i = aa.size - 1; i > -1; i--) {
+			Actor a = aa.get(i);
+			if (a instanceof ScrollPane) {
+				ScrollPane s = (ScrollPane) a;
+				s.setScrollY(s.getScrollY() + SCROLL_PIXEL_AMOUNT * amount);
+				return true;
 			}
 		}
-		return consumed;
+		return false;
 	}
 
 	@Override
