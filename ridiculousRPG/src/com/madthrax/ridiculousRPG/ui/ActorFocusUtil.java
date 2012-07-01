@@ -199,10 +199,11 @@ public final class ActorFocusUtil {
 			}
 		}
 		// focus self
-		if (actor == null || actor.getParent() == null)
-			return false;
-		stage.setKeyboardFocus(actor);
-		return true;
+		if (actor != null && actor.getParent() != null && isFocusable(actor)) {
+			stage.setKeyboardFocus(actor);
+			return true;
+		}
+		return false;
 	}
 
 	public static boolean isActorOnStage(Actor actor, Group root) {

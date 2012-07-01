@@ -20,10 +20,6 @@ import javax.script.ScriptException;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.IntMap;
 import com.madthrax.ridiculousRPG.GameBase;
 
@@ -41,11 +37,19 @@ public class StandardMenuService extends ActorsOnStageService implements
 	private String startNewGameScript;
 	private int lastStatePos = 0;
 	private MenuStateHandler[] lastState = new MenuStateHandler[10];
+	private boolean dirty;
 
 	@Override
 	public boolean keyUp(int keycode) {
-		return (activeState != null && activeState.processInput(keycode, this))
-				|| super.keyUp(keycode);
+		try {
+			return (activeState != null && activeState.processInput(keycode,
+					this))
+					|| super.keyUp(keycode);
+		} catch (Exception e) {
+			e.printStackTrace();
+			showInfoFocused("ERROR: " + e.getMessage() + " (See log)");
+			return false;
+		}
 	}
 
 	/**
@@ -79,20 +83,34 @@ public class StandardMenuService extends ActorsOnStageService implements
 					"Oooops, couldn't release the attention. Something got terribly wrong!");
 		}
 		if (newState == null) {
-			super.clear();
+			if (dirty)
+				super.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+			fadeOutAllActors();
 			if (activeState != null)
 				activeState.freeResources();
 		} else {
 			if (newState.isClearTheMenu()) {
-				super.clear();
+				if (dirty)
+					super.resize(Gdx.graphics.getWidth(), Gdx.graphics
+							.getHeight());
+				fadeOutAllActors();
 				if (activeState != null && activeState != newState)
 					activeState.freeResources();
 			} else {
 				setKeyboardFocus(null);
+				if (activeState == newState && getActors().size > 0) {
+					getActors().removeIndex(getActors().size - 1);
+				}
 				ActorFocusUtil.disableRecursive(getActors());
 			}
 			newState.freeResources();
-			newState.createGui(this);
+			try {
+				newState.createGui(this);
+			} catch (Exception e) {
+				e.printStackTrace();
+				showInfoFocused("ERROR: " + e.getMessage() + " (See log)");
+				return false;
+			}
 		}
 		if (activeState != newState) {
 			lastState[incLastStateCount()] = activeState;
@@ -100,8 +118,8 @@ public class StandardMenuService extends ActorsOnStageService implements
 				Gdx.input.setCatchBackKey(newState.isCatchBackKey());
 				Gdx.input.setCatchMenuKey(newState.isCatchMenuKey());
 			}
+			activeState = newState;
 		}
-		activeState = newState;
 		return true;
 	}
 
@@ -113,9 +131,7 @@ public class StandardMenuService extends ActorsOnStageService implements
 
 	public void center(Object obj) {
 		if (obj instanceof Actor) {
-			Actor actor = (Actor) obj;
-			actor.setX((int) (centerX() - actor.getWidth() * .5f));
-			actor.setY((int) (centerY() - actor.getHeight() * .5f));
+			super.center((Actor) obj);
 		}
 	}
 
@@ -128,32 +144,12 @@ public class StandardMenuService extends ActorsOnStageService implements
 
 	@Override
 	public void resize(int width, int height) {
-		clearAllMenus();
-		super.resize(width, height);
-		if (activeState != null)
+		if (activeState != null && activeState.isClearTheMenu()) {
+			super.resize(width, height);
 			rebuildMenu();
-	}
-
-	public void showInfoNormal(String info) {
-		showInfo(getSkinNormal(), info);
-	}
-
-	public void showInfoFocused(String info) {
-		showInfo(getSkinFocused(), info);
-	}
-
-	private void showInfo(final Skin skin, String info) {
-		final Window w = new Window(skin);
-		addActor(w);
-
-		w.setTouchable(false);
-		w.getColor().a = .1f;
-		w.addAction(Actions.sequence(Actions.fadeIn(.3f), Actions.delay(2f,
-				Actions.fadeOut(.3f)), Actions.removeActor()));
-		w.add(new Label(info, skin));
-
-		w.pack();
-		center(w);
+		} else {
+			dirty = true;
+		}
 	}
 
 	/**

@@ -16,24 +16,28 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import javax.script.Invocable;
+import javax.script.ScriptException;
+
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ActorEvent;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
-import com.esotericsoftware.tablelayout.Cell;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.util.TextureRegionLoader;
 import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
@@ -43,47 +47,50 @@ import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
  * 
  * @author Alexander Baumgartner
  */
-public class MessagingService extends ActorsOnStageService {
+public class MessagingService extends ActorsOnStageService implements
+		Serializable {
+	private static final long serialVersionUID = 1L;
 
+	// Only the most important state informations will be serialized.
 	private Rectangle boxPosition;
-	private TextureRegionRef face;
 	private String title;
-	private float displayInfoTime = 2f;
-	private Array<Message> lines = new Array<Message>();
-	private IntMap<PictureRef> pictures = new IntMap<PictureRef>();
-	private boolean allowNull;
-	private boolean dispose;
-	private Object[] resultPointer = new Object[] { null };
-	private static final int FACE_MARGIN = 8;
+	private String callBackScript;
+	private boolean allowNull = true;
 
-	public MessagingService() {
+	private transient Invocable scriptEngine;
+	private transient TextureRegionRef face;
+	private transient Array<Message> lines;
+	private transient IntMap<PictureRef> pictures;
+	private transient boolean dispose;
+	private transient Object[] resultPointer;
+	private transient boolean dirty;
+
+	public static final int MARGIN = 5;
+
+	public MessagingService() throws ScriptException {
+		callBackScript = GameBase.$options().messageCallBackScript;
+		init();
+	}
+
+	private void init() throws ScriptException {
 		boxPosition = new Rectangle(0, 0, 0, 200);
-		setAllowNull(true);
+		setAllowNull(allowNull);
 		setFadeTime(.15f);
+		lines = new Array<Message>();
+		pictures = new IntMap<PictureRef>();
+		resultPointer = new Object[] { null };
+		setCallBackScript(callBackScript);
+	}
+
+	public void setCallBackScript(String scriptPath) throws ScriptException {
+		callBackScript = scriptPath;
+		scriptEngine = GameBase.$scriptFactory().obtainInvocable(
+				GameBase.$scriptFactory().loadScript(scriptPath));
 	}
 
 	public void setAllowNull(boolean allowNull) {
 		this.allowNull = allowNull;
 		setCloseOnAction(allowNull);
-	}
-
-	public void addGUIcomponent(Object component) {
-		if (component instanceof Actor)
-			addActor((Actor) component);
-	}
-
-	public void center(Object obj) {
-		if (obj instanceof Actor) {
-			Actor actor = (Actor) obj;
-			actor.setX((int) (centerX() - actor.getWidth() * .5f));
-			actor.setY((int) (centerY() - actor.getHeight() * .5f));
-		}
-	}
-
-	public void focus(Object guiElement) {
-		if (guiElement instanceof Actor) {
-			super.focus((Actor) guiElement);
-		}
 	}
 
 	@Override
@@ -112,33 +119,6 @@ public class MessagingService extends ActorsOnStageService {
 
 	// info("Text", "title") - an info box with title, which will disappear
 	// automatically
-
-	public void showInfoNormal(String info) {
-		showInfo(getSkinNormal(), info);
-	}
-
-	public void showInfoFocused(String info) {
-		showInfo(getSkinFocused(), info);
-	}
-
-	private void showInfo(final Skin skin, String info) {
-		try {
-			final Window w = new Window(skin);
-
-			w.setTouchable(false);
-			w.getColor().a = .1f;
-			w.addAction(Actions.sequence(Actions.fadeIn(getFadeTime()), 
-					Actions.delay(displayInfoTime, Actions.fadeOut(getFadeTime())),
-					Actions.removeActor()));
-			w.add(info);
-
-			w.pack();
-			center(w);
-			addActor(w);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	public void info(String info) {
 		showInfoNormal(info);
@@ -240,12 +220,17 @@ public class MessagingService extends ActorsOnStageService {
 			}
 
 			resultPointer[0] = null;
-			drawWindow();
+			try {
+				scriptEngine.invokeFunction("drawMessageBox", this, title,
+						face, lines, boxPosition, pictures.values());
+			} catch (Exception e) {
+				e.printStackTrace();
+				showInfoFocused("ERROR: " + e.getMessage() + " (See log)");
+			}
 
 			lines.clear();
 
-			while (resultPointer[0] == null && getActors().size > 0
-					&& !dispose)
+			while (resultPointer[0] == null && getActors().size > 0 && !dispose)
 				Thread.yield();
 			if (!GameBase.$serviceProvider().releaseAttention(this)) {
 				throw new RuntimeException(
@@ -257,120 +242,25 @@ public class MessagingService extends ActorsOnStageService {
 			do {
 				Thread.yield();
 			} while (getActors().size > 0 && !dispose);
-			if (face != null) {
-				face.dispose();
-				face = null;
-			}
-			removePicture(-1);
+
+			if (dirty)
+				super.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		}
 		return resultPointer[0];
 	}
 
-	private void drawWindow() {
-		try {
-			for (PictureRef pic : pictures.values()) {
-				Image p = new Image(pic.textureRegion);
-				p.setX(pic.x);
-				p.setY(pic.y);
-				addActor(p);
-			}
-
-			final Window w = new Window(getSkinNormal());
-
-			if (title != null) {
-				w.setTitle(title);
-			}
-			w.getColor().a = .1f;
-			w.align(Align.top);
-			w.addAction(Actions.fadeIn(getFadeTime()));
-			int paddingLeft = Math.max(FACE_MARGIN,
-					(int) (w.getStyle().background.getLeftWidth() + .5f));
-			int textPadding = face == null ? 0 : face.getRegionWidth()
-					+ FACE_MARGIN + paddingLeft
-					- (int) (w.getStyle().background.getLeftWidth() + .5f);
-			for (Message line : lines) {
-				Cell<?> c = w.row();
-				if (textPadding > 0) {
-					c.padLeft(textPadding);
-				}
-				c.fill(true, false).expand(true, false);
-				w.add(line.getActor());
-			}
-			computeWindowPos(w);
-			w.pack();
-			computeWindowPos(w);
-			addActor(w);
-			focus(w);
-
-			if (face != null) {
-				Image f = new Image(face);
-				f.setX(w.getX() + paddingLeft);
-				int paddingBottom = Math
-						.max(FACE_MARGIN, (int) (w.getStyle().background
-								.getBottomHeight() + .5f));
-				int centerFace = (int) ((w.getHeight()
-						- w.getStyle().background.getTopHeight()
-						- w.getStyle().background.getBottomHeight() - face
-						.getRegionHeight()) * .5f);
-				f.setY(w.getY() + Math.max(paddingBottom, centerFace));
-				addActor(f);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void computeWindowPos(final Window w) {
-		w.setX(boxPosition.x);
-		w.setY(boxPosition.y);
-		if (boxPosition.width == 0) {
-			// width defined by margin x
-			w.setWidth(GameBase.$().getScreen().width - 2 * w.getX());
-		} else if (boxPosition.width < 0) {
-			// bind box at the top edge of the screen
-			if (w.getWidth() < -boxPosition.width) {
-				// set preferred width
-				w.setWidth(-boxPosition.width);
-			}
-			w.setX(GameBase.$().getScreen().width - w.getWidth() - w.getX());
-		} else if (w.getWidth() < boxPosition.width) {
-			// set preferred width
-			w.setWidth(boxPosition.width);
-		}
-		if (boxPosition.height == 0) {
-			// height defined by margin y
-			w.setHeight(GameBase.$().getScreen().height - 2 * w.getY());
-		} else if (boxPosition.height < 0) {
-			// bind box at the right edge of the screen
-			if (w.getHeight() < -boxPosition.height) {
-				// set preferred height
-				w.setHeight(-boxPosition.height);
-			}
-			w.setY(GameBase.$().getScreen().height - w.getHeight() - w.getY());
-		} else if (w.getHeight() < boxPosition.height) {
-			// set preferred height
-			w.setHeight(boxPosition.height);
-		}
-		if (boxPosition.x < 0) {
-			// center horizontal
-			w.setX((int) (centerX() - w.getWidth() * .5f));
-		}
-		if (boxPosition.y < 0) {
-			// center vertical
-			w.setY((int) (centerY() - w.getHeight() * .5f));
-		}
-	}
-
-	public void setDisplayInfoTime(float displayInfoTime) {
-		this.displayInfoTime = displayInfoTime;
-	}
-
-	public float getDisplayInfoTime() {
-		return displayInfoTime;
-	}
-
 	public interface Message {
 		public Actor getActor();
+	}
+
+	@Override
+	public void resize(int width, int height) {
+		// TODO: if (!inMutex)
+		if (getActors().size == 0) {
+			super.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		} else {
+			dirty = true;
+		}
 	}
 
 	public class MessageInput implements Message {
@@ -477,13 +367,41 @@ public class MessagingService extends ActorsOnStageService {
 		}
 	}
 
-	static class PictureRef {
+	public static class PictureRef {
 		TextureRegionRef textureRegion;
 		int x, y;
 
 		public PictureRef(int posX, int posY) {
 			x = posX;
 			y = posY;
+		}
+		public Image getImage() {
+			Image img = new Image(textureRegion);
+			img.setX(x);
+			img.setY(y);
+			return img;
+		}
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+		out.writeFloat(super.getDisplayInfoTime());
+		out.writeFloat(super.getFadeInfoTime());
+		out.writeFloat(super.getFadeTime());
+		out.writeBoolean(super.isCloseOnAction());
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+		super.setDisplayInfoTime(in.readFloat());
+		super.setFadeInfoTime(in.readFloat());
+		super.setFadeTime(in.readFloat());
+		super.setCloseOnAction(in.readBoolean());
+		try {
+			init();
+		} catch (ScriptException e) {
+			throw new IOException(e);
 		}
 	}
 

@@ -48,13 +48,15 @@ public class ActorsOnStageService extends Stage implements GameService,
 		Drawable, Computable, ResizeListener {
 	private Skin skinNormal, skinFocused;
 	private boolean closeOnAction;
-	private float fadeTime;
 	private boolean releaseAttention;
 
 	private boolean awaitingKeyUp;
 	private Actor focusedActor = null;
 
 	private Vector2 tmp = new Vector2();
+	private float fadeTime;
+	private float fadeInfoTime = .3f;
+	private float displayInfoTime = 2f;
 
 	private static final int SCROLL_PIXEL_AMOUNT = 64;
 
@@ -104,11 +106,15 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	public synchronized void resize(int width, int height) {
-		setViewport(width, height, true);
+		setViewport(width, height, false);
 	}
 
 	@Override
 	public synchronized void addActor(Actor actor) {
+		if (fadeTime > 0f) {
+			actor.getColor().a = .1f;
+			actor.addAction(Actions.fadeIn(fadeTime));
+		}
 		super.addActor(actor);
 	}
 
@@ -163,7 +169,6 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	public synchronized void draw(SpriteBatch spriteBatch, Camera camera,
 			boolean debug) {
-		getCamera().update();
 		try {
 			// draw onto OUR spriteBatch!!!
 			if (getRoot().getChildren().size == 1
@@ -201,7 +206,9 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	public Matrix4 projectionMatrix(Camera camera) {
-		return camera.view;
+		if (getActors().size > 0)
+			getCamera().update();
+		return getCamera().combined;
 	}
 
 	@Override
@@ -413,18 +420,28 @@ public class ActorsOnStageService extends Stage implements GameService,
 	private void computeTouchPoint(Actor a, Vector2 point) {
 		point.set(a.getWidth() * .5f, a.getHeight() * .5f);
 		a.localToStageCoordinates(point);
-		screenToStageCoordinates(point);
+		point.set(point.x * Gdx.graphics.getWidth() / getWidth(),
+				(getHeight() - point.y) * Gdx.graphics.getHeight()
+						/ getHeight());
 	}
 
 	public synchronized void fadeOutAllActors() {
 		if (fadeTime > 0) {
-			for (Actor a2 : getActors()) {
-				a2.addAction(Actions.sequence(Actions.fadeOut(fadeTime),
-						Actions.removeActor()));
+			Array<Actor> aa = getActors();
+			ActorFocusUtil.disableRecursive(aa);
+			for (int i = aa.size - 1; i > -1; i--) {
+				aa.get(i).addAction(
+						Actions.sequence(Actions.fadeOut(fadeTime), Actions
+								.removeActor()));
 			}
 		} else {
 			clear();
 		}
+	}
+
+	public void center(Actor actor) {
+		actor.setX((int) (centerX() - actor.getWidth() * .5f));
+		actor.setY((int) (centerY() - actor.getHeight() * .5f));
 	}
 
 	public float centerX() {
@@ -451,8 +468,55 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	@Override
 	public synchronized void dispose() {
-		clear();
-		super.dispose();
-		skinNormal.dispose();
+		try {
+			clear();
+			super.dispose();
+			skinNormal.dispose();
+			skinFocused.dispose();
+		} catch (Exception ignored) {
+		}
+	}
+
+	public void showInfoNormal(String info) {
+		showInfo(getSkinNormal(), info);
+	}
+
+	public void showInfoFocused(String info) {
+		showInfo(getSkinFocused(), info);
+	}
+
+	private void showInfo(final Skin skin, String info) {
+		try {
+			final Window w = new Window(skin);
+
+			w.setTouchable(false);
+			w.getColor().a = .1f;
+			w.addAction(Actions.sequence(Actions.fadeIn(fadeInfoTime), Actions
+					.delay(displayInfoTime, Actions.fadeOut(fadeInfoTime)),
+					Actions.removeActor()));
+			w.add(info);
+
+			w.pack();
+			center(w);
+			addActor(w);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void setDisplayInfoTime(float displayInfoTime) {
+		this.displayInfoTime = displayInfoTime;
+	}
+
+	public float getDisplayInfoTime() {
+		return displayInfoTime;
+	}
+
+	public void setFadeInfoTime(float fadeInfoTime) {
+		this.fadeInfoTime = fadeInfoTime;
+	}
+
+	public float getFadeInfoTime() {
+		return fadeInfoTime;
 	}
 }

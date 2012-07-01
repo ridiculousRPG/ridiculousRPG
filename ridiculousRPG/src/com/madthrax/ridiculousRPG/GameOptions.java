@@ -43,6 +43,7 @@ public class GameOptions {
 	public String scriptLanguage = "JavaScript";
 	public String[] scriptFileExtension = { ".js", ".jscript" };
 	public String initScript = "data/script/initGameEngine.js";
+	public String messageCallBackScript = "data/script/engine/messaging/defaultMessageBox.js";
 	public String uiSkinNormalConfig = "data/uiskin/skinNormal.json";
 	public String uiSkinNormalImage = "data/uiskin/skinNormal.png";
 	public String uiSkinFocusConfig = "data/uiskin/skinFocus.json";

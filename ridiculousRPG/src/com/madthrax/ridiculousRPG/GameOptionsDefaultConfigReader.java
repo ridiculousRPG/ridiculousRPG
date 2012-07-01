@@ -154,6 +154,11 @@ public class GameOptionsDefaultConfigReader {
 				options.initScript = propTmp;
 			}
 
+			propTmp = props.getProperty("MESSAGE_CALLBACK_SCRIPT");
+			if (propTmp != null && propTmp.trim().length() > 0) {
+				options.messageCallBackScript = propTmp.trim();
+			}
+
 			propTmp = props.getProperty("UI_SKIN_NORMAL");
 			if (propTmp != null && propTmp.trim().length() > 0) {
 				options.uiSkinNormalConfig = propTmp+".json";

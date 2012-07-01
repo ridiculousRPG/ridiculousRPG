@@ -664,13 +664,16 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	}
 
 	public void dispose() {
-		terminating = true;
-		if (fullscreen)
-			toggleFullscreen();
-		serviceProvider.dispose();
-		if (spriteBatch != null)
-			spriteBatch.dispose();
-		clearTmpFiles();
+		try {
+			terminating = true;
+			if (fullscreen)
+				toggleFullscreen();
+			serviceProvider.dispose();
+			if (spriteBatch != null)
+				spriteBatch.dispose();
+			clearTmpFiles();
+		} catch (Exception ignored) {
+		}
 	}
 
 	/**

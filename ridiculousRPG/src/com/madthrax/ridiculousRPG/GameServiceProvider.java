@@ -477,7 +477,10 @@ public class GameServiceProvider {
 
 	public void dispose() {
 		for (GameService service : services.values()) {
-			service.dispose();
+			try {
+				service.dispose();
+			} catch (Exception ignored) {
+			}
 		}
 		services.clear();
 		inputMultiplexer.clear();
