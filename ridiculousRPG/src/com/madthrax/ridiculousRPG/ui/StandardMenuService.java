@@ -129,6 +129,7 @@ public class StandardMenuService extends ActorsOnStageService implements
 			addActor((Actor) component);
 	}
 
+	@Override
 	public void center(Object obj) {
 		if (obj instanceof Actor) {
 			super.center((Actor) obj);

@@ -28,7 +28,7 @@ function processInput(keycode, menuService, menu) {
 function createGui(menuService, menu) {
 	i18nContainer = "engineMenuText";
 	var skin = menuService.skinNormal;
-	var w = new ui.Window(i18nText("gameovermenu.title"), skin);
+	var w = menuService.createWindow(i18nText("gameovermenu.title"), skin);
 
 	var quickload = new ui.TextButton(i18nText("gameovermenu.quickload"), skin);
 	quickload.addListener(new ClickAdapter(
@@ -71,8 +71,6 @@ function createGui(menuService, menu) {
 	w.row().fill(true, true).expand(true, false);
 	w.add(exit);
 
-	w.pack();
-	menuService.center(w);
-	menuService.addGUIcomponent(w);
-	if (desktopMode) menuService.focus(resume);
+	menuService.addActor(w);
+	if (desktopMode) menuService.focus(quickload);
 }

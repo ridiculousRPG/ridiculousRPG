@@ -35,7 +35,8 @@ function processInput(keycode, menuService, menuHandler) {
 function createGui(menuService, menuHandler) {
 	i18nContainer = "engineMenuText";
 	var skin = menuService.skinNormal;
-	var w = new ui.Window(i18nText("gamemenu.title"), skin);
+	var w = menuService.createWindow(i18nText("gamemenu.title"), 
+			0, -1, 180, 0, skin);
 
 	var resume = new ui.TextButton(i18nText("gamemenu.resume"), skin);
 	resume.addListener(new ClickAdapter(
@@ -43,17 +44,16 @@ function createGui(menuService, menuHandler) {
 			menuService.changeState(MENU_STATE_IDLE);
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
+	w.row().fill().expandX();
 	w.add(resume);
 
 	var bag = new ui.TextButton(i18nText("gamemenu.openbag"), skin);
 	bag.addListener(new ClickAdapter(
 		function (actorEv, x, y) {
-			menuService.showInfoFocused("Bag is not implemented yet.\n"
-					+ "This is an early alpha release!");
+			menuService.showInfoFocused("Bag is not implemented yet.");
 		}
 	));
-	w.row().fill(true, true).expand(true, false).padBottom(10);
+	w.row().fill().expandX().padBottom(10);
 	w.add(bag);
 
 	var quickload = new ui.TextButton(i18nText("gamemenu.quickload"), skin);
@@ -66,7 +66,7 @@ function createGui(menuService, menuHandler) {
 			}
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
+	w.row().fill().expandX();
 	w.add(quickload);
 
 	var quicksave = new ui.TextButton(i18nText("gamemenu.quicksave"), skin);
@@ -79,7 +79,7 @@ function createGui(menuService, menuHandler) {
 			}
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
+	w.row().fill().expandX();
 	w.add(quicksave);
 
 	var load = new ui.TextButton(i18nText("gamemenu.load"), skin);
@@ -88,7 +88,7 @@ function createGui(menuService, menuHandler) {
 			menuService.changeState(MENU_STATE_LOAD);
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
+	w.row().fill().expandX();
 	w.add(load);
 
 	var save = new ui.TextButton(i18nText("gamemenu.save"), skin);
@@ -97,7 +97,7 @@ function createGui(menuService, menuHandler) {
 			menuService.changeState(MENU_STATE_SAVE);
 		}
 	));
-	w.row().fill(true, true).expand(true, false).padBottom(10);
+	w.row().fill().expandX().padBottom(10);
 	w.add(save);
 
 	var toTitle = new ui.TextButton(i18nText("gamemenu.return"), skin);
@@ -106,7 +106,7 @@ function createGui(menuService, menuHandler) {
 			menuService.changeState(MENU_STATE_TITLE);
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
+	w.row().fill().expandX();
 	w.add(toTitle);
 
 	var exit = new ui.TextButton(i18nText("gamemenu.exit"), skin);
@@ -115,11 +115,18 @@ function createGui(menuService, menuHandler) {
 			$.exit();
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
+	w.row().fill().expandX();
 	w.add(exit);
 
-	w.pack();
-	w.height = menuService.height;
-	menuService.addGUIcomponent(w);
+	var toTitle = new ui.TextButton("TEST GAMEOVER", skin);
+	toTitle.addListener(new ClickAdapter(
+		function (actorEv, x, y) {
+			menuService.changeState(MENU_STATE_GAMEOVER);
+		}
+	));
+	w.row().fill().expandX().padTop(50);
+	w.add(toTitle);
+
+	menuService.addActor(w);
 	if (desktopMode) menuService.focus(resume);
 }

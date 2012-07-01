@@ -20,7 +20,7 @@ function processInput(keycode, menuService, menu) {
 function createGui(menuService, menu) {
 	i18nContainer = "engineMenuText";
 	var skin = menuService.skinNormal;
-	var w = new ui.Window(i18nText("pausemenu.title"), skin);
+	var w = menuService.createWindow(i18nText("pausemenu.title"), skin);
 
 	var resume = new ui.TextButton(i18nText("pausemenu.resume"), skin);
 	resume.addListener(new ClickAdapter(
@@ -40,8 +40,6 @@ function createGui(menuService, menu) {
 	w.row().fill(true, true).expand(true, false);
 	w.add(exit);
 
-	w.pack();
-	menuService.center(w);
-	menuService.addGUIcomponent(w);
+	menuService.addActor(w);
 	if (desktopMode) menuService.focus(resume);
 }

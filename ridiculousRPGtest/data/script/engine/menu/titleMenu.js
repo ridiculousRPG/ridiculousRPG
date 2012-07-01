@@ -28,7 +28,7 @@ function processInput(keycode, menuService, menu) {
 function createGui(menuService, menu) {
 	i18nContainer = "engineMenuText";
 	var skin = menuService.skinNormal;
-	var w = new ui.Window(i18nText("titlemenu.title"), skin);
+	var w = menuService.createWindow(i18nText("titlemenu.title"), skin);
 	var button;
 
 	var start = new ui.TextButton(i18nText("titlemenu.new"), skin);
@@ -38,7 +38,7 @@ function createGui(menuService, menu) {
 			menuService.startNewGame();
 		}
 	));
-	w.row().fill(true, true).expand(true, false).padBottom(10);
+	w.row().fill().expandX().padBottom(10);
 	w.add(start);
 
 	var resume = new ui.TextButton(i18nText("titlemenu.quickload"), skin);
@@ -51,7 +51,7 @@ function createGui(menuService, menu) {
 			}
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
+	w.row().fill().expandX();
 	w.add(resume);
 
 	button = new ui.TextButton(i18nText("titlemenu.load"), skin);
@@ -60,7 +60,7 @@ function createGui(menuService, menu) {
 			menuService.changeState(MENU_STATE_LOAD);
 		}
 	));
-	w.row().fill(true, true).expand(true, false).padBottom(10);
+	w.row().fill().expandX().padBottom(10);
 	w.add(button);
 
 	// Only useful for desktop mode
@@ -72,7 +72,7 @@ function createGui(menuService, menu) {
 				$.toggleFullscreen();
 			}
 		));
-		w.row().fill(true, true).expand(true, false);
+		w.row().fill().expandX();
 		w.add(button);
 
 		button = new ui.TextButton(i18nText("titlemenu.defaultresolution"), skin);
@@ -81,7 +81,7 @@ function createGui(menuService, menu) {
 				$.restoreDefaultResolution();
 			}
 		));
-		w.row().fill(true, true).expand(true, false);
+		w.row().fill().expandX();
 		w.add(button);
 	}
 
@@ -91,7 +91,7 @@ function createGui(menuService, menu) {
 			menuService.changeState(MENU_STATE_CHANGELANG);
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
+	w.row().fill().expandX();
 	w.add(button);
 
 	var button = new ui.TextButton(i18nText("titlemenu.exit"), skin);
@@ -100,11 +100,9 @@ function createGui(menuService, menu) {
 			$.exit();
 		}
 	));
-	w.row().fill(true, true).expand(true, false);
+	w.row().fill().expandX();
 	w.add(button);
 
-	w.pack();
-	menuService.center(w);
-	menuService.addGUIcomponent(w);
+	menuService.addActor(w);
 	if (desktopMode) menuService.focus(start);
 }

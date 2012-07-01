@@ -19,11 +19,11 @@ function processInput(keycode, menuService, menu) {
  */
 function createGui(menuService, menu) {
 	i18nContainer = "engineMenuText";
-	var width = 700;
-	var height = 480;
 
 	var skin = menuService.skinNormal;
-	var w = new ui.Window(i18nText("savemenu.title"), skin);
+	var w = menuService.createWindow(i18nText("savemenu.title"), 
+			-1, -1, 700, 480, skin).top();
+
 	// ADVANCED LIST GENERATION: listSaveFiles(int cols, int emptyTailRows, int minRows)
 	// var files = $.listSaveFiles(2, 1, 10);
 	var files = $.listSaveFiles();
@@ -76,12 +76,7 @@ function createGui(menuService, menu) {
 		}
 	}
 
-	var scroll = new ui.ScrollPane(w, skin);
-	scroll.setFadeScrollBars(false);
-	scroll.width = Math.min(width, $.screen.width);
-	scroll.height = Math.min(height, $.screen.height);
-	menuService.center(scroll);
-	menuService.addGUIcomponent(scroll);
+	menuService.addActor(w);
 	if (desktopMode) menuService.focus(quickSave);
 }
 
