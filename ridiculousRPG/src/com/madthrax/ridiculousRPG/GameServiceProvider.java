@@ -528,9 +528,9 @@ public class GameServiceProvider {
 			drawAllInternal(debug);
 		} catch (Exception e) {
 			// after an exception while drawing, spriteBatch has an undefined
-			// state,
-			// that's why we throw it away and create a new one.
-			e.printStackTrace();
+			// state, that's why we throw it away and create a new one.
+			GameBase.$error("ServiceProvider.drawAll",
+					"Error while drawing screen - continuing", e);
 			GameBase.$().rebuildSpriteBatch();
 		}
 	}
@@ -624,5 +624,17 @@ public class GameServiceProvider {
 		for (Map.Entry<String, GameService> es : unserializeIt.entrySet()) {
 			putService(es.getKey(), es.getValue());
 		}
+	}
+
+	/**
+	 * Force a attention reset. Never use this method! It's only for REALLY bad
+	 * exceptions AND you have to reset the state of the service which actually
+	 * holds the attention.
+	 */
+	public void forceTotalReset() {
+		checkFreeze(hasAttention.get(), false, false);
+		hasAttention.set(null);
+		attentionCount = 0;
+		Gdx.input.setInputProcessor(inputMultiplexer);
 	}
 }

@@ -17,6 +17,7 @@
 package com.madthrax.ridiculousRPG.ui;
 
 import javax.script.Invocable;
+import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import com.badlogic.gdx.Gdx;
@@ -71,6 +72,8 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 		this.clearTheMenu = clearTheMenu;
 		this.scriptEngine = GameBase.$scriptFactory().obtainInvocable(
 				callBackScript);
+		((ScriptEngine) this.scriptEngine).put(ScriptEngine.FILENAME,
+				callBackScript);
 	}
 
 	@Override
@@ -84,7 +87,8 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 			}
 			scriptEngine.invokeFunction("createGui", menuService, this);
 		} catch (Exception e) {
-			e.printStackTrace();
+			GameBase.$error("MenuState.createGui",
+					"Could not create GUI for requested menu", e);
 		}
 	}
 
@@ -95,7 +99,8 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 					menuService, this);
 			return (ret instanceof Boolean) && ((Boolean) ret);
 		} catch (Exception e) {
-			e.printStackTrace();
+			GameBase.$error("MenuState.processInput",
+					"Error processing input for active menu", e);
 			return false;
 		}
 	}

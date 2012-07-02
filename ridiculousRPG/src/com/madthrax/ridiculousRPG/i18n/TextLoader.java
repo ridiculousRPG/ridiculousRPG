@@ -16,6 +16,7 @@ public class TextLoader {
 	private int filesInCacheSize;
 
 	private static final String DEFAULT_EXTENSION = ".txt";
+	private static final String NULL_STRING = "";
 
 	public TextLoader(FileHandle directory, int filesInCacheSize) {
 		this.fallbackDir = directory;
@@ -39,6 +40,8 @@ public class TextLoader {
 
 	public synchronized String getText(String container, String key)
 			throws IOException {
+		if (container == null || key == null)
+			return NULL_STRING;
 
 		Properties p = i18n.get(container);
 		if (p == null && !container.endsWith(DEFAULT_EXTENSION))

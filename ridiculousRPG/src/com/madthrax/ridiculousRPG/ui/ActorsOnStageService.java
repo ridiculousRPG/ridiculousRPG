@@ -22,6 +22,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
@@ -36,6 +37,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.esotericsoftware.tablelayout.BaseTableLayout.Debug;
 import com.madthrax.ridiculousRPG.GameBase;
@@ -43,6 +46,8 @@ import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.ResizeListener;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader;
+import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
 /**
  * @author Alexander Baumgartner
@@ -60,6 +65,8 @@ public class ActorsOnStageService extends Stage implements GameService,
 	private float fadeTime;
 	private float fadeInfoTime = .3f;
 	private float displayInfoTime = 2f;
+	private Array<TextureRegionRef> managedDrawables = new Array<TextureRegionRef>();
+	private boolean dirty, fadingOut;
 
 	private static final int SCROLL_PIXEL_AMOUNT = 64;
 
@@ -72,6 +79,72 @@ public class ActorsOnStageService extends Stage implements GameService,
 		skinFocused = new Skin(Gdx.files
 				.internal(GameBase.$options().uiSkinFocusConfig), Gdx.files
 				.internal(GameBase.$options().uiSkinFocusImage));
+	}
+
+	/**
+	 * Creates a {@link com.badlogic.gdx.scenes.scene2d.utils.Drawable Drawable}
+	 * object, which will automatically be disposed when no more actors are on
+	 * the stage. A 9 patch will be generated if possible.
+	 * 
+	 * @param internalPath
+	 * @return A {@link com.badlogic.gdx.scenes.scene2d.utils.Drawable Drawable}
+	 *         object, which can be used to skin a plain table.
+	 */
+	public com.badlogic.gdx.scenes.scene2d.utils.Drawable createDrawable(
+			String internalPath) {
+		return createDrawable(internalPath, true);
+	}
+
+	/**
+	 * Creates a {@link com.badlogic.gdx.scenes.scene2d.utils.Drawable Drawable}
+	 * object, which will automatically be disposed when no more actors are on
+	 * the stage.
+	 * 
+	 * @param internalPath
+	 * @param auto9patch
+	 *            Generate 9 patch if possible
+	 * @return A {@link com.badlogic.gdx.scenes.scene2d.utils.Drawable Drawable}
+	 *         object, which can be used to skin a plain table.
+	 */
+	public com.badlogic.gdx.scenes.scene2d.utils.Drawable createDrawable(
+			String internalPath, boolean auto9patch) {
+		return createDrawable(TextureRegionLoader.load(internalPath),
+				auto9patch, true);
+	}
+
+	/**
+	 * Creates a {@link com.badlogic.gdx.scenes.scene2d.utils.Drawable Drawable}
+	 * object, which will automatically be disposed when no more actors are on
+	 * the stage and autoFree=true is set.
+	 * 
+	 * @param tRef
+	 *            The texture to use for generating the
+	 *            {@link com.badlogic.gdx.scenes.scene2d.utils.Drawable
+	 *            Drawable}
+	 * @param auto9patch
+	 *            Generate 9 patch if possible
+	 * @param autoFree
+	 *            Auto-dispose when no more actors are on the stage
+	 * @return A {@link com.badlogic.gdx.scenes.scene2d.utils.Drawable Drawable}
+	 *         object, which can be used to skin a plain table.
+	 */
+	public com.badlogic.gdx.scenes.scene2d.utils.Drawable createDrawable(
+			TextureRegionRef tRef, boolean auto9patch, boolean autoFree) {
+		if (autoFree) {
+			synchronized (this) {
+				dirty = true;
+			}
+			managedDrawables.add(tRef);
+		}
+
+		if (auto9patch && tRef.getRegionWidth() >= 3
+				&& tRef.getRegionHeight() >= 3) {
+			int w = (tRef.getRegionWidth() - 1) / 2;
+			int h = (tRef.getRegionHeight() - 1) / 2;
+			NinePatch np = new NinePatch(tRef, w, w, h, h);
+			return new NinePatchDrawable(np);
+		}
+		return new TextureRegionDrawable(tRef);
 	}
 
 	/**
@@ -156,12 +229,12 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	/**
-	 * Sets the fading time which is used if the actors are removed by
+	 * Sets the fadingOut time which is used if the actors are removed by
 	 * {@link #closeOnAction}. This value is only useful if
 	 * {@link #closeOnAction} is set to true.
 	 * 
 	 * @param fadeTime
-	 *            the fading time when close is requested
+	 *            the fadingOut time when close is requested
 	 */
 	public void setFadeTime(float fadeTime) {
 		this.fadeTime = fadeTime;
@@ -174,6 +247,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 	@Override
 	public synchronized void clear() {
 		super.clear();
+		disposeDrawables();
 	}
 
 	// @Override
@@ -188,27 +262,32 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	public synchronized void draw(SpriteBatch spriteBatch, Camera camera,
 			boolean debug) {
-		try {
-			// draw onto OUR spriteBatch!!!
-			if (getRoot().getChildren().size == 1
-					&& getRoot().getChildren().get(0) instanceof ScrollPane) {
-				((ScrollPane) getRoot().getChildren().get(0)).getChildren()
-						.get(0).setY(0);
+		if (getActors().size == 0) {
+			fadingOut = false;
+			if (!dirty && managedDrawables.size > 0)
+				disposeDrawables();
+		} else {
+			try {
+				// draw onto OUR spriteBatch!!!
+				getRoot().draw(spriteBatch, 1f);
+				if (debug) {
+					debugTableLayout(getActors());
+					Table.drawDebug(this);
+				}
+				if (!fadingOut)
+					dirty = false;
+			} catch (Exception e) {
+				GameBase.$error("StageService.draw",
+						"Error drawing the stage onto the screen", e);
+				clear();
 			}
-			getRoot().draw(spriteBatch, 1f);
-			if (debug) {
-				debugTableLayout(getActors());
-			}
-		} catch (RuntimeException e) {
-			clear();
-			throw e;
 		}
 	}
 
 	private void debugTableLayout(Array<Actor> actors) {
 		if (actors == null)
 			return;
-		for (int i = 0, n = actors.size; i < n; i++) {
+		for (int i = actors.size - 1; i > -1; i--) {
 			Actor a = actors.get(i);
 			if (a instanceof Table) {
 				Table tbl = (Table) a;
@@ -221,7 +300,6 @@ public class ActorsOnStageService extends Stage implements GameService,
 				debugTableLayout(((Group) a).getChildren());
 			}
 		}
-		Table.drawDebug(this);
 	}
 
 	public Matrix4 projectionMatrix(Camera camera) {
@@ -266,6 +344,9 @@ public class ActorsOnStageService extends Stage implements GameService,
 		if (!consumed && !awaitingKeyUp) {
 			switch (keycode) {
 			case Keys.SPACE:
+				if (focusedActor != null)
+					break;
+				// else fall through
 			case Keys.ENTER:
 				return (awaitingKeyUp = actionKeyPressed(true));
 			case Keys.ESCAPE:
@@ -336,15 +417,17 @@ public class ActorsOnStageService extends Stage implements GameService,
 		return consumed;
 	}
 
-	public static void changeSkin(Actor actor, Skin newSikn) {
+	public static void changeSkin(Actor actor, Skin newSkin) {
 		try {
 			Class<?> c = ActorFocusUtil.styleGetter(actor.getClass())
 					.getReturnType();
 			Method m = ActorFocusUtil.styleSetter(actor.getClass(), c);
 			if (m != null)
-				m.invoke(actor, newSikn.getStyle(c));
+				m.invoke(actor, newSkin.getStyle(c));
 		} catch (Exception e) {
-			e.printStackTrace();
+			GameBase.$error("Actor.changeSkin",
+					"Could not assign new skin for Actor "
+							+ actor.getClass().getName(), e);
 		}
 	}
 
@@ -354,6 +437,9 @@ public class ActorsOnStageService extends Stage implements GameService,
 		} else if (awaitingKeyUp) {
 			switch (keycode) {
 			case Keys.SPACE:
+				if (focusedActor != null)
+					break;
+				// else fall through
 			case Keys.ENTER:
 				awaitingKeyUp = false;
 				actionKeyPressed(false);
@@ -450,6 +536,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 				a.addAction(Actions.sequence(Actions.fadeOut(fadeTime), Actions
 						.removeActor()));
 			}
+			fadingOut = true;
 		} else {
 			clear();
 		}
@@ -481,12 +568,19 @@ public class ActorsOnStageService extends Stage implements GameService,
 	@Override
 	public synchronized void dispose() {
 		try {
-			clear();
+			clear(); // calls disposeDrawables()
 			super.dispose();
 			skinNormal.dispose();
 			skinFocused.dispose();
 		} catch (Exception ignored) {
 		}
+	}
+
+	private void disposeDrawables() {
+		for (int i = managedDrawables.size - 1; i > -1; i--) {
+			managedDrawables.get(i).dispose();
+		}
+		managedDrawables.clear();
 	}
 
 	public void showInfoNormal(String info) {
@@ -510,9 +604,13 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 			w.pack();
 			center(w);
-			super.addActor(w);
+			synchronized (this) {
+				super.addActor(w);
+				fadingOut = true;
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			GameBase.$error("StageService.showInfo",
+					"Error assigning info box to stage", e);
 		}
 	}
 

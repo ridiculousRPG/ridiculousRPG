@@ -5,6 +5,7 @@ import java.io.Serializable;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
+import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.service.Computable;
 import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.ResizeListener;
@@ -46,6 +47,6 @@ public abstract class EffectLayer implements Disposable, Computable, Drawable,
 	 */
 	@Override
 	public Matrix4 projectionMatrix(Camera camera) {
-		throw new RuntimeException("Not implemented for EffectLayer");
+		return GameBase.$().getCamera().projection;
 	}
 }

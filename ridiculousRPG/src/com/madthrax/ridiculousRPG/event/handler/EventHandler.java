@@ -18,8 +18,6 @@ package com.madthrax.ridiculousRPG.event.handler;
 
 import java.io.Serializable;
 
-import javax.script.ScriptException;
-
 import com.badlogic.gdx.utils.Disposable;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.util.ObjectState;
@@ -40,8 +38,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 *            The event which triggered this touch (most likely the player)
 	 * @return true if the input has been consumed
 	 */
-	public boolean onTouch(EventObject eventSelf, EventObject eventTrigger)
-			throws ScriptException;
+	public boolean onTouch(EventObject eventSelf, EventObject eventTrigger);
 
 	/**
 	 * This method is called if the event is touchable and an push event
@@ -53,8 +50,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 *            The event which triggered this push (most likely the player)
 	 * @return true if the input has been consumed
 	 */
-	public boolean onPush(EventObject eventSelf, EventObject eventTrigger)
-			throws ScriptException;
+	public boolean onPush(EventObject eventSelf, EventObject eventTrigger);
 
 	/**
 	 * This method is called if the events timer is running. It's your
@@ -68,8 +64,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 * @return true if the input has been consumed
 	 * @see #getActualState()
 	 */
-	public boolean onTimer(EventObject eventSelf, float deltaTime)
-			throws ScriptException;
+	public boolean onTimer(EventObject eventSelf, float deltaTime);
 
 	/**
 	 * This method is not called by the engines default implementation. You can
@@ -82,8 +77,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 * @return true if the custom event ate up this triggerId
 	 * @see #getActualState()
 	 */
-	public boolean onCustomTrigger(EventObject eventSelf, int triggerId)
-			throws ScriptException;
+	public boolean onCustomTrigger(EventObject eventSelf, int triggerId);
 
 	/**
 	 * @return the actual state of this object
@@ -103,7 +97,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 * 
 	 * @param eventSelf
 	 */
-	public void onLoad(EventObject eventSelf) throws ScriptException;
+	public void onLoad(EventObject eventSelf);
 
 	/**
 	 * Initializes the event handler. For example compiles (and executes

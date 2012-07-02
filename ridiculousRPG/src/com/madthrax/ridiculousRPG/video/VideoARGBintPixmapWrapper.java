@@ -26,6 +26,7 @@ import java.nio.IntBuffer;
 import java.util.Hashtable;
 
 import com.badlogic.gdx.graphics.Pixmap;
+import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.pixelwrap.GraphicsPixmapWrapper;
 
 /**
@@ -149,7 +150,8 @@ public class VideoARGBintPixmapWrapper extends GraphicsPixmapWrapper implements
 				pixmap.shiftARGBtoRGBA();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			GameBase.$error("PixmapWrapper.shiftARGBtoRGBA",
+					"Error while shifting pixels to Pixmap", e);
 		}
 	}
 

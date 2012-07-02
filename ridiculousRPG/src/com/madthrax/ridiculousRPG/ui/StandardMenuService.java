@@ -41,15 +41,8 @@ public class StandardMenuService extends ActorsOnStageService implements
 
 	@Override
 	public boolean keyUp(int keycode) {
-		try {
-			return (activeState != null && activeState.processInput(keycode,
-					this))
-					|| super.keyUp(keycode);
-		} catch (Exception e) {
-			e.printStackTrace();
-			showInfoFocused("ERROR: " + e.getMessage() + " (See log)");
-			return false;
-		}
+		return (activeState != null && activeState.processInput(keycode, this))
+				|| super.keyUp(keycode);
 	}
 
 	/**
@@ -79,8 +72,15 @@ public class StandardMenuService extends ActorsOnStageService implements
 		}
 		if (activeState != null && activeState.isFreezeTheWorld()
 				&& !GameBase.$serviceProvider().releaseAttention(this)) {
-			throw new RuntimeException(
-					"Oooops, couldn't release the attention. Something got terribly wrong!");
+			GameBase.$error("MenuService.changeState",
+					"Failed to change the menu state",
+					new IllegalStateException("Oooops, couldn't release the "
+							+ "attention. Something got terribly wrong!"));
+			GameBase.$serviceProvider().forceTotalReset();
+			clear();
+			activeState.freeResources();
+			activeState = null;
+			return false;
 		}
 		if (newState == null) {
 			if (dirty)
@@ -104,13 +104,7 @@ public class StandardMenuService extends ActorsOnStageService implements
 				ActorFocusUtil.disableRecursive(getActors());
 			}
 			newState.freeResources();
-			try {
-				newState.createGui(this);
-			} catch (Exception e) {
-				e.printStackTrace();
-				showInfoFocused("ERROR: " + e.getMessage() + " (See log)");
-				return false;
-			}
+			newState.createGui(this);
 		}
 		if (activeState != newState) {
 			lastState[incLastStateCount()] = activeState;

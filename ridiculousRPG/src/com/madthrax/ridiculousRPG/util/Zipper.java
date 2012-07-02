@@ -29,6 +29,7 @@ import java.util.zip.ZipOutputStream;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
+import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
 /**
@@ -115,7 +116,8 @@ public class Zipper {
 			pix.dispose();
 			return tRef;
 		} catch (Exception e) {
-			e.printStackTrace();
+			GameBase.$error("Zipper.extractCIM",
+					"Failed to extract texture from compressed file", e);
 			return null;
 		}
 	}

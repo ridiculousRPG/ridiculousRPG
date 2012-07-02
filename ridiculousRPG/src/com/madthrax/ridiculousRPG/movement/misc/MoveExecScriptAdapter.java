@@ -53,8 +53,8 @@ public class MoveExecScriptAdapter extends MovementHandler {
 		try {
 			GameBase.$().eval(script);
 		} catch (Exception e) {
-			// eat all exceptions and print them out onto the shell
-			e.printStackTrace();
+			GameBase.$error("MoveExecScriptAdapter.eval",
+					"Could not evaluate move-script for " + movable, e);
 		}
 		finished = true;
 	}

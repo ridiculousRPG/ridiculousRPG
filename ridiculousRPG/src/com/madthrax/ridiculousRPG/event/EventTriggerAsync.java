@@ -18,8 +18,6 @@ package com.madthrax.ridiculousRPG.event;
 
 import java.util.List;
 
-import javax.script.ScriptException;
-
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
 
@@ -51,25 +49,23 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 				try {
 					wait();
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					GameBase.$info("EventTriggerAsync.interrupt",
+							"The EventTrigger thread has been interrupted - continuing", e);
+					continue;
 				}
 			}
 			if (disposed)
 				return;
 			float deltaTime = this.deltaTime;
 			this.deltaTime = 0f;
-			try {
-				callEventHandler(deltaTime, events, actionKeyDown);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+
+			callEventHandler(deltaTime, events, actionKeyDown);
 		}
 	}
 
 	// Call all event handler
 	private void callEventHandler(float deltaTime,
-			List<EventObject> dynamicRegions, boolean actionKeyDown)
-			throws ScriptException {
+			List<EventObject> dynamicRegions, boolean actionKeyDown) {
 		EventObject obj1;
 		EventObject obj2;
 		int i, j;

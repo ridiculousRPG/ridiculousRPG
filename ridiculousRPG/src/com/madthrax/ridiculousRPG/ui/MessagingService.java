@@ -22,6 +22,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import javax.script.Invocable;
+import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import com.badlogic.gdx.Gdx;
@@ -55,6 +56,7 @@ public class MessagingService extends ActorsOnStageService implements
 	private Rectangle boxPosition;
 	private String title;
 	private String callBackScript;
+	private String callBackFunction = "drawMessageBox";
 	private boolean allowNull = true;
 
 	private transient Invocable scriptEngine;
@@ -86,6 +88,7 @@ public class MessagingService extends ActorsOnStageService implements
 		callBackScript = scriptPath;
 		scriptEngine = GameBase.$scriptFactory().obtainInvocable(
 				GameBase.$scriptFactory().loadScript(scriptPath));
+		((ScriptEngine) scriptEngine).put(ScriptEngine.FILENAME, scriptPath);
 	}
 
 	public void setAllowNull(boolean allowNull) {
@@ -221,11 +224,12 @@ public class MessagingService extends ActorsOnStageService implements
 
 			resultPointer[0] = null;
 			try {
-				scriptEngine.invokeFunction("drawMessageBox", this, title,
+				scriptEngine.invokeFunction(callBackFunction, this, title,
 						face, lines, boxPosition, pictures.values());
 			} catch (Exception e) {
-				e.printStackTrace();
-				showInfoFocused("ERROR: " + e.getMessage() + " (See log)");
+				GameBase.$error("MessagingService." + callBackFunction,
+						"Error processing message callback function "
+								+ callBackFunction, e);
 			}
 
 			lines.clear();
@@ -233,8 +237,13 @@ public class MessagingService extends ActorsOnStageService implements
 			while (resultPointer[0] == null && getActors().size > 0 && !dispose)
 				Thread.yield();
 			if (!GameBase.$serviceProvider().releaseAttention(this)) {
-				throw new RuntimeException(
-						"Something got terribly wrong! This should never happen!");
+				GameBase.$error("MessagingService.commit",
+						"Failed to release attention",
+						new IllegalStateException(
+								"Oooops, couldn't release the attention. "
+										+ "Something got terribly wrong!"));
+				GameBase.$serviceProvider().forceTotalReset();
+				clear();
 			}
 			fadeOutAllActors();
 			setAllowNull(true);
@@ -251,6 +260,10 @@ public class MessagingService extends ActorsOnStageService implements
 
 	public interface Message {
 		public Actor getActor();
+
+		public void setText(String text);
+
+		public String getText();
 	}
 
 	@Override
@@ -327,6 +340,14 @@ public class MessagingService extends ActorsOnStageService implements
 			});
 			return tf;
 		}
+
+		public String getText() {
+			return text;
+		}
+
+		public void setText(String text) {
+			this.text = text;
+		}
 	}
 
 	public class MessageChoice implements Message {
@@ -350,6 +371,13 @@ public class MessagingService extends ActorsOnStageService implements
 			return tb;
 		}
 
+		public String getText() {
+			return text;
+		}
+
+		public void setText(String text) {
+			this.text = text;
+		}
 	}
 
 	public class MessageText implements Message {
@@ -365,6 +393,14 @@ public class MessagingService extends ActorsOnStageService implements
 			l.setWrap(true);
 			return l;
 		}
+
+		public String getText() {
+			return text;
+		}
+
+		public void setText(String text) {
+			this.text = text;
+		}
 	}
 
 	public static class PictureRef {
@@ -375,6 +411,7 @@ public class MessagingService extends ActorsOnStageService implements
 			x = posX;
 			y = posY;
 		}
+
 		public Image getImage() {
 			Image img = new Image(textureRegion);
 			img.setX(x);

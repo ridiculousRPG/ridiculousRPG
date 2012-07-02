@@ -37,8 +37,8 @@ import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
  * This service is capable to play video files. It's a wrapper for different
  * video players.<br>
  * At the time there exists a compatible implementation for the cortado video
- * player (see ridiculousRPGcortado).
- * The cortado video player supports the following formats:<br>
+ * player (see ridiculousRPGcortado). The cortado video player supports the
+ * following formats:<br>
  * <ul>
  * <li>Ogg Theora</li>
  * <li>Ogg Vorbis</li>
@@ -191,7 +191,8 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 			play(file.file().toURI().toURL(), bounds, projectToMap, withAudio,
 					freezeTheWorld, playTime, loop);
 		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
+			GameBase.$error("MultimediaService.play", "Failed to play '"
+					+ file.path() + "'", e);
 		}
 	}
 
@@ -238,7 +239,8 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 				this.withAudio = withAudio;
 				this.freezeTheWorld = freezeTheWorld;
 			} catch (Exception e) {
-				e.printStackTrace();
+				GameBase.$error("MultimediaService.play", "Failed to play '"
+						+ url + "'", e);
 			}
 		}
 	}

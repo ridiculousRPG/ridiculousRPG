@@ -49,7 +49,9 @@ public class ClickAdapter extends
 			else if (scriptCode != null)
 				GameBase.$().eval(scriptCode);
 		} catch (ScriptException e) {
-			throw new RuntimeException(e);
+			GameBase.$error("ClickAdapter.clicked",
+					"Error processing callback function for '"
+							+ event.getListenerActor() + "'", e);
 		}
 	}
 

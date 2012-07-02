@@ -287,7 +287,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				stateIn.close();
 				return stateMap;
 			} catch (Exception e) {
-				e.printStackTrace();
+				GameBase.$error("TiledMap.loadState",
+						"Could not load the map state from the file system", e);
 			}
 		}
 		return new HashMap<Integer, ObjectState>();
@@ -317,7 +318,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			oOut.writeObject(eventsById);
 			oOut.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			GameBase.$error("TiledMap.saveState",
+					"Could not save the map state onto the file system", e);
 		}
 	}
 
@@ -494,8 +496,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				}
 			}
 		} catch (Exception e) {
-			// Maybe it would be better to display the error
-			e.printStackTrace();
+			GameBase.$error("TiledMap.createEvent", "Could not parse property '"
+					+ key + "' for event '" + ev.name + "'", e);
 		}
 	}
 

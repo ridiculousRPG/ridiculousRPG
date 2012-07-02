@@ -23,8 +23,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 
-import javax.script.ScriptException;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -700,10 +698,14 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 *            sized png image
 	 */
 	public void changeAnimationTexture(String path) {
-		if (animation == null)
-			throw new IllegalStateException(
-					"You have to initialize the animation before changing the texture");
-		this.image = animation.setAnimationTexture(path);
+		if (animation == null) {
+			GameBase.$error("EventObject.changeAnimationTexture",
+					"Error changing animation for '" + this + "'",
+					new IllegalStateException("You have to initialize the "
+							+ "animation before changing the texture"));
+		} else {
+			this.image = animation.setAnimationTexture(path);
+		}
 	}
 
 	/**
@@ -917,7 +919,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		reachable.clear();
 	}
 
-	public void init() throws ScriptException {
+	public void init() {
 		if (eventHandler != null) {
 			eventHandler.init();
 			eventHandler.onLoad(this);
@@ -950,11 +952,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		if (effectRearPath != null) {
 			setEffectRear(effectRearPath);
 		}
-		try {
-			init();
-		} catch (ScriptException e) {
-			e.printStackTrace();
-		}
+		init();
 	}
 
 	// default values for transient variables
@@ -976,4 +974,11 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			effectRear.update(deltaTime);
 		}
 	}
+
+	@Override
+	public String toString() {
+		return "event '" + (name == null ? "id=" + id : name) + " (type="
+				+ type + ")'";
+	}
+
 }

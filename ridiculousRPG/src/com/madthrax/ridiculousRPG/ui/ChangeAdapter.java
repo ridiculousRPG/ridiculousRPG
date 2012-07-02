@@ -48,7 +48,9 @@ public class ChangeAdapter extends
 			else if (scriptCode != null)
 				GameBase.$().eval(scriptCode);
 		} catch (ScriptException e) {
-			throw new RuntimeException(e);
+			GameBase.$error("ChangeAdapter.changed",
+					"Error processing callback function for '"
+							+ event.getListenerActor() + "'", e);
 		}
 	}
 

@@ -30,6 +30,7 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledLoader;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.badlogic.gdx.tiledmappacker.TiledMapPacker;
 import com.badlogic.gdx.tools.imagepacker.TexturePacker;
+import com.madthrax.ridiculousRPG.GameBase;
 
 /**
  * @author Alexander Baumgartner
@@ -120,8 +121,9 @@ public class OnChangeMapPacker {
 				}
 				checkUpdate.close();
 			}
-		} catch (Exception noPermission) {
-			noPermission.printStackTrace();
+		} catch (Exception e) {
+			GameBase.$error("OnChangeMapPacker",
+					"Could not pack the map (maybe no write permission)", e);
 		}
 	}
 }

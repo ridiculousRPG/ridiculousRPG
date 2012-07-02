@@ -29,7 +29,8 @@ public abstract class ExecuteInMainThread implements Runnable {
 				try {
 					wait();
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					GameBase.$info("ExecuteInMainThread.interrupt",
+							"Wait interrupted - continuing", e);
 				}
 			}
 		}

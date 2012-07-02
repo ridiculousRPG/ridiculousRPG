@@ -137,8 +137,11 @@ public class CameraZoomService extends InputAdapter implements GameService,
 	 */
 	public void setZoomInterval(float zoomInterval) {
 		if (!(zoomInterval > 1f)) {
-			throw new IllegalArgumentException(
-					"The zoom interval has to be greater then 1");
+			GameBase.$error("Camera.setZoomInterval", "Zoom intervall is "
+					+ zoomInterval + " fallback to 1.1",
+					new IllegalArgumentException(
+							"The zoom interval has to be greater then 1"));
+			zoomInterval = 1.1f;
 		}
 		this.zoomInterval = zoomInterval;
 	}

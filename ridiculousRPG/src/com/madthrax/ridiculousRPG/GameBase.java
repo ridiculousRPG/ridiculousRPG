@@ -23,8 +23,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +60,6 @@ import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
-import com.madthrax.ridiculousRPG.ui.DisplayErrorService;
 import com.madthrax.ridiculousRPG.ui.MenuService;
 import com.madthrax.ridiculousRPG.util.ColorSerializable;
 import com.madthrax.ridiculousRPG.util.ExecuteInMainThread;
@@ -134,8 +131,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			i18nPath = fh.child(options.i18nDefault.substring(0, 2));
 		}
 		if (!i18nPath.exists()) {
-			Gdx.app.error("i18ndefaultmissing",
-					"The default language file is missing");
+			GameBase.$error("i18ndefaultmissing",
+					"The default language file is missing", null);
 		}
 		i18n = new TextLoader(i18nPath, 5);
 		setLanguage(Locale.getDefault());
@@ -148,19 +145,21 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			scriptFactory.evalAllScripts(getSharedEngine(),
 					GameBase.$options().initScript, false);
 		} catch (Exception e) {
-			e.printStackTrace();
-			StringWriter stackTrace = new StringWriter();
-			e.printStackTrace(new PrintWriter(stackTrace));
-			serviceProvider.dispose();
-			String msg = "The following error occured while initializing the game:\n"
-					+ e.getMessage() + "\n\n" + stackTrace;
-			serviceProvider.requestAttention(new DisplayErrorService(msg),
-					true, true);
+			GameBase.$error("GameBase.create",
+					"Error occured while initializing the game", e);
 		}
 
 		// restore last display mode
 		loadUserContext();
 		camera.update();
+	}
+
+	public static void $error(String tag, String message, Exception ex) {
+		Gdx.app.error(tag, message, ex);
+	}
+
+	public static void $info(String tag, String message, Exception ex) {
+		Gdx.app.log(tag, message, ex);
 	}
 
 	public String getText(String container, String key) throws IOException {
@@ -318,14 +317,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			Thread.yield();
 			serviceProvider.drawAll(options.debug);
 		} catch (Exception e) {
-			e.printStackTrace();
-			StringWriter stackTrace = new StringWriter();
-			e.printStackTrace(new PrintWriter(stackTrace));
-			serviceProvider.dispose();
-			String msg = "The following error occured while executing the game:\n"
-					+ e.getMessage() + "\n\n" + stackTrace;
-			serviceProvider.requestAttention(new DisplayErrorService(msg),
-					true, true);
+			GameBase.$error("GameBase.render",
+					"Error occured while executing the game", e);
 		}
 		Thread.yield();
 	}
@@ -405,7 +398,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 * 
 	 * @return A script engine instance
 	 */
-	protected ScriptEngine getSharedEngine() {
+	public ScriptEngine getSharedEngine() {
 		if (sharedEngine == null) {
 			sharedEngine = getScriptFactory().obtainEngine();
 		}
@@ -858,7 +851,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			oOut.writeObject(i18n.getDirectory().path());
 			oOut.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			GameBase.$info("GameBase.saveUserContext",
+					"Error occured while saving the user context", e);
 		}
 	}
 
@@ -879,7 +873,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 							(int) newScreen.height, true);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				GameBase.$info("GameBase.loadUserContext",
+						"Error occured while loading the user context", e);
 			}
 		}
 	}
@@ -925,7 +920,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 				clearTmpFiles();
 				return exitForced;
 			} catch (Exception e) {
-				e.printStackTrace();
+				GameBase.$info("GameBase.lastExitForced",
+						"Error occured while verifying the last exit state", e);
 			}
 		}
 		return false;
@@ -954,7 +950,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			Zipper.zip($tmpPath(), getSaveFile(fileNumber));
 			return true;
 		} catch (IOException e) {
-			e.printStackTrace();
+			GameBase.$error("GameBase.saveFile",
+					"Error occured while saving the game", e);
 		}
 		return false;
 	}
@@ -1149,7 +1146,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 				serviceProvider.resize((int) screen.width, (int) screen.height);
 				return true;
 			} catch (Exception e) {
-				e.printStackTrace();
+				GameBase.$error("GameBase.loadFile",
+						"Error occured while loading the game", e);
 			}
 		}
 		return false;

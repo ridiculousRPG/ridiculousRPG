@@ -22,6 +22,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.GameServiceProvider;
@@ -131,28 +132,27 @@ public abstract class DisplayPlainTextService extends GameServiceDefaultImpl
 	public BitmapFontCache addMessage(CharSequence text, float color,
 			Alignment horizontalAlign, Alignment verticalAlign, float padding,
 			float wrapWidth, boolean forceRemove) {
-		float x = padding, y = GameBase.$().getScreen().height - padding;
+		Rectangle $screen = GameBase.$().getScreen();
+		float x = padding, y = $screen.height - padding;
 		BitmapFontCache bfc = createMsg(text, color, 0f, 0f, wrapWidth);
 		TextBounds b = bfc.getBounds();
 
 		if (horizontalAlign == Alignment.CENTER)
-			x = (GameBase.$().getScreen().width - b.width) * .5f;
+			x = ($screen.width - b.width) * .5f;
 		else if (horizontalAlign == Alignment.RIGHT)
-			x = GameBase.$().getScreen().width - b.width - padding;
+			x = $screen.width - b.width - padding;
 
 		if (verticalAlign == Alignment.CENTER)
-			y = GameBase.$().getScreen().height
-					- (GameBase.$().getScreen().height - b.height) * .5f;
+			y = $screen.height - ($screen.height - b.height) * .5f;
 		else if (verticalAlign == Alignment.BOTTOM)
 			y = b.height + padding;
 
-		if (wrapWidth == 0f
-				&& projectionMatrix(GameBase.$().getCamera()) == GameBase.$()
-						.getCamera().view) {
+		Camera cam = GameBase.$().getCamera();
+		if (projectionMatrix(cam) == cam.view) {
 			if (x < 0f)
 				x = 0f;
-			if (y > GameBase.$().getScreen().height)
-				y = GameBase.$().getScreen().height;
+			if (y < 0f)
+				y = Math.min(0, $screen.height - b.height);
 		}
 
 		bfc.setPosition(x, y);

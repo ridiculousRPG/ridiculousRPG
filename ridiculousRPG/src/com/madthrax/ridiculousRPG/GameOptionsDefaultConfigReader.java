@@ -18,8 +18,6 @@ package com.madthrax.ridiculousRPG;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.util.Properties;
 
@@ -147,7 +145,8 @@ public class GameOptionsDefaultConfigReader {
 						.newInstance();
 			}
 			options.scriptFactory.setScriptLanguage(options.scriptLanguage);
-			options.scriptFactory.setScriptFileExtension(options.scriptFileExtension);
+			options.scriptFactory
+					.setScriptFileExtension(options.scriptFileExtension);
 
 			propTmp = props.getProperty("INIT_SCRIPT");
 			if (propTmp != null && propTmp.trim().length() > 0) {
@@ -161,19 +160,19 @@ public class GameOptionsDefaultConfigReader {
 
 			propTmp = props.getProperty("UI_SKIN_NORMAL");
 			if (propTmp != null && propTmp.trim().length() > 0) {
-				options.uiSkinNormalConfig = propTmp+".json";
-				options.uiSkinNormalImage = propTmp+".png";
+				options.uiSkinNormalConfig = propTmp + ".json";
+				options.uiSkinNormalImage = propTmp + ".png";
 			}
 
 			propTmp = props.getProperty("UI_SKIN_FOCUS");
 			if (propTmp != null && propTmp.trim().length() > 0) {
-				options.uiSkinFocusConfig = propTmp+".json";
-				options.uiSkinFocusImage = propTmp+".png";
+				options.uiSkinFocusConfig = propTmp + ".json";
+				options.uiSkinFocusImage = propTmp + ".png";
 			}
 		} catch (Exception e) {
+			System.err.println("Could not load file '" + iniFile.getPath()
+					+ "' - Fallback to default options!");
 			e.printStackTrace();
-			StringWriter stackTrace = new StringWriter();
-			e.printStackTrace(new PrintWriter(stackTrace));
 		}
 	}
 }

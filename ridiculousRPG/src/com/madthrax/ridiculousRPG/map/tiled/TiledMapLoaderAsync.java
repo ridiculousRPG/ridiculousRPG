@@ -56,7 +56,8 @@ public class TiledMapLoaderAsync extends Thread implements
 				try {
 					wait();
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					GameBase.$info("MapLoaderAsync.interrupt",
+							"Loader thread interrupted - continuing", e);
 				}
 			}
 			if (map != null) {
@@ -92,7 +93,8 @@ public class TiledMapLoaderAsync extends Thread implements
 			try {
 				wait();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				GameBase.$info("MapLoaderAsync.interrupt",
+						"Loader thread interrupted - continuing", e);
 			}
 		}
 		this.loadMapPath = tmxPath;
@@ -114,7 +116,8 @@ public class TiledMapLoaderAsync extends Thread implements
 					try {
 						wait();
 					} catch (InterruptedException e) {
-						e.printStackTrace();
+						GameBase.$info("MapLoaderAsync.interrupt",
+								"Loader thread interrupted - continuing", e);
 					}
 				}
 				if (loadException != null)
@@ -145,7 +148,8 @@ public class TiledMapLoaderAsync extends Thread implements
 			try {
 				wait();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				GameBase.$info("MapLoaderAsync.interrupt",
+						"Loader thread interrupted - continuing", e);
 			}
 		}
 		this.disposeMap = disposeMap;

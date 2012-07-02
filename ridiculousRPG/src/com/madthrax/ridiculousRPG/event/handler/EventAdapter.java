@@ -16,8 +16,6 @@
 
 package com.madthrax.ridiculousRPG.event.handler;
 
-import javax.script.ScriptException;
-
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.util.ObjectState;
 
@@ -32,27 +30,22 @@ public class EventAdapter implements EventHandler {
 
 	private ObjectState myState = new ObjectState();
 
-	public boolean onTouch(EventObject eventSelf, EventObject eventTrigger)
-			throws ScriptException {
+	public boolean onTouch(EventObject eventSelf, EventObject eventTrigger) {
 		return false;
 	}
 
-	public boolean onPush(EventObject eventSelf, EventObject eventTrigger)
-			throws ScriptException {
-		System.out.println("push " + eventSelf.name);
+	public boolean onPush(EventObject eventSelf, EventObject eventTrigger) {
 		return false;
 	}
 
-	public void onLoad(EventObject eventSelf) throws ScriptException {
+	public void onLoad(EventObject eventSelf) {
 	}
 
-	public boolean onCustomTrigger(EventObject eventSelf, int triggerId)
-			throws ScriptException {
+	public boolean onCustomTrigger(EventObject eventSelf, int triggerId) {
 		return false;
 	}
 
-	public boolean onTimer(EventObject eventSelf, float deltaTime)
-			throws ScriptException {
+	public boolean onTimer(EventObject eventSelf, float deltaTime) {
 		return false;
 	}
 

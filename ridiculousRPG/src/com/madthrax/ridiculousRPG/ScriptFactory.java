@@ -20,6 +20,7 @@ import java.util.SortedMap;
 
 import javax.script.Bindings;
 import javax.script.Invocable;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -137,16 +138,23 @@ public class ScriptFactory {
 				}
 				return count;
 			} else if (bindings == null) {
+				engine.getBindings(ScriptContext.ENGINE_SCOPE).put(
+						ScriptEngine.FILENAME, path.path());
 				engine.eval(path.readString(GameBase.$options().encoding));
+				engine.getBindings(ScriptContext.ENGINE_SCOPE).remove(
+						ScriptEngine.FILENAME);
 				return 1;
 			} else {
+				bindings.put(ScriptEngine.FILENAME, path.path());
 				engine.eval(path.readString(GameBase.$options().encoding),
 						bindings);
+				bindings.remove(ScriptEngine.FILENAME);
 				return 1;
 			}
 		} catch (ScriptException e) {
-			System.err.println("Problem evaluating script file " + path.path());
-			throw new RuntimeException(e);
+			GameBase.$error("ScriptFactory.evalAllScripts",
+					"Problem evaluating script file " + path.path(), e);
+			return 0;
 		}
 	}
 
@@ -184,7 +192,8 @@ public class ScriptFactory {
 				return fh.readString(GameBase.$options().encoding);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			GameBase.$error("ScriptFactory.loadScript", "Failed to load script",
+					e);
 		}
 		return scriptCodeOrPath;
 	}
