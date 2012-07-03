@@ -25,9 +25,9 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Array;
+import com.madthrax.ridiculousRPG.event.EventActor;
 
 /**
  * This class offers some static methods to change the keyboard focused actor.<br>
@@ -85,9 +85,9 @@ public final class ActorFocusUtil {
 						return focus(a, true, stage);
 				} else if (aY1 >= fY2 || (aX2 <= fX1 && aY1 < fY2 && aY2 > fY1))
 					return focus(a, true, stage);
-			} else if (a instanceof WidgetGroup) {
-				if (tryFocusPrevChild(focused, up, left, stage,
-						((WidgetGroup) a).getChildren())) {
+			} else if (a instanceof Group) {
+				if (tryFocusPrevChild(focused, up, left, stage, ((Group) a)
+						.getChildren())) {
 					return true;
 				}
 			}
@@ -140,9 +140,9 @@ public final class ActorFocusUtil {
 						return focus(a, false, stage);
 				} else if (aY2 <= fY1 || (aX1 >= fX2 && aY1 < fY2 && aY2 > fY1))
 					return focus(a, false, stage);
-			} else if (a instanceof WidgetGroup) {
-				if (tryFocusNextChild(focused, down, right, stage,
-						((WidgetGroup) a).getChildren())) {
+			} else if (a instanceof Group) {
+				if (tryFocusNextChild(focused, down, right, stage, ((Group) a)
+						.getChildren())) {
 					return true;
 				}
 			}
@@ -230,7 +230,7 @@ public final class ActorFocusUtil {
 		return a.isTouchable() && a.isVisible()
 				&& styleGetter(a.getClass()) != null && !(a instanceof Label)
 				&& !(a instanceof ScrollPane) && !(a instanceof Image)
-				&& !(a instanceof Window);
+				&& !(a instanceof Window) && !(a instanceof EventActor);
 	}
 
 	public static void disableRecursive(Array<Actor> actors) {

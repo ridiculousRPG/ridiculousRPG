@@ -31,6 +31,19 @@ function createGui(menuService, menu) {
 	var w = menuService.createWindow(i18nText("titlemenu.title"), skin);
 	var button;
 
+	// create particle effect
+	var props = [
+	    "effectFront", "data/effect/particle/greenMixed.effect"
+	]
+	var particleEffect = new ridiculousRPG.event.EventActor(50, 200, props);
+	menuService.addActor(particleEffect);
+
+	var props = [
+ 	    "effectFront", "data/effect/particle/greenStars3.effect"
+ 	]
+ 	var particleEffect = new ridiculousRPG.event.EventActor($.screen.width - 100, $.screen.height - 50, props);
+ 	menuService.addActor(particleEffect);
+
 	var start = new ui.TextButton(i18nText("titlemenu.new"), skin);
 	start.addListener(new ClickAdapter(
 		function (actorEv, x, y) {

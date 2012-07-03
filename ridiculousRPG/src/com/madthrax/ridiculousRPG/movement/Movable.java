@@ -111,6 +111,19 @@ public abstract class Movable implements Serializable {
 		return touchBound.y + touchBound.height * .5f;
 	}
 
+	public void translate(float x, float y) {
+		addX(x);
+		addY(y);
+	}
+
+	public void addX(float value) {
+		touchBound.x += value;
+	}
+
+	public void addY(float value) {
+		touchBound.y += value;
+	}
+
 	/**
 	 * Returns the bottom left corner of the touchBound
 	 */

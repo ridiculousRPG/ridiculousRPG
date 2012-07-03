@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.script.ScriptException;
 
@@ -42,23 +41,17 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledObjectGroup;
 import com.badlogic.gdx.math.Rectangle;
 import com.madthrax.ridiculousRPG.DebugHelper;
 import com.madthrax.ridiculousRPG.GameBase;
-import com.madthrax.ridiculousRPG.animation.TileAnimation;
+import com.madthrax.ridiculousRPG.event.EventFactory;
 import com.madthrax.ridiculousRPG.event.EventObject;
 import com.madthrax.ridiculousRPG.event.EventTrigger;
 import com.madthrax.ridiculousRPG.event.EventTriggerAsync;
-import com.madthrax.ridiculousRPG.event.handler.EventExecScriptAdapter;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
 import com.madthrax.ridiculousRPG.map.MapLoader;
 import com.madthrax.ridiculousRPG.map.MapRenderRegion;
 import com.madthrax.ridiculousRPG.map.MapWithEvents;
-import com.madthrax.ridiculousRPG.movement.MovementHandler;
-import com.madthrax.ridiculousRPG.util.BlockingBehavior;
 import com.madthrax.ridiculousRPG.util.ExecuteInMainThread;
 import com.madthrax.ridiculousRPG.util.IntSet;
 import com.madthrax.ridiculousRPG.util.ObjectState;
-import com.madthrax.ridiculousRPG.util.Speed;
-import com.madthrax.ridiculousRPG.util.TextureRegionLoader;
-import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
 /**
  * This class represents a tiled map with events on this map.<br>
@@ -90,33 +83,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 	private static transient EventTrigger eventTrigger;
 
-	private static final char EVENT_CUSTOM_PROP_KZ = '$';
-	// the key is translated to lower case -> we are case insensitive
-	private static final String EVENT_PROP_ID = "id";
-	private static final String EVENT_PROP_DISPLAY = "display";
-	private static final String EVENT_PROP_HEIGHT = "height";
-	private static final String EVENT_PROP_OUTREACH = "outreach";
-	private static final String EVENT_PROP_ROTATION = "rotation";
-	private static final String EVENT_PROP_SCALEX = "scalex";
-	private static final String EVENT_PROP_SCALEY = "scaley";
-	private static final String EVENT_PROP_IMAGE = "image";
-	private static final String EVENT_PROP_EFFECTFRONT = "effectfront";
-	private static final String EVENT_PROP_EFFECTREAR = "effectrear";
-	private static final String EVENT_PROP_CENTERIMAGE = "centerimage";
-	private static final String EVENT_PROP_BLOCKING = "blocking";
-	private static final String EVENT_PROP_MOVEHANDLER = "movehandler";
-	private static final String EVENT_PROP_SPEED = "speed";
-	private static final String EVENT_PROP_ANIMATION = "animation";
-	private static final String EVENT_PROP_ESTIMATETOUCHBOUNDS = "estimatetouchbounds";
-	private static final String EVENT_PROP_HANDLER = "eventhandler";
-	// the following properties can not be mixed with an eventhandler
-	// which doesn't extend the EventExecScriptAdapter
-	private static final String EVENT_PROP_ONPUSH = "onpush";
-	private static final String EVENT_PROP_ONTOUCH = "ontouch";
-	private static final String EVENT_PROP_ONTIMER = "ontimer";
-	private static final String EVENT_PROP_ONCUSTOMEVENT = "oncustomevent";
-	private static final String EVENT_PROP_ONLOAD = "onload";
-
 	TiledMapWithEvents(String tmxPath) throws ScriptException {
 		TiledMap map = loadTileMap(tmxPath);
 
@@ -146,39 +112,23 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	}
 
 	private void loadStaticTiles(TiledMap map) {
-		int i;
-		int j;
-		int k;
-		int len_i;
-		int len_j;
-		int len_k;
+		int i, j, k;
+		int len_i, len_j, len_k;
 		int z;
 		ArrayList<MapRenderRegion> alTmp = new ArrayList<MapRenderRegion>(1000);
 		for (i = 0, len_i = map.layers.size(); i < len_i; i++) {
 			TiledLayer l = map.layers.get(i);
-			if ("false".equals(l.properties.get(EVENT_PROP_DISPLAY)))
+			if (EventFactory.isHidden(l.properties))
 				continue;
 			int[][] layerTiles = l.tiles;
-			String prop = l.properties.get(EVENT_PROP_HEIGHT);
-			int layer_z = 0;
-			if (prop != null && prop.length() > 0)
-				try {
-					layer_z = Integer.parseInt(prop);
-				} catch (NumberFormatException e) {
-				}
+			int layer_z = EventFactory.getZIndex(l.properties);
 			for (j = 0, len_j = layerTiles.length; j < len_j; j++) {
 				int[] row = layerTiles[j];
 				float rowY = (len_j - (j + 1)) * map.tileHeight;
 				for (k = 0, len_k = row.length; k < len_k; k++) {
 					int tile = row[k];
 					if (tile > 0) {
-						z = layer_z;
-						prop = map.getTileProperty(tile, EVENT_PROP_HEIGHT);
-						if (prop != null && prop.length() > 0)
-							try {
-								z += Integer.parseInt(prop);
-							} catch (NumberFormatException e) {
-							}
+						z = layer_z + EventFactory.getZIndex(map, tile);
 						AtlasRegion region = (AtlasRegion) atlas
 								.getRegion(tile);
 						if (region == null) {
@@ -198,30 +148,23 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	}
 
 	private void loadEvents(TiledMap map) throws ScriptException {
-		int i;
-		int j;
-		int len_i;
-		int len_j;
-		String prop;
+		int i, j, len_i, len_j;
 		EventObject ev;
 		Map<Integer, ObjectState> eventsById = loadStateFromFS();
 		for (i = 0, len_i = map.objectGroups.size(); i < len_i; i++) {
 			TiledObjectGroup group = map.objectGroups.get(i);
-			if ("false".equals(group.properties.get(EVENT_PROP_DISPLAY)))
+			if (EventFactory.isHidden(group.properties))
 				continue;
 			for (j = 0, len_j = group.objects.size(); j < len_j; j++) {
 				TiledObject object = group.objects.get(j);
-				if ("false".equals(object.properties.get(EVENT_PROP_DISPLAY)))
+				if (EventFactory.isHidden(object.properties))
 					continue;
 				ev = new EventObject(object, group, atlas, map);
 				if (object.gid > 0) {
-					prop = map.getTileProperty(object.gid, EVENT_PROP_HEIGHT);
-					if (prop != null && prop.length() > 0) {
-						ev.z += Integer.parseInt(prop);
-					}
+					ev.z += EventFactory.getZIndex(map, object.gid);
 				}
-				parseProperties(ev, group.properties);
-				parseProperties(ev, object.properties);
+				EventFactory.parseProperties(ev, group.properties);
+				EventFactory.parseProperties(ev, object.properties);
 				put(object.name, ev);
 			}
 		}
@@ -320,193 +263,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		} catch (IOException e) {
 			GameBase.$error("TiledMap.saveState",
 					"Could not save the map state onto the file system", e);
-		}
-	}
-
-	/**
-	 * Method to parse the object properties input.
-	 * 
-	 * @param ev
-	 * @param props
-	 */
-	protected void parseProperties(EventObject ev, HashMap<String, String> props) {
-		for (Entry<String, String> entry : props.entrySet()) {
-			String key = entry.getKey().trim();
-			// the libgdx homemade XmlReader of course is buggy :/
-			String val = entry.getValue().replace("&quot;", "\"").replace(
-					"&gt;", ">").replace("&lt;", "<").replace("&amp;", "&")
-					.trim();
-			if (key.length() == 0 || val.length() == 0)
-				continue;
-			if (key.charAt(0) == EVENT_CUSTOM_PROP_KZ) {
-				ev.properties.put(key, val);
-			} else {
-				parseSingleProperty(ev, key, val, props);
-			}
-		}
-	}
-
-	private void parseSingleProperty(EventObject ev, String key, String val,
-			HashMap<String, String> props) {
-		// let's be case insensitive
-		key = key.toLowerCase();
-		try {
-			if (EVENT_PROP_ID.equals(key)) {
-				ev.id = Integer.parseInt(val);
-			} else if (EVENT_PROP_HEIGHT.equals(key)) {
-				ev.z += Integer.parseInt(val);
-			} else if (EVENT_PROP_BLOCKING.equals(key)) {
-				ev.blockingBehavior = BlockingBehavior.parse(val);
-			} else if (EVENT_PROP_SPEED.equals(key)) {
-				ev.setMoveSpeed(Speed.parse(val));
-			} else if (EVENT_PROP_MOVEHANDLER.equals(key)) {
-				Object evHandler = GameBase.$().eval(val);
-				if (evHandler instanceof Class<?>) {
-					@SuppressWarnings("unchecked")
-					Class<? extends MovementHandler> clazz = (Class<? extends MovementHandler>) evHandler;
-					evHandler = clazz.getMethod("$").invoke(null);
-				}
-				if (evHandler instanceof MovementHandler) {
-					ev.setMoveHandler((MovementHandler) evHandler);
-				}
-			} else if (EVENT_PROP_OUTREACH.equals(key)) {
-				ev.outreach = Integer.parseInt(val);
-			} else if (EVENT_PROP_ROTATION.equals(key)) {
-				ev.rotation = Float.parseFloat(val);
-			} else if (EVENT_PROP_SCALEX.equals(key)) {
-				ev.scaleX = Float.parseFloat(val);
-			} else if (EVENT_PROP_SCALEY.equals(key)) {
-				ev.scaleY = Float.parseFloat(val);
-			} else if (EVENT_PROP_IMAGE.equals(key)) {
-				if (Gdx.files.internal(val).exists()) {
-					boolean estimateTouch = "true".equalsIgnoreCase(props
-							.get(EVENT_PROP_ESTIMATETOUCHBOUNDS));
-					ev.setImage(val, estimateTouch, !estimateTouch);
-					initVisibleEvent(ev, props);
-				}
-			} else if (EVENT_PROP_EFFECTFRONT.equals(key)) {
-				if (Gdx.files.internal(val).exists()) {
-					ev.setEffectFront(val);
-					if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
-						ev.z = .1f;
-					}
-				}
-			} else if (EVENT_PROP_EFFECTREAR.equals(key)) {
-				if (Gdx.files.internal(val).exists()) {
-					ev.setEffectRear(val);
-					if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
-						ev.z = .1f;
-					}
-				}
-			} else if (EVENT_PROP_ANIMATION.equals(key)) {
-				FileHandle fh = Gdx.files.internal(val);
-				if (fh.exists()) {
-					TextureRegionRef t = TextureRegionLoader.load(val);
-					TileAnimation anim = new TileAnimation(val, t
-							.getRegionWidth() / 4, t.getRegionHeight() / 4, 4,
-							4);
-					t.dispose();
-					boolean estimateTouch = "true".equalsIgnoreCase(props
-							.get(EVENT_PROP_ESTIMATETOUCHBOUNDS));
-					ev.setAnimation(anim, estimateTouch, !estimateTouch);
-					initVisibleEvent(ev, props);
-				} else {
-					Object result = GameBase.$().eval(val);
-					if (result instanceof TileAnimation) {
-						boolean estimateTouch = "true".equalsIgnoreCase(props
-								.get(EVENT_PROP_ESTIMATETOUCHBOUNDS));
-						ev.setAnimation((TileAnimation) result, estimateTouch,
-								!estimateTouch);
-						initVisibleEvent(ev, props);
-					}
-				}
-			} else if (EVENT_PROP_HANDLER.equals(key)) {
-				Object evHandler = GameBase.$().eval(val);
-				if (evHandler instanceof Class<?>) {
-					@SuppressWarnings("unchecked")
-					Class<? extends EventHandler> clazz = (Class<? extends EventHandler>) evHandler;
-					evHandler = clazz.newInstance();
-				}
-
-				// merge both event handler
-				if (evHandler instanceof EventExecScriptAdapter
-						&& ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					((EventExecScriptAdapter) evHandler)
-							.merge((EventExecScriptAdapter) ev
-									.getEventHandler());
-				} else if (evHandler instanceof EventHandler) {
-					ev.setEventHandler((EventHandler) evHandler);
-				}
-			} else if (key.startsWith(EVENT_PROP_ONPUSH)) {
-				ev.pushable = true;
-				if (ev.getEventHandler() == null) {
-					ev.setEventHandler(new EventExecScriptAdapter());
-				}
-				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_ONPUSH.length())
-							.trim();
-					((EventExecScriptAdapter) ev.getEventHandler()).execOnPush(
-							val, index.length() == 0 ? -1 : Integer
-									.parseInt(index));
-				}
-			} else if (key.startsWith(EVENT_PROP_ONTOUCH)) {
-				ev.touchable = true;
-				if (ev.getEventHandler() == null) {
-					ev.setEventHandler(new EventExecScriptAdapter());
-				}
-				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_ONTOUCH.length())
-							.trim();
-					((EventExecScriptAdapter) ev.getEventHandler())
-							.execOnTouch(val, index.length() == 0 ? -1
-									: Integer.parseInt(index));
-				}
-			} else if (key.startsWith(EVENT_PROP_ONTIMER)) {
-				if (ev.getEventHandler() == null) {
-					ev.setEventHandler(new EventExecScriptAdapter());
-				}
-				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_ONTIMER.length())
-							.trim();
-					((EventExecScriptAdapter) ev.getEventHandler())
-							.execOnTimer(val, index.length() == 0 ? -1
-									: Integer.parseInt(index));
-				}
-			} else if (key.startsWith(EVENT_PROP_ONCUSTOMEVENT)) {
-				if (ev.getEventHandler() == null) {
-					ev.setEventHandler(new EventExecScriptAdapter());
-				}
-				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(
-							EVENT_PROP_ONCUSTOMEVENT.length()).trim();
-					((EventExecScriptAdapter) ev.getEventHandler())
-							.execOnCustomTrigger(val, index.length() == 0 ? -1
-									: Integer.parseInt(index));
-				}
-			} else if (key.startsWith(EVENT_PROP_ONLOAD)) {
-				if (ev.getEventHandler() == null) {
-					ev.setEventHandler(new EventExecScriptAdapter());
-				}
-				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_ONLOAD.length())
-							.trim();
-					((EventExecScriptAdapter) ev.getEventHandler()).execOnLoad(
-							val, index.length() == 0 ? -1 : Integer
-									.parseInt(index));
-				}
-			}
-		} catch (Exception e) {
-			GameBase.$error("TiledMap.createEvent", "Could not parse property '"
-					+ key + "' for event '" + ev.name + "'", e);
-		}
-	}
-
-	private void initVisibleEvent(EventObject ev, HashMap<String, String> props) {
-		ev.visible = true;
-		if ("true".equalsIgnoreCase(props.get(EVENT_PROP_CENTERIMAGE)))
-			ev.centerDrawbound();
-		if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
-			ev.z = .1f;
 		}
 	}
 

@@ -84,15 +84,14 @@ public class StandardMenuService extends ActorsOnStageService implements
 		}
 		if (newState == null) {
 			if (dirty)
-				super.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+				setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
 			fadeOutAllActors();
 			if (activeState != null)
 				activeState.freeResources();
 		} else {
 			if (newState.isClearTheMenu()) {
 				if (dirty)
-					super.resize(Gdx.graphics.getWidth(), Gdx.graphics
-							.getHeight());
+					setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
 				fadeOutAllActors();
 				if (activeState != null && activeState != newState)
 					activeState.freeResources();
@@ -138,9 +137,9 @@ public class StandardMenuService extends ActorsOnStageService implements
 	}
 
 	@Override
-	public void resize(int width, int height) {
+	public void resizeDone(int width, int height) {
 		if (activeState != null && activeState.isClearTheMenu()) {
-			super.resize(width, height);
+			setViewport(width, height, false);
 			rebuildMenu();
 		} else {
 			dirty = true;

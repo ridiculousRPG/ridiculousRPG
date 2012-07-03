@@ -260,7 +260,7 @@ public class MessagingService extends ActorsOnStageService implements
 			} while (getActors().size > 0 && !dispose);
 
 			if (dirty)
-				super.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+				setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
 		}
 		return resultPointer[0];
 	}
@@ -274,10 +274,10 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	@Override
-	public void resize(int width, int height) {
+	public void resizeDone(int width, int height) {
 		// TODO: if (!inMutex)
 		if (getActors().size == 0) {
-			super.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+			setViewport(width, height, false);
 		} else {
 			dirty = true;
 		}

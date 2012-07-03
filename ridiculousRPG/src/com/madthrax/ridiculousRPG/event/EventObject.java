@@ -404,13 +404,13 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		}
 	}
 
-	private void addX(float value) {
-		touchBound.x += value;
+	public void addX(float value) {
+		super.addX(value);
 		setDrawbounds(drawBound.x + value, drawBound.y);
 	}
 
-	private void addY(float value) {
-		touchBound.y += value;
+	public void addY(float value) {
+		super.addY(value);
 		setDrawbounds(drawBound.x, drawBound.y + value);
 	}
 

@@ -63,12 +63,16 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	private Vector2 tmp = new Vector2();
 	private float fadeTime;
-	private float fadeInfoTime = .3f;
+	private float fadeInfoTime = .33f;
 	private float displayInfoTime = 2f;
 	private Array<TextureRegionRef> managedDrawables = new Array<TextureRegionRef>();
-	private boolean dirty, fadingOut;
+	private boolean dirty, fadingOut, resizing;
+	private float resizeCountdown = RESIZE_DELAY;
+	private int resizeWidth;
+	private int resizeHeight;
 
 	private static final int SCROLL_PIXEL_AMOUNT = 64;
+	private static final float RESIZE_DELAY = .33f;
 
 	public ActorsOnStageService() {
 		super(GameBase.$().getScreen().width, GameBase.$().getScreen().height,
@@ -181,8 +185,14 @@ public class ActorsOnStageService extends Stage implements GameService,
 		this.skinFocused = skinFocused;
 	}
 
-	public synchronized void resize(int width, int height) {
-		setViewport(width, height, false);
+	public void resize(int width, int height) {
+		resizing = true;
+		resizeCountdown = RESIZE_DELAY;
+		resizeWidth = width;
+		resizeHeight = height;
+	}
+
+	public void resizeDone(int width, int height) {
 	}
 
 	@Override
@@ -258,6 +268,15 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	public synchronized void compute(float deltaTime, boolean actionKeyDown) {
 		act(deltaTime);
+		if (resizing) {
+			if (resizeCountdown <= 0) {
+				resizing = false;
+				resizeCountdown = RESIZE_DELAY;
+				resizeDone(resizeWidth, resizeHeight);
+			} else {
+				resizeCountdown -= deltaTime;
+			}
+		}
 	}
 
 	public synchronized void draw(SpriteBatch spriteBatch, Camera camera,
@@ -274,8 +293,9 @@ public class ActorsOnStageService extends Stage implements GameService,
 					debugTableLayout(getActors());
 					Table.drawDebug(this);
 				}
-				if (!fadingOut)
+				if (!fadingOut) {
 					dirty = false;
+				}
 			} catch (Exception e) {
 				GameBase.$error("StageService.draw",
 						"Error drawing the stage onto the screen", e);

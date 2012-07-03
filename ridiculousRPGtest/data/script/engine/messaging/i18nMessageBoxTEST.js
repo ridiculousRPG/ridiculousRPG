@@ -25,7 +25,8 @@ function drawMessageBox(msgService, title, face, lines, boxPosition, pictures) {
 	var t = new ui.Table().top();
 	t.setBackground(msgService.createDrawable("data/image/customDesign/WindowBackground.png"));
 	t.setWidth($.screen.width);
-	t.setHeight($.screen.height);
+	t.setHeight(200);
+	t.setY($.screen.height-200);
 
 	// TITLE
 	t.row().fillX().expandX().pad(5);
