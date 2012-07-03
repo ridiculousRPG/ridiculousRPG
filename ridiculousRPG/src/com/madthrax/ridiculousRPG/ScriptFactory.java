@@ -127,6 +127,8 @@ public class ScriptFactory {
 	public int evalAllScripts(ScriptEngine engine, FileHandle path,
 			boolean recurse, Bindings bindings) {
 		try {
+			engine.getBindings(ScriptContext.ENGINE_SCOPE).put(
+					ScriptEngine.FILENAME, path.path());
 			if (path.isDirectory()) {
 				int count = 0;
 				for (FileHandle child : path.list()) {
@@ -138,11 +140,7 @@ public class ScriptFactory {
 				}
 				return count;
 			} else if (bindings == null) {
-				engine.getBindings(ScriptContext.ENGINE_SCOPE).put(
-						ScriptEngine.FILENAME, path.path());
 				engine.eval(path.readString(GameBase.$options().encoding));
-				engine.getBindings(ScriptContext.ENGINE_SCOPE).remove(
-						ScriptEngine.FILENAME);
 				return 1;
 			} else {
 				bindings.put(ScriptEngine.FILENAME, path.path());
@@ -155,6 +153,9 @@ public class ScriptFactory {
 			GameBase.$error("ScriptFactory.evalAllScripts",
 					"Problem evaluating script file " + path.path(), e);
 			return 0;
+		} finally {
+			engine.getBindings(ScriptContext.ENGINE_SCOPE).remove(
+					ScriptEngine.FILENAME);
 		}
 	}
 
@@ -186,14 +187,15 @@ public class ScriptFactory {
 	 * @return The script code
 	 */
 	public String loadScript(String scriptCodeOrPath) {
+		FileHandle fh = null;
 		try {
-			FileHandle fh = Gdx.files.internal(scriptCodeOrPath);
+			fh = Gdx.files.internal(scriptCodeOrPath);
 			if (fh.exists()) {
 				return fh.readString(GameBase.$options().encoding);
 			}
 		} catch (Exception e) {
-			GameBase.$error("ScriptFactory.loadScript", "Failed to load script",
-					e);
+			GameBase.$error("ScriptFactory.loadScript",
+					"Failed to load script '" + fh + "'", e);
 		}
 		return scriptCodeOrPath;
 	}
@@ -242,18 +244,33 @@ public class ScriptFactory {
 	public Invocable obtainInvocable(FileHandle scriptFileToLoad)
 			throws ScriptException {
 		return obtainInvocable(scriptFileToLoad
-				.readString(GameBase.$options().encoding));
+				.readString(GameBase.$options().encoding), scriptFileToLoad
+				.path());
 	}
 
 	public ScriptEngine obtainEngine(FileHandle scriptFileToLoad)
 			throws ScriptException {
 		return obtainEngine(scriptFileToLoad
-				.readString(GameBase.$options().encoding));
+				.readString(GameBase.$options().encoding), scriptFileToLoad
+				.path());
 	}
 
-	public Invocable obtainInvocable(CharSequence scriptToLoad)
-			throws ScriptException {
-		ScriptEngine engine = obtainEngine(scriptToLoad);
+	/**
+	 * Returns an invokable script engine with the compiled source code
+	 * 
+	 * @param scriptToLoad
+	 *            The script to load
+	 * @param nameInfoForErrorLog
+	 *            Optional parameter to provide informations about the error
+	 *            location
+	 * @return An invokable script engine
+	 * @throws ScriptException
+	 *             If the scripting language doesn't support the
+	 *             {@link Invocable} feature
+	 */
+	public Invocable obtainInvocable(CharSequence scriptToLoad,
+			String nameInfoForErrorLog) throws ScriptException {
+		ScriptEngine engine = obtainEngine(scriptToLoad, nameInfoForErrorLog);
 		if (engine instanceof Invocable) {
 			return (Invocable) engine;
 		} else {
@@ -261,9 +278,10 @@ public class ScriptFactory {
 		}
 	}
 
-	public ScriptEngine obtainEngine(CharSequence scriptToLoad)
-			throws ScriptException {
+	public ScriptEngine obtainEngine(CharSequence scriptToLoad,
+			String nameInfoForErrorLog) throws ScriptException {
 		ScriptEngine engine = obtainEngine();
+		engine.put(ScriptEngine.FILENAME, nameInfoForErrorLog);
 		engine.eval(scriptToLoad.toString());
 		return engine;
 	}

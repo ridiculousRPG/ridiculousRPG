@@ -69,25 +69,31 @@ public class MessagingService extends ActorsOnStageService implements
 
 	public static final int MARGIN = 5;
 
-	public MessagingService() throws ScriptException {
+	public MessagingService() {
 		callBackScript = GameBase.$options().messageCallBackScript;
 		init();
 	}
 
-	private void init() throws ScriptException {
+	private void init() {
 		boxPosition = new Rectangle(0, 0, 0, 200);
 		setAllowNull(allowNull);
 		setFadeTime(.15f);
 		lines = new Array<Message>();
 		pictures = new IntMap<PictureRef>();
 		resultPointer = new Object[] { null };
-		setCallBackScript(callBackScript);
+		try {
+			setCallBackScript(callBackScript);
+		} catch (ScriptException e) {
+			GameBase.$error("MessagingService.init",
+					"Error loading (compiling) callback script for messaging "
+							+ "service. File: " + callBackScript, e);
+		}
 	}
 
 	public void setCallBackScript(String scriptPath) throws ScriptException {
 		callBackScript = scriptPath;
 		scriptEngine = GameBase.$scriptFactory().obtainInvocable(
-				GameBase.$scriptFactory().loadScript(scriptPath));
+				GameBase.$scriptFactory().loadScript(scriptPath), scriptPath);
 		((ScriptEngine) scriptEngine).put(ScriptEngine.FILENAME, scriptPath);
 	}
 
@@ -224,8 +230,9 @@ public class MessagingService extends ActorsOnStageService implements
 
 			resultPointer[0] = null;
 			try {
-				scriptEngine.invokeFunction(callBackFunction, this, title,
-						face, lines, boxPosition, pictures.values());
+				if (scriptEngine != null)
+					scriptEngine.invokeFunction(callBackFunction, this, title,
+							face, lines, boxPosition, pictures.values());
 			} catch (Exception e) {
 				GameBase.$error("MessagingService." + callBackFunction,
 						"Error processing message callback function "
@@ -435,11 +442,7 @@ public class MessagingService extends ActorsOnStageService implements
 		super.setFadeInfoTime(in.readFloat());
 		super.setFadeTime(in.readFloat());
 		super.setCloseOnAction(in.readBoolean());
-		try {
-			init();
-		} catch (ScriptException e) {
-			throw new IOException(e);
-		}
+		init();
 	}
 
 	@Override

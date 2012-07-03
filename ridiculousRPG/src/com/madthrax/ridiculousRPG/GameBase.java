@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +62,7 @@ import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
+import com.madthrax.ridiculousRPG.ui.DisplayErrorService;
 import com.madthrax.ridiculousRPG.ui.MenuService;
 import com.madthrax.ridiculousRPG.util.ColorSerializable;
 import com.madthrax.ridiculousRPG.util.ExecuteInMainThread;
@@ -131,8 +134,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			i18nPath = fh.child(options.i18nDefault.substring(0, 2));
 		}
 		if (!i18nPath.exists()) {
-			GameBase.$error("i18ndefaultmissing",
-					"The default language file is missing", null);
+			GameBase.$error("GameBase.i18nmissing", "The default language "
+					+ "file is missing (invalid game.ini)", null);
 		}
 		i18n = new TextLoader(i18nPath, 5);
 		setLanguage(Locale.getDefault());
@@ -154,8 +157,13 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		camera.update();
 	}
 
-	public static void $error(String tag, String message, Exception ex) {
-		Gdx.app.error(tag, message, ex);
+	public synchronized static void $error(String tag, String message,
+			Exception e) {
+		Gdx.app.error(tag, message, e);
+		StringWriter stackTrace = new StringWriter();
+		e.printStackTrace(new PrintWriter(stackTrace));
+		String msg = "<" + tag + ">: " + message + "\n\n" + stackTrace;
+		DisplayErrorService.forceMessage(msg);
 	}
 
 	public static void $info(String tag, String message, Exception ex) {
@@ -357,9 +365,22 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	public Object eval(String script) throws ScriptException {
 		ScriptEngine sharedEngine = getSharedEngine();
 		Object result = sharedEngine
-				.eval(getScriptFactory().loadScript(script));
+				.eval(loadWithLogInfo(script, sharedEngine));
 		sharedEngine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 		return result;
+	}
+
+	private String loadWithLogInfo(String script, ScriptEngine sharedEngine) {
+		String s = getScriptFactory().loadScript(script);
+		if (s != script) {
+			sharedEngine.put(ScriptEngine.FILENAME, script);
+		} else if (sharedEngine.get(ScriptEngine.FILENAME) == null) {
+			String excerpt = script.replaceAll("\\s+", " ").trim();
+			if (excerpt.length() > 30)
+				excerpt = excerpt.substring(0, 30);
+			sharedEngine.put(ScriptEngine.FILENAME, excerpt);
+		}
+		return s;
 	}
 
 	/**
@@ -383,7 +404,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		ScriptEngine sharedEngine = getSharedEngine();
 		try {
 			if (sharedEngine instanceof Invocable) {
-				sharedEngine.eval(getScriptFactory().loadScript(script));
+				sharedEngine.eval(loadWithLogInfo(script, sharedEngine));
 				return ((Invocable) sharedEngine).invokeFunction(fncName, args);
 			} else {
 				throw new ScriptException("ScriptEngine not Invocable!");

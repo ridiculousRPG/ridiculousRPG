@@ -151,8 +151,8 @@ public abstract class DisplayPlainTextService extends GameServiceDefaultImpl
 		if (projectionMatrix(cam) == cam.view) {
 			if (x < 0f)
 				x = 0f;
-			if (y < 0f)
-				y = Math.min(0, $screen.height - b.height);
+			if (y > $screen.height)
+				y = $screen.height;
 		}
 
 		bfc.setPosition(x, y);

@@ -31,23 +31,19 @@ import com.madthrax.ridiculousRPG.service.Computable;
  */
 public class DisplayErrorService extends DisplayPlainTextService implements
 		Computable {
-	private float displayTime = 10f;
+	private float displayTime = 10.99f;
 	private String msg;
 	private BitmapFontCache fontCache;
 
-	/**
-	 * Displays the specified error centered on the screen.<br>
-	 * The message is public and may be changed.
-	 * 
-	 * @param msg
-	 *            The message to display or null if no message should be drawn.
-	 */
-	public DisplayErrorService(String msg) {
-		this.msg = msg;
+	private static boolean showingError;
+
+	private DisplayErrorService() {
 	}
 
 	public void compute(float deltaTime, boolean actionKeyDown) {
 		String msg = this.msg;
+		if (msg == null)
+			return;
 		int oldTime = (int) displayTime;
 		displayTime -= deltaTime;
 		// change the message every second
@@ -56,20 +52,59 @@ public class DisplayErrorService extends DisplayPlainTextService implements
 				removeMessage(fontCache);
 			if (displayTime < 1) {
 				displayTime = 0;
-				msg = "\nPress the action key to exit the game!\n\n" + msg;
+				msg = "\nPress action key to continue!\n\n" + msg;
 			} else {
-				msg = "\nERROR [" + ((int) displayTime) + "]\n\n" + msg;
+				msg = "\nOOOPS, an ERROR occurred [Countdown: "
+						+ ((int) displayTime) + "]\n\n" + msg;
 			}
 			fontCache = addMessage(msg, Color.RED.toFloatBits(),
 					Alignment.CENTER, Alignment.CENTER, 0f, GameBase.$()
 							.getScreen().getWidth(), false);
 		}
 		if (displayTime < 1 && actionKeyDown) {
-			Gdx.app.exit();
+			if (fontCache != null)
+				super.removeMessage(fontCache);
+			GameBase.$serviceProvider().releaseAttention(this);
+			this.dispose();
+			showingError = false;
 		}
 	}
 
 	public Matrix4 projectionMatrix(Camera camera) {
 		return camera.view;
+	}
+
+	/**
+	 * Displays the specified error centered on the screen.
+	 * 
+	 * @param msg
+	 *            The message to display or null if no message should be drawn.
+	 */
+	public static void forceMessage(final String msg) {
+		Gdx.app.postRunnable(new Runnable() {
+			// max. 30 attempts to avoid live lock
+			// (about 0.5 sec on a frame rate of 60fps)
+			int count = 30;
+			DisplayErrorService service = new DisplayErrorService();
+
+			@Override
+			public void run() {
+				if (GameBase.$serviceProvider().requestAttention(service, true,
+						true)) {
+					showingError = true;
+					service.msg = msg;
+				} else if (!showingError && count <= 0) {
+					showingError = true;
+					while (!GameBase.$serviceProvider().requestAttention(
+							service, true, true))
+						GameBase.$serviceProvider().forceTotalReset();
+					service.msg = msg;
+				} else {
+					count--;
+					Thread.yield();
+					Gdx.app.postRunnable(this);
+				}
+			}
+		});
 	}
 }

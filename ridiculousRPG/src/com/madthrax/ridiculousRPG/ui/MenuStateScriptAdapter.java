@@ -63,17 +63,22 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 	 */
 	public MenuStateScriptAdapter(FileHandle callBackScript,
 			boolean freezeTheWorld, boolean clearTheScreen,
-			boolean clearTheMenu, boolean catchBackKey, boolean catchMenuKey)
-			throws ScriptException {
+			boolean clearTheMenu, boolean catchBackKey, boolean catchMenuKey) {
 		this.freezeTheWorld = freezeTheWorld;
 		this.clearTheScreen = clearTheScreen;
 		this.catchBackKey = catchBackKey;
 		this.catchMenuKey = catchMenuKey;
 		this.clearTheMenu = clearTheMenu;
-		this.scriptEngine = GameBase.$scriptFactory().obtainInvocable(
-				callBackScript);
-		((ScriptEngine) this.scriptEngine).put(ScriptEngine.FILENAME,
-				callBackScript);
+		try {
+			this.scriptEngine = GameBase.$scriptFactory().obtainInvocable(
+					callBackScript);
+			((ScriptEngine) this.scriptEngine).put(ScriptEngine.FILENAME,
+					callBackScript);
+		} catch (ScriptException e) {
+			GameBase.$error("MenuState.init",
+					"Error loading (compiling) callback script for menu "
+							+ "service. File: " + callBackScript, e);
+		}
 	}
 
 	@Override
@@ -85,7 +90,8 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 				bg.setHeight(menuService.getHeight());
 				menuService.addGUIcomponent(bg);
 			}
-			scriptEngine.invokeFunction("createGui", menuService, this);
+			if (scriptEngine != null)
+				scriptEngine.invokeFunction("createGui", menuService, this);
 		} catch (Exception e) {
 			GameBase.$error("MenuState.createGui",
 					"Could not create GUI for requested menu", e);
@@ -95,9 +101,10 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 	@Override
 	public boolean processInput(int keycode, MenuService menuService) {
 		try {
-			Object ret = scriptEngine.invokeFunction("processInput", keycode,
-					menuService, this);
-			return (ret instanceof Boolean) && ((Boolean) ret);
+			if (scriptEngine == null)
+				return false;
+			return Boolean.TRUE.equals(scriptEngine.invokeFunction(
+					"processInput", keycode, menuService, this));
 		} catch (Exception e) {
 			GameBase.$error("MenuState.processInput",
 					"Error processing input for active menu", e);

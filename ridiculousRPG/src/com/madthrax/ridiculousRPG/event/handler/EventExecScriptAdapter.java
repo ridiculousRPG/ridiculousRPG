@@ -101,7 +101,8 @@ public class EventExecScriptAdapter extends EventAdapter {
 			try {
 				timerEngine = GameBase.$scriptFactory().obtainInvocable(
 						GameBase.$scriptFactory().prepareScriptFunction(
-								onTimer, TIMER_TEMPLATE));
+								onTimer, TIMER_TEMPLATE),
+						GameBase.$options().eventTimerTemplate);
 				((ScriptEngine) timerEngine).put(ScriptEngine.FILENAME,
 						"onTimer-Event");
 			} catch (ScriptException e) {
