@@ -286,6 +286,7 @@
     <property name="blocking" value="PASSES_LOW_BARRIER"/>
     <property name="effect" value="data/effect/particle/fireContinuous2.effect"/>
     <property name="movehandler" value="Move4WayAdapter"/>
+    <property name="onStateChange" value="if ($.globalState.getBool(1)) eventSelf.setEffect(null) /*player burning*/"/>
     <property name="speed" value="S07_NORMAL"/>
    </properties>
   </object>
@@ -333,10 +334,11 @@
   <object x="338" y="23">
    <polyline points="-59,-33 248,272"/>
   </object>
-  <object x="492" y="58" width="20" height="18">
+  <object x="414" y="71" width="164" height="13">
    <properties>
     <property name="blocking" value="NONE"/>
     <property name="effectFront" value="data/effect/particle/greenMixed.effect"/>
+    <property name="onTouch" value="$.globalState.setBool(1, true) /*player burning*/"/>
    </properties>
   </object>
  </objectgroup>

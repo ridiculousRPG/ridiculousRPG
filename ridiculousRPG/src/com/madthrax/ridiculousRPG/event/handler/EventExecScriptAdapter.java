@@ -115,9 +115,8 @@ public class EventExecScriptAdapter extends EventAdapter {
 									STATECHANGE_TEMPLATE);
 				}
 				localEngine = GameBase.$scriptFactory().obtainInvocable(
-						invocableFunctions, "Corrupt template files!");
-				((ScriptEngine) localEngine).put(ScriptEngine.FILENAME,
-						"continousEngine-Event");
+						invocableFunctions,
+						"Could not execute continuous event!");
 			} catch (ScriptException e) {
 				GameBase.$error("EventObject.initEvents",
 						"Could not initialize/compile continuous events", e);
@@ -180,7 +179,7 @@ public class EventExecScriptAdapter extends EventAdapter {
 			localEngine.invokeFunction("onStateChange", eventSelf,
 					getActualState(), globalState);
 		} catch (Exception e) {
-			logError("timer", eventSelf, e);
+			logError("stateChange", eventSelf, e);
 		}
 	}
 

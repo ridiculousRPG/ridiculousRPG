@@ -30,6 +30,7 @@ import com.madthrax.ridiculousRPG.service.Drawable;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 import com.madthrax.ridiculousRPG.util.BitmapFontCachePool;
+import com.madthrax.ridiculousRPG.util.ExecuteInMainThread;
 
 /**
  * Draws multilined text onto the screen. This class is optimized for
@@ -53,7 +54,12 @@ public abstract class DisplayPlainTextService extends GameServiceDefaultImpl
 	private float defaultColor = Color.WHITE.toFloatBits();
 
 	protected DisplayPlainTextService() {
-		font = new BitmapFont();
+		new ExecuteInMainThread() {
+			@Override
+			public void exec() {
+				font = new BitmapFont();
+			}
+		}.runWait();
 	}
 
 	/**
@@ -216,12 +222,13 @@ public abstract class DisplayPlainTextService extends GameServiceDefaultImpl
 
 	/**
 	 * @param font
-	 *            The font will automatically be disposed by this service.
+	 *            The font to return
+	 * @return The old font. Maybe you want to dispose it.
 	 */
-	public void setFont(BitmapFont font) {
-		if (font != null)
-			font.dispose();
+	public BitmapFont setFont(BitmapFont font) {
+		BitmapFont old = this.font;
 		this.font = font;
+		return old;
 	}
 
 	/**
@@ -241,7 +248,5 @@ public abstract class DisplayPlainTextService extends GameServiceDefaultImpl
 		msgDisplay.clear();
 		msgDisplayOnce.clear();
 		fontCachePool.clear();
-		if (font != null)
-			font.dispose();
 	}
 }

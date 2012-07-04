@@ -248,6 +248,12 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 				anzCols, anzRows, x, y, Move4WayAdapter.$());
 	}
 
+	/**
+	 * Draws a particle effect in front of this event.
+	 * 
+	 * @param internalPath
+	 *            Path to the particle effect.
+	 */
 	public ParticleEffect setEffectFront(String internalPath) {
 		if (effectFront != null) {
 			effectFront.dispose();
@@ -273,6 +279,26 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		}
 	}
 
+	/**
+	 * Applies this effect two times. Once in front of this event and once
+	 * behind this event.
+	 * 
+	 * @param internalPath
+	 *            Path to the particle effect.
+	 * @see #setEffectFront(String)
+	 * @see #setEffectRear(String)
+	 */
+	public void setEffect(String internalPath) {
+		setEffectFront(internalPath);
+		setEffectRear(internalPath);
+	}
+
+	/**
+	 * Draws a particle effect behind the event.
+	 * 
+	 * @param internalPath
+	 *            Path to the particle effect.
+	 */
 	public ParticleEffect setEffectRear(String internalPath) {
 		if (effectRear != null) {
 			effectRear.dispose();
@@ -948,12 +974,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		if (animation != null) {
 			image = animation.getActualTextureRegion();
 		}
-		if (effectFrontPath != null) {
-			setEffectFront(effectFrontPath);
-		}
-		if (effectRearPath != null) {
-			setEffectRear(effectRearPath);
-		}
+		setEffectFront(effectFrontPath);
+		setEffectRear(effectRearPath);
 		init();
 	}
 
