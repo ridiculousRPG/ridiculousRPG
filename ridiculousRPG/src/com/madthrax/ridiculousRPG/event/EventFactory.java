@@ -55,7 +55,7 @@ public class EventFactory {
 	public static void parseProperties(EventObject ev, Map<String, String> props) {
 		for (Entry<String, String> entry : props.entrySet()) {
 			String key = entry.getKey().trim();
-			// the libgdx homemade XmlReader of course is buggy :/
+			// Fix the behavior of the libgdx XmlReader
 			String val = entry.getValue().replace("&quot;", "\"").replace(
 					"&gt;", ">").replace("&lt;", "<").replace("&amp;", "&")
 					.trim();
