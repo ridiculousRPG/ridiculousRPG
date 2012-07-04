@@ -45,6 +45,8 @@ public class EventFactory {
 	private static final String EVENT_PROP_ONTIMER = "ontimer";
 	private static final String EVENT_PROP_ONCUSTOMEVENT = "oncustomevent";
 	private static final String EVENT_PROP_ONLOAD = "onload";
+	// Called if global state changes SEE: GameBase.globalState ObjectState
+	private static final String EVENT_PROP_ONSTATECHANGE = "onstatechange";
 
 	/**
 	 * Method to parse the object properties input.
@@ -177,6 +179,17 @@ public class EventFactory {
 					String index = key.substring(EVENT_PROP_ONPUSH.length())
 							.trim();
 					((EventExecScriptAdapter) ev.getEventHandler()).execOnPush(
+							val, index.length() == 0 ? -1 : toInt(index));
+				}
+			} else if (key.startsWith(EVENT_PROP_ONSTATECHANGE)) {
+				ev.reactOnGlobalChange = true;
+				if (ev.getEventHandler() == null) {
+					ev.setEventHandler(new EventExecScriptAdapter());
+				}
+				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+					String index = key.substring(EVENT_PROP_ONSTATECHANGE.length())
+							.trim();
+					((EventExecScriptAdapter) ev.getEventHandler()).execOnStateChange(
 							val, index.length() == 0 ? -1 : toInt(index));
 				}
 			} else if (key.startsWith(EVENT_PROP_ONTOUCH)) {

@@ -41,6 +41,9 @@ public class ObjectState implements Serializable {
 	private byte[][] rawBytesVar;
 	private ObjectState[] childFragment;
 
+	// Count to determine if the state has changed
+	private transient int changeCount;
+
 	// We don't want to copy the array for every new element
 	// actually increment by 1<<3 = 8
 	private static final int INC_SHIFT = 3; // 1<<1 = 2 1<<2 = 4 1<<3 = 8
@@ -89,7 +92,6 @@ public class ObjectState implements Serializable {
 					}
 				}
 			}
-			return;
 		} else if (value != 0) {
 			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			intVar = new int[newLen];
@@ -97,6 +99,7 @@ public class ObjectState implements Serializable {
 			intVar[index] = value;
 			this.intVar = intVar;
 		}
+		changeCount++;
 	}
 
 	/**
@@ -156,7 +159,6 @@ public class ObjectState implements Serializable {
 					System.arraycopy(boolVar, 0, this.boolVar, 0, newLen);
 				}
 			}
-			return;
 		} else if (value) {
 			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			boolVar = new boolean[newLen];
@@ -164,6 +166,7 @@ public class ObjectState implements Serializable {
 			boolVar[index] = value;
 			this.boolVar = boolVar;
 		}
+		changeCount++;
 	}
 
 	/**
@@ -225,7 +228,6 @@ public class ObjectState implements Serializable {
 					System.arraycopy(floatVar, 0, this.floatVar, 0, newLen);
 				}
 			}
-			return;
 		} else if (value != 0f) {
 			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			floatVar = new float[newLen];
@@ -233,6 +235,7 @@ public class ObjectState implements Serializable {
 			floatVar[index] = value;
 			this.floatVar = floatVar;
 		}
+		changeCount++;
 	}
 
 	/**
@@ -293,7 +296,6 @@ public class ObjectState implements Serializable {
 					System.arraycopy(stringVar, 0, this.stringVar, 0, newLen);
 				}
 			}
-			return;
 		} else if (value != null) {
 			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			stringVar = new String[newLen];
@@ -301,6 +303,7 @@ public class ObjectState implements Serializable {
 			stringVar[index] = value;
 			this.stringVar = stringVar;
 		}
+		changeCount++;
 	}
 
 	/**
@@ -361,7 +364,6 @@ public class ObjectState implements Serializable {
 					System.arraycopy(bytesVar, 0, this.rawBytesVar, 0, newLen);
 				}
 			}
-			return;
 		} else if (value != null) {
 			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			bytesVar = new byte[newLen][];
@@ -369,6 +371,7 @@ public class ObjectState implements Serializable {
 			bytesVar[index] = value;
 			this.rawBytesVar = bytesVar;
 		}
+		changeCount++;
 	}
 
 	/**
@@ -438,7 +441,6 @@ public class ObjectState implements Serializable {
 									newLen);
 				}
 			}
-			return;
 		} else if (value != null) {
 			int newLen = ((index + INC_BY) >> INC_SHIFT) << INC_SHIFT;
 			childVar = new ObjectState[newLen];
@@ -446,6 +448,7 @@ public class ObjectState implements Serializable {
 			childVar[index] = value;
 			this.childFragment = childVar;
 		}
+		changeCount++;
 	}
 
 	/**
@@ -463,5 +466,9 @@ public class ObjectState implements Serializable {
 			setChild(index, newVal);
 		}
 		return actVal;
+	}
+
+	public int getChangeCount() {
+		return changeCount;
 	}
 }

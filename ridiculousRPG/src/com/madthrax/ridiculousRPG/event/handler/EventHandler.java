@@ -80,6 +80,17 @@ public interface EventHandler extends Serializable, Disposable {
 	public boolean onCustomTrigger(EventObject eventSelf, int triggerId);
 
 	/**
+	 * This method is called every time after the global state has changed. It
+	 * also fires after initializing the current map.
+	 * 
+	 * @param eventSelf
+	 *            The event
+	 * @param globalState
+	 *            The global state
+	 */
+	public void onStateChange(EventObject eventSelf, ObjectState globalState);
+
+	/**
 	 * @return the actual state of this object
 	 */
 	public ObjectState getActualState();

@@ -1,4 +1,4 @@
-function onPush(eventSelf, eventTrigger, eventState, globalState) {
+function onPush(eventSelf, eventTrigger, eventState) {
   #codeLine#;
   #codeLine#;
   commit(); // comment this out if you don't want the autocommit feature

@@ -95,6 +95,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public boolean visible = false;
 	public boolean pushable = false;
 	public boolean touchable = false;
+	public boolean reactOnGlobalChange = false;
+
 	public float rotation = 0f, scaleX = 1f, scaleY = 1f;
 	/**
 	 * If an event consumes input, it triggers touch and push events. The
@@ -980,5 +982,4 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		return "event '" + (name == null ? "id=" + id : name) + " (type="
 				+ type + ")'";
 	}
-
 }

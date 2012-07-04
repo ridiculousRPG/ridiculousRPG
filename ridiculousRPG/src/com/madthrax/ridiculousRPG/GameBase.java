@@ -171,6 +171,10 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		Gdx.app.log(tag, message, ex);
 	}
 
+	public static ObjectState $state() {
+		return $().globalState;
+	}
+
 	public String getText(String container, String key) throws IOException {
 		return i18n.getText(container, key);
 	}

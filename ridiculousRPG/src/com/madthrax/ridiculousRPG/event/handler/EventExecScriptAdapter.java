@@ -65,16 +65,18 @@ import com.madthrax.ridiculousRPG.util.ObjectState;
 public class EventExecScriptAdapter extends EventAdapter {
 	private static final long serialVersionUID = 1L;
 
-	private boolean push, touch, timer, load, customTrigger;
+	private boolean push, touch, timer, stateChange, load, customTrigger;
 	private static transient String CUSTOMTRIGGER_TEMPLATE;
 	private static transient String LOAD_TEMPLATE;
 	private static transient String PUSH_TEMPLATE;
 	private static transient String TIMER_TEMPLATE;
+	private static transient String STATECHANGE_TEMPLATE;
 	private static transient String TOUCH_TEMPLATE;
-	private transient Invocable timerEngine;
+	private transient Invocable localEngine;
 	private SortedMap<Integer, String> onPush = new TreeMap<Integer, String>();
 	private SortedMap<Integer, String> onTouch = new TreeMap<Integer, String>();
 	private SortedMap<Integer, String> onTimer = new TreeMap<Integer, String>();
+	private SortedMap<Integer, String> onStateChange = new TreeMap<Integer, String>();
 	private SortedMap<Integer, String> onLoad = new TreeMap<Integer, String>();
 	private SortedMap<Integer, String> onCustomTrigger = new TreeMap<Integer, String>();
 
@@ -93,21 +95,32 @@ public class EventExecScriptAdapter extends EventAdapter {
 			TIMER_TEMPLATE = Gdx.files.internal(
 					GameBase.$options().eventTimerTemplate).readString(
 					GameBase.$options().encoding);
+			STATECHANGE_TEMPLATE = Gdx.files.internal(
+					GameBase.$options().eventStateChangeTemplate).readString(
+					GameBase.$options().encoding);
 			TOUCH_TEMPLATE = Gdx.files.internal(
 					GameBase.$options().eventTouchTemplate).readString(
 					GameBase.$options().encoding);
 		}
-		if (timer) {
+		if (timer || stateChange) {
 			try {
-				timerEngine = GameBase.$scriptFactory().obtainInvocable(
-						GameBase.$scriptFactory().prepareScriptFunction(
-								onTimer, TIMER_TEMPLATE),
-						GameBase.$options().eventTimerTemplate);
-				((ScriptEngine) timerEngine).put(ScriptEngine.FILENAME,
-						"onTimer-Event");
+				String invocableFunctions = "";
+				if (timer) {
+					invocableFunctions += GameBase.$scriptFactory()
+							.prepareScriptFunction(onTimer, TIMER_TEMPLATE);
+				}
+				if (stateChange) {
+					invocableFunctions += GameBase.$scriptFactory()
+							.prepareScriptFunction(onStateChange,
+									STATECHANGE_TEMPLATE);
+				}
+				localEngine = GameBase.$scriptFactory().obtainInvocable(
+						invocableFunctions, "Corrupt template files!");
+				((ScriptEngine) localEngine).put(ScriptEngine.FILENAME,
+						"continousEngine-Event");
 			} catch (ScriptException e) {
-				GameBase.$error("EventObject.initTimer",
-						"Could not initialize/compile ontimer event", e);
+				GameBase.$error("EventObject.initEvents",
+						"Could not initialize/compile continuous events", e);
 			}
 		}
 	}
@@ -151,11 +164,23 @@ public class EventExecScriptAdapter extends EventAdapter {
 		if (!timer)
 			return false;
 		try {
-			return (Boolean) timerEngine.invokeFunction("onTimer", eventSelf,
+			return (Boolean) localEngine.invokeFunction("onTimer", eventSelf,
 					deltaTime, getActualState());
 		} catch (Exception e) {
 			logError("timer", eventSelf, e);
 			return false;
+		}
+	}
+
+	@Override
+	public void onStateChange(EventObject eventSelf, ObjectState globalState) {
+		if (!stateChange)
+			return;
+		try {
+			localEngine.invokeFunction("onStateChange", eventSelf,
+					getActualState(), globalState);
+		} catch (Exception e) {
+			logError("timer", eventSelf, e);
 		}
 	}
 
@@ -275,6 +300,14 @@ public class EventExecScriptAdapter extends EventAdapter {
 		}
 	}
 
+	public void execOnStateChange(String val, int index) {
+		val = GameBase.$scriptFactory().loadScript(val);
+		if (val.trim().length() > 0) {
+			onStateChange.put(index, val);
+			stateChange = true;
+		}
+	}
+
 	/**
 	 * This method adds some script lines at the specified line index to be
 	 * executed when the execution of this event is triggered.<br>
@@ -361,10 +394,10 @@ public class EventExecScriptAdapter extends EventAdapter {
 	@Override
 	public void dispose() {
 		super.dispose();
-		if (timerEngine != null) {
-			((ScriptEngine) timerEngine)
+		if (localEngine != null) {
+			((ScriptEngine) localEngine)
 					.getBindings(ScriptContext.ENGINE_SCOPE).clear();
-			timerEngine = null;
+			localEngine = null;
 		}
 		onPush = null;
 		onTouch = null;

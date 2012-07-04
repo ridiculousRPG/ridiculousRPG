@@ -1,4 +1,4 @@
-function onTouch(eventSelf, eventTrigger, eventState, globalState) {
+function onTouch(eventSelf, eventTrigger, eventState) {
   #codeLine#;
   #codeLine#;
   commit(); // comment this out if you don't want the autocommit feature

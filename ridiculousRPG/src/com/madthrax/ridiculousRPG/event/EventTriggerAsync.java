@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.madthrax.ridiculousRPG.GameBase;
 import com.madthrax.ridiculousRPG.event.handler.EventHandler;
+import com.madthrax.ridiculousRPG.util.ObjectState;
 
 /**
  * All {@link EventHandler} are called and the specified actions are performed.<br>
@@ -34,6 +35,8 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 	private boolean disposed = false;
 	private float deltaTime;
 	private boolean actionKeyDown = false;
+	// Count to determine if the state has changed
+	private int lastGlobalChangeCount = -1;
 
 	public EventTriggerAsync() {
 		start();
@@ -49,8 +52,11 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 				try {
 					wait();
 				} catch (InterruptedException e) {
-					GameBase.$info("EventTriggerAsync.interrupt",
-							"The EventTrigger thread has been interrupted - continuing", e);
+					GameBase
+							.$info(
+									"EventTriggerAsync.interrupt",
+									"The EventTrigger thread has been interrupted - continuing",
+									e);
 					continue;
 				}
 			}
@@ -68,16 +74,25 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 			List<EventObject> dynamicRegions, boolean actionKeyDown) {
 		EventObject obj1;
 		EventObject obj2;
-		int i, j;
 		int dynSize = dynamicRegions.size();
+		boolean globalChange = false;
+		ObjectState globalState = GameBase.$state();
+		if (lastGlobalChangeCount != globalState.getChangeCount()) {
+			lastGlobalChangeCount = globalState.getChangeCount();
+			globalChange = true;
+		}
 		boolean consumed = false;
-		for (i = 0; i < dynSize && !consumed && !disposed; i++) {
+		for (int i = 0; i < dynSize && !consumed && !disposed; i++) {
 			obj1 = dynamicRegions.get(i);
 			consumed = obj1.getEventHandler() != null
 					&& obj1.getEventHandler().onTimer(obj1, deltaTime);
+
+			if (!consumed && globalChange && obj1.reactOnGlobalChange) {
+				obj1.getEventHandler().onStateChange(obj1, globalState);
+			}
 			if (!consumed && obj1.consumeInput) {
 				int tmpSize = obj1.collision.size;
-				for (j = 0; j < tmpSize && !consumed && !disposed; j++) {
+				for (int j = 0; j < tmpSize && !consumed && !disposed; j++) {
 					obj2 = obj1.collision.get(j);
 					if (obj2.touchable
 							&& !obj1.justTouching.contains(obj2, true)) {
@@ -89,7 +104,7 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 				}
 				if (!consumed && actionKeyDown) {
 					tmpSize = obj1.reachable.size;
-					for (j = 0; j < tmpSize && !consumed && !disposed; j++) {
+					for (int j = 0; j < tmpSize && !consumed && !disposed; j++) {
 						obj2 = obj1.reachable.get(j);
 						consumed = obj2.pushable
 								&& obj2.getEventHandler().onPush(obj2, obj1);

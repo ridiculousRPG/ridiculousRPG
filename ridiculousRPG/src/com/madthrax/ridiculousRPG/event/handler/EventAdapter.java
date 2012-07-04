@@ -49,6 +49,9 @@ public class EventAdapter implements EventHandler {
 		return false;
 	}
 
+	public void onStateChange(EventObject eventSelf, ObjectState globalState) {
+	}
+
 	@Override
 	public ObjectState getActualState() {
 		return myState;
