@@ -24,6 +24,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -78,11 +79,11 @@ public class ActorsOnStageService extends Stage implements GameService,
 		super(GameBase.$().getScreen().width, GameBase.$().getScreen().height,
 				true, GameBase.$().getSpriteBatch());
 		skinNormal = new Skin(Gdx.files
-				.internal(GameBase.$options().uiSkinNormalConfig), Gdx.files
-				.internal(GameBase.$options().uiSkinNormalImage));
+				.internal(GameBase.$options().uiSkinNormalJson),
+				new TextureAtlas(GameBase.$options().uiSkinNormalAtlas));
 		skinFocused = new Skin(Gdx.files
-				.internal(GameBase.$options().uiSkinFocusConfig), Gdx.files
-				.internal(GameBase.$options().uiSkinFocusImage));
+				.internal(GameBase.$options().uiSkinFocusJson),
+				new TextureAtlas(GameBase.$options().uiSkinFocusAtlas));
 	}
 
 	/**
@@ -443,7 +444,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 					.getReturnType();
 			Method m = ActorFocusUtil.styleSetter(actor.getClass(), c);
 			if (m != null)
-				m.invoke(actor, newSkin.getStyle(c));
+				m.invoke(actor, newSkin.get(c));
 		} catch (Exception e) {
 			GameBase.$error("Actor.changeSkin",
 					"Could not assign new skin for Actor "
@@ -613,7 +614,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	private void showInfo(final Skin skin, String info) {
 		try {
-			final Window w = new Window(skin);
+			final Window w = new Window("", skin);
 
 			w.setTouchable(false);
 			w.getColor().a = .1f;
@@ -730,7 +731,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 					boxPosition.y = stageH - boxPosition.height - boxPosition.y;
 				}
 			}
-			ScrollPane s = new ScrollPane(skin);
+			ScrollPane s = new ScrollPane(null, skin);
 
 			if (boxPosition.x < 0 || boxPosition.x + boxPosition.width > stageW) {
 				// center horizontal

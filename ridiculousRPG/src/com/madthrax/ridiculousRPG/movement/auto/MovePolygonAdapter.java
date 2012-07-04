@@ -28,6 +28,7 @@ import com.madthrax.ridiculousRPG.util.Direction;
  * 
  * @author Alexander Baumgartner
  */
+//TODO: Implement it. hehehe;)
 public class MovePolygonAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 

@@ -160,14 +160,14 @@ public class GameOptionsDefaultConfigReader {
 
 			propTmp = props.getProperty("UI_SKIN_NORMAL");
 			if (propTmp != null && propTmp.trim().length() > 0) {
-				options.uiSkinNormalConfig = propTmp + ".json";
-				options.uiSkinNormalImage = propTmp + ".png";
+				options.uiSkinNormalJson = propTmp + ".json";
+				options.uiSkinNormalAtlas = propTmp + ".atlas";
 			}
 
 			propTmp = props.getProperty("UI_SKIN_FOCUS");
 			if (propTmp != null && propTmp.trim().length() > 0) {
-				options.uiSkinFocusConfig = propTmp + ".json";
-				options.uiSkinFocusImage = propTmp + ".png";
+				options.uiSkinFocusJson = propTmp + ".json";
+				options.uiSkinFocusAtlas = propTmp + ".atlas";
 			}
 		} catch (Exception e) {
 			System.err.println("Could not load file '" + iniFile.getPath()

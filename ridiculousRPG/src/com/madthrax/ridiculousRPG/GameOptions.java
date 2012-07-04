@@ -44,10 +44,10 @@ public class GameOptions {
 	public String[] scriptFileExtension = { ".js", ".jscript" };
 	public String initScript = "data/script/initGameEngine.js";
 	public String messageCallBackScript = "data/script/engine/messaging/defaultMessageBox.js";
-	public String uiSkinNormalConfig = "data/uiskin/skinNormal.json";
-	public String uiSkinNormalImage = "data/uiskin/skinNormal.png";
-	public String uiSkinFocusConfig = "data/uiskin/skinFocus.json";
-	public String uiSkinFocusImage = "data/uiskin/skinFocus.png";
+	public String uiSkinNormalJson = "data/uiskin/skinNormal.json";
+	public String uiSkinNormalAtlas = "data/uiskin/skinNormal.atlas";
+	public String uiSkinFocusJson = "data/uiskin/skinFocus.json";
+	public String uiSkinFocusAtlas = "data/uiskin/skinFocus.atlas";
 	public String eventCustomTriggerTemplate = "data/script/engine/eventTemplate/onCustomTrigger.template";
 	public String eventLoadTemplate = "data/script/engine/eventTemplate/onLoad.template";
 	public String eventPushTemplate = "data/script/engine/eventTemplate/onPush.template";

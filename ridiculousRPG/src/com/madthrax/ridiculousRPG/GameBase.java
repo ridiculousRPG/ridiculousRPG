@@ -62,6 +62,7 @@ import com.madthrax.ridiculousRPG.movement.Movable;
 import com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 import com.madthrax.ridiculousRPG.service.GameService;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
+import com.madthrax.ridiculousRPG.service.GestureDetectorService;
 import com.madthrax.ridiculousRPG.ui.DisplayErrorService;
 import com.madthrax.ridiculousRPG.ui.MenuService;
 import com.madthrax.ridiculousRPG.util.ColorSerializable;
