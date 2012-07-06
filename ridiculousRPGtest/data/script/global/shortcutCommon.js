@@ -1,7 +1,7 @@
 // Define some common shortcuts
 System = Packages.java.lang.System;
 Thread = Packages.java.lang.Thread;
-ridiculousRPG = Packages.com.madthrax.ridiculousRPG;
+ridiculousRPG = Packages.com.ridiculousRPG;
 $ = ridiculousRPG.GameBase.$();
 gdx = Packages.com.badlogic.gdx;
 Keys = gdx.Input.Keys;

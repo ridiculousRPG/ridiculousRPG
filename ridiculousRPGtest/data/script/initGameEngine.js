@@ -11,7 +11,7 @@
 // The very first thing on startup is loading the global scope.
 // After this two step we can use all the convenience shortcuts and
 // methods defined in global scope.
-scriptFactory = Packages.com.madthrax.ridiculousRPG.GameBase.$scriptFactory();
+scriptFactory = Packages.com.ridiculousRPG.GameBase.$scriptFactory();
 scriptFactory.evalAllGlobalScripts("data/script/global", false);
 
 //It's highly recommended to comment this line out for production release.
