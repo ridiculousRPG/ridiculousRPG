@@ -1,27 +1,27 @@
 /**
  * Shortcuts for MovementHandler
- * @see com.madthrax.ridiculousRPG.movement.**
+ * @see com.ridiculousRPG.movement.**
  */
-CombinedMovesAdapter = com.madthrax.ridiculousRPG.movement.CombinedMovesAdapter;
-ParallelMovesAdapter = com.madthrax.ridiculousRPG.movement.ParallelMovesAdapter;
+CombinedMovesAdapter = com.ridiculousRPG.movement.CombinedMovesAdapter;
+ParallelMovesAdapter = com.ridiculousRPG.movement.ParallelMovesAdapter;
 
-MoveArcAdapter = com.madthrax.ridiculousRPG.movement.auto.MoveArcAdapter;
-MoveDistanceAdapter = com.madthrax.ridiculousRPG.movement.auto.MoveDistanceAdapter;
-MoveEllipseAdapter = com.madthrax.ridiculousRPG.movement.auto.MoveEllipseAdapter;
-MoveMagneticAdapter = com.madthrax.ridiculousRPG.movement.auto.MoveMagneticAdapter;
-MoveRandomAdapter = com.madthrax.ridiculousRPG.movement.auto.MoveRandomAdapter;
-MoveRectangleAdapter = com.madthrax.ridiculousRPG.movement.auto.MoveRectangleAdapter;
-MoveSetXYAdapter = com.madthrax.ridiculousRPG.movement.auto.MoveSetXYAdapter;
-MoveTracerAdapter = com.madthrax.ridiculousRPG.movement.auto.MoveTracerAdapter;
+MoveArcAdapter = com.ridiculousRPG.movement.auto.MoveArcAdapter;
+MoveDistanceAdapter = com.ridiculousRPG.movement.auto.MoveDistanceAdapter;
+MoveEllipseAdapter = com.ridiculousRPG.movement.auto.MoveEllipseAdapter;
+MoveMagneticAdapter = com.ridiculousRPG.movement.auto.MoveMagneticAdapter;
+MoveRandomAdapter = com.ridiculousRPG.movement.auto.MoveRandomAdapter;
+MoveRectangleAdapter = com.ridiculousRPG.movement.auto.MoveRectangleAdapter;
+MoveSetXYAdapter = com.ridiculousRPG.movement.auto.MoveSetXYAdapter;
+MoveTracerAdapter = com.ridiculousRPG.movement.auto.MoveTracerAdapter;
 
-Move2WayNSAdapter = com.madthrax.ridiculousRPG.movement.input.Move2WayNSAdapter;
-Move2WayWEAdapter = com.madthrax.ridiculousRPG.movement.input.Move2WayWEAdapter;
-Move4WayAdapter = com.madthrax.ridiculousRPG.movement.input.Move4WayAdapter;
-Move8WayAdapter = com.madthrax.ridiculousRPG.movement.input.Move8WayAdapter;
+Move2WayNSAdapter = com.ridiculousRPG.movement.input.Move2WayNSAdapter;
+Move2WayWEAdapter = com.ridiculousRPG.movement.input.Move2WayWEAdapter;
+Move4WayAdapter = com.ridiculousRPG.movement.input.Move4WayAdapter;
+Move8WayAdapter = com.ridiculousRPG.movement.input.Move8WayAdapter;
 
-MoveAnimateEventAdapter = com.madthrax.ridiculousRPG.movement.misc.MoveAnimateEventAdapter;
-MoveChangeSpeedAdapter = com.madthrax.ridiculousRPG.movement.misc.MoveChangeSpeedAdapter;
-MoveExecScriptAdapter = com.madthrax.ridiculousRPG.movement.misc.MoveExecScriptAdapter;
-MoveFadeColorAdapter = com.madthrax.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
-MoveNullAdapter = com.madthrax.ridiculousRPG.movement.misc.MoveNullAdapter;
-MoveRotateEventAdapter = com.madthrax.ridiculousRPG.movement.misc.MoveRotateEventAdapter;
+MoveAnimateEventAdapter = com.ridiculousRPG.movement.misc.MoveAnimateEventAdapter;
+MoveChangeSpeedAdapter = com.ridiculousRPG.movement.misc.MoveChangeSpeedAdapter;
+MoveExecScriptAdapter = com.ridiculousRPG.movement.misc.MoveExecScriptAdapter;
+MoveFadeColorAdapter = com.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
+MoveNullAdapter = com.ridiculousRPG.movement.misc.MoveNullAdapter;
+MoveRotateEventAdapter = com.ridiculousRPG.movement.misc.MoveRotateEventAdapter;

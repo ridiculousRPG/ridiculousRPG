@@ -1,6 +1,6 @@
 /*
  * This script file contains the callback function used by
- * com.madthrax.ridiculousRPG.ui.MessagingService.
+ * com.ridiculousRPG.ui.MessagingService.
  */
 
 /**

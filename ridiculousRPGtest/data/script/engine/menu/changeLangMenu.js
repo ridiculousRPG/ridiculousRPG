@@ -1,6 +1,6 @@
 /*
  * This script file contains callback functions used by
- * com.madthrax.ridiculousRPG.ui.StandardMenuService.
+ * com.ridiculousRPG.ui.StandardMenuService.
  */
 
 /**
