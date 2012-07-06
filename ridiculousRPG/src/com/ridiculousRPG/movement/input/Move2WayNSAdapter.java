@@ -17,6 +17,7 @@
 package com.ridiculousRPG.movement.input;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
 import com.ridiculousRPG.GameBase;
 import com.ridiculousRPG.movement.Movable;
@@ -32,6 +33,22 @@ public class Move2WayNSAdapter extends MovementHandler {
 	private static MovementHandler instance = new Move2WayNSAdapter();
 	private MovementKeys movementKeys;
 	public float touchEpsilon = 5f;
+
+	/**
+	 * Instantiates an {@link MovementHandler} listening to the specified input
+	 * keys.
+	 * 
+	 * @param northKey
+	 * @param southKey
+	 * @see Input.Keys
+	 */
+	public Move2WayNSAdapter(int northKey, int southKey) {
+		this.movementKeys = new MovementKeys();
+		movementKeys.setRightKeys();
+		movementKeys.setLeftKeys();
+		movementKeys.setUpKeys(northKey);
+		movementKeys.setDownKeys(southKey);
+	}
 
 	public Move2WayNSAdapter(MovementKeys movementKeys) {
 		this.movementKeys = movementKeys;
