@@ -31,6 +31,7 @@ public class Move2WayNSAdapter extends MovementHandler {
 
 	private static MovementHandler instance = new Move2WayNSAdapter();
 	private MovementKeys movementKeys;
+	public float touchEpsilon = 5f;
 
 	public Move2WayNSAdapter(MovementKeys movementKeys) {
 		this.movementKeys = movementKeys;
@@ -67,6 +68,10 @@ public class Move2WayNSAdapter extends MovementHandler {
 		} else if (GameBase.$().isLongPress()) {
 			Direction touchDir = computeDirection(Gdx.input.getX(0), Gdx.input
 					.getY(0), movable);
+			if (touchDir == null) {
+				movable.stop();
+				return;
+			}
 			movable.offerMove(touchDir, deltaTime);
 		} else {
 			if (GameBase.$().isControlKeyPressed()
@@ -90,6 +95,8 @@ public class Move2WayNSAdapter extends MovementHandler {
 	private Direction computeDirection(int absolutX, int absolutY,
 			Movable movable) {
 		float y = movable.computeRelativY(absolutY);
+		if (Math.abs(y) < touchEpsilon)
+			return null;
 		return (y > 0 ? Direction.N : Direction.S);
 	}
 

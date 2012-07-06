@@ -31,6 +31,7 @@ public class Move8WayAdapter extends MovementHandler {
 
 	private static MovementHandler instance = new Move8WayAdapter();
 	private MovementKeys movementKeys;
+	public float touchEpsilon = 5f;
 
 	public Move8WayAdapter(MovementKeys movementKeys) {
 		this.movementKeys = movementKeys;
@@ -82,6 +83,10 @@ public class Move8WayAdapter extends MovementHandler {
 		} else if (GameBase.$().isLongPress()) {
 			Direction touchDir = computeDirection(Gdx.input.getX(0), Gdx.input
 					.getY(0), movable);
+			if (touchDir == null) {
+				movable.stop();
+				return;
+			}
 			movable.offerMove(touchDir, deltaTime);
 		} else {
 			lastDirKey2 = 0;
@@ -125,12 +130,17 @@ public class Move8WayAdapter extends MovementHandler {
 			Movable movable) {
 		float x = movable.computeRelativX(absolutX);
 		float y = movable.computeRelativY(absolutY);
-		float ratio = Math.abs(x / y);
+		float absX = Math.abs(x);
+		float absY = Math.abs(y);
+		if (absX + absY < touchEpsilon)
+			return null;
+
+		float ratio = absX / absY;
 		if (ratio > .5f && ratio < 2f) {
 			return x > 0 ? (y > 0 ? Direction.NE : Direction.SE)
 					: (y > 0 ? Direction.NW : Direction.SW);
 		}
-		return Math.abs(x) > Math.abs(y) ? (x > 0 ? Direction.E : Direction.W)
+		return absX > absY ? (x > 0 ? Direction.E : Direction.W)
 				: (y > 0 ? Direction.N : Direction.S);
 	}
 

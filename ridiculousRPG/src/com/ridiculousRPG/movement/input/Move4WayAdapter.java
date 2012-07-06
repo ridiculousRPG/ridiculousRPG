@@ -31,6 +31,7 @@ public class Move4WayAdapter extends MovementHandler {
 
 	private static MovementHandler instance = new Move4WayAdapter();
 	private MovementKeys movementKeys;
+	public float touchEpsilon = 5f;
 
 	public Move4WayAdapter(MovementKeys movementKeys) {
 		this.movementKeys = movementKeys;
@@ -67,6 +68,10 @@ public class Move4WayAdapter extends MovementHandler {
 		} else if (GameBase.$().isLongPress()) {
 			Direction touchDir = computeDirection(Gdx.input.getX(0), Gdx.input
 					.getY(0), movable);
+			if (touchDir == null) {
+				movable.stop();
+				return;
+			}
 			movable.offerMove(touchDir, deltaTime);
 		} else {
 			if (GameBase.$().isControlKeyPressed()
@@ -97,6 +102,10 @@ public class Move4WayAdapter extends MovementHandler {
 			Movable movable) {
 		float x = movable.computeRelativX(absolutX);
 		float y = movable.computeRelativY(absolutY);
+		float absX = Math.abs(x);
+		float absY = Math.abs(y);
+		if (absX + absY < touchEpsilon)
+			return null;
 		return Math.abs(x) > Math.abs(y) ? (x > 0 ? Direction.E : Direction.W)
 				: (y > 0 ? Direction.N : Direction.S);
 	}
