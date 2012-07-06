@@ -71,6 +71,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 	private int localIdCount = 0;
 	private int globalIdCount = 1000000000;
+	// TODO: NEEDS REFACTORING
 	private IntSet intSet = new IntSet();
 
 	// tiles
@@ -285,6 +286,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		dynamicRegions.add(event);
 	}
 
+	// TODO: NEEDS REFACTORING
 	private void computeId(EventObject event) {
 		int id = event.id;
 		if (id == -1) {
@@ -301,6 +303,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		}
 	}
 
+	// TODO: NEEDS REFACTORING
 	private void nextId(EventObject eventToSet) {
 		if (eventToSet.isGlobalEvent()) {
 			while (intSet.containsKey(globalIdCount))
@@ -370,6 +373,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		eventTrigger.compute(deltaTime, actionKeyDown, dynamicRegions);
 	}
 
+	// TODO: NEEDS REFACTORING
 	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
 		List<EventObject> dynamicRegions = this.dynamicRegions;
 		Collections.sort(dynamicRegions);

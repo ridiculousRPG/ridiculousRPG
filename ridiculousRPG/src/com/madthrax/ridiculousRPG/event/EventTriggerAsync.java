@@ -114,6 +114,7 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 		}
 	}
 
+	// TODO: NEEDS REFACTORING
 	/**
 	 * Compute collisions and move the events.<br>
 	 * Invoke parallel execution of the {@link EventHandler}.

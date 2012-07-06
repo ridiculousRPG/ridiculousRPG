@@ -29,6 +29,7 @@ import java.io.Serializable;
  * 
  * @author Alexander Baumgartner
  */
+//TODO: Maybe: Derive from com.badlogic.gdx.scenes.scene2d.Action
 public abstract class MovementHandler implements Serializable {
 	private static final long serialVersionUID = 1L;
 	/**

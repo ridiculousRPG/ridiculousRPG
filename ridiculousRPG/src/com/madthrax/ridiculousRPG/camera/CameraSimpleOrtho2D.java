@@ -38,6 +38,8 @@ import com.madthrax.ridiculousRPG.service.Drawable;
  * @see SpriteBatch#setProjectionMatrix(Matrix4)
  * @author Alexander Baumgartner
  */
+//TODO: Compare with com.badlogic.gdx.graphics.OrthographicCamera
+// Maybe switch to the libGDX implementation
 public class CameraSimpleOrtho2D extends Camera implements Serializable {
 	private static final long serialVersionUID = 1L;
 

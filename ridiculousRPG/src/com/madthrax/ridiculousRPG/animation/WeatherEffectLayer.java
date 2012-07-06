@@ -40,6 +40,7 @@ import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
  * @see ParticleEffectService
  * @author Alexander Baumgartner
  */
+//TODO: Fix inaccurate rendering
 public class WeatherEffectLayer extends EffectLayer {
 	private static final long serialVersionUID = 1L;
 

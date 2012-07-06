@@ -31,6 +31,7 @@ import com.madthrax.ridiculousRPG.util.Speed;
  * 
  * @author Alexander Baumgartner
  */
+//TODO: Maybe: Derive from com.badlogic.gdx.scenes.scene2d.Actor
 public abstract class Movable implements Serializable {
 	private static final long serialVersionUID = 1L;
 
