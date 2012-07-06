@@ -23,7 +23,7 @@ import com.badlogic.gdx.audio.Music;
 import com.madthrax.ridiculousRPG.service.GameServiceDefaultImpl;
 
 /**
- * This service is used to play background music.<br>
+ * This service plays background music.<br>
  * NEEDS REFACTORING!
  * 
  * @author Alexander Baumgartner
