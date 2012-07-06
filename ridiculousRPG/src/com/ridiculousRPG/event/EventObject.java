@@ -478,27 +478,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * The touch bounds are used to compute the direction.
 	 */
 	public void lookAt(EventObject other) {
-		if (animation == null)
-			return;
-		float x, y;
-		if (getX() + getWidth() < other.getX()) { // East
-			x = 1;
-		} else if (getX() > other.getX() + other.getWidth()) { // West
-			x = -1;
-		} else { // unchanged
-			x = 0;
-		}
-		if (getY() + getHeight() < other.getY()) { // North
-			y = 1;
-		} else if (getY() > other.getY() + other.getHeight()) { // South
-			y = -1;
-		} else { // unchanged
-			if (x == 0)
-				return;
-			y = 0;
-		}
-		// set direction...
-		animation.animate(0, 0, Direction.fromMovement(x, y), 0);
+		if (animation != null && visible && other.visible)
+			animation.animate(other.getX() - getX(), other.getY() - getY(), 0f);
 	}
 
 	/**
@@ -649,7 +630,9 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	/**
 	 * The event will NOT automatically be animated by using this movement
 	 * method. You have to use one of the animate-methods if you want some
-	 * animation.
+	 * animation.<br>
+	 * 
+	 * @see #animate(float, float, float)
 	 */
 	@Override
 	public synchronized void offerMove(float x, float y) {
@@ -670,14 +653,13 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	}
 
 	/**
-	 * Uses TileAnimation.animate(int, Speed) to set the image for this event.<br>
+	 * Animates this event if an animation is applied to this event.
 	 * 
-	 * @see {@link TileAnimation#animate(int, Speed)}
+	 * @see {@link TileAnimation#animate(float, float, float)}
 	 */
 	public void animate(float x, float y, float deltaTime) {
 		if (animation != null) {
-			this.image = animation.animate(x, y, Direction.fromMovement(x, y),
-					deltaTime);
+			this.image = animation.animate(x, y, deltaTime);
 		}
 	}
 

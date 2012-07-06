@@ -360,7 +360,23 @@ public class TileAnimation implements Disposable, Serializable {
 	 * 
 	 * @param x
 	 * @param y
+	 * @param deltaTime
+	 */
+	public TextureRegion animate(float x, float y, float deltaTime) {
+		return animate(x, y, Direction
+				.fromMovement(x, y, animationTiles.length), deltaTime);
+	}
+
+	/**
+	 * Computes the animation and returns the actual tile (as TextureRegion) to
+	 * display.<br>
+	 * The animation speed is computed by the distance given as relative x,y -
+	 * position.
+	 * 
+	 * @param x
+	 * @param y
 	 * @param dir
+	 * @param deltaTime
 	 */
 	public TextureRegion animate(float x, float y, Direction dir,
 			float deltaTime) {
@@ -377,8 +393,7 @@ public class TileAnimation implements Disposable, Serializable {
 		} else {
 			pixelPerSecond = animationSpeed.getPixelPerSecond();
 		}
-		return animate(pixelPerSecond, dir.getIndex(animationTiles.length),
-				deltaTime);
+		return animate(pixelPerSecond, dir.getDirectionIndex(), deltaTime);
 	}
 
 	/**
@@ -425,7 +440,7 @@ public class TileAnimation implements Disposable, Serializable {
 			int animationTextureRow, float deltaTime) {
 		if (deltaTime > 0) {
 			animationCycleFinished = false;
-			animationTimer += Math.sqrt(pixelPerSecond / 4f) * deltaTime;
+			animationTimer += Math.sqrt(pixelPerSecond * .25f) * deltaTime;
 			if (Float.isNaN(animationTimer)) {
 				animationTimer = 1.01f;
 			}

@@ -20,8 +20,8 @@ package com.ridiculousRPG.util;
  * @author Alexander Baumgartner
  */
 public enum Direction {
-	S(0, 0f, -1f), W(1, -1f, 0f), E(2, 1f, 0f), N(3, 0f, 1f), SW(4, -.7f, -.7f), NW(
-			5, -.7f, .7f), SE(6, .7f, -.7f), NE(7, .7f, .7f);
+	E(0, 1f, 0f), W(1, -1f, 0f), N(2, 0f, 1f), S(3, 0f, -1f), NE(4, .7f, .7f), SE(
+			5, .7f, -.7f), NW(6, -.7f, .7f), SW(7, -.7f, -.7f);
 
 	private float x, y;
 	private int directionIndex;
@@ -63,13 +63,50 @@ public enum Direction {
 	 * @return
 	 */
 	public static Direction fromMovement(float x, float y) {
-		if (x == 0) {
+		if (x == 0)
 			return y < 0 ? S : N;
-		} else if (y == 0) {
+		if (y == 0)
 			return x < 0 ? W : E;
-		} else if (x < 0) {
-			return y < 0 ? SW : NW;
+
+		float ratio = x / y - 1;
+		if (Math.abs(ratio) > .5) {
+			if (ratio < 0)
+				return y < 0 ? S : N;
+			return x < 0 ? W : E;
 		}
+
+		if (x < 0)
+			return y < 0 ? SW : NW;
 		return y < 0 ? SE : NE;
+	}
+
+	/**
+	 * Computes the direction from the given (x,y) - movement
+	 * 
+	 * @param x
+	 * @param y
+	 * @param maxDirections
+	 *            Maximum number of directions to use.<br>
+	 *            maxDirections < 4 crops to W-E movement.
+	 * @return
+	 */
+	public static Direction fromMovement(float x, float y, int maxDirections) {
+		if (maxDirections >= 8)
+			return fromMovement(x, y);
+
+		if (maxDirections >= 4)
+			if (Math.abs(y) > Math.abs(x))
+				return y < 0 ? S : N;
+			else
+				return x < 0 ? W : E;
+
+		if (maxDirections >= 2)
+			return x < 0 ? W : E;
+
+		return E;
+	}
+
+	public int getDirectionIndex() {
+		return directionIndex;
 	}
 }
