@@ -309,6 +309,7 @@
     <property name="//movehandler" value="data/script/game/moveEvent/player2AutoMove.js"/>
     <property name="animation" value="data/charset/Daisy.png"/>
     <property name="blocking" value="PASSES_LOW_BARRIER"/>
+    <property name="movehandler" value="Move4WayAdapter(Keys.L, Keys.J, Keys.I, Keys.K)"/>
     <property name="ontouch" value="if (!eventState.getBool(0)) {say('test'); eventState.setBool(0, true)}"/>
     <property name="speed" value="S07_NORMAL"/>
    </properties>

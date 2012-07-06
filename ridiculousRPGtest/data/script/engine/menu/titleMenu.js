@@ -32,10 +32,20 @@ function createGui(menuService, menu) {
 	var button;
 
 	// Apply the background image
-	var bg = menu.createImage("data/image/Title.png", menuService.width, menuService.height);
+	var img = menu.createImage("data/image/Background.png", menuService.width, menuService.height);
 	// Use the following scaling to keep aspect ratio on resize:
-	// bg.setScaling(gdx.utils.Scaling.fit);
-	menuService.addActor(bg);
+	// img.setScaling(gdx.utils.Scaling.fit);
+	menuService.addActor(img);
+
+	var img = menu.createImage("data/image/TitleTop.png");
+	menuService.center(img);
+	img.setY(menuService.height - img.height - 25);
+	menuService.addActor(img);
+
+	var img = menu.createImage("data/image/TitleBottom.png");
+	menuService.center(img);
+	img.setY(15);
+	menuService.addActor(img);
 
 	// create particle effect
 	var props = [
