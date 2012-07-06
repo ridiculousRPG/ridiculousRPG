@@ -476,19 +476,7 @@ public class GameServiceProvider {
 	}
 
 	public void dispose() {
-		for (GameService service : services.values()) {
-			try {
-				service.dispose();
-			} catch (Exception ignored) {
-			}
-		}
-		services.clear();
-		inputMultiplexer.clear();
-		computables.clear();
-		drawables.clear();
-		hasAttention = new AtomicReference<GameService>();
-		freezeTheWorld = false;
-		clearTheScreen = false;
+		clearServices();
 	}
 
 	void computeAll() {
@@ -631,10 +619,26 @@ public class GameServiceProvider {
 	 * exceptions AND you have to reset the state of the service which actually
 	 * holds the attention.
 	 */
-	public void forceTotalReset() {
+	public void forceAttentionReset() {
 		checkFreeze(hasAttention.get(), false, false);
 		hasAttention.set(null);
 		attentionCount = 0;
 		Gdx.input.setInputProcessor(inputMultiplexer);
+	}
+
+	public void clearServices() {
+		forceAttentionReset();
+		for (GameService service : services.values()) {
+			try {
+				service.dispose();
+			} catch (Exception ignored) {
+			}
+		}
+		services.clear();
+		inputMultiplexer.clear();
+		computables.clear();
+		drawables.clear();
+		freezeTheWorld = false;
+		clearTheScreen = false;
 	}
 }

@@ -31,6 +31,12 @@ function createGui(menuService, menu) {
 	var w = menuService.createWindow(i18nText("titlemenu.title"), skin);
 	var button;
 
+	// Apply the background image
+	var bg = menu.createImage("data/image/Title.png", menuService.width, menuService.height);
+	// Use the following scaling to keep aspect ratio on resize:
+	// bg.setScaling(gdx.utils.Scaling.fit);
+	menuService.addActor(bg);
+
 	// create particle effect
 	var props = [
 	    "effectFront", "data/effect/particle/greenMixed.effect"
@@ -41,14 +47,14 @@ function createGui(menuService, menu) {
 	var props = [
  	    "effectFront", "data/effect/particle/greenStars3.effect"
  	]
- 	var particleEffect = new ridiculousRPG.event.EventActor($.screen.width - 100, $.screen.height - 50, props);
+ 	var particleEffect = new ridiculousRPG.event.EventActor(menuService.width - 100, menuService.height - 50, props);
  	menuService.addActor(particleEffect);
 
 	var start = new ui.TextButton(i18nText("titlemenu.new"), skin);
 	start.addListener(new ClickAdapter(
 		function (actorEv, x, y) {
-			menuService.changeState(MENU_STATE_IDLE);
 			menuService.startNewGame();
+			menuService.changeState(MENU_STATE_IDLE);
 		}
 	));
 	w.row().fill().expandX().padBottom(10);

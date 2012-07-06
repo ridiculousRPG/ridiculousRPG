@@ -28,6 +28,13 @@ function processInput(keycode, menuService, menu) {
 function createGui(menuService, menu) {
 	i18nContainer = "engineMenuText";
 	var skin = menuService.skinNormal;
+
+	// Apply the background image
+	var bg = menu.createImage("data/image/GameOver.png", menuService.width, menuService.height);
+	// Use the following scaling to keep aspect ratio on resize:
+	// bg.setScaling(gdx.utils.Scaling.fit);
+	menuService.addActor(bg);
+
 	var w = menuService.createWindow(i18nText("gameovermenu.title"), skin);
 
 	var quickload = new ui.TextButton(i18nText("gameovermenu.quickload"), skin);

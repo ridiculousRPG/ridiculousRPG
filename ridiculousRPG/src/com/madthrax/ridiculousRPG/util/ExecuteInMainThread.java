@@ -10,7 +10,7 @@ public abstract class ExecuteInMainThread implements Runnable {
 	 */
 	@Override
 	public void run() {
-		exec();
+		execCatchException();
 		synchronized (this) {
 			notify();
 		}
@@ -22,7 +22,7 @@ public abstract class ExecuteInMainThread implements Runnable {
 	 */
 	public void runWait() {
 		if (GameBase.$().isGlContextThread()) {
-			exec();
+			execCatchException();
 		} else {
 			synchronized (this) {
 				Gdx.app.postRunnable(this);
@@ -36,8 +36,20 @@ public abstract class ExecuteInMainThread implements Runnable {
 		}
 	}
 
+	private void execCatchException() {
+		try {
+			exec();
+		} catch (Exception e) {
+			GameBase.$error("ExecuteInMainThread.exec",
+					"Exception in executed code: " + e.getMessage(), e);
+		}
+	}
+
 	/**
-	 * Implement the code to execute here.
+	 * Implement the code to execute here.<br>
+	 * If an {@link Exception} is thrown by the code, it will be
+	 * handled(catched) and an error message will be printed onto the screen if
+	 * possible.
 	 */
-	public abstract void exec();
+	public abstract void exec() throws Exception;
 }

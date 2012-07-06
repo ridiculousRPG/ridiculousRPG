@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
+import java.io.Serializable;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.utils.Disposable;
@@ -32,7 +34,7 @@ import com.badlogic.gdx.utils.Disposable;
  * @see MenuService
  * @author Alexander Baumgartner
  */
-public interface MenuStateHandler extends Disposable {
+public interface MenuStateHandler extends Disposable, Serializable {
 	/**
 	 * This method is automatically called by the corresponding
 	 * {@link MenuService} if the menu is in this state and a key is released
@@ -105,6 +107,12 @@ public interface MenuStateHandler extends Disposable {
 	 *            whether to catch the menu button
 	 */
 	public boolean isCatchMenuKey();
+
+	/**
+	 * Returns the unique id for this menu state.<br>
+	 * Each state needs an unique id to identify it.
+	 */
+	public int getStateId();
 
 	/**
 	 * Frees all resources after closing the menu

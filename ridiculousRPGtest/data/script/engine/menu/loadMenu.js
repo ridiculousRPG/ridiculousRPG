@@ -29,7 +29,7 @@ function createGui(menuService, menu) {
 	var files = $.listSaveFiles();
 	var button;
 
-	var quickLoad = generateButton(i18nText("loadmenu.quickload"), files[0], skin, menu);
+	var quickLoad = generateButton(i18nText("loadmenu.quickload"), files[1], skin, menu);
 	quickLoad.addListener(new ClickAdapter(
 		function (actorEv, x, y) {
 			if ($.quickLoad()) {
@@ -53,17 +53,17 @@ function createGui(menuService, menu) {
 	var failedText = i18nText("loadmenu.loadfailed");
 	var buttonText = i18nText("loadmenu.load");
 	/* Use this loop if you prefer a "normal" top down menu for your game
-	for (var i = 1; i < files.length;) {
+	for (var i = 2; i < files.length;) {
 		w.row().fill(true, true).expand(true, false).colspan(3);
 		for (var j = 0; j < 2; j++, i++) {
-			button = generateButton("Load "+i, files[i], skin, menu);
+			button = generateButton(buttonText+" "+(i-1), files[i-1], skin, menu);
 			button.addListener(new ClickAdapter(
 				 "if ($.loadFile("+i+")) { "
 	*/
-	for (var i = files.length-1; i > 0;) {
+	for (var i = files.length-1; i > 1;) {
 		w.row().fill(true, true).expand(true, false).colspan(3);
 		for (var j = 2; j >= 0; j-=2, i--) {
-			var index = (i+1-j);
+			var index = (i-j);
 			button = generateButton(buttonText+" "+index, files[index], skin, menu);
 			button.addListener(new ClickAdapter(
 				 "if ($.loadFile("+index+")) { "

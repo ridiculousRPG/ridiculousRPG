@@ -217,31 +217,46 @@ public class MultimediaService extends GameServiceDefaultImpl implements
 	 *            If true, the playback will loop forever (until stop() is
 	 *            called).
 	 */
-	public void play(URL url, Rectangle bounds, boolean projectToMap,
-			boolean withAudio, boolean freezeTheWorld, float playTime,
-			boolean loop) {
-		if (!freezeTheWorld
-				|| GameBase.$serviceProvider().requestAttention(this, true,
-						true)) {
-			if (playing && player != null)
-				player.dispose();
-			try {
-				player = playerFactory.createPlayer(url, bounds, projectToMap,
-						withAudio, !freezeTheWorld && projectToMap);
-				player.play();
-				this.playing = true;
-				this.loop = loop;
-				this.playTime = playTime;
-				this.position = 0;
-				this.projectToMap = projectToMap;
-				this.url = url;
-				this.bounds = bounds;
-				this.withAudio = withAudio;
-				this.freezeTheWorld = freezeTheWorld;
-			} catch (Exception e) {
-				GameBase.$error("MultimediaService.play", "Failed to play '"
-						+ url + "'", e);
+	public void play(final URL url, final Rectangle bounds,
+			final boolean projectToMap, final boolean withAudio,
+			final boolean freezeTheWorld, final float playTime,
+			final boolean loop) {
+		Gdx.app.postRunnable(new Runnable() {
+			@Override
+			public void run() {
+				if (freezeTheWorld
+						&& !GameBase.$serviceProvider().requestAttention(
+								MultimediaService.this, true, true)) {
+					Gdx.app.postRunnable(this);
+				} else {
+					createAndStartPlayer(url, bounds, projectToMap, withAudio,
+							freezeTheWorld, playTime, loop);
+				}
 			}
+		});
+	}
+
+	private void createAndStartPlayer(URL url, Rectangle bounds,
+			boolean projectToMap, boolean withAudio, boolean freezeTheWorld,
+			float playTime, boolean loop) {
+		if (playing && player != null)
+			player.dispose();
+		try {
+			player = playerFactory.createPlayer(url, bounds, projectToMap,
+					withAudio, !freezeTheWorld && projectToMap);
+			player.play();
+			this.playing = true;
+			this.loop = loop;
+			this.playTime = playTime;
+			this.position = 0;
+			this.projectToMap = projectToMap;
+			this.url = url;
+			this.bounds = bounds;
+			this.withAudio = withAudio;
+			this.freezeTheWorld = freezeTheWorld;
+		} catch (Exception e) {
+			GameBase.$error("MultimediaService.play", "Failed to play '" + url
+					+ "'", e);
 		}
 	}
 

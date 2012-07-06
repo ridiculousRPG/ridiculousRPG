@@ -16,6 +16,10 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -35,14 +39,18 @@ import com.madthrax.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
  * @author Alexander Baumgartner
  */
 public class MenuStateScriptAdapter implements MenuStateHandler {
-	private Invocable scriptEngine;
+	private static final long serialVersionUID = 1L;
+
+	private int stateId;
 	private boolean freezeTheWorld;
 	private boolean clearTheScreen;
 	private boolean clearTheMenu;
 	private boolean catchBackKey;
 	private boolean catchMenuKey;
-	private String background;
-	private Array<TextureRegionRef> managedTextures = new Array<TextureRegionRef>();
+	private String callBackScript;
+
+	private transient Invocable scriptEngine;
+	private transient Array<TextureRegionRef> managedTextures;
 
 	/**
 	 * Creates a new {@link MenuStateHandler} which is customizable via a call
@@ -61,18 +69,27 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 	 * @throws ScriptException
 	 *             If an error occurs while loading the script.
 	 */
-	public MenuStateScriptAdapter(FileHandle callBackScript,
+	public MenuStateScriptAdapter(String callBackScript, int stateId,
 			boolean freezeTheWorld, boolean clearTheScreen,
 			boolean clearTheMenu, boolean catchBackKey, boolean catchMenuKey) {
+		this.stateId = stateId;
 		this.freezeTheWorld = freezeTheWorld;
 		this.clearTheScreen = clearTheScreen;
 		this.catchBackKey = catchBackKey;
 		this.catchMenuKey = catchMenuKey;
 		this.clearTheMenu = clearTheMenu;
+		this.callBackScript = callBackScript;
+
+		initTransient();
+	}
+
+	public void initTransient() {
+		managedTextures = new Array<TextureRegionRef>();
 		try {
-			this.scriptEngine = GameBase.$scriptFactory().obtainInvocable(
+			FileHandle callBackScript = Gdx.files.internal(this.callBackScript);
+			scriptEngine = GameBase.$scriptFactory().obtainInvocable(
 					callBackScript);
-			((ScriptEngine) this.scriptEngine).put(ScriptEngine.FILENAME,
+			((ScriptEngine) scriptEngine).put(ScriptEngine.FILENAME,
 					callBackScript);
 		} catch (ScriptException e) {
 			GameBase.$error("MenuState.init",
@@ -84,12 +101,6 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 	@Override
 	public void createGui(MenuService menuService) {
 		try {
-			if (background != null) {
-				Image bg = createImage(background);
-				bg.setWidth(menuService.getWidth());
-				bg.setHeight(menuService.getHeight());
-				menuService.addGUIcomponent(bg);
-			}
 			if (scriptEngine != null)
 				scriptEngine.invokeFunction("createGui", menuService, this);
 		} catch (Exception e) {
@@ -127,14 +138,6 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 		return freezeTheWorld;
 	}
 
-	public void setBackground(String background) {
-		this.background = background;
-	}
-
-	public String getBackground() {
-		return background;
-	}
-
 	/**
 	 * Creates an image, which will automatically disposed when the menu is
 	 * closed.
@@ -144,6 +147,43 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 	 */
 	public Image createImage(String internalPath) {
 		return createImage(TextureRegionLoader.load(internalPath), true);
+	}
+
+	/**
+	 * Creates an image, which will automatically disposed when the menu is
+	 * closed.<br>
+	 * The image is set to the given size
+	 * 
+	 * @param internalPath
+	 * @param width
+	 * @param height
+	 * @return An image, which can be added to the menu.
+	 */
+	public Image createImage(String internalPath, float width, float height) {
+		return createImage(TextureRegionLoader.load(internalPath), width,
+				height, true);
+	}
+
+	/**
+	 * Creates an image from a texture. Disposing the texture can be managed
+	 * automatically when the menu is closed.<br>
+	 * The image is set to the given size<br>
+	 * Use autoFree=true if you don't know what to do!
+	 * 
+	 * @param tRef
+	 * @param width
+	 * @param height
+	 * @param autoFree
+	 * @return An image, which can be added to the menu.
+	 */
+	public Image createImage(TextureRegionRef tRef, float width, float height,
+			boolean autoFree) {
+		if (autoFree)
+			managedTextures.add(tRef);
+		Image img = new Image(tRef);
+		img.setWidth(width);
+		img.setHeight(height);
+		return img;
 	}
 
 	/**
@@ -209,5 +249,23 @@ public class MenuStateScriptAdapter implements MenuStateHandler {
 	 */
 	public void setCatchMenuKey(boolean catchMenuKey) {
 		this.catchMenuKey = catchMenuKey;
+	}
+
+	public void setStateId(int stateId) {
+		this.stateId = stateId;
+	}
+
+	public int getStateId() {
+		return stateId;
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+		initTransient();
 	}
 }

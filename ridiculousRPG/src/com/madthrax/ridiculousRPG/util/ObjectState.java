@@ -471,4 +471,13 @@ public class ObjectState implements Serializable {
 	public int getChangeCount() {
 		return changeCount;
 	}
+
+	public void clear() {
+		intVar = null;
+		boolVar = null;
+		floatVar = null;
+		stringVar = null;
+		rawBytesVar = null;
+		childFragment = null;
+	}
 }

@@ -307,4 +307,7 @@ public class ScriptFactory {
 		return scriptFileExtension;
 	}
 
+	public void clearGlobalState() {
+		ENGINE_FACTORY.getBindings().clear();
+	}
 }

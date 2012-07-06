@@ -31,7 +31,7 @@ import com.madthrax.ridiculousRPG.service.Computable;
  */
 public class DisplayErrorService extends DisplayPlainTextService implements
 		Computable {
-	private float displayTime = 10.99f;
+	private float displayTime = 5.99f;
 	private String msg;
 	private BitmapFontCache fontCache;
 
@@ -97,7 +97,7 @@ public class DisplayErrorService extends DisplayPlainTextService implements
 					showingError = true;
 					while (!GameBase.$serviceProvider().requestAttention(
 							service, true, true))
-						GameBase.$serviceProvider().forceTotalReset();
+						GameBase.$serviceProvider().forceAttentionReset();
 					service.msg = msg;
 				} else {
 					count--;

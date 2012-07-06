@@ -104,7 +104,6 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	private float gameColorBits = gameColorTint.toFloatBits();
 	private float longPressTime;
 
-	private final String engineVersion = "0.3 prealpha (incomplete)";
 	private boolean terminating;
 
 	private boolean tap;
@@ -153,7 +152,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 					"Error occured while initializing the game", e);
 		}
 
-		// restore last display mode
+		// restore last display mode and language
 		loadUserContext();
 		camera.update();
 	}
@@ -163,7 +162,9 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		Gdx.app.error(tag, message, e);
 		StringWriter stackTrace = new StringWriter();
 		e.printStackTrace(new PrintWriter(stackTrace));
-		String msg = "<" + tag + ">: " + message + "\n\n" + stackTrace;
+		String msg = "<" + tag + ">: " + message;
+		msg += "\n\n" + stackTrace;
+		msg += "\n\nEngine version: " + $options().engineVersion;
 		DisplayErrorService.forceMessage(msg);
 	}
 
@@ -540,12 +541,12 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		if (Gdx.app.getType() != ApplicationType.Desktop
 				&& exitForced
 				&& !(getServiceProvider().queryAttention() instanceof MenuService))
-			quickSave();
+			autoSave();
 	}
 
 	public void resume() {
 		if (lastExitForced())
-			quickLoad();
+			autoLoad();
 	}
 
 	/**
@@ -669,13 +670,6 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 
 	public ScriptFactory getScriptFactory() {
 		return scriptFactory;
-	}
-
-	/**
-	 * The version of the engine as string
-	 */
-	public String getEngineVersion() {
-		return engineVersion;
 	}
 
 	public static void toggleCursor() {
@@ -820,9 +814,12 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 
 	/**
 	 * Reads all files at the specified save directory.<br>
-	 * Empty files are indicated with null. The maximum number of files is 101,
-	 * where the first file is reserved for quick save and should be treated
-	 * specially by the load/save menu
+	 * Empty files are indicated with null. The maximum number of files is 202,
+	 * where the first file is reserved for auto save (e.g. incoming call on
+	 * android device). The second file is reserved for a quick save feature and
+	 * should be treated specially by the load/save menu (the auto save file can
+	 * be entirely ignored or can also be treated as a special save file by the
+	 * menu)
 	 * 
 	 * @param cols
 	 *            Amount of columns per row
@@ -841,23 +838,23 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 								&& name.endsWith(".sav");
 					}
 				});
-		// 1 quick save + 200 save files
-		FileHandle[] fh = new FileHandle[201];
+		// 1 auto save + 1 quick save + 200 save files
+		FileHandle[] fh = new FileHandle[202];
 		int max = 0;
 		for (String nm : fileNames) {
 			int index = Integer.parseInt(nm.substring(9, nm.length() - 4));
 			if (index < fh.length) {
 				fh[index] = getSaveFile(index);
-				int idxEnd = index + 1 + cols * emptyTailRows;
+				int idxEnd = index + 2 + cols * emptyTailRows;
 				if (idxEnd > max) {
 					max = Math.min(idxEnd, fh.length);
 				}
 			}
 		}
-		if (max < 1 + minRows * cols) {
-			max = 1 + minRows * cols;
+		if (max < 2 + minRows * cols) {
+			max = 2 + minRows * cols;
 		} else
-			while ((max - 1) % cols != 0) {
+			while ((max - 2) % cols != 0) {
 				max++;
 			}
 		if (max < fh.length) {
@@ -906,24 +903,48 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	}
 
 	/**
-	 * Saves the state to the save-file number 0, which is the quick-load/save
+	 * Saves the state to the save-file number 1, which is the quick-load/save
 	 * file
 	 * 
 	 * @see #saveFile(int)
 	 * @return true if save is successful, false otherwise
 	 */
 	public boolean quickSave() {
+		return saveFile(1);
+	}
+
+	/**
+	 * Saves the state to the save-file number 0, which is the auto-load/save
+	 * file. This will automatically be called on android device, when the game
+	 * is paused by an incoming call.
+	 * 
+	 * @see #saveFile(int)
+	 * @return true if save is successful, false otherwise
+	 */
+	public boolean autoSave() {
 		return saveFile(0);
 	}
 
 	/**
-	 * Loads the state from save-file number 0, which is the quick-load/save
+	 * Loads the state from save-file number 1, which is the quick-load/save
 	 * file
 	 * 
 	 * @see #loadFile(int)
 	 * @return true if load is successful, false otherwise
 	 */
 	public boolean quickLoad() {
+		return loadFile(1);
+	}
+
+	/**
+	 * Loads the state from save-file number 0, which is the auto-load/save
+	 * file. This will automatically be called on android device, when the game
+	 * is resumed (e.g. after an incoming call).
+	 * 
+	 * @see #saveFile(int)
+	 * @return true if save is successful, false otherwise
+	 */
+	public boolean autoLoad() {
 		return loadFile(0);
 	}
 
@@ -951,6 +972,31 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Reset the entire engine. The initialization script(s) will be executed to
+	 * set the engine into the same state as starting it from scratch.
+	 */
+	public void resetEngine() {
+		try {
+			new ExecuteInMainThread() {
+				@Override
+				public void exec() {
+					clearTmpFiles();
+					globalEvents.clear();
+					globalState.clear();
+					serviceProvider.clearServices();
+					scriptFactory.clearGlobalState();
+
+					scriptFactory.evalAllScripts(sharedEngine, GameBase
+							.$options().initScript, false);
+				}
+			}.runWait();
+		} catch (Exception e) {
+			GameBase.$error("GameBase.create",
+					"Error occured while initializing the game", e);
+		}
 	}
 
 	/**
@@ -1149,32 +1195,39 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		FileHandle fh = getSaveFile(fileNumber);
 		if (fh.exists()) {
 			try {
-				clearTmpFiles();
+				resetEngine();
 				Zipper.unzip(fh, $tmpPath());
-
-				InputStream is = getServiceStateTmpPath().read();
-				ObjectInputStream oIn = new ObjectInputStream(is);
-				oIn.readBoolean(); // exitForced
-				globalState = (ObjectState) oIn.readObject();
-				globalEvents = (Map<String, EventObject>) oIn.readObject();
-				camera = (Camera) oIn.readObject();
-				plane = (Rectangle) oIn.readObject();
-				Rectangle oldScreen = screen;
-				screen = (Rectangle) oIn.readObject();
-				resize((int) oldScreen.width, (int) oldScreen.height);
-				backgroundColor = (Color) oIn.readObject();
-				gameColorTint = (Color) oIn.readObject();
-				gameColorBits = gameColorTint.toFloatBits();
-				$serviceProvider().loadSerializableServices(oIn);
-				oIn.close();
-
-				camera.update();
-				serviceProvider.resize((int) screen.width, (int) screen.height);
-				return true;
 			} catch (Exception e) {
 				GameBase.$error("GameBase.loadFile",
 						"Error occured while loading the game", e);
 			}
+
+			new ExecuteInMainThread() {
+				@Override
+				public void exec() throws Exception {
+					InputStream is = getServiceStateTmpPath().read();
+					ObjectInputStream oIn = new ObjectInputStream(is);
+					oIn.readBoolean(); // exitForced
+					globalState = (ObjectState) oIn.readObject();
+					globalEvents = (Map<String, EventObject>) oIn.readObject();
+					camera = (Camera) oIn.readObject();
+					plane = (Rectangle) oIn.readObject();
+					Rectangle oldScreen = screen;
+					screen = (Rectangle) oIn.readObject();
+					resize((int) oldScreen.width, (int) oldScreen.height);
+					backgroundColor = (Color) oIn.readObject();
+					gameColorTint = (Color) oIn.readObject();
+					gameColorBits = gameColorTint.toFloatBits();
+					$serviceProvider().forceAttentionReset();
+					$serviceProvider().loadSerializableServices(oIn);
+					oIn.close();
+
+					camera.update();
+					serviceProvider.resize((int) screen.width,
+							(int) screen.height);
+				}
+			}.runWait();
+			return true;
 		}
 		return false;
 	}

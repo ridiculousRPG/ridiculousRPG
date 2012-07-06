@@ -249,7 +249,7 @@ public class MessagingService extends ActorsOnStageService implements
 						new IllegalStateException(
 								"Oooops, couldn't release the attention. "
 										+ "Something got terribly wrong!"));
-				GameBase.$serviceProvider().forceTotalReset();
+				GameBase.$serviceProvider().forceAttentionReset();
 				clear();
 			}
 			fadeOutAllActors();

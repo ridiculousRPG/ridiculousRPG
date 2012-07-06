@@ -29,6 +29,7 @@ public class GameOptions {
 
 	public Backend backend = Backend.LWJGL;
 	public String title = "Game running";
+	public String engineVersion = "0.3 prealpha (incomplete)";
 	public String encoding = "UTF-8";
 	public int width = 640, height = 480;
 	public boolean fullscreen = false;

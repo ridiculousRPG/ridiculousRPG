@@ -16,6 +16,8 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
+import java.io.Serializable;
+
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.madthrax.ridiculousRPG.service.GameService;
 
@@ -25,7 +27,7 @@ import com.madthrax.ridiculousRPG.service.GameService;
  * @see MenuStateHandler
  * @author Alexander Baumgartner
  */
-public interface MenuService extends GameService {
+public interface MenuService extends GameService, Serializable {
 	/**
 	 * Returns the active state handler.
 	 */

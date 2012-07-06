@@ -16,12 +16,19 @@
 
 package com.madthrax.ridiculousRPG.ui;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import javax.script.ScriptException;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.IntMap.Entry;
 import com.madthrax.ridiculousRPG.GameBase;
+import com.madthrax.ridiculousRPG.service.GameService;
+import com.madthrax.ridiculousRPG.util.ExecuteInMainThread;
 
 /**
  * This class provides a customizable standard menu for the game.<br>
@@ -30,14 +37,19 @@ import com.madthrax.ridiculousRPG.GameBase;
  */
 public class StandardMenuService extends ActorsOnStageService implements
 		MenuService {
+	private static final long serialVersionUID = 1L;
 
-	private IntMap<MenuStateHandler> stateHandlerMap = new IntMap<MenuStateHandler>(
-			16);
-	private MenuStateHandler activeState;
 	private String startNewGameScript;
+	private boolean dirty;
 	private int lastStatePos = 0;
 	private MenuStateHandler[] lastState = new MenuStateHandler[10];
-	private boolean dirty;
+	private MenuStateHandler activeState;
+	private transient IntMap<MenuStateHandler> stateHandlerMap;
+
+	public StandardMenuService() {
+		super();
+		initTransient();
+	}
 
 	@Override
 	public boolean keyUp(int keycode) {
@@ -64,19 +76,32 @@ public class StandardMenuService extends ActorsOnStageService implements
 	}
 
 	public boolean changeState(MenuStateHandler newState) {
+		// If the game-state has been reset, there is also a new instance of
+		// StandardMenuService, which we have to use instead of this,
+		// already abandoned, one.
+		GameService hasAttention = GameBase.$serviceProvider().queryAttention();
+		if (hasAttention != this && hasAttention instanceof StandardMenuService) {
+			return ((StandardMenuService) hasAttention).changeState(newState
+					.getStateId());
+		}
+		boolean releaseAttention = hasAttention == this;
+		// First try to request attention (again) if needed.
+		// Attention is counted. This guarantees that no other service
+		// can request attention between the following 2 statements.
 		if (newState != null
 				&& newState.isFreezeTheWorld()
 				&& !GameBase.$serviceProvider().requestAttention(this, true,
 						newState.isClearTheScreen())) {
 			return false;
 		}
-		if (activeState != null && activeState.isFreezeTheWorld()
+		if (releaseAttention
 				&& !GameBase.$serviceProvider().releaseAttention(this)) {
+			// Should never happen! See comment above.
 			GameBase.$error("MenuService.changeState",
 					"Failed to change the menu state",
 					new IllegalStateException("Oooops, couldn't release the "
 							+ "attention. Something got terribly wrong!"));
-			GameBase.$serviceProvider().forceTotalReset();
+			GameBase.$serviceProvider().forceAttentionReset();
 			clear();
 			activeState.freeResources();
 			activeState = null;
@@ -84,14 +109,16 @@ public class StandardMenuService extends ActorsOnStageService implements
 		}
 		if (newState == null) {
 			if (dirty)
-				setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+				setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
+						false);
 			fadeOutAllActors();
 			if (activeState != null)
 				activeState.freeResources();
 		} else {
 			if (newState.isClearTheMenu()) {
 				if (dirty)
-					setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+					setViewport(Gdx.graphics.getWidth(), Gdx.graphics
+							.getHeight(), false);
 				fadeOutAllActors();
 				if (activeState != null && activeState != newState)
 					activeState.freeResources();
@@ -149,15 +176,12 @@ public class StandardMenuService extends ActorsOnStageService implements
 	/**
 	 * Replaces or adds a state with an associated {@link MenuStateHandler}.
 	 * 
-	 * @param state
-	 *            An int value representing one state
 	 * @param stateHandler
 	 *            The state handler associated with the state
 	 * @return The old {@link MenuStateHandler}
 	 */
-	public MenuStateHandler putStateHandler(int state,
-			MenuStateHandler stateHandler) {
-		return stateHandlerMap.put(state, stateHandler);
+	public MenuStateHandler putStateHandler(MenuStateHandler stateHandler) {
+		return stateHandlerMap.put(stateHandler.getStateId(), stateHandler);
 	}
 
 	/**
@@ -185,7 +209,13 @@ public class StandardMenuService extends ActorsOnStageService implements
 	}
 
 	public void startNewGame() throws ScriptException {
-		GameBase.$().eval(startNewGameScript);
+		GameBase.$().resetEngine();
+		new ExecuteInMainThread() {
+			@Override
+			public void exec() throws Exception {
+				GameBase.$().eval(startNewGameScript);
+			}
+		}.run();
 	}
 
 	public void setStartNewGameScript(String startNewGameScript) {
@@ -218,5 +248,27 @@ public class StandardMenuService extends ActorsOnStageService implements
 		if (lastStatePos == lastState.length)
 			lastStatePos = 0;
 		return oldCount;
+	}
+
+	public void initTransient() {
+		stateHandlerMap = new IntMap<MenuStateHandler>(16);
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+		out.writeInt(stateHandlerMap.size);
+		for (Entry<MenuStateHandler> e : stateHandlerMap.entries()) {
+			out.writeObject(e.value);
+		}
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+		initTransient();
+		for (int i = in.readInt(); i > 0; i--) {
+			putStateHandler((MenuStateHandler) in.readObject());
+		}
+		rebuildMenu();
 	}
 }
