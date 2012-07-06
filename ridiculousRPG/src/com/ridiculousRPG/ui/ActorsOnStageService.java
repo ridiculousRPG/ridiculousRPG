@@ -68,7 +68,8 @@ public class ActorsOnStageService extends Stage implements GameService,
 	private float displayInfoTime = 2f;
 	private Array<TextureRegionRef> managedDrawables = new Array<TextureRegionRef>();
 	private boolean dirty, fadingOut, resizing;
-	private float resizeCountdown = RESIZE_DELAY;
+	// First initial resize should be done immediately
+	private float resizeCountdown = Float.NEGATIVE_INFINITY;
 	private int resizeWidth;
 	private int resizeHeight;
 
@@ -188,7 +189,9 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	public void resize(int width, int height) {
 		resizing = true;
-		resizeCountdown = RESIZE_DELAY;
+		// First initial resize should be done immediately
+		if (resizeCountdown != Float.NEGATIVE_INFINITY)
+			resizeCountdown = RESIZE_DELAY;
 		resizeWidth = width;
 		resizeHeight = height;
 	}
