@@ -29,6 +29,7 @@ public class GameIconService extends GameServiceDefaultImpl {
 	private Pixmap applIcon;
 
 	public GameIconService() {
+		//TODO: hard coded :( ==> options :)
 		FileHandle applIconFile = Gdx.files.internal("data/icon.png");
 		if (applIconFile.exists()) {
 			//TODO: fix this
