@@ -22,6 +22,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -129,7 +130,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * If you use a {@link TiledMapWithEvents}, all object-properties starting
 	 * with the $ sign are considered local event properties.
 	 */
-	public HashMap<String, String> properties = new HashMap<String, String>();
+	public Map<String, String> properties = new HashMap<String, String>();
 
 	public static final String EVENT_TYPE_PLAYER = "player";
 	public static final String EVENT_TYPE_GLOBAL = "global";

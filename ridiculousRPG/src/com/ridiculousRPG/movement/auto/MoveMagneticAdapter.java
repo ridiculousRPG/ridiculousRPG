@@ -39,7 +39,6 @@ import com.ridiculousRPG.util.Direction;
 public class MoveMagneticAdapter extends MoveRandomAdapter {
 	private static final long serialVersionUID = 1L;
 
-
 	public enum Attraction {
 		NONE(0), LOW(150), MEDIUM(300), STRONG(500), MAXIMUM(900);
 		private int val;

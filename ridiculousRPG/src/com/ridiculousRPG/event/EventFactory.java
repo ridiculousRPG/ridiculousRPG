@@ -18,43 +18,45 @@ import com.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
 public class EventFactory {
 
-	private static final char EVENT_CUSTOM_PROP_KZ = '$';
+	private static final char CUSTOM_PROP_KZ = '$';
 	// the key is translated to lower case -> we are case insensitive
-	private static final String EVENT_PROP_ID = "id";
-	private static final String EVENT_PROP_DISPLAY = "display";
-	private static final String EVENT_PROP_HEIGHT = "height";
-	private static final String EVENT_PROP_OUTREACH = "outreach";
-	private static final String EVENT_PROP_ROTATION = "rotation";
-	private static final String EVENT_PROP_SCALEX = "scalex";
-	private static final String EVENT_PROP_SCALEY = "scaley";
-	private static final String EVENT_PROP_IMAGE = "image";
-	private static final String EVENT_PROP_EFFECT = "effect";
-	private static final String EVENT_PROP_EFFECTFRONT = "effectfront";
-	private static final String EVENT_PROP_EFFECTREAR = "effectrear";
-	private static final String EVENT_PROP_CENTERIMAGE = "centerimage";
-	private static final String EVENT_PROP_BLOCKING = "blocking";
-	private static final String EVENT_PROP_MOVEHANDLER = "movehandler";
-	private static final String EVENT_PROP_SPEED = "speed";
-	private static final String EVENT_PROP_ANIMATION = "animation";
-	private static final String EVENT_PROP_ESTIMATETOUCHBOUNDS = "estimatetouchbounds";
-	private static final String EVENT_PROP_HANDLER = "eventhandler";
+	private static final String PROP_ID = "id";
+	private static final String PROP_DISPLAY = "display";
+	private static final String PROP_HEIGHT = "height";
+	private static final String PROP_OUTREACH = "outreach";
+	private static final String PROP_ROTATION = "rotation";
+	private static final String PROP_SCALEX = "scalex";
+	private static final String PROP_SCALEY = "scaley";
+	private static final String PROP_IMAGE = "image";
+	private static final String PROP_EFFECT = "effect";
+	private static final String PROP_EFFECTFRONT = "effectfront";
+	private static final String PROP_EFFECTREAR = "effectrear";
+	private static final String PROP_CENTERIMAGE = "centerimage";
+	private static final String PROP_BLOCKING = "blocking";
+	private static final String PROP_MOVEHANDLER = "movehandler";
+	private static final String PROP_SPEED = "speed";
+	private static final String PROP_ANIMATION = "animation";
+	private static final String PROP_ESTIMATETOUCHBOUNDS = "estimatetouchbounds";
+	private static final String PROP_HANDLER = "eventhandler";
 	// the following properties can not be mixed with an eventhandler
 	// which doesn't extend the EventExecScriptAdapter
-	private static final String EVENT_PROP_ONPUSH = "onpush";
-	private static final String EVENT_PROP_ONTOUCH = "ontouch";
-	private static final String EVENT_PROP_ONTIMER = "ontimer";
-	private static final String EVENT_PROP_ONCUSTOMEVENT = "oncustomevent";
-	private static final String EVENT_PROP_ONLOAD = "onload";
+	private static final String PROP_ONPUSH = "onpush";
+	private static final String PROP_ONTOUCH = "ontouch";
+	private static final String PROP_ONTIMER = "ontimer";
+	private static final String PROP_ONCUSTOMEVENT = "oncustomevent";
+	private static final String PROP_ONLOAD = "onload";
 	// Called if global state changes SEE: GameBase.globalState ObjectState
-	private static final String EVENT_PROP_ONSTATECHANGE = "onstatechange";
+	private static final String PROP_ONSTATECHANGE = "onstatechange";
+	// Polygon object fires an event, when a node is reached
+	private static final String PROP_ONNODE = "onnode";
 
 	/**
-	 * Method to parse the object properties input.
+	 * Method to parse the object properties input for an event.
 	 * 
-	 * @param ev
+	 * @param container
 	 * @param props
 	 */
-	public static void parseProperties(EventObject ev, Map<String, String> props) {
+	public static void parseProps(EventObject ev, Map<String, String> props) {
 		for (Entry<String, String> entry : props.entrySet()) {
 			String key = entry.getKey().trim();
 			// Fix the behavior of the libgdx XmlReader
@@ -63,28 +65,28 @@ public class EventFactory {
 					.trim();
 			if (key.length() == 0 || val.length() == 0)
 				continue;
-			if (key.charAt(0) == EVENT_CUSTOM_PROP_KZ) {
+			if (key.charAt(0) == CUSTOM_PROP_KZ) {
 				ev.properties.put(key, val);
 			} else {
-				parseSingleProperty(ev, key, val, props);
+				parseSingleProp(ev, key, val, props);
 			}
 		}
 	}
 
-	private static void parseSingleProperty(EventObject ev, String key,
-			String val, Map<String, String> props) {
+	private static void parseSingleProp(EventObject ev, String key, String val,
+			Map<String, String> props) {
 		// let's be case insensitive
 		key = key.toLowerCase();
 		try {
-			if (EVENT_PROP_ID.equals(key)) {
+			if (PROP_ID.equals(key)) {
 				ev.id = toInt(val);
-			} else if (EVENT_PROP_HEIGHT.equals(key)) {
+			} else if (PROP_HEIGHT.equals(key)) {
 				ev.z += toInt(val);
-			} else if (EVENT_PROP_BLOCKING.equals(key)) {
+			} else if (PROP_BLOCKING.equals(key)) {
 				ev.blockingBehavior = BlockingBehavior.parse(val);
-			} else if (EVENT_PROP_SPEED.equals(key)) {
+			} else if (PROP_SPEED.equals(key)) {
 				ev.setMoveSpeed(Speed.parse(val));
-			} else if (EVENT_PROP_MOVEHANDLER.equals(key)) {
+			} else if (PROP_MOVEHANDLER.equals(key)) {
 				Object evHandler = GameBase.$().eval(val);
 				if (evHandler instanceof Class<?>) {
 					@SuppressWarnings("unchecked")
@@ -94,44 +96,44 @@ public class EventFactory {
 				if (evHandler instanceof MovementHandler) {
 					ev.setMoveHandler((MovementHandler) evHandler);
 				}
-			} else if (EVENT_PROP_OUTREACH.equals(key)) {
+			} else if (PROP_OUTREACH.equals(key)) {
 				ev.outreach = toInt(val);
-			} else if (EVENT_PROP_ROTATION.equals(key)) {
+			} else if (PROP_ROTATION.equals(key)) {
 				ev.rotation = toFloat(val);
-			} else if (EVENT_PROP_SCALEX.equals(key)) {
+			} else if (PROP_SCALEX.equals(key)) {
 				ev.scaleX = toFloat(val);
-			} else if (EVENT_PROP_SCALEY.equals(key)) {
+			} else if (PROP_SCALEY.equals(key)) {
 				ev.scaleY = toFloat(val);
-			} else if (EVENT_PROP_IMAGE.equals(key)) {
+			} else if (PROP_IMAGE.equals(key)) {
 				if (Gdx.files.internal(val).exists()) {
 					boolean estimateTouch = "true".equalsIgnoreCase(props
-							.get(EVENT_PROP_ESTIMATETOUCHBOUNDS));
+							.get(PROP_ESTIMATETOUCHBOUNDS));
 					ev.setImage(val, estimateTouch, !estimateTouch);
 					initVisibleEvent(ev, props);
 				}
-			} else if (EVENT_PROP_EFFECTFRONT.equals(key)) {
+			} else if (PROP_EFFECTFRONT.equals(key)) {
 				if (Gdx.files.internal(val).exists()) {
 					ev.setEffectFront(val);
-					if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
+					if (ev.z == 0f && props.get(PROP_HEIGHT) == null) {
 						ev.z = .1f;
 					}
 				}
-			} else if (EVENT_PROP_EFFECT.equals(key)) {
+			} else if (PROP_EFFECT.equals(key)) {
 				if (Gdx.files.internal(val).exists()) {
 					ev.setEffectFront(val);
 					ev.setEffectRear(val);
-					if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
+					if (ev.z == 0f && props.get(PROP_HEIGHT) == null) {
 						ev.z = .1f;
 					}
 				}
-			} else if (EVENT_PROP_EFFECTREAR.equals(key)) {
+			} else if (PROP_EFFECTREAR.equals(key)) {
 				if (Gdx.files.internal(val).exists()) {
 					ev.setEffectRear(val);
-					if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
+					if (ev.z == 0f && props.get(PROP_HEIGHT) == null) {
 						ev.z = .1f;
 					}
 				}
-			} else if (EVENT_PROP_ANIMATION.equals(key)) {
+			} else if (PROP_ANIMATION.equals(key)) {
 				FileHandle fh = Gdx.files.internal(val);
 				if (fh.exists()) {
 					TextureRegionRef t = TextureRegionLoader.load(val);
@@ -140,20 +142,20 @@ public class EventFactory {
 							4);
 					t.dispose();
 					boolean estimateTouch = "true".equalsIgnoreCase(props
-							.get(EVENT_PROP_ESTIMATETOUCHBOUNDS));
+							.get(PROP_ESTIMATETOUCHBOUNDS));
 					ev.setAnimation(anim, estimateTouch, !estimateTouch);
 					initVisibleEvent(ev, props);
 				} else {
 					Object result = GameBase.$().eval(val);
 					if (result instanceof TileAnimation) {
 						boolean estimateTouch = "true".equalsIgnoreCase(props
-								.get(EVENT_PROP_ESTIMATETOUCHBOUNDS));
+								.get(PROP_ESTIMATETOUCHBOUNDS));
 						ev.setAnimation((TileAnimation) result, estimateTouch,
 								!estimateTouch);
 						initVisibleEvent(ev, props);
 					}
 				}
-			} else if (EVENT_PROP_HANDLER.equals(key)) {
+			} else if (PROP_HANDLER.equals(key)) {
 				Object evHandler = GameBase.$().eval(val);
 				if (evHandler instanceof Class<?>) {
 					@SuppressWarnings("unchecked")
@@ -170,69 +172,66 @@ public class EventFactory {
 				} else if (evHandler instanceof EventHandler) {
 					ev.setEventHandler((EventHandler) evHandler);
 				}
-			} else if (key.startsWith(EVENT_PROP_ONPUSH)) {
+			} else if (key.startsWith(PROP_ONPUSH)) {
 				ev.pushable = true;
 				if (ev.getEventHandler() == null) {
 					ev.setEventHandler(new EventExecScriptAdapter());
 				}
 				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_ONPUSH.length())
-							.trim();
+					String index = key.substring(PROP_ONPUSH.length()).trim();
 					((EventExecScriptAdapter) ev.getEventHandler()).execOnPush(
 							val, index.length() == 0 ? -1 : toInt(index));
 				}
-			} else if (key.startsWith(EVENT_PROP_ONSTATECHANGE)) {
+			} else if (key.startsWith(PROP_ONSTATECHANGE)) {
 				ev.reactOnGlobalChange = true;
 				if (ev.getEventHandler() == null) {
 					ev.setEventHandler(new EventExecScriptAdapter());
 				}
 				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_ONSTATECHANGE.length())
+					String index = key.substring(PROP_ONSTATECHANGE.length())
 							.trim();
-					((EventExecScriptAdapter) ev.getEventHandler()).execOnStateChange(
-							val, index.length() == 0 ? -1 : toInt(index));
+					((EventExecScriptAdapter) ev.getEventHandler())
+							.execOnStateChange(val, index.length() == 0 ? -1
+									: toInt(index));
 				}
-			} else if (key.startsWith(EVENT_PROP_ONTOUCH)) {
+			} else if (key.startsWith(PROP_ONTOUCH)) {
 				ev.touchable = true;
 				if (ev.getEventHandler() == null) {
 					ev.setEventHandler(new EventExecScriptAdapter());
 				}
 				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_ONTOUCH.length())
-							.trim();
+					String index = key.substring(PROP_ONTOUCH.length()).trim();
 					((EventExecScriptAdapter) ev.getEventHandler())
 							.execOnTouch(val, index.length() == 0 ? -1
 									: toInt(index));
 				}
-			} else if (key.startsWith(EVENT_PROP_ONTIMER)) {
+			} else if (key.startsWith(PROP_ONTIMER)) {
 				if (ev.getEventHandler() == null) {
 					ev.setEventHandler(new EventExecScriptAdapter());
 				}
 				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_ONTIMER.length())
-							.trim();
+					String index = key.substring(PROP_ONTIMER.length()).trim();
 					((EventExecScriptAdapter) ev.getEventHandler())
 							.execOnTimer(val, index.length() == 0 ? -1
 									: toInt(index));
 				}
-			} else if (key.startsWith(EVENT_PROP_ONCUSTOMEVENT)) {
+			} else if (key.startsWith(PROP_ONCUSTOMEVENT)) {
 				if (ev.getEventHandler() == null) {
 					ev.setEventHandler(new EventExecScriptAdapter());
 				}
 				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(
-							EVENT_PROP_ONCUSTOMEVENT.length()).trim();
+					String index = key.substring(PROP_ONCUSTOMEVENT.length())
+							.trim();
 					((EventExecScriptAdapter) ev.getEventHandler())
 							.execOnCustomTrigger(val, index.length() == 0 ? -1
 									: toInt(index));
 				}
-			} else if (key.startsWith(EVENT_PROP_ONLOAD)) {
+			} else if (key.startsWith(PROP_ONLOAD)) {
 				if (ev.getEventHandler() == null) {
 					ev.setEventHandler(new EventExecScriptAdapter());
 				}
 				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
-					String index = key.substring(EVENT_PROP_ONLOAD.length())
-							.trim();
+					String index = key.substring(PROP_ONLOAD.length()).trim();
 					((EventExecScriptAdapter) ev.getEventHandler()).execOnLoad(
 							val, index.length() == 0 ? -1 : toInt(index));
 				}
@@ -244,27 +243,73 @@ public class EventFactory {
 		}
 	}
 
+	/**
+	 * Method to parse the object properties input for a polygon.
+	 * 
+	 * @param container
+	 * @param props
+	 */
+	public static void parseProps(PolygonObject poly, Map<String, String> props) {
+		for (Entry<String, String> entry : props.entrySet()) {
+			String key = entry.getKey().trim();
+			// Fix the behavior of the libgdx XmlReader
+			String val = entry.getValue().replace("&quot;", "\"").replace(
+					"&gt;", ">").replace("&lt;", "<").replace("&amp;", "&")
+					.trim();
+			if (key.length() == 0 || val.length() == 0)
+				continue;
+			if (key.charAt(0) == CUSTOM_PROP_KZ) {
+				poly.properties.put(key, val);
+			} else {
+				parseSingleProp(poly, key, val, props);
+			}
+		}
+	}
+
+	private static void parseSingleProp(PolygonObject poly, String key,
+			String val, Map<String, String> props) {
+		// let's be case insensitive
+		key = key.toLowerCase();
+		try {
+			if (key.startsWith(PROP_ONNODE)) {
+				int index = toInt(key.substring(PROP_ONNODE.length()).trim());
+				if (index >= poly.execAtNodeScript.length) {
+					GameBase.$info("TiledMap.createPolygon",
+							"Could not apply event '" + key + "' for polygon '"
+									+ poly.name + "'. "
+									+ "Node index out of bounds!", null);
+				} else {
+					poly.execAtNodeScript[index] = val;
+				}
+			}
+		} catch (Exception e) {
+			GameBase.$error("TiledMap.createPolygon",
+					"Could not parse property '" + key + "' for polygon '"
+							+ poly.name + "'", e);
+		}
+	}
+
 	private static void initVisibleEvent(EventObject ev,
 			Map<String, String> props) {
 		ev.visible = true;
-		if ("true".equalsIgnoreCase(props.get(EVENT_PROP_CENTERIMAGE)))
+		if ("true".equalsIgnoreCase(props.get(PROP_CENTERIMAGE)))
 			ev.centerDrawbound();
-		if (ev.z == 0f && props.get(EVENT_PROP_HEIGHT) == null) {
+		if (ev.z == 0f && props.get(PROP_HEIGHT) == null) {
 			ev.z = .1f;
 		}
 	}
 
-	public static boolean isHidden(Map<String, String> properties) {
-		return "false".equalsIgnoreCase(properties.get(EVENT_PROP_DISPLAY))
-				|| "none".equalsIgnoreCase(properties.get(EVENT_PROP_DISPLAY));
+	public static boolean isSkip(Map<String, String> properties) {
+		return "false".equalsIgnoreCase(properties.get(PROP_DISPLAY))
+				|| "none".equalsIgnoreCase(properties.get(PROP_DISPLAY));
 	}
 
 	public static int getZIndex(Map<String, String> properties) {
-		return toInt(properties.get(EVENT_PROP_HEIGHT));
+		return toInt(properties.get(PROP_HEIGHT));
 	}
 
 	public static int getZIndex(TiledMap map, int tile) {
-		return toInt(map.getTileProperty(tile, EVENT_PROP_HEIGHT));
+		return toInt(map.getTileProperty(tile, PROP_HEIGHT));
 	}
 
 	private static int toInt(String prop) {

@@ -45,6 +45,7 @@ import com.ridiculousRPG.event.EventFactory;
 import com.ridiculousRPG.event.EventObject;
 import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.event.EventTriggerAsync;
+import com.ridiculousRPG.event.PolygonObject;
 import com.ridiculousRPG.event.handler.EventHandler;
 import com.ridiculousRPG.map.MapLoader;
 import com.ridiculousRPG.map.MapRenderRegion;
@@ -76,6 +77,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 	// tiles
 	private transient MapRenderRegion[] staticRegions;
+	private transient Map<String, PolygonObject> polyMap;
 	// events
 	private List<EventObject> dynamicRegions = new ArrayList<EventObject>(50);
 	// named events
@@ -119,7 +121,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		ArrayList<MapRenderRegion> alTmp = new ArrayList<MapRenderRegion>(1000);
 		for (i = 0, len_i = map.layers.size(); i < len_i; i++) {
 			TiledLayer l = map.layers.get(i);
-			if (EventFactory.isHidden(l.properties))
+			if (EventFactory.isSkip(l.properties))
 				continue;
 			int[][] layerTiles = l.tiles;
 			int layer_z = EventFactory.getZIndex(l.properties);
@@ -154,18 +156,26 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		Map<Integer, ObjectState> eventsById = loadStateFromFS();
 		for (i = 0, len_i = map.objectGroups.size(); i < len_i; i++) {
 			TiledObjectGroup group = map.objectGroups.get(i);
-			if (EventFactory.isHidden(group.properties))
+			if (EventFactory.isSkip(group.properties))
 				continue;
 			for (j = 0, len_j = group.objects.size(); j < len_j; j++) {
 				TiledObject object = group.objects.get(j);
-				if (EventFactory.isHidden(object.properties))
+				if (EventFactory.isSkip(object.properties))
 					continue;
+				if (object.polygon != null) {
+					createPolyMove(map, group, object, object.polygon, true);
+					continue;
+				}
+				if (object.polyline != null) {
+					createPolyMove(map, group, object, object.polyline, false);
+					continue;
+				}
 				ev = new EventObject(object, group, atlas, map);
 				if (object.gid > 0) {
 					ev.z += EventFactory.getZIndex(map, object.gid);
 				}
-				EventFactory.parseProperties(ev, group.properties);
-				EventFactory.parseProperties(ev, object.properties);
+				EventFactory.parseProps(ev, group.properties);
+				EventFactory.parseProps(ev, object.properties);
 				put(object.name, ev);
 			}
 		}
@@ -173,6 +183,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		// Initialize the events
 		for (i = 0, len_i = dynamicRegions.size(); i < len_i; i++) {
 			EventObject eventObj = dynamicRegions.get(i);
+			//TODO init polygon moves
 			if (eventObj.isGlobalEvent()) {
 				EventObject globalObj = globalEv.remove(eventObj.name);
 				if (globalObj == null) {
@@ -208,6 +219,32 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		ev.setTouchBound(new Rectangle(-1000f, height, width + 2000f, 1000f));
 		put(null, ev = new EventObject());
 		ev.setTouchBound(new Rectangle(width, -1000f, 1000f, height + 2000f));
+	}
+
+	private void createPolyMove(TiledMap map, TiledObjectGroup group,
+			TiledObject object, String polygon, boolean loop) {
+		String name = object.name;
+		if (name == null || name.length() == 0)
+			return;
+		String[] sa = polygon.split(" ");
+		int[] verticesX = new int[sa.length];
+		int[] verticesY = new int[sa.length];
+		int x = object.x;
+		int y = map.height - object.y;
+		for (int i = sa.length - 1; i > -1; i--) {
+			String point = sa[i];
+			// don't use regex split for performance reasons
+			int index = point.indexOf(',');
+			verticesX[i] = x + Integer.parseInt(point.substring(0, index));
+			verticesY[i] = y + Integer.parseInt(point.substring(index + 1));
+		}
+		PolygonObject poly = new PolygonObject();
+		EventFactory.parseProps(poly, group.properties);
+		EventFactory.parseProps(poly, object.properties);
+
+		if (polyMap == null)
+			polyMap = new HashMap<String, PolygonObject>();
+		polyMap.put(name, poly);
 	}
 
 	/**

@@ -16,10 +16,8 @@
 
 package com.ridiculousRPG.movement.auto;
 
-import com.badlogic.gdx.math.Polygon;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
-import com.ridiculousRPG.util.Direction;
 
 /**
  * This {@link MovementHandler} tries to move an event along the given polygon.
@@ -28,52 +26,39 @@ import com.ridiculousRPG.util.Direction;
  * 
  * @author Alexander Baumgartner
  */
-//TODO: Implement it. hehehe;)
+// TODO: Implement it. hehehe;)
 public class MovePolygonAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 
-	private Polygon polygon; // serialize vertices
-	private float lastDistance;
-	private float distanceCount;
-	private Direction dir;
+	private float[] verticesX;
+	private float[] verticesY;
+	private String[] execAtNode;
 
-	protected MovePolygonAdapter(float distance, Direction dir) {
-		this.dir = dir;
-	}
-
-	/**
-	 * This MovementAdapter tries to move an event by the given distance and
-	 * direction. The move waits if a blocking event exists on it's way.<br>
-	 * After succeeding the switch finished is set to true.
-	 */
-	public static MovementHandler $(float distance, Direction dir) {
-		return new MovePolygonAdapter(distance, dir);
+	public MovePolygonAdapter(float[] verticesX, float[] verticesY) {
+		this.verticesX = verticesX;
+		this.verticesY = verticesY;
 	}
 
 	@Override
 	public void tryMove(Movable event, float deltaTime) {
 		// move could be blocked
 		/*
-		if (distanceCount >= distance || finished) {
-			if (finished)
-				event.stop();
-			finished = true;
-		} else {
-			lastDistance = event.offerMove(dir, deltaTime);
-			distanceCount += lastDistance;
-		}*/
+		 * if (distanceCount >= distance || finished) { if (finished)
+		 * event.stop(); finished = true; } else { lastDistance =
+		 * event.offerMove(dir, deltaTime); distanceCount += lastDistance; }
+		 */
 	}
 
 	@Override
 	public void moveBlocked(Movable event) {
-		distanceCount -= lastDistance;
+		// distanceCount -= lastDistance;
 		event.stop();
 	}
 
 	@Override
 	public void reset() {
 		super.reset();
-		distanceCount = 0f;
-		lastDistance = 0f;
+		// distanceCount = 0f;
+		// lastDistance = 0f;
 	}
 }

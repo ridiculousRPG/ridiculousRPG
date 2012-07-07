@@ -342,5 +342,8 @@
     <property name="onTouch" value="$.globalState.setBool(1, true) /*player burning*/"/>
    </properties>
   </object>
+  <object x="466" y="0">
+   <polygon points="0,0 112,287 -173,364"/>
+  </object>
  </objectgroup>
 </map>

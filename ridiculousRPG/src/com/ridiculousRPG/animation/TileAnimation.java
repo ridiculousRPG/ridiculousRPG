@@ -387,9 +387,7 @@ public class TileAnimation implements Disposable, Serializable {
 			pixelPerSecond = (x < 0 ? -x : x) + (y < 0 ? -y : y);
 			pixelPerSecond = pixelPerSecond / deltaTime;
 			if (x != 0 && y != 0)
-				pixelPerSecond *= .7f;
-			// exact but worse performance:
-			// pixelPerSecond = (float)Math.sqrt(x*x+y*y)/deltaTime;
+				pixelPerSecond = (float)Math.sqrt(x*x+y*y)/deltaTime;
 		} else {
 			pixelPerSecond = animationSpeed.getPixelPerSecond();
 		}

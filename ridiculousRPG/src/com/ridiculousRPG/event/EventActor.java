@@ -76,7 +76,7 @@ public class EventActor extends Actor {
 
 		});
 		setBounds(x, y, width, height);
-		EventFactory.parseProperties(event, properties);
+		EventFactory.parseProps(event, properties);
 		// refresh all values for the Actor class
 		super.setBounds(event.getX(), event.getY(), event.getWidth(), event
 				.getHeight());
