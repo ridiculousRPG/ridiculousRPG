@@ -71,7 +71,13 @@ public class MovePolygonAdapter extends MovementHandler {
 	}
 
 	public MovePolygonAdapter(PolygonObject polygon, boolean rewind) {
+		this(polygon, false, true);
+	}
+
+	public MovePolygonAdapter(PolygonObject polygon, boolean rewind,
+			boolean crop) {
 		this.rewind = rewind;
+		this.crop = crop;
 		setPolygon(polygon);
 	}
 
@@ -80,7 +86,12 @@ public class MovePolygonAdapter extends MovementHandler {
 	}
 
 	public MovePolygonAdapter(String polyName, boolean rewind) {
+		this(polyName, false, true);
+	}
+
+	public MovePolygonAdapter(String polyName, boolean rewind, boolean crop) {
 		this.rewind = rewind;
+		this.crop = crop;
 		this.polygonName = polyName;
 	}
 
@@ -137,6 +148,10 @@ public class MovePolygonAdapter extends MovementHandler {
 						+ "onNode script for " + event + " " + polygon, e);
 			}
 			execScript = null;
+			if (crop) {
+				event.stop();
+				return;
+			}
 		}
 		if (polygonChanged) {
 			reset();

@@ -352,5 +352,31 @@
    </properties>
    <polyline points="1,4 23,75 -113,19 -173,83"/>
   </object>
+  <object name="player3Polynom" type="player" x="323" y="330" width="19" height="9">
+   <properties>
+    <property name="//movehandler" value="data/script/game/moveEvent/player2AutoMove.js"/>
+    <property name="animation" value="data/charset/Daisy.png"/>
+    <property name="blocking" value="NONE"/>
+    <property name="movehandler" value="MovePolygonAdapter(&quot;movePolyTest&quot;)"/>
+    <property name="ontouch" value="if (!eventState.getBool(0)) {say('test'); eventState.setBool(0, true)}"/>
+    <property name="speed" value="S04_XX_SLOW"/>
+   </properties>
+  </object>
+  <object name="player4Polynom" type="player" x="337" y="357" width="19" height="9">
+   <properties>
+    <property name="//movehandler" value="data/script/game/moveEvent/player2AutoMove.js"/>
+    <property name="animation" value="data/charset/Daisy.png"/>
+    <property name="blocking" value="NONE"/>
+    <property name="movehandler" value="MovePolygonAdapter(&quot;polyLoop&quot;)"/>
+    <property name="ontouch" value="if (!eventState.getBool(0)) {say('test'); eventState.setBool(0, true)}"/>
+    <property name="speed" value="S06_SLOW"/>
+   </properties>
+  </object>
+  <object name="polyLoop" x="346" y="362">
+   <properties>
+    <property name="onnode3" value="eventSelf.sleep(3)"/>
+   </properties>
+   <polygon points="0,0 -32,67 143,70 205,62 205,27 109,-6"/>
+  </object>
  </objectgroup>
 </map>
