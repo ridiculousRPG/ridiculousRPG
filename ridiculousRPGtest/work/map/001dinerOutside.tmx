@@ -346,6 +346,10 @@
    <polygon points="0,0 112,287 -173,364"/>
   </object>
   <object name="movePolyTest" x="256" y="344">
+   <properties>
+    <property name="onnode00" value="moveHandler.rewind = false"/>
+    <property name="onnode03" value="moveHandler.rewind = true"/>
+   </properties>
    <polyline points="1,4 23,75 -113,19 -173,83"/>
   </object>
  </objectgroup>

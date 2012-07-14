@@ -147,7 +147,10 @@ public class MovePolygonAdapter extends MovementHandler {
 		if (!finished && polygon != null) {
 			float distance = event.getMoveSpeed().computeStretch(deltaTime);
 			if (distance > 0) {
-				execScript = polygon.moveAlong(distance, crop);
+				if (rewind)
+					execScript = polygon.moveAlong(-distance, crop);
+				else
+					execScript = polygon.moveAlong(distance, crop);
 				event.offerMove(polygon.getRelativeX(), polygon.getRelativeY());
 				if (event instanceof EventObject) {
 					((EventObject) event).animate(polygon.getRelativeX(),
