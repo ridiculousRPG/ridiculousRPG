@@ -89,7 +89,7 @@ public class MovePolygonAdapter extends MovementHandler {
 	}
 
 	public void setPolygon(PolygonObject polygon) {
-		this.polygon = polygon;
+		this.polygon = (PolygonObject) polygon.clone();
 		this.polygonName = polygon.getName();
 		polygonChanged = true;
 	}
