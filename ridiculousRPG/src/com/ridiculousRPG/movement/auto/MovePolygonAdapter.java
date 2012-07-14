@@ -144,7 +144,7 @@ public class MovePolygonAdapter extends MovementHandler {
 		} else if (finished) {
 			event.stop();
 		}
-		if (polygon != null) {
+		if (!finished && polygon != null) {
 			float distance = event.getMoveSpeed().computeStretch(deltaTime);
 			if (distance > 0) {
 				execScript = polygon.moveAlong(distance, crop);
@@ -153,6 +153,7 @@ public class MovePolygonAdapter extends MovementHandler {
 					((EventObject) event).animate(polygon.getRelativeX(),
 							polygon.getRelativeY(), deltaTime);
 				}
+				finished = polygon.isFinished();
 			}
 		}
 	}

@@ -260,7 +260,12 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	@Override
 	public synchronized void clear() {
-		super.clear();
+		try {
+			super.clear();
+		} catch (Exception e) {
+			// Stage.cancelTouchFocus throws IndexOutOfBoundsException
+			e.printStackTrace();
+		}
 		disposeDrawables();
 	}
 

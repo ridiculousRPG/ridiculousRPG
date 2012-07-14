@@ -308,8 +308,8 @@
    <properties>
     <property name="//movehandler" value="data/script/game/moveEvent/player2AutoMove.js"/>
     <property name="animation" value="data/charset/Daisy.png"/>
-    <property name="blocking" value="PASSES_LOW_BARRIER"/>
-    <property name="movehandler" value="Move4WayAdapter(Keys.L, Keys.J, Keys.I, Keys.K)"/>
+    <property name="blocking" value="NONE"/>
+    <property name="movehandler" value="MovePolygonAdapter(&quot;movePolyTest&quot;)"/>
     <property name="ontouch" value="if (!eventState.getBool(0)) {say('test'); eventState.setBool(0, true)}"/>
     <property name="speed" value="S07_NORMAL"/>
    </properties>
@@ -344,6 +344,9 @@
   </object>
   <object x="466" y="0">
    <polygon points="0,0 112,287 -173,364"/>
+  </object>
+  <object name="movePolyTest" x="256" y="344">
+   <polyline points="1,4 23,75 -113,19 -173,83"/>
   </object>
  </objectgroup>
 </map>

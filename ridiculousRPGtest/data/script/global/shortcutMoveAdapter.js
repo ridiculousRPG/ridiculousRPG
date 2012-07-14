@@ -13,6 +13,7 @@ MoveRandomAdapter = com.ridiculousRPG.movement.auto.MoveRandomAdapter;
 MoveRectangleAdapter = com.ridiculousRPG.movement.auto.MoveRectangleAdapter;
 MoveSetXYAdapter = com.ridiculousRPG.movement.auto.MoveSetXYAdapter;
 MoveTracerAdapter = com.ridiculousRPG.movement.auto.MoveTracerAdapter;
+MovePolygonAdapter = com.ridiculousRPG.movement.auto.MovePolygonAdapter;
 
 Move2WayNSAdapter = com.ridiculousRPG.movement.input.Move2WayNSAdapter;
 Move2WayWEAdapter = com.ridiculousRPG.movement.input.Move2WayWEAdapter;

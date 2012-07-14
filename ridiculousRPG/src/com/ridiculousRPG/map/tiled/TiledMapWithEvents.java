@@ -236,13 +236,13 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		float[] verticesX = new float[sa.length];
 		float[] verticesY = new float[sa.length];
 		float x = object.x;
-		float y = map.height - object.y;
+		float y = map.height * map.tileHeight - object.y;
 		for (int i = sa.length - 1; i > -1; i--) {
 			String point = sa[i];
 			// don't use regex split for performance reasons
 			int index = point.indexOf(',');
 			verticesX[i] = x + Integer.parseInt(point.substring(0, index));
-			verticesY[i] = y + Integer.parseInt(point.substring(index + 1));
+			verticesY[i] = y - Integer.parseInt(point.substring(index + 1));
 		}
 		PolygonObject poly = new PolygonObject(name, verticesX, verticesY, loop);
 		EventFactory.parseProps(poly, group.properties);

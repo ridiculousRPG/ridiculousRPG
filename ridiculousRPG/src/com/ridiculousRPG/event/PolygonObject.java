@@ -50,8 +50,8 @@ public class PolygonObject implements Cloneable, Serializable {
 			y2 = y1;
 			x1 = vertexX[i];
 			y1 = vertexY[i];
-			xLen = x1 - x2;
-			yLen = y1 - y2;
+			xLen = x2 - x1;
+			yLen = y2 - y1;
 			segmentXlen[i] = xLen;
 			segmentYlen[i] = yLen;
 			segmentLen[i] = (float) Math.sqrt(xLen * xLen + yLen * yLen);
@@ -156,12 +156,13 @@ public class PolygonObject implements Cloneable, Serializable {
 		// compute segment index and distance
 		String exec = computeSegmentPos(distance, crop);
 		// compute current (x,y) position
-		float x = vertexX[moveState.moveIndex]
-				+ segmentXlen[moveState.moveIndex] * moveState.moveDistance
-				/ segmentLen[moveState.moveIndex];
-		float y = vertexY[moveState.moveIndex]
-				+ segmentYlen[moveState.moveIndex] * moveState.moveDistance
-				/ segmentLen[moveState.moveIndex];
+		int i = moveState.moveIndex;
+		float x = vertexX[i]
+				+ segmentXlen[i] * moveState.moveDistance
+				/ segmentLen[i];
+		float y = vertexY[i]
+				+ segmentYlen[i] * moveState.moveDistance
+				/ segmentLen[i];
 		moveState.moveRelX = x - moveState.moveX;
 		moveState.moveRelY = y - moveState.moveY;
 		moveState.moveX = x;
@@ -171,6 +172,7 @@ public class PolygonObject implements Cloneable, Serializable {
 
 	private String computeSegmentPos(float distance, boolean crop) {
 		this.moveState.moveDistance += distance;
+		float currSegLen = segmentLen[moveState.moveIndex];
 		if (moveState.moveDistance <= 0) {
 			String exec = execAtNodeScript[moveState.moveIndex];
 			moveState.moveIndex--;
@@ -194,7 +196,7 @@ public class PolygonObject implements Cloneable, Serializable {
 				moveState.moveDistance += segmentLen[moveState.moveIndex];
 			}
 			return exec;
-		} else if (moveState.moveDistance >= segmentLen[moveState.moveIndex]) {
+		} else if (moveState.moveDistance >= currSegLen) {
 			moveState.moveIndex++;
 			String exec = execAtNodeScript[moveState.moveIndex];
 			if (moveState.moveIndex > segmentLen.length - 1) {
@@ -205,7 +207,7 @@ public class PolygonObject implements Cloneable, Serializable {
 					} else {
 						moveState.finished = true;
 						moveState.moveIndex = segmentLen.length - 1;
-						moveState.moveDistance = segmentLen[moveState.moveIndex];
+						moveState.moveDistance = currSegLen;
 						return exec;
 					}
 				}
@@ -214,7 +216,7 @@ public class PolygonObject implements Cloneable, Serializable {
 			if (crop && exec != null) {
 				moveState.moveDistance = 0;
 			} else {
-				moveState.moveDistance -= segmentLen[moveState.moveIndex];
+				moveState.moveDistance -= currSegLen;
 			}
 			return exec;
 		}
