@@ -273,7 +273,19 @@ public class PolygonObject implements Cloneable, Serializable {
 	public void undoMove() {
 		moveState.set(moveStateOld);
 	}
-
+	public PolygonObject clone() {
+		PolygonObject newPoly;
+		try {
+			newPoly = (PolygonObject) super.clone();
+			newPoly.moveState = (PolygonMoveState) moveState.clone();
+			newPoly.moveStateOld = (PolygonMoveState) moveStateOld.clone();
+		} catch (CloneNotSupportedException e) {
+			// It's cloneable, so this should never happen
+			e.printStackTrace();
+			return this;
+		}
+		return newPoly;
+	}
 	public static class PolygonMoveState implements Cloneable, Serializable {
 		private static final long serialVersionUID = 1L;
 
@@ -293,6 +305,15 @@ public class PolygonObject implements Cloneable, Serializable {
 			moveRelX = src.moveRelX;
 			moveRelY = src.moveRelY;
 			finished = src.finished;
+		}
+		public PolygonMoveState clone() {
+			try {
+				return (PolygonMoveState) super.clone();
+			} catch (CloneNotSupportedException e) {
+				// It's cloneable, so this should never happen
+				e.printStackTrace();
+				return this;
+			}
 		}
 	}
 }

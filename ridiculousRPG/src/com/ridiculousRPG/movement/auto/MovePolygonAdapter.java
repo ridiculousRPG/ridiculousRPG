@@ -108,8 +108,7 @@ public class MovePolygonAdapter extends MovementHandler {
 		PolygonObject newPoly = polyMap.get(polygonName);
 		if (newPoly == null)
 			return false;
-		this.polygon = newPoly;
-		polygonChanged = true;
+		setPolygon(newPoly);
 		return true;
 	}
 
