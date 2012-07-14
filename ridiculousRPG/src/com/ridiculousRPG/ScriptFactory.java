@@ -223,10 +223,10 @@ public class ScriptFactory {
 	 */
 	public String prepareScriptFunction(SortedMap<Integer, String> codeLines,
 			String functionTemplate) {
-		String[] sa = functionTemplate.split(TEMPLATE_LINE_MARK);
+		String[] sa = prepareTemplate(functionTemplate);
 		// estimate length
-		StringBuilder script = new StringBuilder(functionTemplate.length()
-				+ sa[1].length() * codeLines.size() + 100);
+		StringBuilder script = new StringBuilder(functionTemplate.length() + 60
+				* codeLines.size() + 100);
 		script.append(sa[0]);
 		boolean lineSeparator = false;
 		for (String line : codeLines.values()) {
@@ -239,6 +239,32 @@ public class ScriptFactory {
 		}
 		script.append(sa[2]);
 		return script.toString();
+	}
+
+	/**
+	 * This method merges the given code into the script function template.
+	 * 
+	 * @return A {@link String} with the generated script function
+	 */
+	public String prepareScriptFunction(String code, String functionTemplate) {
+		String[] sa = prepareTemplate(functionTemplate);
+		// estimate length
+		StringBuilder script = new StringBuilder(
+				functionTemplate.length() + 200);
+		script.append(sa[0]);
+		script.append(code);
+		script.append(sa[2]);
+		return script.toString();
+	}
+
+	private String[] prepareTemplate(String functionTemplate) {
+		String[] sa = functionTemplate.split(TEMPLATE_LINE_MARK);
+		if (sa.length < 3) {
+			if (sa.length < 2)
+				return new String[] { functionTemplate, "\n", "" };
+			return new String[] { sa[0], "\n", sa[1] };
+		}
+		return sa;
 	}
 
 	public Invocable obtainInvocable(FileHandle scriptFileToLoad)

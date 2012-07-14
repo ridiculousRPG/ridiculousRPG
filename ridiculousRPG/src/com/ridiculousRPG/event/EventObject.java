@@ -75,6 +75,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	private EventHandler eventHandler;
 	private Color color = new ColorSerializable(1f, 1f, 1f, 1f);
 	private float colorFloatBits = color.toFloatBits();
+	private float sleepSeconds;
 
 	/**
 	 * Set the property "id" in the Tiled editor to identify an event.<br>
@@ -696,6 +697,24 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		stop();
 		if (imageRef != null)
 			image = imageRef;
+	}
+
+	/**
+	 * Decrements the sleep-count and returns true if the event is sleeping.
+	 */
+	public boolean checkSleep(float delta) {
+		if (sleepSeconds > 0) {
+			sleepSeconds -= delta;
+			return sleepSeconds > 0;
+		}
+		return false;
+	}
+
+	/**
+	 * The event freezes at the current place for the given amount of seconds.<br>
+	 */
+	public void sleep(float seconds) {
+		sleepSeconds = seconds;
 	}
 
 	/**

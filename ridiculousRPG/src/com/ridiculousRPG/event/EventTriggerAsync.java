@@ -132,7 +132,8 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 		for (i = 0; i < dynSize; i++) {
 			obj1 = events.get(i);
 			obj1.collision.clear();
-			obj1.getMoveHandler().tryMove(obj1, deltaTime);
+			if (!obj1.checkSleep(deltaTime))
+				obj1.getMoveHandler().tryMove(obj1, deltaTime);
 		}
 		// move if no collision
 		for (i = 0; i < dynSize; i++) {

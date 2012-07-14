@@ -50,6 +50,7 @@ import com.ridiculousRPG.event.handler.EventHandler;
 import com.ridiculousRPG.map.MapLoader;
 import com.ridiculousRPG.map.MapRenderRegion;
 import com.ridiculousRPG.map.MapWithEvents;
+import com.ridiculousRPG.movement.auto.MovePolygonAdapter;
 import com.ridiculousRPG.util.ExecuteInMainThread;
 import com.ridiculousRPG.util.IntSet;
 import com.ridiculousRPG.util.ObjectState;
@@ -183,7 +184,12 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		// Initialize the events
 		for (i = 0, len_i = dynamicRegions.size(); i < len_i; i++) {
 			EventObject eventObj = dynamicRegions.get(i);
-			//TODO init polygon moves
+			// Polygons are defined on the map and may not be available at event
+			// creation time, that's why we have to initialize them here.
+			if (eventObj.getMoveHandler() instanceof MovePolygonAdapter) {
+				((MovePolygonAdapter) eventObj.getMoveHandler())
+						.offerPolygons(polyMap);
+			}
 			if (eventObj.isGlobalEvent()) {
 				EventObject globalObj = globalEv.remove(eventObj.name);
 				if (globalObj == null) {
@@ -227,10 +233,10 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		if (name == null || name.length() == 0)
 			return;
 		String[] sa = polygon.split(" ");
-		int[] verticesX = new int[sa.length];
-		int[] verticesY = new int[sa.length];
-		int x = object.x;
-		int y = map.height - object.y;
+		float[] verticesX = new float[sa.length];
+		float[] verticesY = new float[sa.length];
+		float x = object.x;
+		float y = map.height - object.y;
 		for (int i = sa.length - 1; i > -1; i--) {
 			String point = sa[i];
 			// don't use regex split for performance reasons
@@ -238,7 +244,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			verticesX[i] = x + Integer.parseInt(point.substring(0, index));
 			verticesY[i] = y + Integer.parseInt(point.substring(index + 1));
 		}
-		PolygonObject poly = new PolygonObject();
+		PolygonObject poly = new PolygonObject(name, verticesX, verticesY, loop);
 		EventFactory.parseProps(poly, group.properties);
 		EventFactory.parseProps(poly, object.properties);
 

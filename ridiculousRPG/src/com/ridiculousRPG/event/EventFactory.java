@@ -276,7 +276,7 @@ public class EventFactory {
 				if (index >= poly.execAtNodeScript.length) {
 					GameBase.$info("TiledMap.createPolygon",
 							"Could not apply event '" + key + "' for polygon '"
-									+ poly.name + "'. "
+									+ poly.getName() + "'. "
 									+ "Node index out of bounds!", null);
 				} else {
 					poly.execAtNodeScript[index] = val;
@@ -285,7 +285,7 @@ public class EventFactory {
 		} catch (Exception e) {
 			GameBase.$error("TiledMap.createPolygon",
 					"Could not parse property '" + key + "' for polygon '"
-							+ poly.name + "'", e);
+							+ poly.getName() + "'", e);
 		}
 	}
 

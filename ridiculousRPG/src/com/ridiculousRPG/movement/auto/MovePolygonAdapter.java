@@ -16,8 +16,18 @@
 
 package com.ridiculousRPG.movement.auto;
 
+import java.util.Map;
+
+import javax.script.ScriptEngine;
+
+import com.badlogic.gdx.Gdx;
+import com.ridiculousRPG.GameBase;
+import com.ridiculousRPG.event.EventObject;
+import com.ridiculousRPG.event.PolygonObject;
+import com.ridiculousRPG.event.handler.EventHandler;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
+import com.ridiculousRPG.util.ObjectState;
 
 /**
  * This {@link MovementHandler} tries to move an event along the given polygon.
@@ -26,39 +36,141 @@ import com.ridiculousRPG.movement.MovementHandler;
  * 
  * @author Alexander Baumgartner
  */
-// TODO: Implement it. hehehe;)
 public class MovePolygonAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 
-	private float[] verticesX;
-	private float[] verticesY;
-	private String[] execAtNode;
+	private PolygonObject polygon;
+	private String execScript;
+	private String polygonName;
+	private boolean polygonChanged;
+	private boolean rewind;
+	private boolean crop;
 
-	public MovePolygonAdapter(float[] verticesX, float[] verticesY) {
-		this.verticesX = verticesX;
-		this.verticesY = verticesY;
+	private static String NODE_TEMPLATE;
+
+	public boolean isRewind() {
+		return rewind;
+	}
+
+	public void setRewind(boolean rewind) {
+		this.rewind = rewind;
+		if (finished)
+			polygonChanged = true;
+	}
+
+	public boolean isCrop() {
+		return crop;
+	}
+
+	public void setCrop(boolean crop) {
+		this.crop = crop;
+	}
+
+	public MovePolygonAdapter(PolygonObject polygon) {
+		this(polygon, false);
+	}
+
+	public MovePolygonAdapter(PolygonObject polygon, boolean rewind) {
+		this.rewind = rewind;
+		setPolygon(polygon);
+	}
+
+	public MovePolygonAdapter(String polyName) {
+		this(polyName, false);
+	}
+
+	public MovePolygonAdapter(String polyName, boolean rewind) {
+		this.rewind = rewind;
+		this.polygonName = polyName;
+	}
+
+	public PolygonObject getPolygon() {
+		return polygon;
+	}
+
+	public void setPolygon(PolygonObject polygon) {
+		this.polygon = polygon;
+		this.polygonName = polygon.getName();
+		polygonChanged = true;
+	}
+
+	public String getPolygonName() {
+		return polygonName;
+	}
+
+	public void setPolygonName(String polygonName) {
+		this.polygonName = polygonName;
+	}
+
+	public boolean offerPolygons(Map<String, PolygonObject> polyMap) {
+		if (polygonName == null)
+			return false;
+		PolygonObject newPoly = polyMap.get(polygonName);
+		if (newPoly == null)
+			return false;
+		this.polygon = newPoly;
+		polygonChanged = true;
+		return true;
 	}
 
 	@Override
 	public void tryMove(Movable event, float deltaTime) {
-		// move could be blocked
-		/*
-		 * if (distanceCount >= distance || finished) { if (finished)
-		 * event.stop(); finished = true; } else { lastDistance =
-		 * event.offerMove(dir, deltaTime); distanceCount += lastDistance; }
-		 */
+		if (execScript != null) {
+			if (NODE_TEMPLATE == null)
+				NODE_TEMPLATE = Gdx.files.internal(
+						GameBase.$options().eventNodeTemplate).readString(
+						GameBase.$options().encoding);
+			try {
+				String script = GameBase.$scriptFactory()
+						.prepareScriptFunction(execScript, NODE_TEMPLATE);
+				GameBase.$().getSharedEngine().put(ScriptEngine.FILENAME,
+						"onNode-Event-" + polygonName);
+				ObjectState state = null;
+				if (event instanceof EventObject) {
+					EventHandler h = ((EventObject) event).getEventHandler();
+					if (h != null)
+						state = h.getActualState();
+				}
+				GameBase.$().invokeFunction(script, "onNode", event, state,
+						polygon, this);
+			} catch (Exception e) {
+				GameBase.$error("PolygonObject.onNode", "Could not execute "
+						+ "onNode script for " + event + " " + polygon, e);
+			}
+			execScript = null;
+		}
+		if (polygonChanged) {
+			reset();
+		} else if (finished) {
+			event.stop();
+		}
+		if (polygon != null) {
+			float distance = event.getMoveSpeed().computeStretch(deltaTime);
+			if (distance > 0) {
+				execScript = polygon.moveAlong(distance, crop);
+				event.offerMove(polygon.getRelativeX(), polygon.getRelativeY());
+				if (event instanceof EventObject) {
+					((EventObject) event).animate(polygon.getRelativeX(),
+							polygon.getRelativeY(), deltaTime);
+				}
+			}
+		}
 	}
 
 	@Override
 	public void moveBlocked(Movable event) {
-		// distanceCount -= lastDistance;
+		if (polygon != null)
+			polygon.undoMove();
+		execScript = null;
 		event.stop();
 	}
 
 	@Override
 	public void reset() {
 		super.reset();
-		// distanceCount = 0f;
-		// lastDistance = 0f;
+		polygonChanged = false;
+		execScript = null;
+		if (polygon != null)
+			polygon.start(rewind);
 	}
 }

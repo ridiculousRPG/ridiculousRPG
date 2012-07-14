@@ -31,7 +31,7 @@ import com.ridiculousRPG.util.Speed;
  * 
  * @author Alexander Baumgartner
  */
-//TODO: Maybe: Derive from com.badlogic.gdx.scenes.scene2d.Actor
+// TODO: Maybe: Derive from com.badlogic.gdx.scenes.scene2d.Actor
 public abstract class Movable implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -244,12 +244,15 @@ public abstract class Movable implements Serializable {
 
 	/**
 	 * You can change the speed of a {@link Movable} object at any time in your
-	 * game.
+	 * game. The value null results in {@link Speed#S00_ZERO}
 	 * 
 	 * @param moveSpeed
 	 */
 	public void setMoveSpeed(Speed moveSpeed) {
-		this.moveSpeed = moveSpeed;
+		if (moveSpeed == null)
+			this.moveSpeed = Speed.S00_ZERO;
+		else
+			this.moveSpeed = moveSpeed;
 	}
 
 	/**

@@ -207,11 +207,9 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	public Object commit() {
-		if (dispose)
+		if (dispose || lines.size == 0)
 			return null;
-		if (lines.size > 0
-				&& GameBase.$serviceProvider().requestAttention(this, false,
-						false)) {
+		if (GameBase.$serviceProvider().requestAttention(this, false, false)) {
 			// TODO: An other box is showing up. At the time we have already a
 			// problem if we reached this state because the new generated box
 			// has already disposed the textures used by the old one, which is
@@ -260,7 +258,8 @@ public class MessagingService extends ActorsOnStageService implements
 			} while (getActors().size > 0 && !dispose);
 
 			if (dirty)
-				setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+				setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
+						false);
 		}
 		return resultPointer[0];
 	}

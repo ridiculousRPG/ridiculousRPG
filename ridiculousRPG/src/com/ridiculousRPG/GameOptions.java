@@ -55,6 +55,7 @@ public class GameOptions {
 	public String eventTimerTemplate = "data/script/engine/eventTemplate/onTimer.template";
 	public String eventStateChangeTemplate = "data/script/engine/eventTemplate/onStateChange.template";
 	public String eventTouchTemplate = "data/script/engine/eventTemplate/onTouch.template";
+	public String eventNodeTemplate = "data/script/engine/eventTemplate/onNode.template";
 	public String weatherEffectSnow = "data/effect/weather/snow.png";
 	public String weatherEffectRainNE = "data/effect/weather/rainNE.png";
 	public String weatherEffectRainNW = "data/effect/weather/rainNW.png";

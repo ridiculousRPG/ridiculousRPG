@@ -1,0 +1,5 @@
+function onNode(eventSelf, eventState, polygon, moveHandler) {
+  #codeLine#;
+  #codeLine#;
+  commit(); // comment this out if you don't want the autocommit feature
+}
