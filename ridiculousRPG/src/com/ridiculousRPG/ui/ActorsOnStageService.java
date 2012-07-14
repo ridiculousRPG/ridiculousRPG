@@ -264,7 +264,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 			super.clear();
 		} catch (Exception e) {
 			// Stage.cancelTouchFocus throws IndexOutOfBoundsException
-			e.printStackTrace();
+			GameBase.$info("Stage.clear", "Workaround known bug", e);
 		}
 		disposeDrawables();
 	}

@@ -40,6 +40,7 @@ public class ObjectState implements Serializable {
 	private String[] stringVar;
 	private byte[][] rawBytesVar;
 	private ObjectState[] childFragment;
+	private ObjectState parent;
 
 	// Count to determine if the state has changed
 	private transient int changeCount;
@@ -99,7 +100,7 @@ public class ObjectState implements Serializable {
 			intVar[index] = value;
 			this.intVar = intVar;
 		}
-		changeCount++;
+		incChangeCount(this);
 	}
 
 	/**
@@ -166,7 +167,7 @@ public class ObjectState implements Serializable {
 			boolVar[index] = value;
 			this.boolVar = boolVar;
 		}
-		changeCount++;
+		incChangeCount(this);
 	}
 
 	/**
@@ -235,7 +236,7 @@ public class ObjectState implements Serializable {
 			floatVar[index] = value;
 			this.floatVar = floatVar;
 		}
-		changeCount++;
+		incChangeCount(this);
 	}
 
 	/**
@@ -303,7 +304,7 @@ public class ObjectState implements Serializable {
 			stringVar[index] = value;
 			this.stringVar = stringVar;
 		}
-		changeCount++;
+		incChangeCount(this);
 	}
 
 	/**
@@ -371,7 +372,7 @@ public class ObjectState implements Serializable {
 			bytesVar[index] = value;
 			this.rawBytesVar = bytesVar;
 		}
-		changeCount++;
+		incChangeCount(this);
 	}
 
 	/**
@@ -405,7 +406,12 @@ public class ObjectState implements Serializable {
 		if (childVar.length > index) {
 			child = childVar[index];
 		}
-		return child == null ? new ObjectState() : child;
+		if (child == null) {
+			child = new ObjectState();
+			// set and return child for chaining
+			setChild(index, child);
+		}
+		return child;
 	}
 
 	/**
@@ -423,22 +429,29 @@ public class ObjectState implements Serializable {
 			childVar = new ObjectState[newLen];
 			this.childFragment = childVar;
 		}
+		if (value != null) {
+			value.parent = this;
+		}
 		int len = childVar.length;
 		if (len > index) {
+			if (childVar[index] != null) {
+				childVar[index].parent = null;
+			}
 			childVar[index] = value;
 			// shrink
-			if (value == null && index >= len - INC_BY) {
-				int newLen = len;
-				while (newLen > 0 && childVar[newLen - 1] == null)
-					newLen--; // remove trailing empty elements
-				newLen = ((newLen + INC_BY) >> INC_SHIFT) << INC_SHIFT;
-				if (newLen == 0) {
-					this.childFragment = null;
-				} else {
-					this.childFragment = new ObjectState[newLen];
-					System
-							.arraycopy(childVar, 0, this.childFragment, 0,
-									newLen);
+			if (value == null) {
+				if (index >= len - INC_BY) {
+					int newLen = len;
+					while (newLen > 0 && childVar[newLen - 1] == null)
+						newLen--; // remove trailing empty elements
+					newLen = ((newLen + INC_BY) >> INC_SHIFT) << INC_SHIFT;
+					if (newLen == 0) {
+						this.childFragment = null;
+					} else {
+						this.childFragment = new ObjectState[newLen];
+						System.arraycopy(childVar, 0, this.childFragment, 0,
+								newLen);
+					}
 				}
 			}
 		} else if (value != null) {
@@ -448,7 +461,7 @@ public class ObjectState implements Serializable {
 			childVar[index] = value;
 			this.childFragment = childVar;
 		}
-		changeCount++;
+		incChangeCount(this);
 	}
 
 	/**
@@ -466,6 +479,13 @@ public class ObjectState implements Serializable {
 			setChild(index, newVal);
 		}
 		return actVal;
+	}
+
+	private void incChangeCount(ObjectState startPoint) {
+		changeCount++;
+		// avoid cycle-ref loop
+		if (parent != null && parent != startPoint)
+			parent.incChangeCount(startPoint);
 	}
 
 	public int getChangeCount() {

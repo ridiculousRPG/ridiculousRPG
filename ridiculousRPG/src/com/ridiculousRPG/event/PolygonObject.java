@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.ridiculousRPG.GameBase;
 import com.ridiculousRPG.map.tiled.TiledMapWithEvents;
 
 public class PolygonObject implements Cloneable, Serializable {
@@ -157,11 +158,9 @@ public class PolygonObject implements Cloneable, Serializable {
 		String exec = computeSegmentPos(distance, crop);
 		// compute current (x,y) position
 		int i = moveState.moveIndex;
-		float x = vertexX[i]
-				+ segmentXlen[i] * moveState.moveDistance
+		float x = vertexX[i] + segmentXlen[i] * moveState.moveDistance
 				/ segmentLen[i];
-		float y = vertexY[i]
-				+ segmentYlen[i] * moveState.moveDistance
+		float y = vertexY[i] + segmentYlen[i] * moveState.moveDistance
 				/ segmentLen[i];
 		moveState.moveRelX = x - moveState.moveX;
 		moveState.moveRelY = y - moveState.moveY;
@@ -273,6 +272,7 @@ public class PolygonObject implements Cloneable, Serializable {
 	public void undoMove() {
 		moveState.set(moveStateOld);
 	}
+
 	public PolygonObject clone() {
 		PolygonObject newPoly;
 		try {
@@ -281,11 +281,12 @@ public class PolygonObject implements Cloneable, Serializable {
 			newPoly.moveStateOld = (PolygonMoveState) moveStateOld.clone();
 		} catch (CloneNotSupportedException e) {
 			// It's cloneable, so this should never happen
-			e.printStackTrace();
+			GameBase.$info("PolygonObject.clone", "Couldn't clone polygon", e);
 			return this;
 		}
 		return newPoly;
 	}
+
 	public static class PolygonMoveState implements Cloneable, Serializable {
 		private static final long serialVersionUID = 1L;
 
@@ -306,12 +307,14 @@ public class PolygonObject implements Cloneable, Serializable {
 			moveRelY = src.moveRelY;
 			finished = src.finished;
 		}
+
 		public PolygonMoveState clone() {
 			try {
 				return (PolygonMoveState) super.clone();
 			} catch (CloneNotSupportedException e) {
 				// It's cloneable, so this should never happen
-				e.printStackTrace();
+				GameBase.$info("PolygonMoveState.clone",
+						"Couldn't clone polygon move state", e);
 				return this;
 			}
 		}
