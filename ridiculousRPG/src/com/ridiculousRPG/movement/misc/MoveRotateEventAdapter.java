@@ -37,11 +37,6 @@ public class MoveRotateEventAdapter extends MovementHandler {
 	private float angleInDeg;
 	private float rotatedAngle = 0f;
 
-	protected MoveRotateEventAdapter(Speed rotationSpeed, float angleInDeg) {
-		this.rotationSpeed = rotationSpeed;
-		this.angleInDeg = angleInDeg;
-	}
-
 	/**
 	 * This MovementAdapter doesn't move the event but rotates it by the given
 	 * speed.<br>
@@ -54,10 +49,10 @@ public class MoveRotateEventAdapter extends MovementHandler {
 	 *            immediately to the given rotation position.
 	 * @param angleInDeg
 	 *            The angle in degrees or +-0 if you want to loop forever.
-	 * @return
 	 */
-	public static MovementHandler $(Speed rotationSpeed, float angleInDeg) {
-		return new MoveRotateEventAdapter(rotationSpeed, angleInDeg);
+	public MoveRotateEventAdapter(Speed rotationSpeed, float angleInDeg) {
+		this.rotationSpeed = rotationSpeed;
+		this.angleInDeg = angleInDeg;
 	}
 
 	@Override

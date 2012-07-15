@@ -45,35 +45,6 @@ public class MoveEllipseAdapter extends CombinedMovesAdapter {
 		BOTTOM, TOP, LEFT, RIGHT
 	}
 
-	protected MoveEllipseAdapter(Rectangle rect, StartPoint startAt,
-			float angle, boolean rotateTexture, boolean fixedSpeed,
-			Vector2 drift) {
-		super(false, false);
-		// set start position
-		switch (startAt) {
-		case BOTTOM:
-			addMoveToExecute(MoveSetXYAdapter
-					.$(rect.x + rect.width / 2, rect.y));
-			break;
-		case TOP:
-			addMoveToExecute(MoveSetXYAdapter.$(rect.x + rect.width / 2, rect.y
-					+ rect.height));
-			break;
-		case LEFT:
-			addMoveToExecute(MoveSetXYAdapter.$(rect.x, rect.y + rect.height
-					/ 2));
-			break;
-		case RIGHT:
-			addMoveToExecute(MoveSetXYAdapter.$(rect.x + rect.width, rect.y
-					+ rect.height / 2));
-			break;
-		}
-		// add elliptic move
-		addMoveToExecute(MoveArcAdapter.$(new Vector2(rect.x + rect.width / 2,
-				rect.y + rect.height / 2), angle, rotateTexture, fixedSpeed,
-				new Vector2(rect.width / rect.height, 1f), drift));
-	}
-
 	/**
 	 * This {@link MovementHandler} tries to move an event around the given
 	 * ellipse. The move waits if a blocking event exists on it's way.<br>
@@ -83,8 +54,8 @@ public class MoveEllipseAdapter extends CombinedMovesAdapter {
 	 *            The rectangle defines the outer bounds of the elipse.
 	 * @return
 	 */
-	public static MovementHandler $(Rectangle rect) {
-		return $(rect, false, -360);
+	public MoveEllipseAdapter(Rectangle rect) {
+		this(rect, false, -360);
 	}
 
 	/**
@@ -101,10 +72,9 @@ public class MoveEllipseAdapter extends CombinedMovesAdapter {
 	 *            the angle is negative, the move will be clockwise.
 	 * @return
 	 */
-	public static MovementHandler $(Rectangle rect, boolean rotateTexture,
-			float angle) {
-		return $(rect, StartPoint.BOTTOM, angle, rotateTexture, false,
-				new Vector2(0f, 0f));
+	public MoveEllipseAdapter(Rectangle rect, boolean rotateTexture, float angle) {
+		this(rect, StartPoint.BOTTOM, angle, rotateTexture, false, new Vector2(
+				0f, 0f));
 	}
 
 	/**
@@ -131,12 +101,33 @@ public class MoveEllipseAdapter extends CombinedMovesAdapter {
 	 *            allowed).<br>
 	 *            x-drift will produce a vertical helix. y-drift will produce a
 	 *            horizontal helix. (Default value = 0f = no drift)
-	 * @return
 	 */
-	public static MovementHandler $(Rectangle rect, StartPoint startAt,
-			float angle, boolean rotateTexture, boolean fixedSpeed,
-			Vector2 drift) {
-		return new MoveEllipseAdapter(rect, startAt, angle, rotateTexture,
-				fixedSpeed, drift);
+	public MoveEllipseAdapter(Rectangle rect, StartPoint startAt, float angle,
+			boolean rotateTexture, boolean fixedSpeed, Vector2 drift) {
+		super(false, false);
+		// set start position
+		switch (startAt) {
+		case BOTTOM:
+			addMoveToExecute(new MoveSetXYAdapter(rect.x + rect.width / 2,
+					rect.y));
+			break;
+		case TOP:
+			addMoveToExecute(new MoveSetXYAdapter(rect.x + rect.width / 2,
+					rect.y + rect.height));
+			break;
+		case LEFT:
+			addMoveToExecute(new MoveSetXYAdapter(rect.x, rect.y + rect.height
+					/ 2));
+			break;
+		case RIGHT:
+			addMoveToExecute(new MoveSetXYAdapter(rect.x + rect.width, rect.y
+					+ rect.height / 2));
+			break;
+		}
+		// add elliptic move
+		addMoveToExecute(new MoveArcAdapter(new Vector2(
+				rect.x + rect.width / 2, rect.y + rect.height / 2), angle,
+				rotateTexture, fixedSpeed, new Vector2(
+						rect.width / rect.height, 1f), drift));
 	}
 }

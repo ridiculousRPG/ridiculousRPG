@@ -37,20 +37,13 @@ public class MoveRandomAdapter extends MovementHandler {
 	protected Direction lastDir;
 	protected float minWidth;
 
-	protected MoveRandomAdapter(Direction[] allowedDirections,
-			int changeDirectionSlackness) {
-		this.allowedDirections = allowedDirections;
-		this.changeDirectionSlackness = Math.max(allowedDirections.length,
-				changeDirectionSlackness);
-	}
-
 	/**
 	 * This constructor uses a default slackness-value of 128 for
 	 * direction-changing.<br>
 	 * Defaultdirections are N, E, S and W<br>
 	 */
-	public static MovementHandler $() {
-		return $(128);
+	public MoveRandomAdapter() {
+		this(128);
 	}
 
 	/**
@@ -60,8 +53,8 @@ public class MoveRandomAdapter extends MovementHandler {
 	 * 
 	 * @param changeDirectionSlackness
 	 */
-	public static MovementHandler $(int changeDirectionSlackness) {
-		return $(new Direction[] { Direction.N, Direction.E, Direction.S,
+	public MoveRandomAdapter(int changeDirectionSlackness) {
+		this(new Direction[] { Direction.N, Direction.E, Direction.S,
 				Direction.W }, changeDirectionSlackness);
 	}
 
@@ -73,9 +66,10 @@ public class MoveRandomAdapter extends MovementHandler {
 	 * @param allowedDirections
 	 * @param changeDirectionSlackness
 	 */
-	public static MovementHandler $(Direction[] allowedDirections,
+	public MoveRandomAdapter(Direction[] allowedDirections,
 			int changeDirectionSlackness) {
-		return new MoveRandomAdapter(allowedDirections,
+		this.allowedDirections = allowedDirections;
+		this.changeDirectionSlackness = Math.max(allowedDirections.length,
 				changeDirectionSlackness);
 	}
 

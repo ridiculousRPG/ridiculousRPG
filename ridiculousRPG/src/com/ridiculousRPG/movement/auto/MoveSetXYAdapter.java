@@ -35,10 +35,6 @@ public class MoveSetXYAdapter extends MovementHandler {
 	private boolean checkPerformed;
 	private Movable other;
 
-	protected MoveSetXYAdapter(Movable other) {
-		this.other = other;
-	}
-
 	/**
 	 * This MovementAdapter tries to move an event to the given position. The
 	 * move is blocked while a blocking event exists on the given position.<br>
@@ -46,7 +42,11 @@ public class MoveSetXYAdapter extends MovementHandler {
 	 * If there exists a none-moving blocking event at the given position, this
 	 * movement will never finish.
 	 */
-	public static MovementHandler $(float x, float y) {
+	public MoveSetXYAdapter(float x, float y) {
+		this(buildContainer(x, y));
+	}
+
+	private static Movable buildContainer(float x, float y) {
 		Movable mv = new Movable() {
 			private static final long serialVersionUID = 1L;
 
@@ -70,7 +70,7 @@ public class MoveSetXYAdapter extends MovementHandler {
 		};
 		mv.setX(x);
 		mv.setY(y);
-		return new MoveSetXYAdapter(mv);
+		return mv;
 	}
 
 	/**
@@ -80,8 +80,8 @@ public class MoveSetXYAdapter extends MovementHandler {
 	 * If there exists a none-moving blocking event at the given position, this
 	 * movement will never finish.
 	 */
-	public static MovementHandler $(Movable other) {
-		return new MoveSetXYAdapter(other);
+	public MoveSetXYAdapter(Movable other) {
+		this.other = other;
 	}
 
 	@Override

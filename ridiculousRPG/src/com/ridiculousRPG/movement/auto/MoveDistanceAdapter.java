@@ -35,18 +35,14 @@ public class MoveDistanceAdapter extends MovementHandler {
 	private float distanceCount;
 	private Direction dir;
 
-	protected MoveDistanceAdapter(float distance, Direction dir) {
-		this.distance = distance;
-		this.dir = dir;
-	}
-
 	/**
 	 * This MovementAdapter tries to move an event by the given distance and
 	 * direction. The move waits if a blocking event exists on it's way.<br>
 	 * After succeeding the switch finished is set to true.
 	 */
-	public static MovementHandler $(float distance, Direction dir) {
-		return new MoveDistanceAdapter(distance, dir);
+	public MoveDistanceAdapter(float distance, Direction dir) {
+		this.distance = distance;
+		this.dir = dir;
 	}
 
 	@Override

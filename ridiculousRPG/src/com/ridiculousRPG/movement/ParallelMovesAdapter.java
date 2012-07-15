@@ -41,19 +41,15 @@ public class ParallelMovesAdapter extends MovementHandler {
 	private final List<MovementHandler> resetMoves = new ArrayList<MovementHandler>(
 			4);
 
-	protected ParallelMovesAdapter(MovementHandler... parallelMoves) {
-		for (MovementHandler move : parallelMoves)
-			addMove(move);
-	}
-
 	/**
 	 * This {@link MovementHandler} allows to combine any other
 	 * {@link MovementHandler}s. It runs all moves in parallel.
 	 * 
 	 * @return MoveParallelMovesAdapter the movement adapter
 	 */
-	public static ParallelMovesAdapter $(MovementHandler... parallelMoves) {
-		return new ParallelMovesAdapter(parallelMoves);
+	public ParallelMovesAdapter(MovementHandler... parallelMoves) {
+		for (MovementHandler move : parallelMoves)
+			addMove(move);
 	}
 
 	/**

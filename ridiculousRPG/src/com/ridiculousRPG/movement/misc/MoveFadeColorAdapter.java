@@ -44,13 +44,6 @@ public class MoveFadeColorAdapter extends MovementHandler {
 	private Color to;
 	private boolean tintEntireGame;
 
-	protected MoveFadeColorAdapter(Speed transitionSpeed, Color to,
-			boolean tintEntireGame) {
-		this.transitionSpeed = transitionSpeed;
-		this.to = ColorSerializable.wrap(to);
-		this.tintEntireGame = tintEntireGame;
-	}
-
 	/**
 	 * This MovementAdapter doesn't move the event. It fades the color until the
 	 * color matches an other (given) color by the given speed.<br>
@@ -71,12 +64,12 @@ public class MoveFadeColorAdapter extends MovementHandler {
 	 *            {@link Color#WHITE}.
 	 * @see {@link GameBase#setGameColorTint(Color)}
 	 * @see {@link GameBase#getGameColorTint()}
-	 * @return
 	 */
-	public static MovementHandler $(Speed transitionSpeed, Color toColor,
+	public MoveFadeColorAdapter(Speed transitionSpeed, Color toColor,
 			boolean tintEntireGame) {
-		return new MoveFadeColorAdapter(transitionSpeed, toColor,
-				tintEntireGame);
+		this.transitionSpeed = transitionSpeed;
+		this.to = ColorSerializable.wrap(toColor);
+		this.tintEntireGame = tintEntireGame;
 	}
 
 	/**

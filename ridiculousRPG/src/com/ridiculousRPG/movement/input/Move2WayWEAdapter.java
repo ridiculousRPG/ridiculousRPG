@@ -35,7 +35,8 @@ public class Move2WayWEAdapter extends MovementHandler {
 	public float touchEpsilon = 5f;
 
 	/**
-	 * Instantiates an {@link MovementHandler} listening to the specified input keys.
+	 * Instantiates an {@link MovementHandler} listening to the specified input
+	 * keys.
 	 * 
 	 * @param eastKey
 	 * @param westKey
@@ -53,8 +54,11 @@ public class Move2WayWEAdapter extends MovementHandler {
 		this.movementKeys = movementKeys;
 	}
 
-	protected Move2WayWEAdapter() {
-		this(MovementKeys.$);
+	/**
+	 * Use singleton {@link #$()} - it's stateless.
+	 */
+	public Move2WayWEAdapter() {
+		this(MovementKeys.$());
 	}
 
 	public static MovementHandler $() {

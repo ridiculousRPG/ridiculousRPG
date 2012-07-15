@@ -34,18 +34,14 @@ public class MoveChangeSpeedAdapter extends MovementHandler {
 
 	private Speed newMoveSpeed, newAnimationSpeed;
 
-	protected MoveChangeSpeedAdapter(Speed newMoveSpeed, Speed newAnimationSpeed) {
-		this.newMoveSpeed = newMoveSpeed;
-		this.newAnimationSpeed = newAnimationSpeed;
-	}
-
 	/**
 	 * If the animationSpeed is set to null, it will automatically be computed
 	 * from the move-distance. (You can always use null if you don't want to
 	 * worry about the characters walk and run - animations)
 	 */
-	public static MovementHandler $(Speed newMoveSpeed, Speed newAnimationSpeed) {
-		return new MoveChangeSpeedAdapter(newMoveSpeed, newAnimationSpeed);
+	public MoveChangeSpeedAdapter(Speed newMoveSpeed, Speed newAnimationSpeed) {
+		this.newMoveSpeed = newMoveSpeed;
+		this.newAnimationSpeed = newAnimationSpeed;
 	}
 
 	@Override

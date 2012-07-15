@@ -43,19 +43,11 @@ public class MoveAnimateEventAdapter extends MovementHandler {
 	private TileAnimation animation;
 	private int animationTextureRow;
 
-	protected MoveAnimateEventAdapter(TileAnimation animation,
-			int animationTextureRow) {
-		this.animation = animation;
-		this.animationTextureRow = animationTextureRow;
-	}
-
 	/**
 	 * Simply animates the event and uses it's own animation therefore.
-	 * 
-	 * @return
 	 */
-	public static MovementHandler $() {
-		return new MoveAnimateEventAdapter(null, -1);
+	public MoveAnimateEventAdapter() {
+		this(null, -1);
 	}
 
 	/**
@@ -63,10 +55,9 @@ public class MoveAnimateEventAdapter extends MovementHandler {
 	 * 
 	 * @param animationTextureRow
 	 *            The row index or -1 if the animation should run over all rows.
-	 * @return
 	 */
-	public static MovementHandler $(int animationTextureRow) {
-		return new MoveAnimateEventAdapter(null, animationTextureRow);
+	public MoveAnimateEventAdapter(int animationTextureRow) {
+		this(null, animationTextureRow);
 	}
 
 	/**
@@ -77,11 +68,11 @@ public class MoveAnimateEventAdapter extends MovementHandler {
 	 * @param animation
 	 * @param animationTextureRow
 	 *            The row index or -1 if the animation should run over all rows.
-	 * @return
 	 */
-	public static MovementHandler $(TileAnimation animation,
+	public MoveAnimateEventAdapter(TileAnimation animation,
 			int animationTextureRow) {
-		return new MoveAnimateEventAdapter(animation, animationTextureRow);
+		this.animation = animation;
+		this.animationTextureRow = animationTextureRow;
 	}
 
 	@Override

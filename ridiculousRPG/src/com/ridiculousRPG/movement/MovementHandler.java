@@ -20,16 +20,12 @@ import java.io.Serializable;
 
 /**
  * All possible MovementAdapters must extend this class.<br>
- * For performance-reasons all MovementAdapters which don't need any
- * status-information should be implemented as singleton.<br>
- * To be uniform all implementations should offer a static $(...) - method and
- * all constructors should be protected. This implementation strategy also
- * allows the use of "object pooling", which may be used to increase the
- * performance.
+ * All MovementAdapters without any status-information should be implement a
+ * static $(...) - method to obtain a singleton object.
  * 
  * @author Alexander Baumgartner
  */
-//TODO: Maybe: Derive from com.badlogic.gdx.scenes.scene2d.Action
+// TODO: Maybe: Derive from com.badlogic.gdx.scenes.scene2d.Action
 public abstract class MovementHandler implements Serializable {
 	private static final long serialVersionUID = 1L;
 	/**

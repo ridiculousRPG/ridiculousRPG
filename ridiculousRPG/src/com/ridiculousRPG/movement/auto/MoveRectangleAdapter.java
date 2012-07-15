@@ -43,13 +43,32 @@ public class MoveRectangleAdapter extends CombinedMovesAdapter {
 		BOTTOM_LEFT, BOTTOM_RIGHT, TOP_LEFT, TOP_RIGHT
 	}
 
-	protected MoveRectangleAdapter(Rectangle rect, StartPoint startAt,
+	/**
+	 * This {@link MovementHandler} tries to move an event around the given
+	 * rectangle. The move waits if a blocking event exists on it's way.<br>
+	 * After succeeding the switch finished is set to true.
+	 */
+	public MoveRectangleAdapter(Rectangle rect, boolean clockwise) {
+		this(rect, StartPoint.BOTTOM_LEFT, clockwise);
+	}
+
+	/**
+	 * This {@link MovementHandler} tries to move an event around the given
+	 * rectangle. The move waits if a blocking event exists on it's way.<br>
+	 * After succeeding the switch finished is set to true.<br>
+	 * Use one of the defined starting points {@link StartPoint#BOTTOM_LEFT}
+	 * {@link StartPoint#BOTTOM_RIGHT} {@link StartPoint#TOP_LEFT}
+	 * {@link StartPoint#TOP_RIGHT}
+	 * 
+	 * @see {@link StartPoint}
+	 */
+	public MoveRectangleAdapter(Rectangle rect, StartPoint startAt,
 			boolean clockwise) {
 		super(false, false);
 		switch (startAt) {
 		case BOTTOM_LEFT:
 			// starting position of the event
-			addMoveToExecute(MoveSetXYAdapter.$(rect.x, rect.y));
+			addMoveToExecute(new MoveSetXYAdapter(rect.x, rect.y));
 			if (clockwise)
 				addDirections(rect, Direction.N, Direction.E, Direction.S,
 						Direction.W);
@@ -59,7 +78,7 @@ public class MoveRectangleAdapter extends CombinedMovesAdapter {
 			return;
 		case BOTTOM_RIGHT:
 			// starting position of the event
-			addMoveToExecute(MoveSetXYAdapter.$(rect.x + rect.width, rect.y));
+			addMoveToExecute(new MoveSetXYAdapter(rect.x + rect.width, rect.y));
 			if (clockwise)
 				addDirections(rect, Direction.W, Direction.N, Direction.E,
 						Direction.S);
@@ -69,7 +88,7 @@ public class MoveRectangleAdapter extends CombinedMovesAdapter {
 			return;
 		case TOP_LEFT:
 			// starting position of the event
-			addMoveToExecute(MoveSetXYAdapter.$(rect.x, rect.y + rect.height));
+			addMoveToExecute(new MoveSetXYAdapter(rect.x, rect.y + rect.height));
 			if (clockwise)
 				addDirections(rect, Direction.E, Direction.S, Direction.W,
 						Direction.N);
@@ -79,7 +98,7 @@ public class MoveRectangleAdapter extends CombinedMovesAdapter {
 			return;
 		case TOP_RIGHT:
 			// starting position of the event
-			addMoveToExecute(MoveSetXYAdapter.$(rect.x + rect.width, rect.y
+			addMoveToExecute(new MoveSetXYAdapter(rect.x + rect.width, rect.y
 					+ rect.height));
 			if (clockwise)
 				addDirections(rect, Direction.S, Direction.W, Direction.N,
@@ -95,31 +114,7 @@ public class MoveRectangleAdapter extends CombinedMovesAdapter {
 		for (Direction dir : dirs) {
 			float distance = dir == Direction.N || dir == Direction.S ? rect.height
 					: rect.width;
-			addMoveToExecute(MoveDistanceAdapter.$(distance, dir));
+			addMoveToExecute(new MoveDistanceAdapter(distance, dir));
 		}
-	}
-
-	/**
-	 * This {@link MovementHandler} tries to move an event around the given
-	 * rectangle. The move waits if a blocking event exists on it's way.<br>
-	 * After succeeding the switch finished is set to true.
-	 */
-	public static MovementHandler $(Rectangle rect, boolean clockwise) {
-		return $(rect, StartPoint.BOTTOM_LEFT, clockwise);
-	}
-
-	/**
-	 * This {@link MovementHandler} tries to move an event around the given
-	 * rectangle. The move waits if a blocking event exists on it's way.<br>
-	 * After succeeding the switch finished is set to true.<br>
-	 * Use one of the defined starting points {@link StartPoint#BOTTOM_LEFT}
-	 * {@link StartPoint#BOTTOM_RIGHT} {@link StartPoint#TOP_LEFT}
-	 * {@link StartPoint#TOP_RIGHT}
-	 * 
-	 * @see {@link StartPoint}
-	 */
-	public static MovementHandler $(Rectangle rect, StartPoint startAt,
-			boolean clockwise) {
-		return new MoveRectangleAdapter(rect, startAt, clockwise);
 	}
 }

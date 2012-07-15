@@ -54,8 +54,11 @@ public class Move2WayNSAdapter extends MovementHandler {
 		this.movementKeys = movementKeys;
 	}
 
-	protected Move2WayNSAdapter() {
-		this(MovementKeys.$);
+	/**
+	 * Use singleton {@link #$()} - it's stateless.
+	 */
+	public Move2WayNSAdapter() {
+		this(MovementKeys.$());
 	}
 
 	public static MovementHandler $() {

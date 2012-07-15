@@ -64,16 +64,13 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 	protected static MagneticEffect globalMagneticEffect = new MagneticEffect();
 	private MagneticEffect magneticEffect = globalMagneticEffect;
 
-	protected MoveMagneticAdapter(Direction[] allowedDirections,
-			int changeDirectionSlackness, Movable attractingEvent,
-			int attractionRadius, Attraction attraction, boolean repulsive) {
-		super(allowedDirections, changeDirectionSlackness);
-		this.attractingEvent = attractingEvent;
-		this.attractionRadius = attractionRadius;
-		this.attraction = attraction;
-		this.repulsive = repulsive;
-		if (attraction == null)
-			attraction = Attraction.NONE;
+	/**
+	 * This constructor uses a default slackness-value of 128 for
+	 * direction-changing.<br>
+	 * Defaultdirections are N, E, S and W<br>
+	 */
+	public MoveMagneticAdapter(Movable attractingEvent, Attraction attraction) {
+		this(attractingEvent, attraction, false);
 	}
 
 	/**
@@ -81,19 +78,9 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 	 * direction-changing.<br>
 	 * Defaultdirections are N, E, S and W<br>
 	 */
-	public static MovementHandler $(Movable attractingEvent,
-			Attraction attraction) {
-		return $(attractingEvent, attraction, false);
-	}
-
-	/**
-	 * This constructor uses a default slackness-value of 128 for
-	 * direction-changing.<br>
-	 * Defaultdirections are N, E, S and W<br>
-	 */
-	public static MovementHandler $(Movable attractingEvent,
-			Attraction attraction, boolean repulsive) {
-		return $(128, attractingEvent, attraction, repulsive);
+	public MoveMagneticAdapter(Movable attractingEvent, Attraction attraction,
+			boolean repulsive) {
+		this(128, attractingEvent, attraction, repulsive);
 	}
 
 	/**
@@ -103,9 +90,9 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 	 * 
 	 * @param changeDirectionSlackness
 	 */
-	public static MovementHandler $(int changeDirectionSlackness,
+	public MoveMagneticAdapter(int changeDirectionSlackness,
 			Movable attractingEvent, Attraction attraction, boolean repulsive) {
-		return $(new Direction[] { Direction.N, Direction.E, Direction.S,
+		this(new Direction[] { Direction.N, Direction.E, Direction.S,
 				Direction.W }, changeDirectionSlackness, attractingEvent,
 				attraction.val, attraction, repulsive);
 	}
@@ -117,9 +104,9 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 	 * 
 	 * @param allowedDirections
 	 */
-	public static MovementHandler $(Direction[] allowedDirections,
+	public MoveMagneticAdapter(Direction[] allowedDirections,
 			Movable attractingEvent, Attraction attraction, boolean repulsive) {
-		return $(allowedDirections, 128, attractingEvent, attraction.val,
+		this(allowedDirections, 128, attractingEvent, attraction.val,
 				attraction, repulsive);
 	}
 
@@ -131,12 +118,16 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 	 * @param allowedDirections
 	 * @param changeDirectionSlackness
 	 */
-	public static MovementHandler $(Direction[] allowedDirections,
+	public MoveMagneticAdapter(Direction[] allowedDirections,
 			int changeDirectionSlackness, Movable attractingEvent,
 			int attractionRadius, Attraction attraction, boolean repulsive) {
-		return new MoveMagneticAdapter(allowedDirections,
-				changeDirectionSlackness, attractingEvent, attractionRadius,
-				attraction, repulsive);
+		super(allowedDirections, changeDirectionSlackness);
+		this.attractingEvent = attractingEvent;
+		this.attractionRadius = attractionRadius;
+		this.attraction = attraction;
+		this.repulsive = repulsive;
+		if (attraction == null)
+			attraction = Attraction.NONE;
 	}
 
 	/**

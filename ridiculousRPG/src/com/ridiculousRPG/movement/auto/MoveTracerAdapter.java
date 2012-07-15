@@ -48,16 +48,11 @@ public class MoveTracerAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 
 	private Movable eventToTrace;
-	private boolean computeDistance = false;
 	private float followDistance;
+	private boolean estimateDistance = false;
 
 	private Deque<Rectangle> movementQueue = new LinkedList<Rectangle>();
 	private float distanceCount;
-
-	protected MoveTracerAdapter(Movable eventToTrace, float followDistance) {
-		this.eventToTrace = eventToTrace;
-		this.followDistance = followDistance;
-	}
 
 	/**
 	 * <h1>ATTENTION!!!</h1> Use a non-blocking eventToTrace otherwise the
@@ -71,32 +66,32 @@ public class MoveTracerAdapter extends MovementHandler {
 	 * @param followDistance
 	 *            The distance to follow the other event
 	 */
-	public static MovementHandler $(Movable eventToTrace, float followDistance) {
-		return new MoveTracerAdapter(eventToTrace, followDistance);
+	public MoveTracerAdapter(Movable eventToTrace, float followDistance) {
+		this.eventToTrace = eventToTrace;
+		this.followDistance = followDistance;
 	}
 
 	/**
 	 * <h1>ATTENTION!!!</h1> Use a none-blocking {@link #eventToTrace} otherwise
 	 * the follower could be shaken off or the events could block mutually.<br>
-	 * A default distance for following the other event will be computed from the
-	 * touch-bounds of both events.
+	 * A default distance for following the other event will be computed from
+	 * the touch-bounds of both events.
 	 * 
 	 * @param eventToTrace
 	 *            The event to trace
 	 */
-	public static MovementHandler $(Movable eventToTrace) {
-		MoveTracerAdapter mta = new MoveTracerAdapter(eventToTrace, 0);
-		mta.computeDistance = true;
-		return mta;
+	public MoveTracerAdapter(Movable eventToTrace) {
+		this(eventToTrace, 0);
+		this.estimateDistance = true;
 	}
 
 	@Override
 	public void tryMove(Movable event, float deltaTime) {
-		if (computeDistance) {
+		if (estimateDistance) {
 			followDistance = eventToTrace.getWidth() + eventToTrace.getHeight()
 					+ event.getWidth() + event.getHeight();
 			followDistance /= 2.5f;
-			computeDistance = false;
+			estimateDistance = false;
 		}
 		Rectangle actualMove = eventToTrace.getTouchBound();
 		if (movementQueue.isEmpty()) {

@@ -30,7 +30,11 @@ public class MoveNullAdapter extends MovementHandler {
 
 	private static MovementHandler instance = new MoveNullAdapter();
 
-	private MoveNullAdapter() {
+	/**
+	 * This MovementAdapter never finishes doing nothing. It loops in idle state
+	 * forever. Use singleton {@link #$()} - it's stateless.
+	 */
+	public MoveNullAdapter() {
 	}
 
 	/**

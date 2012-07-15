@@ -37,13 +37,19 @@ public final class MovementKeys implements Serializable {
 	 * If you indent to make a 2 player game, split 'em up and instantiate the
 	 * {@link MovementHandler} with your own MovementKeys instance.
 	 */
-	public static final MovementKeys $ = new MovementKeys();
+	private static MovementKeys instance;
 
 	private int[] upKeys = { Input.Keys.UP, Input.Keys.W };
 	private int[] downKeys = { Input.Keys.DOWN, Input.Keys.S };
 	private int[] leftKeys = { Input.Keys.LEFT, Input.Keys.A };
 	private int[] rightKeys = { Input.Keys.RIGHT, Input.Keys.D };
 	private int[][] allKeys = { upKeys, downKeys, leftKeys, rightKeys };
+
+	public static MovementKeys $() {
+		if (instance == null)
+			instance = new MovementKeys();
+		return instance;
+	}
 
 	public void setUpKeys(int... upKeys) {
 		this.upKeys = upKeys;

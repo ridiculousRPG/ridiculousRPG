@@ -11,6 +11,7 @@ import com.ridiculousRPG.animation.TileAnimation;
 import com.ridiculousRPG.event.handler.EventExecScriptAdapter;
 import com.ridiculousRPG.event.handler.EventHandler;
 import com.ridiculousRPG.movement.MovementHandler;
+import com.ridiculousRPG.movement.CombinedMovesAdapter.MoveSegment;
 import com.ridiculousRPG.util.BlockingBehavior;
 import com.ridiculousRPG.util.Speed;
 import com.ridiculousRPG.util.TextureRegionLoader;
@@ -34,6 +35,8 @@ public class EventFactory {
 	private static final String PROP_CENTERIMAGE = "centerimage";
 	private static final String PROP_BLOCKING = "blocking";
 	private static final String PROP_MOVEHANDLER = "movehandler";
+	private static final String PROP_MOVEHANDLER_LOOP = "movehandlerloop";
+	private static final String PROP_MOVEHANDLER_RESET = "movehandlerreset";
 	private static final String PROP_SPEED = "speed";
 	private static final String PROP_ANIMATION = "animation";
 	private static final String PROP_ESTIMATETOUCHBOUNDS = "estimatetouchbounds";
@@ -90,15 +93,28 @@ public class EventFactory {
 				ev.blockingBehavior = BlockingBehavior.parse(val);
 			} else if (PROP_SPEED.equals(key)) {
 				ev.setMoveSpeed(Speed.parse(val));
-			} else if (PROP_MOVEHANDLER.equals(key)) {
+			} else if (PROP_MOVEHANDLER_LOOP.equals(key)) {
+				ev.setMoveLoop(toBool(val));
+			} else if (PROP_MOVEHANDLER_RESET.equals(key)) {
+				ev.setMoveResetEventPosition(toBool(val));
+			} else if (key.startsWith(PROP_MOVEHANDLER)) {
 				Object evHandler = GameBase.$().eval(val);
-				if (evHandler instanceof Class<?>) {
-					@SuppressWarnings("unchecked")
-					Class<? extends MovementHandler> clazz = (Class<? extends MovementHandler>) evHandler;
-					evHandler = clazz.getMethod("$").invoke(null);
-				}
-				if (evHandler instanceof MovementHandler) {
-					ev.setMoveHandler((MovementHandler) evHandler);
+				String index = key.substring(PROP_MOVEHANDLER.length()).trim();
+				if (index.length() == 0) {
+					if (evHandler instanceof Class<?>) {
+						@SuppressWarnings("unchecked")
+						Class<? extends MovementHandler> clazz = (Class<? extends MovementHandler>) evHandler;
+						evHandler = clazz.getMethod("$").invoke(null);
+					}
+					if (evHandler instanceof MovementHandler) {
+						ev.setMoveHandler((MovementHandler) evHandler);
+					}
+				} else if (evHandler instanceof MovementHandler) {
+					ev
+							.addMoveSegment(toInt(index),
+									(MovementHandler) evHandler);
+				} else if (evHandler instanceof MoveSegment) {
+					ev.addMoveSegment(toInt(index), (MoveSegment) evHandler);
 				}
 			} else if (PROP_OUTREACH.equals(key)) {
 				ev.outreach = toInt(val);
@@ -110,7 +126,7 @@ public class EventFactory {
 				ev.scaleY = toFloat(val);
 			} else if (PROP_IMAGE.equals(key)) {
 				if (Gdx.files.internal(val).exists()) {
-					boolean estimateTouch = "true".equalsIgnoreCase(props
+					boolean estimateTouch = toBool(props
 							.get(PROP_ESTIMATETOUCHBOUNDS));
 					ev.setImage(val, estimateTouch, !estimateTouch);
 					initVisibleEvent(ev, props);
@@ -145,14 +161,14 @@ public class EventFactory {
 							.getRegionWidth() / 4, t.getRegionHeight() / 4, 4,
 							4);
 					t.dispose();
-					boolean estimateTouch = "true".equalsIgnoreCase(props
+					boolean estimateTouch = toBool(props
 							.get(PROP_ESTIMATETOUCHBOUNDS));
 					ev.setAnimation(anim, estimateTouch, !estimateTouch);
 					initVisibleEvent(ev, props);
 				} else {
 					Object result = GameBase.$().eval(val);
 					if (result instanceof TileAnimation) {
-						boolean estimateTouch = "true".equalsIgnoreCase(props
+						boolean estimateTouch = toBool(props
 								.get(PROP_ESTIMATETOUCHBOUNDS));
 						ev.setAnimation((TileAnimation) result, estimateTouch,
 								!estimateTouch);
@@ -304,16 +320,11 @@ public class EventFactory {
 	private static void initVisibleEvent(EventObject ev,
 			Map<String, String> props) {
 		ev.visible = true;
-		if ("true".equalsIgnoreCase(props.get(PROP_CENTERIMAGE)))
+		if (toBool(props.get(PROP_CENTERIMAGE)))
 			ev.centerDrawbound();
 		if (ev.z == 0f && props.get(PROP_HEIGHT) == null) {
 			ev.z = .1f;
 		}
-	}
-
-	public static boolean isSkip(Map<String, String> properties) {
-		return "false".equalsIgnoreCase(properties.get(PROP_DISPLAY))
-				|| "none".equalsIgnoreCase(properties.get(PROP_DISPLAY));
 	}
 
 	public static int getZIndex(Map<String, String> properties) {
@@ -322,6 +333,32 @@ public class EventFactory {
 
 	public static int getZIndex(TiledMap map, int tile) {
 		return toInt(map.getTileProperty(tile, PROP_HEIGHT));
+	}
+
+	private static boolean toBool(String p) {
+		if (p == null)
+			return false;
+		p = p.trim();
+		if (p.length() == 0)
+			return false;
+		char c = Character.toLowerCase(p.charAt(0));
+		// true / yes / 1
+		return c == 't' || c == 'y' || c == '1';
+	}
+
+	private static boolean toBoolNot(String p) {
+		if (p == null)
+			return false;
+		p = p.trim();
+		if (p.length() == 0)
+			return false;
+		char c = Character.toLowerCase(p.charAt(0));
+		// false / no / 0
+		return c == 'f' || c == 'n' || c == '0';
+	}
+
+	public static boolean isSkip(Map<String, String> properties) {
+		return toBoolNot(properties.get(PROP_DISPLAY));
 	}
 
 	private static int toInt(String prop) {

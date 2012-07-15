@@ -17,11 +17,15 @@
 package com.ridiculousRPG.movement;
 
 import java.io.Serializable;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Rectangle;
 import com.ridiculousRPG.GameBase;
+import com.ridiculousRPG.movement.CombinedMovesAdapter.MoveSegment;
+import com.ridiculousRPG.movement.CombinedMovesAdapter.MoveSegmentFinished;
 import com.ridiculousRPG.movement.misc.MoveNullAdapter;
 import com.ridiculousRPG.util.Direction;
 import com.ridiculousRPG.util.Speed;
@@ -48,6 +52,26 @@ public abstract class Movable implements Serializable {
 	protected Rectangle touchBound = new Rectangle();
 
 	private MovementHandler moveHandler = MoveNullAdapter.$();
+	private SortedMap<Integer, MoveSegment> moveSequence = new TreeMap<Integer, MoveSegment>();
+	private boolean moveLoop;
+	private boolean moveResetEventPosition;
+
+	/**
+	 * Initializes the move sequence
+	 */
+	public void init() {
+		if (moveSequence != null && moveSequence.size() > 0) {
+			CombinedMovesAdapter combined = new CombinedMovesAdapter(moveLoop,
+					moveResetEventPosition);
+			if (moveHandler!=MoveNullAdapter.$()) {
+				
+			}
+			for (MoveSegment segment : moveSequence.values()) {
+				combined.addMoveSegment(segment);
+			}
+			moveSequence = null;
+		}
+	}
 
 	/**
 	 * Offer a move to this movable. Moves may be blocked if this objects
@@ -180,6 +204,42 @@ public abstract class Movable implements Serializable {
 	}
 
 	/**
+	 * ATTENTION: This method only takes effect if it's called before
+	 * {@link #init()}!<br>
+	 * Adds a move segment to the sequence at the specified position. All the
+	 * added moves will be chained at initialization time. This move segment
+	 * will be executed until it's finished.
+	 * 
+	 * @param index
+	 *            Position in the chain
+	 * @param moveHandler
+	 *            The new MovementAdapter
+	 */
+	public void addMoveSegment(int index, MovementHandler moveHandler) {
+		if (moveHandler != null) {
+			addMoveSegment(index, new MoveSegmentFinished(moveHandler));
+		}
+	}
+
+	/**
+	 * ATTENTION: This method only takes effect if it's called before
+	 * {@link #init()}!<br>
+	 * Adds a move sequence at the specified position. All the added moves will
+	 * be chained at initialization time.
+	 * 
+	 * @param index
+	 *            Position in the chain
+	 * @param moveSegment
+	 *            The {@link MoveSegment} to add
+	 * @see #init()
+	 */
+	public void addMoveSegment(int index, MoveSegment moveSegment) {
+		if (moveSequence != null && moveSegment != null) {
+			moveSequence.put(index, moveSegment);
+		}
+	}
+
+	/**
 	 * Computes the distance between two {@link Movable}s
 	 * 
 	 * @return the computed distance
@@ -282,6 +342,34 @@ public abstract class Movable implements Serializable {
 	 */
 	public void setTouchBound(Rectangle touchBound) {
 		this.touchBound = touchBound;
+	}
+
+	public boolean isMoveLoop() {
+		return moveLoop;
+	}
+
+	/**
+	 * ATTENTION: This method only takes effect if it's called before
+	 * {@link #init()}!
+	 * 
+	 * @param moveLoop
+	 */
+	public void setMoveLoop(boolean moveLoop) {
+		this.moveLoop = moveLoop;
+	}
+
+	public boolean isMoveResetEventPosition() {
+		return moveResetEventPosition;
+	}
+
+	/**
+	 * ATTENTION: This method only takes effect if it's called before
+	 * {@link #init()}!
+	 * 
+	 * @param moveResetEventPosition
+	 */
+	public void setMoveResetEventPosition(boolean moveResetEventPosition) {
+		this.moveResetEventPosition = moveResetEventPosition;
 	}
 
 	public void setX(float x) {

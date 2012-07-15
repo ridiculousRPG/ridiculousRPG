@@ -971,6 +971,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	}
 
 	public void init() {
+		super.init();
 		if (eventHandler != null) {
 			eventHandler.init();
 			eventHandler.onLoad(this);

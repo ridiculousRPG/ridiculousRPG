@@ -40,19 +40,10 @@ import com.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 public class CombinedMovesAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 
-
 	private Deque<MoveSegment> movementQueue = new ArrayDeque<MoveSegment>(16);
 	private List<MoveSegment> resetMoves = new ArrayList<MoveSegment>(16);
 	private MoveSegment lastMove;
 	private boolean loop, resetEventPosition, initialized;
-
-	protected CombinedMovesAdapter(boolean loop, boolean resetEventPosition,
-			MovementHandler... moves) {
-		this.loop = loop;
-		this.resetEventPosition = resetEventPosition;
-		for (MovementHandler move : moves)
-			addMoveToExecute(move);
-	}
 
 	/**
 	 * This {@link MovementHandler} allows to combine any other
@@ -65,13 +56,11 @@ public class CombinedMovesAdapter extends MovementHandler {
 	 * @param resetEventPosition
 	 *            After finishing a loop-cycle the event's position will be
 	 *            reset to the start position.
-	 * @param moves
-	 *            The moves will be executed in a sequence
 	 * @return MoveCombinedMovesAdapter the movement adapter
 	 */
-	public static MovementHandler $(boolean loop, boolean resetEventPosition,
-			MovementHandler... moves) {
-		return new CombinedMovesAdapter(loop, resetEventPosition, moves);
+	public CombinedMovesAdapter(boolean loop, boolean resetEventPosition) {
+		this.loop = loop;
+		this.resetEventPosition = resetEventPosition;
 	}
 
 	/**
@@ -175,7 +164,7 @@ public class CombinedMovesAdapter extends MovementHandler {
 			if (!initialized) {
 				initialized = true;
 				if (resetEventPosition && event != null) {
-					addMoveToExecute(MoveSetXYAdapter.$(event.getX(), event
+					addMoveToExecute(new MoveSetXYAdapter(event.getX(), event
 							.getY()));
 				}
 			}
@@ -206,7 +195,7 @@ public class CombinedMovesAdapter extends MovementHandler {
 	/**
 	 * Abstract class for all possible PathSegment.
 	 */
-	public abstract class MoveSegment implements Serializable {
+	public static abstract class MoveSegment implements Serializable {
 		private static final long serialVersionUID = 1L;
 
 		/**
@@ -270,13 +259,13 @@ public class CombinedMovesAdapter extends MovementHandler {
 		}
 	}
 
-	public class MoveSegmentSeconds extends MoveSegment {
+	public static class MoveSegmentSeconds extends MoveSegment {
 		private static final long serialVersionUID = 1L;
 
 		protected float seconds;
 		private float secondsCount;
 
-		protected MoveSegmentSeconds(float seconds, MovementHandler delegate) {
+		public MoveSegmentSeconds(float seconds, MovementHandler delegate) {
 			this.seconds = seconds;
 			this.delegate = delegate;
 		}
@@ -296,16 +285,16 @@ public class CombinedMovesAdapter extends MovementHandler {
 		}
 	}
 
-	public class MoveSegmentFinished extends MoveSegment {
+	public static class MoveSegmentFinished extends MoveSegment {
 		private static final long serialVersionUID = 1L;
 
 		private int times, count;
 
-		protected MoveSegmentFinished(MovementHandler delegate) {
+		public MoveSegmentFinished(MovementHandler delegate) {
 			this(delegate, 1);
 		}
 
-		protected MoveSegmentFinished(MovementHandler delegate, int times) {
+		public MoveSegmentFinished(MovementHandler delegate, int times) {
 			this.delegate = delegate;
 			this.times = times;
 		}
@@ -333,16 +322,16 @@ public class CombinedMovesAdapter extends MovementHandler {
 		}
 	}
 
-	public class MoveSegmentRandomSec extends MoveSegmentSeconds {
+	public static class MoveSegmentRandomSec extends MoveSegmentSeconds {
 		private static final long serialVersionUID = 1L;
 
 		protected float minSeconds, maxSeconds;
 
-		protected MoveSegmentRandomSec(MovementHandler delegate) {
+		public MoveSegmentRandomSec(MovementHandler delegate) {
 			this(1f, 5f, delegate);
 		}
 
-		protected MoveSegmentRandomSec(float minSeconds, float maxSeconds,
+		public MoveSegmentRandomSec(float minSeconds, float maxSeconds,
 				MovementHandler delegate) {
 			super(minSeconds, delegate);
 			this.minSeconds = minSeconds;

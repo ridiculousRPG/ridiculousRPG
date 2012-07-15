@@ -33,9 +33,6 @@ public class MoveExecScriptAdapter extends MovementHandler {
 
 	private String script;
 
-	protected MoveExecScriptAdapter(String script) {
-	}
-
 	/**
 	 * This MovementAdapter allows you to execute some script code.<br>
 	 * Feel free to do whatever you want;)<br>
@@ -44,8 +41,8 @@ public class MoveExecScriptAdapter extends MovementHandler {
 	 * @param script
 	 *            The script code to execute.
 	 */
-	public static MovementHandler $(String script) {
-		return new MoveExecScriptAdapter(script);
+	public MoveExecScriptAdapter(String script) {
+		this.script = script;
 	}
 
 	@Override

@@ -54,18 +54,6 @@ public class MoveArcAdapter extends MovementHandler {
 	private static final float PI = MathUtils.PI;
 	private static final float PI2 = PI * 2;
 
-	protected MoveArcAdapter(Vector2 origin, float angle,
-			boolean rotateTexture, boolean variableSpeed, Vector2 stretch,
-			Vector2 drift) {
-		this.originReset = origin;
-		this.origin = origin.cpy();
-		this.angle = angle * MathUtils.degreesToRadians;
-		this.rotateTexture = rotateTexture;
-		this.stretch = stretch;
-		this.fixedSpeed = variableSpeed;
-		this.drift = drift == null ? new Vector2() : drift;
-	}
-
 	/**
 	 * This {@link MovementHandler} tries to move an event by the given origin
 	 * and angle. The move waits if a blocking event exists on it's way.<br>
@@ -79,8 +67,8 @@ public class MoveArcAdapter extends MovementHandler {
 	 *            the angle is negative, the move will be clockwise.
 	 * @return
 	 */
-	public static MoveArcAdapter $(Vector2 origin, float angle) {
-		return $(origin, angle, false, false);
+	public MoveArcAdapter(Vector2 origin, float angle) {
+		this(origin, angle, false, false);
 	}
 
 	/**
@@ -101,10 +89,10 @@ public class MoveArcAdapter extends MovementHandler {
 	 *            value = false = dynamic speed)
 	 * @return
 	 */
-	public static MoveArcAdapter $(Vector2 origin, float angle,
-			boolean rotateTexture, boolean variableSpeed) {
-		return $(origin, angle, rotateTexture, variableSpeed, new Vector2(1f,
-				1f), new Vector2());
+	public MoveArcAdapter(Vector2 origin, float angle, boolean rotateTexture,
+			boolean variableSpeed) {
+		this(origin, angle, rotateTexture, variableSpeed, new Vector2(1f, 1f),
+				new Vector2());
 	}
 
 	/**
@@ -133,11 +121,15 @@ public class MoveArcAdapter extends MovementHandler {
 	 *            horizontal helix. (Default value = 0f = no drift)
 	 * @return
 	 */
-	public static MoveArcAdapter $(Vector2 origin, float angle,
-			boolean rotateTexture, boolean variableSpeed, Vector2 stretch,
-			Vector2 drift) {
-		return new MoveArcAdapter(origin, angle, rotateTexture, variableSpeed,
-				stretch, drift);
+	public MoveArcAdapter(Vector2 origin, float angle, boolean rotateTexture,
+			boolean variableSpeed, Vector2 stretch, Vector2 drift) {
+		this.originReset = origin;
+		this.origin = origin.cpy();
+		this.angle = angle * MathUtils.degreesToRadians;
+		this.rotateTexture = rotateTexture;
+		this.stretch = stretch;
+		this.fixedSpeed = variableSpeed;
+		this.drift = drift == null ? new Vector2() : drift;
 	}
 
 	@Override

@@ -55,8 +55,11 @@ public class Move8WayAdapter extends MovementHandler {
 		this.movementKeys = movementKeys;
 	}
 
-	protected Move8WayAdapter() {
-		this(MovementKeys.$);
+	/**
+	 * Use singleton {@link #$()} - it's stateless.
+	 */
+	public Move8WayAdapter() {
+		this(MovementKeys.$());
 	}
 
 	public static MovementHandler $() {

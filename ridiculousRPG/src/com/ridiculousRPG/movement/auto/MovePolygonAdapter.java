@@ -48,24 +48,6 @@ public class MovePolygonAdapter extends MovementHandler {
 
 	private static String NODE_TEMPLATE;
 
-	public boolean isRewind() {
-		return rewind;
-	}
-
-	public void setRewind(boolean rewind) {
-		this.rewind = rewind;
-		if (finished)
-			polygonChanged = true;
-	}
-
-	public boolean isCrop() {
-		return crop;
-	}
-
-	public void setCrop(boolean crop) {
-		this.crop = crop;
-	}
-
 	public MovePolygonAdapter(PolygonObject polygon) {
 		this(polygon, false);
 	}
@@ -93,6 +75,24 @@ public class MovePolygonAdapter extends MovementHandler {
 		this.rewind = rewind;
 		this.crop = crop;
 		this.polygonName = polyName;
+	}
+
+	public boolean isRewind() {
+		return rewind;
+	}
+
+	public void setRewind(boolean rewind) {
+		this.rewind = rewind;
+		if (finished)
+			polygonChanged = true;
+	}
+
+	public boolean isCrop() {
+		return crop;
+	}
+
+	public void setCrop(boolean crop) {
+		this.crop = crop;
 	}
 
 	public PolygonObject getPolygon() {
