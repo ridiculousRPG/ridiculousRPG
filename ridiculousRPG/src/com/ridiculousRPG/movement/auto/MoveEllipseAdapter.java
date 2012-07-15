@@ -55,7 +55,7 @@ public class MoveEllipseAdapter extends CombinedMovesAdapter {
 	 * @return
 	 */
 	public MoveEllipseAdapter(Rectangle rect) {
-		this(rect, false, -360);
+		this(rect, -360, false);
 	}
 
 	/**
@@ -65,16 +65,38 @@ public class MoveEllipseAdapter extends CombinedMovesAdapter {
 	 * 
 	 * @param rect
 	 *            The rectangle defines the outer bounds of the elipse.
-	 * @param rotateTexture
-	 *            Should the texture be rotated automatically?
 	 * @param angle
 	 *            The angle in degrees or +-0 if you want to loop forever. If
 	 *            the angle is negative, the move will be clockwise.
+	 * @param rotateTexture
+	 *            Should the texture be rotated automatically?
 	 * @return
 	 */
-	public MoveEllipseAdapter(Rectangle rect, boolean rotateTexture, float angle) {
-		this(rect, StartPoint.BOTTOM, angle, rotateTexture, false, new Vector2(
-				0f, 0f));
+	public MoveEllipseAdapter(Rectangle rect, float angle, boolean rotateTexture) {
+		this(rect, StartPoint.BOTTOM, angle, rotateTexture);
+	}
+
+	/**
+	 * This {@link MovementHandler} tries to move an event around the given
+	 * ellipse. The move waits if a blocking event exists on it's way.<br>
+	 * After succeeding the switch finished is set to true.
+	 * 
+	 * @param rect
+	 *            The rectangle defines the outer bounds of the elipse.
+	 * @param startAt
+	 *            Use one of the defined starting points
+	 *            {@link StartPoint#BOTTOM} {@link StartPoint#TOP}
+	 *            {@link StartPoint#LEFT} {@link StartPoint#RIGHT}
+	 * @param angle
+	 *            The angle in degrees or +-0 if you want to loop forever. If
+	 *            the angle is negative, the move will be clockwise.
+	 * @param rotateTexture
+	 *            Should the texture be rotated automatically?
+	 * @return
+	 */
+	public MoveEllipseAdapter(Rectangle rect, StartPoint startAt, float angle,
+			boolean rotateTexture) {
+		this(rect, startAt, angle, rotateTexture, false, null);
 	}
 
 	/**

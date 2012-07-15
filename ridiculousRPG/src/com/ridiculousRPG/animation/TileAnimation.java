@@ -62,6 +62,8 @@ public class TileAnimation implements Disposable, Serializable {
 	 */
 	public boolean animationCycleFinished = false;
 
+	public Direction lastDir = Direction.values()[0];
+
 	// Needed for serialization
 	private String path;
 	private boolean isCompressed;
@@ -380,6 +382,7 @@ public class TileAnimation implements Disposable, Serializable {
 	 */
 	public TextureRegion animate(float x, float y, Direction dir,
 			float deltaTime) {
+		lastDir = dir;
 		float pixelPerSecond;
 		if (deltaTime == 0) {
 			pixelPerSecond = 0;
@@ -387,7 +390,7 @@ public class TileAnimation implements Disposable, Serializable {
 			pixelPerSecond = (x < 0 ? -x : x) + (y < 0 ? -y : y);
 			pixelPerSecond = pixelPerSecond / deltaTime;
 			if (x != 0 && y != 0)
-				pixelPerSecond = (float)Math.sqrt(x*x+y*y)/deltaTime;
+				pixelPerSecond = (float) Math.sqrt(x * x + y * y) / deltaTime;
 		} else {
 			pixelPerSecond = animationSpeed.getPixelPerSecond();
 		}
@@ -473,6 +476,7 @@ public class TileAnimation implements Disposable, Serializable {
 	 * @return The TextureRegion, which represents the new direction
 	 */
 	public TextureRegion setAnimationPosition(Direction direction) {
+		lastDir = direction;
 		return setAnimationPosition(direction.getIndex(animationTiles.length),
 				animationCol);
 	}

@@ -38,8 +38,13 @@ public enum Speed {
 	public float computeStretch(float deltaTime) {
 		return pixelPerSecond * deltaTime;
 	}
+
+	public float computeStretchJump(float deltaTime) {
+		return Math.max(pixelPerSecond * 1.4f, 120f) * deltaTime;
+	}
+
 	public static Speed parse(String s) {
-		if (s.length()<3) {
+		if (s.length() < 3) {
 			return Speed.values()[Integer.parseInt(s)];
 		}
 		return valueOf(s);

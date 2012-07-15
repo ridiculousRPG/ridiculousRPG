@@ -282,19 +282,25 @@
   </object>
   <object name="player" type="player" x="511" y="370" width="19" height="9">
    <properties>
+    <property name="//blocking" value="PASSES_LOW_BARRIER"/>
     <property name="animation" value="data/charset/Daisy.png"/>
-    <property name="blocking" value="PASSES_LOW_BARRIER"/>
     <property name="effect" value="data/effect/particle/fireContinuous2.effect"/>
     <property name="movehandler" value="Move4WayAdapter"/>
+    <property name="movehandler01" value="MoveSegmentRandomSec(MoveRandomAdapter())"/>
+    <property name="movehandlerLoop" value="true"/>
     <property name="onStateChange" value="if ($.globalState.getBool(1)) eventSelf.setEffect(null) /*player burning*/"/>
     <property name="speed" value="S07_NORMAL"/>
    </properties>
   </object>
   <object name="Arrow" x="48" y="386" width="15" height="13">
    <properties>
+    <property name="//movehandlerReset" value="true"/>
+    <property name="blocking" value="PASSES_LOW_BARRIER"/>
     <property name="centerimage" value="true"/>
     <property name="image" value="data/charset/Arrow.png"/>
-    <property name="movehandler" value="CombinedMovesAdapter.$(true, false, [MoveEllipseAdapter.$(new Rectangle(20, 20, 200, 70), MoveEllipseAdapter.StartPoint.RIGHT, -360 * 2, true, false, null), MoveEllipseAdapter.$(new Rectangle(220, 20, 200, 70), MoveEllipseAdapter.StartPoint.LEFT, 360 * 2, true, false, null)])"/>
+    <property name="movehandler01" value="MoveEllipseAdapter(Rectangle(20, 20, 200, 70), MoveEllipseAdapter.StartPoint.RIGHT, -360 * 2, true)"/>
+    <property name="movehandler02" value="MoveEllipseAdapter(Rectangle(220, 20, 200, 70), MoveEllipseAdapter.StartPoint.LEFT, 360 * 2, true)"/>
+    <property name="movehandlerLoop" value="true"/>
     <property name="speed" value="S09_X_FAST"/>
    </properties>
   </object>
@@ -332,7 +338,7 @@
     <property name="ontouch01" value="if (!eventState.getBool(0)) {info('What\'s that? I would click here if i where you.'); eventState.setBool(0, true)}"/>
    </properties>
   </object>
-  <object x="338" y="23">
+  <object x="337" y="33">
    <polyline points="-59,-33 248,272"/>
   </object>
   <object x="414" y="71" width="164" height="13">
@@ -340,6 +346,7 @@
     <property name="blocking" value="NONE"/>
     <property name="effectFront" value="data/effect/particle/greenMixed.effect"/>
     <property name="onTouch" value="$.globalState.setBool(1, true) /*player burning*/"/>
+    <property name="onTouch01" value="eventTrigger.moveHandler.nextSegment();"/>
    </properties>
   </object>
   <object x="466" y="0">
@@ -348,7 +355,7 @@
   <object name="movePolyTest" x="256" y="344">
    <properties>
     <property name="onnode00" value="moveHandler.rewind = false"/>
-    <property name="onnode03" value="moveHandler.rewind = true"/>
+    <property name="onnodeLast" value="moveHandler.rewind = true"/>
    </properties>
    <polyline points="1,4 23,75 -113,19 -173,83"/>
   </object>
@@ -356,7 +363,7 @@
    <properties>
     <property name="//movehandler" value="data/script/game/moveEvent/player2AutoMove.js"/>
     <property name="animation" value="data/charset/Daisy.png"/>
-    <property name="blocking" value="NONE"/>
+    <property name="blocking" value="PASSES_LOW_BARRIER"/>
     <property name="movehandler" value="MovePolygonAdapter(&quot;movePolyTest&quot;)"/>
     <property name="ontouch" value="if (!eventState.getBool(0)) {say('test'); eventState.setBool(0, true)}"/>
     <property name="speed" value="S04_XX_SLOW"/>
@@ -366,7 +373,7 @@
    <properties>
     <property name="//movehandler" value="data/script/game/moveEvent/player2AutoMove.js"/>
     <property name="animation" value="data/charset/Daisy.png"/>
-    <property name="blocking" value="NONE"/>
+    <property name="blocking" value="PASSES_LOW_BARRIER"/>
     <property name="movehandler" value="MovePolygonAdapter(&quot;polyLoop&quot;)"/>
     <property name="ontouch" value="if (!eventState.getBool(0)) {say('test'); eventState.setBool(0, true)}"/>
     <property name="speed" value="S06_SLOW"/>
@@ -377,6 +384,30 @@
     <property name="onnode3" value="eventSelf.sleep(3)"/>
    </properties>
    <polygon points="0,0 -32,67 143,70 205,62 205,27 109,-6"/>
+  </object>
+  <object x="-4" y="77" width="41" height="19">
+   <properties>
+    <property name="blocking" value="NONE"/>
+    <property name="onTouch" value="eventTrigger.jump(50);"/>
+   </properties>
+  </object>
+  <object x="87" y="-2" width="15" height="66">
+   <properties>
+    <property name="blocking" value="NONE"/>
+    <property name="onTouch" value="eventTrigger.jump(20);"/>
+   </properties>
+  </object>
+  <object x="413" y="170" width="161" height="23">
+   <properties>
+    <property name="blocking" value="NONE"/>
+    <property name="onTouch" value="eventTrigger.jump(-10);"/>
+   </properties>
+  </object>
+  <object x="294" y="0" width="29" height="64">
+   <properties>
+    <property name="blocking" value="NONE"/>
+    <property name="onTouch" value="eventTrigger.jump(150);"/>
+   </properties>
   </object>
  </objectgroup>
 </map>

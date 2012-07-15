@@ -5,6 +5,10 @@
 CombinedMovesAdapter = com.ridiculousRPG.movement.CombinedMovesAdapter;
 ParallelMovesAdapter = com.ridiculousRPG.movement.ParallelMovesAdapter;
 
+MoveSegmentFinished = CombinedMovesAdapter.MoveSegmentFinished;
+MoveSegmentSeconds = CombinedMovesAdapter.MoveSegmentSeconds;
+MoveSegmentRandomSec = CombinedMovesAdapter.MoveSegmentRandomSec;
+
 MoveArcAdapter = com.ridiculousRPG.movement.auto.MoveArcAdapter;
 MoveDistanceAdapter = com.ridiculousRPG.movement.auto.MoveDistanceAdapter;
 MoveEllipseAdapter = com.ridiculousRPG.movement.auto.MoveEllipseAdapter;

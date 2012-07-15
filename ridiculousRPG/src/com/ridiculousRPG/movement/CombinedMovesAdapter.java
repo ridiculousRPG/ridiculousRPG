@@ -129,7 +129,18 @@ public class CombinedMovesAdapter extends MovementHandler {
 	 * (Tip: You can directly concatenate {@link MoveSegment#forceRemove()} with
 	 * this method-call, if you want to execute the move only once)
 	 */
-	public MoveSegment addMoveSegment(MoveSegment segmentToAdd) {
+	public synchronized void execMoveOnce(MoveSegment segmentToAdd) {
+		movementQueue.offerFirst(segmentToAdd.forceRemove());
+	}
+
+	/**
+	 * With this method you can add an already instantiated MoveSegment. It also
+	 * allows you to build custom MoveSegments and append them to the execution
+	 * chain.<br>
+	 * (Tip: You can directly concatenate {@link MoveSegment#forceRemove()} with
+	 * this method-call, if you want to execute the move only once)
+	 */
+	public synchronized MoveSegment addMoveSegment(MoveSegment segmentToAdd) {
 		movementQueue.offer(segmentToAdd);
 		resetMoves.add(segmentToAdd);
 		return segmentToAdd;
@@ -151,10 +162,10 @@ public class CombinedMovesAdapter extends MovementHandler {
 
 	@Override
 	public void tryMove(Movable event, float deltaTime) {
-		tryMove(event, deltaTime, true);
+		tryMove(event, deltaTime, 3);
 	}
 
-	private void tryMove(Movable event, float deltaTime, boolean recurse) {
+	private void tryMove(Movable event, float deltaTime, int recurse) {
 		if (movementQueue.isEmpty()) {
 			if (event != null)
 				event.stop();
@@ -170,19 +181,29 @@ public class CombinedMovesAdapter extends MovementHandler {
 			}
 			lastMove = movementQueue.peek();
 			if (lastMove.softMoveSegment(event, deltaTime)) {
-				movementQueue.poll();
-				if (loop && !lastMove.forceRemove) {
-					lastMove.reset();
-					movementQueue.offer(lastMove);
-				}
-				if (recurse)
-					tryMove(event, deltaTime, false);
+				nextSegment();
+				if (recurse > 0)
+					tryMove(event, deltaTime, recurse - 1);
 			}
 		}
 	}
 
+	/**
+	 * Jump to next segment within this move sequence
+	 * 
+	 * @return this for chaining (.nextSegment().nextSegment())
+	 */
+	public synchronized CombinedMovesAdapter nextSegment() {
+		MoveSegment curr = movementQueue.poll();
+		if (curr != null && loop && !curr.forceRemove) {
+			curr.reset();
+			movementQueue.offer(curr);
+		}
+		return this;
+	}
+
 	@Override
-	public void reset() {
+	public synchronized void reset() {
 		super.reset();
 		movementQueue.clear();
 		for (int i = 0, len = resetMoves.size(); i < len; i++) {

@@ -78,12 +78,13 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 	// tiles
 	private transient MapRenderRegion[] staticRegions;
-	private transient Map<String, PolygonObject> polyMap;
 	// events
 	private List<EventObject> dynamicRegions = new ArrayList<EventObject>(50);
 	// named events
 	private Map<String, EventObject> namedRegions = new HashMap<String, EventObject>(
 			30);
+	// named polygons
+	private Map<String, PolygonObject> polyMap;
 
 	private static transient EventTrigger eventTrigger;
 
@@ -255,6 +256,13 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		if (polyMap == null)
 			polyMap = new HashMap<String, PolygonObject>();
 		polyMap.put(name, poly);
+	}
+
+	@Override
+	public PolygonObject findPolygon(String polygonName) {
+		if (polyMap == null)
+			return null;
+		return polyMap.get(polygonName);
 	}
 
 	/**

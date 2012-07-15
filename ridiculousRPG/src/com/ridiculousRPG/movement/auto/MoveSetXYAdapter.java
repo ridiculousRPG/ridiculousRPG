@@ -32,8 +32,8 @@ import com.ridiculousRPG.util.Direction;
 public class MoveSetXYAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 
-	private boolean checkPerformed;
-	private Movable other;
+	protected boolean checkPerformed;
+	protected Movable other;
 
 	/**
 	 * This MovementAdapter tries to move an event to the given position. The
@@ -75,7 +75,7 @@ public class MoveSetXYAdapter extends MovementHandler {
 
 	/**
 	 * This MovementAdapter tries to move an event to a given other Movable. The
-	 * move is blocked forever if two events bolcks mutually.<br>
+	 * move is blocked forever if two events block mutually.<br>
 	 * After succeeding the switch finished is set to true.<br>
 	 * If there exists a none-moving blocking event at the given position, this
 	 * movement will never finish.

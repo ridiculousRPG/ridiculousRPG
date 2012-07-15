@@ -63,6 +63,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 
 	private static final float COLOR_WHITE_BITS = Color.WHITE.toFloatBits();
 
+	private EventType type;
 	private TileAnimation animation;
 	private String texturePath;
 	private String effectFrontPath;
@@ -75,7 +76,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	private EventHandler eventHandler;
 	private Color color = new ColorSerializable(1f, 1f, 1f, 1f);
 	private float colorFloatBits = color.toFloatBits();
-	private float sleepSeconds;
 
 	/**
 	 * Set the property "id" in the Tiled editor to identify an event.<br>
@@ -91,7 +91,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public int gid = 0;
 
 	public String name;
-	private EventType type;
 	public float z;
 	public Rectangle drawBound = new Rectangle();
 	public boolean visible = false;
@@ -578,6 +577,10 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			float h = drawBound.height;
 			float w = drawBound.width;
 			spriteBatch.setColor(eventColorBits);
+			boolean trans = offsetX != 0 || offsetY != 0;
+			if (trans)
+				spriteBatch.setTransformMatrix(spriteBatch.getTransformMatrix()
+						.translate(offsetX, offsetY, 0));
 			if (effectRear != null)
 				effectRear.draw(spriteBatch);
 			if (image != null)
@@ -585,6 +588,9 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 						scaleY, rotation);
 			if (effectFront != null)
 				effectFront.draw(spriteBatch);
+			if (trans)
+				spriteBatch.setTransformMatrix(spriteBatch.getTransformMatrix()
+						.translate(-offsetX, -offsetY, 0));
 			spriteBatch.setColor(gameColorBits);
 		}
 	}
@@ -699,6 +705,18 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	}
 
 	/**
+	 * Executes a jump movement by the given amount into the actual direction.
+	 */
+	public void jump(float amount) {
+		Direction dir;
+		if (animation != null)
+			dir = animation.lastDir;
+		else
+			dir = Direction.values()[0];
+		jump(dir.getDistanceX(amount), dir.getDistanceY(amount));
+	}
+
+	/**
 	 * Uses TileAnimation.stop() to set the image for this event.<br>
 	 * 
 	 * @see {@link TileAnimation#stop()}
@@ -718,24 +736,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		stop();
 		if (imageRef != null)
 			image = imageRef;
-	}
-
-	/**
-	 * Decrements the sleep-count and returns true if the event is sleeping.
-	 */
-	public boolean checkSleep(float delta) {
-		if (sleepSeconds > 0) {
-			sleepSeconds -= delta;
-			return sleepSeconds > 0;
-		}
-		return false;
-	}
-
-	/**
-	 * The event freezes at the current place for the given amount of seconds.<br>
-	 */
-	public void sleep(float seconds) {
-		sleepSeconds = seconds;
 	}
 
 	/**

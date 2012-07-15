@@ -23,9 +23,17 @@ import java.util.TreeMap;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
 import com.ridiculousRPG.GameBase;
+import com.ridiculousRPG.event.PolygonObject;
+import com.ridiculousRPG.map.MapRenderService;
 import com.ridiculousRPG.movement.CombinedMovesAdapter.MoveSegment;
 import com.ridiculousRPG.movement.CombinedMovesAdapter.MoveSegmentFinished;
+import com.ridiculousRPG.movement.CombinedMovesAdapter.MoveSegmentRandomSec;
+import com.ridiculousRPG.movement.CombinedMovesAdapter.MoveSegmentSeconds;
+import com.ridiculousRPG.movement.auto.MoveJumpAdapter;
+import com.ridiculousRPG.movement.auto.MovePolygonAdapter;
+import com.ridiculousRPG.movement.auto.MoveRandomAdapter;
 import com.ridiculousRPG.movement.misc.MoveNullAdapter;
 import com.ridiculousRPG.util.Direction;
 import com.ridiculousRPG.util.Speed;
@@ -47,6 +55,11 @@ public abstract class Movable implements Serializable {
 	 * false.
 	 */
 	public boolean moves = false;
+	/**
+	 * Offset for drawing this event. Useful e.g. for jump movement, where the
+	 * y-offset continuously grows and shrinks.
+	 */
+	public float offsetX, offsetY;
 
 	protected Speed moveSpeed = Speed.S00_ZERO;
 	protected Rectangle touchBound = new Rectangle();
@@ -63,12 +76,13 @@ public abstract class Movable implements Serializable {
 		if (moveSequence != null && moveSequence.size() > 0) {
 			CombinedMovesAdapter combined = new CombinedMovesAdapter(moveLoop,
 					moveResetEventPosition);
-			if (moveHandler!=MoveNullAdapter.$()) {
-				
+			if (moveHandler != MoveNullAdapter.$()) {
+				combined.addMoveToExecute(moveHandler);
 			}
 			for (MoveSegment segment : moveSequence.values()) {
 				combined.addMoveSegment(segment);
 			}
+			moveHandler = combined;
 			moveSequence = null;
 		}
 	}
@@ -214,6 +228,7 @@ public abstract class Movable implements Serializable {
 	 *            Position in the chain
 	 * @param moveHandler
 	 *            The new MovementAdapter
+	 * @see #init()
 	 */
 	public void addMoveSegment(int index, MovementHandler moveHandler) {
 		if (moveHandler != null) {
@@ -236,6 +251,106 @@ public abstract class Movable implements Serializable {
 	public void addMoveSegment(int index, MoveSegment moveSegment) {
 		if (moveSequence != null && moveSegment != null) {
 			moveSequence.put(index, moveSegment);
+		}
+	}
+
+	/**
+	 * Executes a jump movement to the given other event.
+	 */
+	public void jumpTo(Movable movable) {
+		exec(new MoveJumpAdapter(movable));
+	}
+
+	/**
+	 * Executes a jump movement to the given position.
+	 */
+	public void jumpTo(float x, float y) {
+		exec(new MoveJumpAdapter(x, y));
+	}
+
+	/**
+	 * Executes a jump movement by the given x and y values.
+	 */
+	public void jump(float distanceX, float distanceY) {
+		jumpTo(getX() + distanceX, getY() + distanceY);
+	}
+
+	/**
+	 * Executes random movements for random time.
+	 */
+	public void random() {
+		exec(new MoveSegmentRandomSec(new MoveRandomAdapter()));
+	}
+
+	/**
+	 * Executes a move along a given polygon.
+	 */
+	public void polygon(String polygonName) {
+		polygon(polygonName, false);
+	}
+
+	/**
+	 * Executes a move along a given polygon.
+	 */
+	public void polygon(String polygonName, boolean rewind) {
+		Array<MapRenderService> maps = GameBase.$serviceProvider().getServices(
+				MapRenderService.class);
+		for (int i = maps.size - 1; i > -1; i--) {
+			PolygonObject polygon = maps.get(i).getMap().findPolygon(
+					polygonName);
+			if (polygon != null) {
+				exec(new MovePolygonAdapter(polygon, rewind));
+				return;
+			}
+		}
+	}
+
+	/**
+	 * Executes random movements for random time.
+	 */
+	public void random(float minSec, float maxSec, int slackness) {
+		exec(new MoveSegmentRandomSec(minSec, maxSec, new MoveRandomAdapter(
+				slackness)));
+	}
+
+	/**
+	 * The event freezes at the current place for the given amount of seconds.<br>
+	 */
+	public void sleep(float seconds) {
+		exec(new MoveSegmentSeconds(seconds, MoveNullAdapter.$()));
+	}
+
+	/**
+	 * Executes the move until it's finished.
+	 * 
+	 * @param moveHandler
+	 *            The new MovementAdapter
+	 */
+	public void exec(MovementHandler moveHandler) {
+		if (moveHandler != null) {
+			exec(new MoveSegmentFinished(moveHandler));
+		}
+	}
+
+	/**
+	 * Executes the move segment until it's finished.
+	 * 
+	 * @param moveSegment
+	 *            The {@link MoveSegment} to add
+	 */
+	public void exec(MoveSegment moveSegment) {
+		if (moveSegment != null) {
+			if (moveHandler instanceof CombinedMovesAdapter) {
+				((CombinedMovesAdapter) moveHandler).execMoveOnce(moveSegment);
+			} else {
+				CombinedMovesAdapter combined = new CombinedMovesAdapter(
+						moveLoop, moveResetEventPosition);
+				combined.execMoveOnce(moveSegment);
+				if (moveHandler != MoveNullAdapter.$()) {
+					combined.addMoveToExecute(moveHandler);
+				}
+				moveHandler = combined;
+			}
 		}
 	}
 

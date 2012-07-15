@@ -23,6 +23,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Disposable;
+import com.ridiculousRPG.event.PolygonObject;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.service.Computable;
 
@@ -111,4 +112,6 @@ public interface MapWithEvents<T extends Movable> extends Disposable,
 	 * Saves the current state to the file system.
 	 */
 	public void saveStateToFS();
+
+	public PolygonObject findPolygon(String polygonName);
 }

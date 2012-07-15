@@ -9,7 +9,7 @@ function mapTransition(mapPath, playerX, playerY, stopWeatherEffect, speed) {
 	if (speed != null) {
 		// Fade out
 		if (mapService.map != null) {
-			fadeColor(MoveFadeColorAdapter.$(speed, Color.BLACK, true));
+			fadeColor(MoveFadeColorAdapter(speed, Color.BLACK, true));
 		} else {
 			$.gameColorTint = Color.BLACK;
 		}
@@ -32,7 +32,7 @@ function mapTransition(mapPath, playerX, playerY, stopWeatherEffect, speed) {
 	}
 	if (speed != null) {
 		// Fade in
-		fadeColor(MoveFadeColorAdapter.$(speed, Color.WHITE, true));
+		fadeColor(MoveFadeColorAdapter(speed, Color.WHITE, true));
 	}
 }
 function fadeColor(fadeAdapter) {
@@ -46,10 +46,9 @@ function fadeColor(fadeAdapter) {
 }
 function setPlayerPosition(playerX, playerY, trackService, movePlayer) {
 	var globEv = $.globalEvents.values().toArray();
-	var PLAYER_TYPE = ridiculousRPG.event.EventObject.EVENT_TYPE_PLAYER;
 	for (var i = 0; i < globEv.length; i++) {
 		var ev = globEv[i];
-		if (PLAYER_TYPE.equalsIgnoreCase(ev.type)) {
+		if (ev.isPlayerEvent()) {
 			if (movePlayer)
 				ev.forceMoveTo(playerX, playerY);
 			if (trackService != null && trackService.trackObj == null)
