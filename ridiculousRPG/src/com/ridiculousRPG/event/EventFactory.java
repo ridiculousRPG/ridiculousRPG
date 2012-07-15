@@ -50,6 +50,10 @@ public class EventFactory {
 	// Polygon object fires an event, when a node is reached
 	private static final String PROP_ONNODE = "onnode";
 
+	// To refer to the first/last node independent of the amount of nodes
+	private static final String INDEX_LAST = "last";
+	private static final String INDEX_FIRST = "first";
+
 	/**
 	 * Method to parse the object properties input for an event.
 	 * 
@@ -272,7 +276,15 @@ public class EventFactory {
 		key = key.toLowerCase();
 		try {
 			if (key.startsWith(PROP_ONNODE)) {
-				int index = toInt(key.substring(PROP_ONNODE.length()).trim());
+				String suffix = key.substring(PROP_ONNODE.length()).trim();
+				int index;
+				if (suffix.equalsIgnoreCase(INDEX_FIRST)) {
+					index = 0;
+				} else if (suffix.equalsIgnoreCase(INDEX_LAST)) {
+					index = poly.execAtNodeScript.length - 1;
+				} else {
+					index = toInt(suffix);
+				}
 				if (index >= poly.execAtNodeScript.length) {
 					GameBase.$info("TiledMap.createPolygon",
 							"Could not apply event '" + key + "' for polygon '"

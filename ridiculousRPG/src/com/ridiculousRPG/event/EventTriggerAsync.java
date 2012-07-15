@@ -149,26 +149,25 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 						obj1.reachable.add(obj2);
 					if (obj1.pushable && !obj2.reachable.contains(obj1, true))
 						obj2.reachable.add(obj1);
-					if (obj1.blockingBehavior.blocks(obj2.blockingBehavior)
-							&& (!EventObject.EVENT_TYPE_PLAYER
-									.equalsIgnoreCase(obj1.type) || !EventObject.EVENT_TYPE_PLAYER
-									.equalsIgnoreCase(obj2.type))) {
-						if (obj1.moves) {
-							obj1.moves = false;
-							if (obj2.moves && obj1.overlaps(obj2)) {
-								obj1.moves = true;
-								obj2.moves = false;
-								obj2.getMoveHandler().moveBlocked(obj2);
-								if (obj1.overlaps(obj2)) {
-									obj1.moves = false;
+					if (obj1.blockingBehavior.blocks(obj2.blockingBehavior)) {
+						if (!(obj1.isPlayerEvent() && obj2.isPlayerEvent())) {
+							if (obj1.moves) {
+								obj1.moves = false;
+								if (obj2.moves && obj1.overlaps(obj2)) {
+									obj1.moves = true;
+									obj2.moves = false;
+									obj2.getMoveHandler().moveBlocked(obj2);
+									if (obj1.overlaps(obj2)) {
+										obj1.moves = false;
+										obj1.getMoveHandler().moveBlocked(obj1);
+									}
+								} else {
 									obj1.getMoveHandler().moveBlocked(obj1);
 								}
-							} else {
-								obj1.getMoveHandler().moveBlocked(obj1);
+							} else if (obj2.moves) {
+								obj2.moves = false;
+								obj2.getMoveHandler().moveBlocked(obj2);
 							}
-						} else if (obj2.moves) {
-							obj2.moves = false;
-							obj2.getMoveHandler().moveBlocked(obj2);
 						}
 					}
 				} else {

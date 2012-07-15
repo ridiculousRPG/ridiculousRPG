@@ -195,8 +195,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				if (globalObj == null) {
 					eventObj.init();
 					GameBase.$().getGlobalEvents().put(eventObj.name, eventObj);
-					if (EventObject.EVENT_TYPE_PLAYER
-							.equalsIgnoreCase(eventObj.type))
+					if (eventObj.isPlayerEvent())
 						eventObj.consumeInput = true;
 				} else {
 					globalObj.clearCollision();

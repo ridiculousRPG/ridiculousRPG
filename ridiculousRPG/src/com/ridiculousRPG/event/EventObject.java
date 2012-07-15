@@ -91,7 +91,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public int gid = 0;
 
 	public String name;
-	public String type;
+	private EventType type;
 	public float z;
 	public Rectangle drawBound = new Rectangle();
 	public boolean visible = false;
@@ -132,9 +132,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * with the $ sign are considered local event properties.
 	 */
 	public Map<String, String> properties = new HashMap<String, String>();
-
-	public static final String EVENT_TYPE_PLAYER = "player";
-	public static final String EVENT_TYPE_GLOBAL = "global";
 
 	/**
 	 * Creates an empty new event.
@@ -405,7 +402,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		this();
 		float mapHeight = map.height * map.tileHeight;
 		name = object.name;
-		type = object.type;
+		setType(object.type);
 		if (object.gid > 0) {
 			gid = object.gid;
 			AtlasRegion region = (AtlasRegion) atlas.getRegion(object.gid);
@@ -421,6 +418,30 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			drawBound.width = touchBound.width = object.width;
 			drawBound.height = touchBound.height = object.height;
 		}
+	}
+
+	public void setType(String type) {
+		if (type == null) {
+			setType(EventType.LOCAL);
+		} else {
+			type = type.trim();
+			if (type.length() == 0) {
+				setType(EventType.LOCAL);
+			} else {
+				try {
+					setType(EventType.valueOf(type.toUpperCase()));
+				} catch (Exception e) {
+					setType(EventType.LOCAL);
+					GameBase.$info("EventObject.setType",
+							"Could not find type " + type
+									+ " - fallback to LOCAL", e);
+				}
+			}
+		}
+	}
+
+	public void setType(EventType type) {
+		this.type = type;
 	}
 
 	private void estimateTouchBound() {
@@ -958,8 +979,11 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 
 	public boolean isGlobalEvent() {
 		return name != null
-				&& (EVENT_TYPE_PLAYER.equalsIgnoreCase(type) || EVENT_TYPE_GLOBAL
-						.equalsIgnoreCase(type));
+				&& (EventType.PLAYER == type || EventType.GLOBAL == type);
+	}
+
+	public boolean isPlayerEvent() {
+		return EventType.PLAYER == type;
 	}
 
 	private void writeObject(ObjectOutputStream out) throws IOException {
