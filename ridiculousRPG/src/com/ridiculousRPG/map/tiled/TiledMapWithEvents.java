@@ -50,7 +50,6 @@ import com.ridiculousRPG.event.handler.EventHandler;
 import com.ridiculousRPG.map.MapLoader;
 import com.ridiculousRPG.map.MapRenderRegion;
 import com.ridiculousRPG.map.MapWithEvents;
-import com.ridiculousRPG.movement.auto.MovePolygonAdapter;
 import com.ridiculousRPG.util.ExecuteInMainThread;
 import com.ridiculousRPG.util.IntSet;
 import com.ridiculousRPG.util.ObjectState;
@@ -185,12 +184,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		// Initialize the events
 		for (i = 0, len_i = dynamicRegions.size(); i < len_i; i++) {
 			EventObject eventObj = dynamicRegions.get(i);
-			// Polygons are defined on the map and may not be available at event
-			// creation time, that's why we have to initialize them here.
-			if (eventObj.getMoveHandler() instanceof MovePolygonAdapter) {
-				((MovePolygonAdapter) eventObj.getMoveHandler())
-						.offerPolygons(polyMap);
-			}
 			if (eventObj.isGlobalEvent()) {
 				EventObject globalObj = globalEv.remove(eventObj.name);
 				if (globalObj == null) {

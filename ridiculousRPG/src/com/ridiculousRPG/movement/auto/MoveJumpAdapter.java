@@ -16,6 +16,7 @@
 
 package com.ridiculousRPG.movement.auto;
 
+import com.badlogic.gdx.utils.Pool.Poolable;
 import com.ridiculousRPG.movement.Movable;
 
 /**
@@ -25,7 +26,7 @@ import com.ridiculousRPG.movement.Movable;
  * 
  * @author Alexander Baumgartner
  */
-public class MoveJumpAdapter extends MoveSetXYAdapter {
+public class MoveJumpAdapter extends MoveSetXYAdapter implements Poolable {
 	private static final long serialVersionUID = 1L;
 
 	private boolean jumpSuccess;

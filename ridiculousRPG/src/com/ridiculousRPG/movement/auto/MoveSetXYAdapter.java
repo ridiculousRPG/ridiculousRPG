@@ -33,7 +33,7 @@ public class MoveSetXYAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 
 	protected boolean checkPerformed;
-	protected Movable other;
+	public Movable other;
 
 	/**
 	 * This MovementAdapter tries to move an event to the given position. The

@@ -52,6 +52,14 @@ public abstract class MovementHandler implements Serializable {
 	}
 
 	/**
+	 * If the move handler is pooled it can be freed (returned to the pool) by
+	 * overriding this method.
+	 * @see Movable Movable for example
+	 */
+	public void free() {
+	}
+
+	/**
 	 * This method is called if the game is in idle state. E.g. it's paused or
 	 * the main-menu is open...<br>
 	 * (Empty default implementation)

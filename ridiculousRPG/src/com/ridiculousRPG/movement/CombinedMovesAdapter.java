@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
+import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.Pool.Poolable;
 import com.ridiculousRPG.movement.auto.MoveSetXYAdapter;
 import com.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 
@@ -40,10 +42,21 @@ import com.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 public class CombinedMovesAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 
-	private Deque<MoveSegment> movementQueue = new ArrayDeque<MoveSegment>(16);
-	private List<MoveSegment> resetMoves = new ArrayList<MoveSegment>(16);
+	private Deque<MoveSegment> movementQueue = new ArrayDeque<MoveSegment>(8);
+	private List<MoveSegment> resetMoves = new ArrayList<MoveSegment>(8);
 	private MoveSegment lastMove;
 	private boolean loop, resetEventPosition, initialized;
+
+	public static final FinishPool MOVE_FINISH_POOL = new FinishPool();
+	public static final SecondsPool MOVE_SECONDS_POOL = new SecondsPool();
+	public static final RandomSecPool MOVE_RANDOM_POOL = new RandomSecPool();
+
+	public static final Pool<MoveSetXYAdapter> MOVE_SET_XY = new Pool<MoveSetXYAdapter>() {
+		@Override
+		protected MoveSetXYAdapter newObject() {
+			return new MoveSetXYAdapter(0, 0);
+		}
+	};
 
 	/**
 	 * This {@link MovementHandler} allows to combine any other
@@ -78,7 +91,7 @@ public class CombinedMovesAdapter extends MovementHandler {
 	 * this method-call, if you want to execute the move only once)
 	 */
 	public MoveSegment addMoveForTimes(MovementHandler move, int times) {
-		return addMoveSegment(new MoveSegmentFinished(move, times));
+		return addMoveSegment(MOVE_FINISH_POOL.obtain(move, times));
 	}
 
 	/**
@@ -90,7 +103,7 @@ public class CombinedMovesAdapter extends MovementHandler {
 	 * this method-call, if you want to execute the move only once)
 	 */
 	public MoveSegment addMoveForSeconds(MovementHandler move, float execSeconds) {
-		return addMoveSegment(new MoveSegmentSeconds(execSeconds, move));
+		return addMoveSegment(MOVE_SECONDS_POOL.obtain(move, execSeconds));
 	}
 
 	/**
@@ -103,7 +116,7 @@ public class CombinedMovesAdapter extends MovementHandler {
 	 * this method-call, if you want to execute the move only once)
 	 */
 	public MoveSegment addMoveForRandomPeriod(MovementHandler move) {
-		return addMoveSegment(new MoveSegmentRandomSec(move));
+		return addMoveForRandomBounded(move, 1, 5);
 	}
 
 	/**
@@ -118,8 +131,8 @@ public class CombinedMovesAdapter extends MovementHandler {
 	 */
 	public MoveSegment addMoveForRandomBounded(MovementHandler move,
 			float minSeconds, float maxSeconds) {
-		return addMoveSegment(new MoveSegmentRandomSec(minSeconds, maxSeconds,
-				move));
+		return addMoveSegment(MOVE_RANDOM_POOL.obtain(move, minSeconds,
+				maxSeconds));
 	}
 
 	/**
@@ -130,7 +143,7 @@ public class CombinedMovesAdapter extends MovementHandler {
 	 * this method-call, if you want to execute the move only once)
 	 */
 	public synchronized void execMoveOnce(MoveSegment segmentToAdd) {
-		movementQueue.offerFirst(segmentToAdd.forceRemove());
+		movementQueue.offerFirst(segmentToAdd.forceRemove().returnToPool());
 	}
 
 	/**
@@ -175,8 +188,10 @@ public class CombinedMovesAdapter extends MovementHandler {
 			if (!initialized) {
 				initialized = true;
 				if (resetEventPosition && event != null) {
-					addMoveToExecute(new MoveSetXYAdapter(event.getX(), event
-							.getY()));
+					MoveSetXYAdapter setXY = MOVE_SET_XY.obtain();
+					setXY.other.setX(event.getX());
+					setXY.other.setY(event.getY());
+					addMoveToExecute(setXY);
 				}
 			}
 			lastMove = movementQueue.peek();
@@ -198,8 +213,28 @@ public class CombinedMovesAdapter extends MovementHandler {
 		if (curr != null && loop && !curr.forceRemove) {
 			curr.reset();
 			movementQueue.offer(curr);
+		} else if (curr.returnToPool) {
+			free(curr);
 		}
 		return this;
+	}
+
+	/**
+	 * Returns the segment to the cache pool for reusing.
+	 * 
+	 * @param curr
+	 *            Segment to free for reuse.
+	 */
+	public void free(MoveSegment curr) {
+		curr.delegate.free();
+		curr.delegate = null;
+		curr.returnToPool = false;
+		if (curr instanceof MoveSegmentFinished)
+			MOVE_FINISH_POOL.free((MoveSegmentFinished) curr);
+		else if (curr instanceof MoveSegmentSeconds)
+			MOVE_SECONDS_POOL.free((MoveSegmentSeconds) curr);
+		else if (curr instanceof MoveSegmentRandomSec)
+			MOVE_RANDOM_POOL.free((MoveSegmentRandomSec) curr);
 	}
 
 	@Override
@@ -214,16 +249,28 @@ public class CombinedMovesAdapter extends MovementHandler {
 	}
 
 	/**
+	 * Empties this move sequence and frees all resources.
+	 */
+	public synchronized void clear() {
+		for (int i = 0, len = resetMoves.size(); i < len; i++) {
+			free(resetMoves.get(i));
+		}
+		resetMoves.clear();
+		movementQueue.clear();
+	}
+
+	/**
 	 * Abstract class for all possible PathSegment.
 	 */
-	public static abstract class MoveSegment implements Serializable {
+	public static abstract class MoveSegment implements Serializable, Poolable {
 		private static final long serialVersionUID = 1L;
 
 		/**
 		 * The executed {@link MovementHandler} for this {@link MoveSegment}.<br>
 		 * It makes sense to set this by the implementations constructor
 		 */
-		protected MovementHandler delegate;
+		public MovementHandler delegate;
+		public boolean returnToPool;
 		private boolean forceRemove;
 
 		/**
@@ -234,6 +281,11 @@ public class CombinedMovesAdapter extends MovementHandler {
 		 */
 		public MoveSegment forceRemove() {
 			forceRemove = true;
+			return this;
+		}
+
+		public MoveSegment returnToPool() {
+			returnToPool = true;
 			return this;
 		}
 
@@ -274,7 +326,7 @@ public class CombinedMovesAdapter extends MovementHandler {
 		 * This method is called after the move has finished. It should restore
 		 * the start-state of this segment to provide looping the segment.
 		 */
-		protected void reset() {
+		public void reset() {
 			if (delegate != null)
 				delegate.reset();
 		}
@@ -283,12 +335,10 @@ public class CombinedMovesAdapter extends MovementHandler {
 	public static class MoveSegmentSeconds extends MoveSegment {
 		private static final long serialVersionUID = 1L;
 
-		protected float seconds;
+		public float seconds;
 		private float secondsCount;
 
-		public MoveSegmentSeconds(float seconds, MovementHandler delegate) {
-			this.seconds = seconds;
-			this.delegate = delegate;
+		private MoveSegmentSeconds() {
 		}
 
 		@Override
@@ -300,7 +350,7 @@ public class CombinedMovesAdapter extends MovementHandler {
 		}
 
 		@Override
-		protected void reset() {
+		public void reset() {
 			super.reset();
 			secondsCount = 0f;
 		}
@@ -309,15 +359,10 @@ public class CombinedMovesAdapter extends MovementHandler {
 	public static class MoveSegmentFinished extends MoveSegment {
 		private static final long serialVersionUID = 1L;
 
-		private int times, count;
+		public int times;
+		private int count;
 
-		public MoveSegmentFinished(MovementHandler delegate) {
-			this(delegate, 1);
-		}
-
-		public MoveSegmentFinished(MovementHandler delegate, int times) {
-			this.delegate = delegate;
-			this.times = times;
+		private MoveSegmentFinished() {
 		}
 
 		@Override
@@ -337,7 +382,7 @@ public class CombinedMovesAdapter extends MovementHandler {
 		}
 
 		@Override
-		protected void reset() {
+		public void reset() {
 			super.reset();
 			count = 0;
 		}
@@ -346,18 +391,9 @@ public class CombinedMovesAdapter extends MovementHandler {
 	public static class MoveSegmentRandomSec extends MoveSegmentSeconds {
 		private static final long serialVersionUID = 1L;
 
-		protected float minSeconds, maxSeconds;
+		public float minSeconds, maxSeconds;
 
-		public MoveSegmentRandomSec(MovementHandler delegate) {
-			this(1f, 5f, delegate);
-		}
-
-		public MoveSegmentRandomSec(float minSeconds, float maxSeconds,
-				MovementHandler delegate) {
-			super(minSeconds, delegate);
-			this.minSeconds = minSeconds;
-			this.maxSeconds = maxSeconds;
-			randomizeSeconds();
+		private MoveSegmentRandomSec() {
 		}
 
 		protected void randomizeSeconds() {
@@ -366,9 +402,54 @@ public class CombinedMovesAdapter extends MovementHandler {
 		}
 
 		@Override
-		protected void reset() {
+		public void reset() {
 			super.reset();
 			randomizeSeconds();
+		}
+	}
+
+	public static class FinishPool extends Pool<MoveSegmentFinished> {
+		@Override
+		protected MoveSegmentFinished newObject() {
+			return new MoveSegmentFinished();
+		}
+
+		public MoveSegmentFinished obtain(MovementHandler move, int times) {
+			MoveSegmentFinished segment = MOVE_FINISH_POOL.obtain();
+			segment.delegate = move;
+			segment.times = times;
+			return segment;
+		}
+	}
+
+	public static class SecondsPool extends Pool<MoveSegmentSeconds> {
+		@Override
+		protected MoveSegmentSeconds newObject() {
+			return new MoveSegmentSeconds();
+		}
+
+		public MoveSegmentSeconds obtain(MovementHandler move, float seconds) {
+			MoveSegmentSeconds segment = obtain();
+			segment.delegate = move;
+			segment.seconds = seconds;
+			return segment;
+		}
+	}
+
+	public static class RandomSecPool extends Pool<MoveSegmentRandomSec> {
+		@Override
+		protected MoveSegmentRandomSec newObject() {
+			return new MoveSegmentRandomSec();
+		}
+
+		public MoveSegmentRandomSec obtain(MovementHandler move,
+				float minSeconds, float maxSeconds) {
+			MoveSegmentRandomSec segment = obtain();
+			segment.delegate = move;
+			segment.minSeconds = minSeconds;
+			segment.maxSeconds = maxSeconds;
+			segment.randomizeSeconds();
+			return segment;
 		}
 	}
 }

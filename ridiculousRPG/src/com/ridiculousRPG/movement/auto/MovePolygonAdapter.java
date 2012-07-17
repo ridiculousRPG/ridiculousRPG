@@ -16,15 +16,15 @@
 
 package com.ridiculousRPG.movement.auto;
 
-import java.util.Map;
-
 import javax.script.ScriptEngine;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.Array;
 import com.ridiculousRPG.GameBase;
 import com.ridiculousRPG.event.EventObject;
 import com.ridiculousRPG.event.PolygonObject;
 import com.ridiculousRPG.event.handler.EventHandler;
+import com.ridiculousRPG.map.MapRenderService;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
 import com.ridiculousRPG.util.ObjectState;
@@ -45,6 +45,7 @@ public class MovePolygonAdapter extends MovementHandler {
 	private boolean polygonChanged;
 	private boolean rewind;
 	private boolean crop;
+	private boolean moveFinished;
 
 	private static String NODE_TEMPLATE;
 
@@ -83,7 +84,7 @@ public class MovePolygonAdapter extends MovementHandler {
 
 	public void setRewind(boolean rewind) {
 		this.rewind = rewind;
-		if (finished)
+		if (moveFinished)
 			polygonChanged = true;
 	}
 
@@ -113,18 +114,29 @@ public class MovePolygonAdapter extends MovementHandler {
 		this.polygonName = polygonName;
 	}
 
-	public boolean offerPolygons(Map<String, PolygonObject> polyMap) {
+	private boolean initPolygon() {
 		if (polygonName == null)
 			return false;
-		PolygonObject newPoly = polyMap.get(polygonName);
-		if (newPoly == null)
-			return false;
-		setPolygon(newPoly);
-		return true;
+		Array<MapRenderService> maps = GameBase.$serviceProvider().getServices(
+				MapRenderService.class);
+		for (int i = maps.size - 1; i > -1; i--) {
+			PolygonObject polygon = maps.get(i).getMap().findPolygon(
+					polygonName);
+			if (polygon != null) {
+				setPolygon(polygon);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
 	public void tryMove(Movable event, float deltaTime) {
+		// Polygons are defined on the map and may not be available at event
+		// creation time, that's why we have to initialize them here.
+		if (polygon == null && !initPolygon())
+			return;
+
 		if (execScript != null) {
 			if (NODE_TEMPLATE == null)
 				NODE_TEMPLATE = Gdx.files.internal(
@@ -157,8 +169,9 @@ public class MovePolygonAdapter extends MovementHandler {
 			reset();
 		} else if (finished) {
 			event.stop();
+			return;
 		}
-		if (!finished && polygon != null) {
+		if (!moveFinished) {
 			float distance = event.getMoveSpeed().computeStretch(deltaTime);
 			if (distance > 0) {
 				if (rewind)
@@ -170,9 +183,10 @@ public class MovePolygonAdapter extends MovementHandler {
 					((EventObject) event).animate(polygon.getRelativeX(),
 							polygon.getRelativeY(), deltaTime);
 				}
-				finished = polygon.isFinished();
+				moveFinished = polygon.isFinished();
 			}
-		}
+		} else
+			finished = true;
 	}
 
 	@Override
@@ -187,6 +201,7 @@ public class MovePolygonAdapter extends MovementHandler {
 	public void reset() {
 		super.reset();
 		polygonChanged = false;
+		moveFinished = false;
 		execScript = null;
 		if (polygon != null)
 			polygon.start(rewind);

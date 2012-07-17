@@ -286,7 +286,7 @@
     <property name="animation" value="data/charset/Daisy.png"/>
     <property name="effect" value="data/effect/particle/fireContinuous2.effect"/>
     <property name="movehandler" value="Move4WayAdapter"/>
-    <property name="movehandler01" value="MoveSegmentRandomSec(MoveRandomAdapter())"/>
+    <property name="movehandler01" value="moveRandomSec(MoveRandomAdapter())"/>
     <property name="movehandlerLoop" value="true"/>
     <property name="onStateChange" value="if ($.globalState.getBool(1)) eventSelf.setEffect(null) /*player burning*/"/>
     <property name="speed" value="S07_NORMAL"/>

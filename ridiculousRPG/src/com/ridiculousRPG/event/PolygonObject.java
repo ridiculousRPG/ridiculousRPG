@@ -319,4 +319,10 @@ public class PolygonObject implements Cloneable, Serializable {
 			}
 		}
 	}
+
+	@Override
+	public String toString() {
+		return "polygon '" + name + " #nodes=" + vertexX.length + " (1st node="
+				+ vertexX[0] + "/" + vertexY[0] + ")'";
+	}
 }

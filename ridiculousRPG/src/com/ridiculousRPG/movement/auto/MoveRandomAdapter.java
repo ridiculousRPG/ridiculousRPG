@@ -18,6 +18,7 @@ package com.ridiculousRPG.movement.auto;
 
 import java.util.Random;
 
+import com.badlogic.gdx.utils.Pool.Poolable;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
 import com.ridiculousRPG.util.Direction;
@@ -27,12 +28,12 @@ import com.ridiculousRPG.util.Direction;
  * 
  * @author Alexander Baumgartner
  */
-public class MoveRandomAdapter extends MovementHandler {
+public class MoveRandomAdapter extends MovementHandler implements Poolable {
 	private static final long serialVersionUID = 1L;
 
 	protected static final Random randomNumberGenerator = new Random();
-	protected int changeDirectionSlackness;
-	protected Direction[] allowedDirections;
+	public int changeDirectionSlackness;
+	public Direction[] allowedDirections;
 
 	protected Direction lastDir;
 	protected float minWidth;

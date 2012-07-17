@@ -23,14 +23,9 @@ import java.util.TreeMap;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
 import com.ridiculousRPG.GameBase;
-import com.ridiculousRPG.event.PolygonObject;
-import com.ridiculousRPG.map.MapRenderService;
 import com.ridiculousRPG.movement.CombinedMovesAdapter.MoveSegment;
-import com.ridiculousRPG.movement.CombinedMovesAdapter.MoveSegmentFinished;
-import com.ridiculousRPG.movement.CombinedMovesAdapter.MoveSegmentRandomSec;
-import com.ridiculousRPG.movement.CombinedMovesAdapter.MoveSegmentSeconds;
 import com.ridiculousRPG.movement.auto.MoveJumpAdapter;
 import com.ridiculousRPG.movement.auto.MovePolygonAdapter;
 import com.ridiculousRPG.movement.auto.MoveRandomAdapter;
@@ -68,6 +63,12 @@ public abstract class Movable implements Serializable {
 	private SortedMap<Integer, MoveSegment> moveSequence = new TreeMap<Integer, MoveSegment>();
 	private boolean moveLoop;
 	private boolean moveResetEventPosition;
+
+	// To avoid garbage collection - ATTENTION: Pool is NOT thread safe, but we
+	// have actually only one thread which handles all events. Therefore it
+	// should be ok this way.
+	private static final JumpPool MOVE_JUMP_POOL = new JumpPool();
+	private static final RandomPool MOVE_RANDOM_4WAY_POOL = new RandomPool();
 
 	/**
 	 * Initializes the move sequence
@@ -232,7 +233,8 @@ public abstract class Movable implements Serializable {
 	 */
 	public void addMoveSegment(int index, MovementHandler moveHandler) {
 		if (moveHandler != null) {
-			addMoveSegment(index, new MoveSegmentFinished(moveHandler));
+			addMoveSegment(index, CombinedMovesAdapter.MOVE_FINISH_POOL.obtain(
+					moveHandler, 1));
 		}
 	}
 
@@ -255,20 +257,6 @@ public abstract class Movable implements Serializable {
 	}
 
 	/**
-	 * Executes a jump movement to the given other event.
-	 */
-	public void jumpTo(Movable movable) {
-		exec(new MoveJumpAdapter(movable));
-	}
-
-	/**
-	 * Executes a jump movement to the given position.
-	 */
-	public void jumpTo(float x, float y) {
-		exec(new MoveJumpAdapter(x, y));
-	}
-
-	/**
 	 * Executes a jump movement by the given x and y values.
 	 */
 	public void jump(float distanceX, float distanceY) {
@@ -276,10 +264,32 @@ public abstract class Movable implements Serializable {
 	}
 
 	/**
+	 * Executes a jump movement to the given other event.
+	 */
+	public void jumpTo(Movable movable) {
+		jumpTo(movable.getX(), movable.getY());
+	}
+
+	/**
+	 * Executes a jump movement to the given position.
+	 */
+	public void jumpTo(float x, float y) {
+		exec(MOVE_JUMP_POOL.obtain(x, y));
+	}
+
+	/**
 	 * Executes random movements for random time.
 	 */
 	public void random() {
-		exec(new MoveSegmentRandomSec(new MoveRandomAdapter()));
+		random(1, 5, 128);
+	}
+
+	/**
+	 * Executes random movements for random time.
+	 */
+	public void random(float minSec, float maxSec, int slackness) {
+		exec(CombinedMovesAdapter.MOVE_RANDOM_POOL.obtain(MOVE_RANDOM_4WAY_POOL
+				.obtain(slackness), minSec, maxSec));
 	}
 
 	/**
@@ -293,31 +303,15 @@ public abstract class Movable implements Serializable {
 	 * Executes a move along a given polygon.
 	 */
 	public void polygon(String polygonName, boolean rewind) {
-		Array<MapRenderService> maps = GameBase.$serviceProvider().getServices(
-				MapRenderService.class);
-		for (int i = maps.size - 1; i > -1; i--) {
-			PolygonObject polygon = maps.get(i).getMap().findPolygon(
-					polygonName);
-			if (polygon != null) {
-				exec(new MovePolygonAdapter(polygon, rewind));
-				return;
-			}
-		}
-	}
-
-	/**
-	 * Executes random movements for random time.
-	 */
-	public void random(float minSec, float maxSec, int slackness) {
-		exec(new MoveSegmentRandomSec(minSec, maxSec, new MoveRandomAdapter(
-				slackness)));
+		exec(new MovePolygonAdapter(polygonName, rewind));
 	}
 
 	/**
 	 * The event freezes at the current place for the given amount of seconds.<br>
 	 */
 	public void sleep(float seconds) {
-		exec(new MoveSegmentSeconds(seconds, MoveNullAdapter.$()));
+		exec(CombinedMovesAdapter.MOVE_SECONDS_POOL.obtain(MoveNullAdapter.$(),
+				seconds));
 	}
 
 	/**
@@ -328,7 +322,7 @@ public abstract class Movable implements Serializable {
 	 */
 	public void exec(MovementHandler moveHandler) {
 		if (moveHandler != null) {
-			exec(new MoveSegmentFinished(moveHandler));
+			exec(CombinedMovesAdapter.MOVE_FINISH_POOL.obtain(moveHandler, 1));
 		}
 	}
 
@@ -495,4 +489,42 @@ public abstract class Movable implements Serializable {
 		this.touchBound.y = y;
 	}
 
+	public static class JumpPool extends Pool<MoveJumpAdapter> {
+		@Override
+		protected MoveJumpAdapter newObject() {
+			return new MoveJumpAdapter(0, 0) {
+				private static final long serialVersionUID = 1L;
+
+				public void free() {
+					MOVE_JUMP_POOL.free(this);
+				}
+			};
+		}
+
+		public MoveJumpAdapter obtain(float x, float y) {
+			MoveJumpAdapter jump = obtain();
+			jump.other.setX(x);
+			jump.other.setY(y);
+			return jump;
+		}
+	}
+
+	public static class RandomPool extends Pool<MoveRandomAdapter> {
+		@Override
+		protected MoveRandomAdapter newObject() {
+			return new MoveRandomAdapter() {
+				private static final long serialVersionUID = 1L;
+
+				public void free() {
+					MOVE_RANDOM_4WAY_POOL.free(this);
+				}
+			};
+		}
+
+		public MoveRandomAdapter obtain(int changeDirectionSlackness) {
+			MoveRandomAdapter mv = obtain();
+			mv.changeDirectionSlackness = changeDirectionSlackness;
+			return mv;
+		}
+	}
 }

@@ -100,21 +100,27 @@ public class EventFactory {
 			} else if (key.startsWith(PROP_MOVEHANDLER)) {
 				Object evHandler = GameBase.$().eval(val);
 				String index = key.substring(PROP_MOVEHANDLER.length()).trim();
-				if (index.length() == 0) {
-					if (evHandler instanceof Class<?>) {
-						@SuppressWarnings("unchecked")
-						Class<? extends MovementHandler> clazz = (Class<? extends MovementHandler>) evHandler;
+				if (evHandler instanceof Class<?>) {
+					@SuppressWarnings("unchecked")
+					Class<? extends MovementHandler> clazz = (Class<? extends MovementHandler>) evHandler;
+					try {
 						evHandler = clazz.getMethod("$").invoke(null);
+					} catch (NoSuchMethodException e) {
+						evHandler = clazz.getConstructor().newInstance();
 					}
-					if (evHandler instanceof MovementHandler) {
-						ev.setMoveHandler((MovementHandler) evHandler);
-					}
-				} else if (evHandler instanceof MovementHandler) {
-					ev
-							.addMoveSegment(toInt(index),
-									(MovementHandler) evHandler);
+				}
+				if (evHandler instanceof MovementHandler) {
+					MovementHandler mv = (MovementHandler) evHandler;
+					if (index.length() == 0)
+						ev.addMoveSegment(-1, mv);
+					else
+						ev.addMoveSegment(toInt(index), mv);
 				} else if (evHandler instanceof MoveSegment) {
-					ev.addMoveSegment(toInt(index), (MoveSegment) evHandler);
+					MoveSegment mv = (MoveSegment) evHandler;
+					if (index.length() == 0)
+						ev.addMoveSegment(-1, mv);
+					else
+						ev.addMoveSegment(toInt(index), mv);
 				}
 			} else if (PROP_OUTREACH.equals(key)) {
 				ev.outreach = toInt(val);
@@ -292,11 +298,12 @@ public class EventFactory {
 		key = key.toLowerCase();
 		try {
 			if (key.startsWith(PROP_ONNODE)) {
-				String suffix = key.substring(PROP_ONNODE.length()).trim();
+				String suffix = key.substring(PROP_ONNODE.length()).trim()
+						.toLowerCase();
 				int index;
-				if (suffix.equalsIgnoreCase(INDEX_FIRST)) {
+				if (suffix.equals(INDEX_FIRST)) {
 					index = 0;
-				} else if (suffix.equalsIgnoreCase(INDEX_LAST)) {
+				} else if (suffix.equals(INDEX_LAST)) {
 					index = poly.execAtNodeScript.length - 1;
 				} else {
 					index = toInt(suffix);
