@@ -72,7 +72,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	private transient TextureRegionRef imageRef;
 	private transient TextureRegion image;
 	private Point2D.Float softMove = new Point2D.Float();
-	private TransformableMove mvTransform;
+	private MoveTransformation mvTransform;
 	private EventHandler eventHandler;
 	private Color color = new ColorSerializable(1f, 1f, 1f, 1f);
 	private float colorFloatBits = color.toFloatBits();
@@ -138,7 +138,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * @param moveTrans
 	 *            The transformation of this move.
 	 */
-	public EventObject(TransformableMove moveTrans) {
+	public EventObject(MoveTransformation moveTrans) {
 		initTransient();
 		mvTransform = moveTrans;
 	}
@@ -157,7 +157,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 *            A reference to the entire tiled map
 	 */
 	public EventObject(TiledObject object, TiledObjectGroup layer,
-			TileAtlas atlas, TiledMap map, TransformableMove moveTrans) {
+			TileAtlas atlas, TiledMap map, MoveTransformation moveTrans) {
 		this(moveTrans);
 		float mapHeight = map.height * map.tileHeight;
 		name = object.name;
@@ -866,7 +866,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 				+ type + ")'";
 	}
 
-	public static abstract class TransformableMove implements Serializable {
+	public static abstract class MoveTransformation implements Serializable {
 		private static final long serialVersionUID = 1L;
 
 		/**

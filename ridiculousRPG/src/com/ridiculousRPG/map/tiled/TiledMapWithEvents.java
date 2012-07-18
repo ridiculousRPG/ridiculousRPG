@@ -47,7 +47,7 @@ import com.ridiculousRPG.event.EventObject;
 import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.event.EventTriggerAsync;
 import com.ridiculousRPG.event.PolygonObject;
-import com.ridiculousRPG.event.EventObject.TransformableMove;
+import com.ridiculousRPG.event.EventObject.MoveTransformation;
 import com.ridiculousRPG.event.handler.EventHandler;
 import com.ridiculousRPG.map.MapLoader;
 import com.ridiculousRPG.map.MapRenderRegion;
@@ -155,7 +155,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 
 	private void loadEvents(TiledMap map) throws ScriptException {
 		// TODO: Transformation for isometric maps
-		TransformableMove mvTrans = new TransformableMove() {
+		MoveTransformation mvTrans = new MoveTransformation() {
 			private static final long serialVersionUID = 1L;
 
 			@Override

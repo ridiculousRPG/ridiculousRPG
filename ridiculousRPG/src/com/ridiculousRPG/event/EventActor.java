@@ -27,7 +27,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.ridiculousRPG.event.EventObject.TransformableMove;
+import com.ridiculousRPG.event.EventObject.MoveTransformation;
 import com.ridiculousRPG.event.handler.EventHandler;
 
 /**
@@ -49,7 +49,7 @@ public class EventActor extends Actor {
 
 	public EventActor(float x, float y, float width, float height,
 			Map<String, String> properties) {
-		this(x, y, width, height, properties, new TransformableMove() {
+		this(x, y, width, height, properties, new MoveTransformation() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -61,7 +61,7 @@ public class EventActor extends Actor {
 	}
 
 	public EventActor(float x, float y, float width, float height,
-			Map<String, String> properties, TransformableMove mvTrans) {
+			Map<String, String> properties, MoveTransformation mvTrans) {
 		event = new EventObject(mvTrans);
 		addListener(new ClickListener() {
 			@Override
