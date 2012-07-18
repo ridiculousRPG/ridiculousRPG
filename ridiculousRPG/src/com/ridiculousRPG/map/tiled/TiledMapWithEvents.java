@@ -16,6 +16,7 @@
 
 package com.ridiculousRPG.map.tiled;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -46,6 +47,7 @@ import com.ridiculousRPG.event.EventObject;
 import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.event.EventTriggerAsync;
 import com.ridiculousRPG.event.PolygonObject;
+import com.ridiculousRPG.event.EventObject.TransformableMove;
 import com.ridiculousRPG.event.handler.EventHandler;
 import com.ridiculousRPG.map.MapLoader;
 import com.ridiculousRPG.map.MapRenderRegion;
@@ -152,6 +154,16 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	}
 
 	private void loadEvents(TiledMap map) throws ScriptException {
+		// TODO: Transformation for isometric maps
+		TransformableMove mvTrans = new TransformableMove() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void set(float srcX, float srcY, Point2D.Float target) {
+				target.x = srcX;
+				target.y = srcY;
+			}
+		};
 		int i, j, len_i, len_j;
 		EventObject ev;
 		Map<Integer, ObjectState> eventsById = loadStateFromFS();
@@ -171,7 +183,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					createPolyMove(map, group, object, object.polyline, false);
 					continue;
 				}
-				ev = new EventObject(object, group, atlas, map);
+				ev = new EventObject(object, group, atlas, map, mvTrans);
 				if (object.gid > 0) {
 					ev.z += EventFactory.getZIndex(map, object.gid);
 				}
@@ -210,13 +222,13 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		}
 
 		// insert half-planes around the map
-		put(null, ev = new EventObject());
+		put(null, ev = new EventObject(mvTrans));
 		ev.setTouchBound(new Rectangle(-1000f, -1000f, width + 2000f, 1000f));
-		put(null, ev = new EventObject());
+		put(null, ev = new EventObject(mvTrans));
 		ev.setTouchBound(new Rectangle(-1000f, -1000f, 1000f, height + 2000f));
-		put(null, ev = new EventObject());
+		put(null, ev = new EventObject(mvTrans));
 		ev.setTouchBound(new Rectangle(-1000f, height, width + 2000f, 1000f));
-		put(null, ev = new EventObject());
+		put(null, ev = new EventObject(mvTrans));
 		ev.setTouchBound(new Rectangle(width, -1000f, 1000f, height + 2000f));
 	}
 

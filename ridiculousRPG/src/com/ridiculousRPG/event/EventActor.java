@@ -16,6 +16,7 @@
 
 package com.ridiculousRPG.event;
 
+import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,6 +27,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.ridiculousRPG.event.EventObject.TransformableMove;
 import com.ridiculousRPG.event.handler.EventHandler;
 
 /**
@@ -38,25 +40,29 @@ import com.ridiculousRPG.event.handler.EventHandler;
 // TODO: Maybe: Movable extends com.badlogic.gdx.scenes.scene2d.Actor
 // and drop this wrapper
 public class EventActor extends Actor {
-	private EventObject event = new EventObject();
+	private EventObject event;
 	private boolean initialized;
 
 	public EventActor(float x, float y, String[] props) {
 		this(x, y, 20, 20, toMap(props));
 	}
 
-	private static Map<String, String> toMap(String[] props) {
-		HashMap<String, String> ret = new HashMap<String, String>();
-		for (int i = 0; i < props.length - 1; i += 2) {
-			ret.put(props[i], props[i + 1]);
-		}
-		return ret;
+	public EventActor(float x, float y, float width, float height,
+			Map<String, String> properties) {
+		this(x, y, width, height, properties, new TransformableMove() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void set(float srcX, float srcY, Point2D.Float target) {
+				target.x = srcX;
+				target.y = srcY;
+			}
+		});
 	}
 
 	public EventActor(float x, float y, float width, float height,
-			Map<String, String> properties) {
-		setVisible(event.visible);
-		setTouchable(event.touchable);
+			Map<String, String> properties, TransformableMove mvTrans) {
+		event = new EventObject(mvTrans);
 		addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
@@ -79,6 +85,8 @@ public class EventActor extends Actor {
 		setBounds(x, y, width, height);
 		EventFactory.parseProps(event, properties);
 		// refresh all values for the Actor class
+		setTouchable(event.touchable);
+		super.setVisible(event.visible);
 		super.setBounds(event.getX(), event.getY(), event.getWidth(), event
 				.getHeight());
 		super.setScale(event.scaleX, event.scaleY);
@@ -88,6 +96,14 @@ public class EventActor extends Actor {
 				: Touchable.disabled);
 		super.setVisible(event.visible);
 		super.setZIndex((int) event.z);
+	}
+
+	private static Map<String, String> toMap(String[] props) {
+		HashMap<String, String> ret = new HashMap<String, String>();
+		for (int i = 0; i < props.length - 1; i += 2) {
+			ret.put(props[i], props[i + 1]);
+		}
+		return ret;
 	}
 
 	@Override

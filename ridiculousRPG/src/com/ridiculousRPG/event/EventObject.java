@@ -44,8 +44,6 @@ import com.ridiculousRPG.event.handler.EventHandler;
 import com.ridiculousRPG.map.MapRenderRegion;
 import com.ridiculousRPG.map.tiled.TiledMapWithEvents;
 import com.ridiculousRPG.movement.Movable;
-import com.ridiculousRPG.movement.MovementHandler;
-import com.ridiculousRPG.movement.input.Move4WayAdapter;
 import com.ridiculousRPG.util.BlockingBehavior;
 import com.ridiculousRPG.util.ColorSerializable;
 import com.ridiculousRPG.util.Direction;
@@ -59,6 +57,7 @@ import com.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
  */
 public class EventObject extends Movable implements Comparable<EventObject>,
 		Disposable, Serializable {
+
 	private static final long serialVersionUID = 1L;
 
 	private static final float COLOR_WHITE_BITS = Color.WHITE.toFloatBits();
@@ -72,7 +71,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	private transient ParticleEffect effectRear;
 	private transient TextureRegionRef imageRef;
 	private transient TextureRegion image;
-	private Point2D.Float softMove = new Point2D.Float(0f, 0f);
+	private Point2D.Float softMove = new Point2D.Float();
+	private TransformableMove mvTransform;
 	private EventHandler eventHandler;
 	private Color color = new ColorSerializable(1f, 1f, 1f, 1f);
 	private float colorFloatBits = color.toFloatBits();
@@ -134,116 +134,63 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 
 	/**
 	 * Creates an empty new event.
+	 * 
+	 * @param moveTrans
+	 *            The transformation of this move.
 	 */
-	public EventObject() {
+	public EventObject(TransformableMove moveTrans) {
 		initTransient();
+		mvTransform = moveTrans;
 	}
 
 	/**
-	 * Creates a new event.<br>
+	 * With this constructor it's possible to simply instantiate an EventObject
+	 * from an object on the tiled map.
 	 * 
-	 * @param name
-	 *            the name of this event. Don't use the name as key. Names may
-	 *            change and they don't need to be unique.
-	 * @param x
-	 *            the starting x position
-	 * @param y
-	 *            the starting y position
+	 * @param object
+	 *            One concrete tiled object
+	 * @param layer
+	 *            The layer on which the object is placed
+	 * @param atlas
+	 *            The atlas which contains all tiles as texture regions
+	 * @param map
+	 *            A reference to the entire tiled map
 	 */
-	public EventObject(String name, String imagePath, int x, int y,
-			MovementHandler moveHandler) {
-		this(name, imagePath, x, y, moveHandler, BlockingBehavior.NONE,
-				Speed.S07_NORMAL);
+	public EventObject(TiledObject object, TiledObjectGroup layer,
+			TileAtlas atlas, TiledMap map, TransformableMove moveTrans) {
+		this(moveTrans);
+		float mapHeight = map.height * map.tileHeight;
+		name = object.name;
+		setType(object.type);
+		if (object.gid > 0) {
+			gid = object.gid;
+			AtlasRegion region = (AtlasRegion) atlas.getRegion(object.gid);
+			setImage(region);
+			visible = true;
+			addX(region.offsetX + object.x);
+			addY(mapHeight + region.offsetY - object.y);
+			drawBound.width = touchBound.width = region.getRegionWidth();
+			drawBound.height = touchBound.height = region.getRegionHeight();
+		} else {
+			addX(object.x);
+			addY(mapHeight - object.y - object.height);
+			drawBound.width = touchBound.width = object.width;
+			drawBound.height = touchBound.height = object.height;
+		}
 	}
 
 	/**
-	 * Creates a new event.<br>
+	 * Applies this effect two times. Once in front of this event and once
+	 * behind this event.
 	 * 
-	 * @param name
-	 *            the name of this event. Don't use the name as key. Names may
-	 *            change and they don't need to be unique.
-	 * @param x
-	 *            the starting x position
-	 * @param y
-	 *            the starting y position
+	 * @param internalPath
+	 *            Path to the particle effect.
+	 * @see #setEffectFront(String)
+	 * @see #setEffectRear(String)
 	 */
-	public EventObject(String name, final String imagePath, int x, int y,
-			MovementHandler moveHandler, BlockingBehavior blockingBehaviour,
-			Speed moveSpeed) {
-		this(name, TextureRegionLoader.load(imagePath), x, y, moveHandler,
-				blockingBehaviour, moveSpeed);
-	}
-
-	/**
-	 * Creates a new event.<br>
-	 * 
-	 * @param name
-	 *            the name of this event. Don't use the name as key. Names may
-	 *            change and they don't need to be unique.
-	 * @param region
-	 *            This texture reference will automatically be unloaded
-	 * @param x
-	 *            the starting x position
-	 * @param y
-	 *            the starting y position
-	 */
-	public EventObject(String name, TextureRegionRef region, int x, int y,
-			MovementHandler moveHandler) {
-		this(name, region, x, y, moveHandler, BlockingBehavior.NONE,
-				Speed.S07_NORMAL);
-	}
-
-	/**
-	 * Creates a new event.<br>
-	 * 
-	 * @param name
-	 *            the name of this event. Don't use the name as key. Names may
-	 *            change and they don't need to be unique.
-	 * @param region
-	 *            This texture reference will automatically be unloaded
-	 * @param x
-	 *            the starting x position
-	 * @param y
-	 *            the starting y position
-	 */
-	public EventObject(String name, TextureRegionRef region, int x, int y,
-			MovementHandler moveHandler, BlockingBehavior blockingBehaviour,
-			Speed moveSpeed) {
-		this();
-		image = imageRef = region;
-		visible = true;
-		this.moveSpeed = moveSpeed;
-		addX(x);
-		addY(y);
-		drawBound.width = image.getRegionWidth();
-		drawBound.height = image.getRegionHeight();
-		// we won't be to eager with touch computation
-		touchBound.x += drawBound.width * .17f;
-		touchBound.y += drawBound.height * .17f;
-		touchBound.width = drawBound.width * .66f;
-		touchBound.height = drawBound.height * .66f;
-		this.setMoveHandler(moveHandler);
-		this.blockingBehavior = blockingBehaviour;
-	}
-
-	/**
-	 * Creates a new event.<br>
-	 * For the undocumented parameters see
-	 * {@link #setAnimationTexture(String, int, int, int, int, boolean)}
-	 * 
-	 * @param name
-	 *            the name of this event. Don't use the name as key. Names may
-	 *            change and they don't need to be unique.
-	 * @param x
-	 *            the starting x position
-	 * @param y
-	 *            the starting y position
-	 */
-	public EventObject(String name, String animationPath,
-			int animationTileWidth, int animationTileHeight, int anzCols,
-			int anzRows, int x, int y) {
-		this(name, animationPath, animationTileWidth, animationTileHeight,
-				anzCols, anzRows, x, y, Move4WayAdapter.$());
+	public void setEffect(String internalPath) {
+		setEffectFront(internalPath);
+		setEffectRear(internalPath);
 	}
 
 	/**
@@ -278,20 +225,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	}
 
 	/**
-	 * Applies this effect two times. Once in front of this event and once
-	 * behind this event.
-	 * 
-	 * @param internalPath
-	 *            Path to the particle effect.
-	 * @see #setEffectFront(String)
-	 * @see #setEffectRear(String)
-	 */
-	public void setEffect(String internalPath) {
-		setEffectFront(internalPath);
-		setEffectRear(internalPath);
-	}
-
-	/**
 	 * Draws a particle effect behind the event.
 	 * 
 	 * @param internalPath
@@ -319,103 +252,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public void startEffectRear() {
 		if (effectRear != null) {
 			effectRear.start();
-		}
-	}
-
-	/**
-	 * Creates a new event.<br>
-	 * For the undocumented parameters see
-	 * {@link #setAnimationTexture(String, int, int, int, int, boolean, boolean)}
-	 * 
-	 * @param name
-	 *            the name of this event. Don't use the name as key. Names may
-	 *            change and they don't need to be unique.
-	 * @param x
-	 *            the starting x position
-	 * @param y
-	 *            the starting y position
-	 * @param moveHandler
-	 *            the starting {@link MovementHandler}
-	 */
-	public EventObject(String name, String animationPath,
-			int animationTileWidth, int animationTileHeight, int anzCols,
-			int anzRows, int x, int y, MovementHandler moveHandler) {
-		this(name, animationPath, animationTileWidth, animationTileHeight,
-				anzCols, anzRows, x, y, moveHandler, Speed.S07_NORMAL,
-				Direction.N, BlockingBehavior.PASSES_LOW_BARRIER, true);
-	}
-
-	/**
-	 * Creates a new event.<br>
-	 * For the undocumented parameters see
-	 * {@link #setAnimationTexture(String, int, int, int, int, boolean, boolean)}
-	 * 
-	 * @param name
-	 *            the name of this event. Don't use the name as key. Names may
-	 *            change and they don't need to be unique.
-	 * @param x
-	 *            the starting x position
-	 * @param y
-	 *            the starting y position
-	 * @param moveHandler
-	 *            the starting {@link MovementHandler}
-	 * @param startDirection
-	 *            the starting direction
-	 * @param isAnimationCompressed
-	 */
-	public EventObject(String name, String animationPath,
-			int animationTileWidth, int animationTileHeight, int anzCols,
-			int anzRows, int x, int y, MovementHandler moveHandler,
-			Speed moveSpeed, Direction startDirection,
-			BlockingBehavior blockingBehaviour, boolean isAnimationCompressed) {
-		this();
-		addX(x);
-		addY(y);
-		z = .1f;
-		setAnimationTexture(animationPath, animationTileWidth,
-				animationTileHeight, anzCols, anzRows, true, false,
-				isAnimationCompressed);
-		this.image = animation.setAnimationPosition(startDirection);
-		this.visible = true;
-		this.moveSpeed = moveSpeed;
-		this.name = name;
-		this.setMoveHandler(moveHandler);
-		this.blockingBehavior = blockingBehaviour;
-	}
-
-	/**
-	 * With this constructor it's possible to simply instantiate an EventObject
-	 * from an object on the tiled map.
-	 * 
-	 * @param object
-	 *            One concrete tiled object
-	 * @param layer
-	 *            The layer on which the object is placed
-	 * @param atlas
-	 *            The atlas which contains all tiles as texture regions
-	 * @param map
-	 *            A reference to the entire tiled map
-	 */
-	public EventObject(TiledObject object, TiledObjectGroup layer,
-			TileAtlas atlas, TiledMap map) {
-		this();
-		float mapHeight = map.height * map.tileHeight;
-		name = object.name;
-		setType(object.type);
-		if (object.gid > 0) {
-			gid = object.gid;
-			AtlasRegion region = (AtlasRegion) atlas.getRegion(object.gid);
-			setImage(region);
-			visible = true;
-			addX(region.offsetX + object.x);
-			addY(mapHeight + region.offsetY - object.y);
-			drawBound.width = touchBound.width = region.getRegionWidth();
-			drawBound.height = touchBound.height = region.getRegionHeight();
-		} else {
-			addX(object.x);
-			addY(mapHeight - object.y - object.height);
-			drawBound.width = touchBound.width = object.width;
-			drawBound.height = touchBound.height = object.height;
 		}
 	}
 
@@ -647,8 +483,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		float distance = moveSpeed.computeStretch(deltaTime);
 		float x = dir.getDistanceX(distance);
 		float y = dir.getDistanceY(distance);
-		softMove.x = x;
-		softMove.y = y;
+		mvTransform.set(x, y, softMove);
 		moves = true;
 		if (animation != null) {
 			this.image = animation.animate(x, y, dir, deltaTime);
@@ -665,8 +500,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 */
 	@Override
 	public synchronized void offerMove(float x, float y) {
-		softMove.x = x;
-		softMove.y = y;
+		mvTransform.set(x, y, softMove);
 		moves = true;
 	}
 
@@ -1030,5 +864,18 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public String toString() {
 		return "event '" + (name == null ? "id=" + id : name) + " (type="
 				+ type + ")'";
+	}
+
+	public static abstract class TransformableMove implements Serializable {
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * transforms srcX and srcY and applies them to target.x target.y
+		 * 
+		 * @param srcX
+		 * @param srcY
+		 * @param target
+		 */
+		public abstract void set(float srcX, float srcY, Point2D.Float target);
 	}
 }
