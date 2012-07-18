@@ -22,8 +22,9 @@ import java.util.Map;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ActorEvent;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.ridiculousRPG.event.handler.EventHandler;
 
@@ -58,7 +59,7 @@ public class EventActor extends Actor {
 		setTouchable(event.touchable);
 		addListener(new ClickListener() {
 			@Override
-			public void clicked(ActorEvent event, float x, float y) {
+			public void clicked(InputEvent event, float x, float y) {
 				EventObject ev = EventActor.this.event;
 				EventHandler handler = ev.getEventHandler();
 				if (handler != null)
@@ -66,7 +67,7 @@ public class EventActor extends Actor {
 			}
 
 			@Override
-			public void enter(ActorEvent event, float x, float y, int pointer,
+			public void enter(InputEvent event, float x, float y, int pointer,
 					Actor fromActor) {
 				EventObject ev = EventActor.this.event;
 				EventHandler handler = ev.getEventHandler();
@@ -83,7 +84,8 @@ public class EventActor extends Actor {
 		super.setScale(event.scaleX, event.scaleY);
 		super.setColor(event.getColor());
 		super.setRotation(event.rotation);
-		super.setTouchable(event.touchable);
+		super.setTouchable(event.touchable ? Touchable.enabled
+				: Touchable.disabled);
 		super.setVisible(event.visible);
 		super.setZIndex((int) event.z);
 	}
@@ -148,10 +150,15 @@ public class EventActor extends Actor {
 		setWidth(width);
 	}
 
-	@Override
 	public void setTouchable(boolean touchable) {
-		super.setTouchable(touchable);
+		super.setTouchable(touchable ? Touchable.enabled : Touchable.disabled);
 		event.touchable = touchable;
+	}
+
+	@Override
+	public void setTouchable(Touchable touchable) {
+		super.setTouchable(touchable);
+		event.touchable = touchable != Touchable.disabled;
 	}
 
 	@Override

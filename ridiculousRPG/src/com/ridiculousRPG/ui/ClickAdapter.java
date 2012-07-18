@@ -18,7 +18,7 @@ package com.ridiculousRPG.ui;
 
 import javax.script.ScriptException;
 
-import com.badlogic.gdx.scenes.scene2d.ActorEvent;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.ridiculousRPG.GameBase;
 
 /**
@@ -42,7 +42,7 @@ public class ClickAdapter extends
 	}
 
 	@Override
-	public void clicked(ActorEvent event, float x, float y) {
+	public void clicked(InputEvent event, float x, float y) {
 		try {
 			if (listener != null)
 				listener.clicked(event, x, y);
@@ -56,6 +56,6 @@ public class ClickAdapter extends
 	}
 
 	public interface ClickListener {
-		public void clicked(ActorEvent event, float x, float y);
+		public void clicked(InputEvent event, float x, float y);
 	}
 }

@@ -29,7 +29,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ActorEvent;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -370,7 +370,7 @@ public class MessagingService extends ActorsOnStageService implements
 			TextButton tb = new TextButton(text, getSkinNormal());
 			tb.addListener(new ClickListener() {
 				@Override
-				public void clicked(ActorEvent actorEv, float x, float y) {
+				public void clicked(InputEvent actorEv, float x, float y) {
 					resultPointer[0] = value;
 				}
 			});

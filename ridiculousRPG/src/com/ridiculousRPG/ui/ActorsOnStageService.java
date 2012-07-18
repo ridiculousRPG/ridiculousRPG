@@ -29,10 +29,11 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ActorEvent;
-import com.badlogic.gdx.scenes.scene2d.ActorListener;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -624,7 +625,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 		try {
 			final Window w = new Window("", skin);
 
-			w.setTouchable(false);
+			w.setTouchable(Touchable.disabled);
 			w.getColor().a = .1f;
 			w.addAction(Actions.sequence(Actions.fadeIn(fadeInfoTime), Actions
 					.delay(displayInfoTime, Actions.fadeOut(fadeInfoTime)),
@@ -682,11 +683,11 @@ public class ActorsOnStageService extends Stage implements GameService,
 			setModal(true);
 			getCaptureListeners().clear();
 			getListeners().clear();
-			addListener(new ActorListener() {
+			addListener(new InputListener() {
 				final Vector2 dragOffset = new Vector2();
 				boolean dragging;
 
-				public boolean touchDown(ActorEvent event, float x, float y,
+				public boolean touchDown(InputEvent event, float x, float y,
 						int pointer, int button) {
 					dragging = pointer == 0
 							&& getHeight() - y <= getPadTop().height(
@@ -700,7 +701,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 					return false;
 				}
 
-				public void touchDragged(ActorEvent event, float x, float y,
+				public void touchDragged(InputEvent event, float x, float y,
 						int pointer) {
 					if (dragging)
 						scroll.translate(x - dragOffset.x, y - dragOffset.y);

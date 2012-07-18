@@ -22,6 +22,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -227,7 +228,7 @@ public final class ActorFocusUtil {
 	}
 
 	private static boolean isFocusable(Actor a) {
-		return a.isTouchable() && a.isVisible()
+		return a.isVisible() && a.getTouchable() != Touchable.disabled
 				&& styleGetter(a.getClass()) != null && !(a instanceof Label)
 				&& !(a instanceof ScrollPane) && !(a instanceof Image)
 				&& !(a instanceof Window) && !(a instanceof EventActor);
@@ -238,7 +239,7 @@ public final class ActorFocusUtil {
 			return;
 		for (int i = actors.size - 1; i > -1; i--) {
 			Actor a = actors.get(i);
-			a.setTouchable(false);
+			a.setTouchable(Touchable.disabled);
 			if (a instanceof Group) {
 				disableRecursive(((Group) a).getChildren());
 			}
