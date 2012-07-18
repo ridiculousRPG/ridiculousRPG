@@ -30,11 +30,11 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.ridiculousRPG.event.EventObject;
+import com.ridiculousRPG.event.PolygonObject;
 import com.ridiculousRPG.service.Computable;
 import com.ridiculousRPG.service.Drawable;
 import com.ridiculousRPG.service.GameService;
 import com.ridiculousRPG.ui.DisplayPlainTextService;
-import com.ridiculousRPG.util.BlockingBehavior;
 
 /**
  * This class offers some debug functions.
@@ -133,14 +133,7 @@ public final class DebugHelper {
 				debugRenderer.rect(ev.drawBound.x, ev.drawBound.y,
 						ev.drawBound.width, ev.drawBound.height);
 			}
-			if (!ev.blockingBehavior.blocks(BlockingBehavior.BUILDING_LOW)) {
-				debugRenderer.setColor(0f, 1f, 0f, 1f);
-			} else if (!ev.blockingBehavior
-					.blocks(BlockingBehavior.BARRIER_LOW)) {
-				debugRenderer.setColor(1f, 1f, 0f, 1f);
-			} else {
-				debugRenderer.setColor(1f, 0f, 0f, 1f);
-			}
+			debugRenderer.setColor(ev.blockingBehavior.color);
 			debugRenderer.rect(ev.getX(), ev.getY(),
 					Math.max(1, ev.getWidth()), Math.max(1, ev.getHeight()));
 			if (ev.name != null) {
@@ -198,4 +191,18 @@ public final class DebugHelper {
 		return textViewDebugger;
 	}
 
+	public static void debugPolygons(List<PolygonObject> polyList) {
+		PolygonObject.startPolygonBatch(GameBase.$().getCamera().projection);
+		for (PolygonObject poly : polyList) {
+			poly.draw(true);
+			for (int i = poly.vertexX.length - 1; i >= 0; i--) {
+				float x = poly.vertexX[i];
+				if (poly.loop && i == 0)
+					x -= 20;
+				getTextMapDebugger().addMessage("#" + i,
+						poly.color.toFloatBits(), x, poly.vertexY[i], 0f, true);
+			}
+		}
+		PolygonObject.endPolygonBatch();
+	}
 }

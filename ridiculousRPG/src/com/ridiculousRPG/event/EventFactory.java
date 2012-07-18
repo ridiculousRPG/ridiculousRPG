@@ -90,7 +90,7 @@ public class EventFactory {
 			} else if (PROP_HEIGHT.equals(key)) {
 				ev.z += toInt(val);
 			} else if (PROP_BLOCKING.equals(key)) {
-				ev.blockingBehavior = BlockingBehavior.parse(val);
+				ev.blockingBehavior = BlockingBehavior.parse(val.toUpperCase());
 			} else if (PROP_SPEED.equals(key)) {
 				ev.setMoveSpeed(Speed.parse(val));
 			} else if (PROP_MOVEHANDLER_LOOP.equals(key)) {
@@ -135,29 +135,21 @@ public class EventFactory {
 					boolean estimateTouch = toBool(props
 							.get(PROP_ESTIMATETOUCHBOUNDS));
 					ev.setImage(val, estimateTouch, !estimateTouch);
-					initVisibleEvent(ev, props);
+					if (toBool(props.get(PROP_CENTERIMAGE)))
+						ev.centerDrawbound();
 				}
 			} else if (PROP_EFFECTFRONT.equals(key)) {
 				if (Gdx.files.internal(val).exists()) {
 					ev.setEffectFront(val);
-					if (ev.z == 0f && props.get(PROP_HEIGHT) == null) {
-						ev.z = .1f;
-					}
 				}
 			} else if (PROP_EFFECT.equals(key)) {
 				if (Gdx.files.internal(val).exists()) {
 					ev.setEffectFront(val);
 					ev.setEffectRear(val);
-					if (ev.z == 0f && props.get(PROP_HEIGHT) == null) {
-						ev.z = .1f;
-					}
 				}
 			} else if (PROP_EFFECTREAR.equals(key)) {
 				if (Gdx.files.internal(val).exists()) {
 					ev.setEffectRear(val);
-					if (ev.z == 0f && props.get(PROP_HEIGHT) == null) {
-						ev.z = .1f;
-					}
 				}
 			} else if (PROP_ANIMATION.equals(key)) {
 				FileHandle fh = Gdx.files.internal(val);
@@ -170,7 +162,8 @@ public class EventFactory {
 					boolean estimateTouch = toBool(props
 							.get(PROP_ESTIMATETOUCHBOUNDS));
 					ev.setAnimation(anim, estimateTouch, !estimateTouch);
-					initVisibleEvent(ev, props);
+					if (toBool(props.get(PROP_CENTERIMAGE)))
+						ev.centerDrawbound();
 				} else {
 					Object result = GameBase.$().eval(val);
 					if (result instanceof TileAnimation) {
@@ -178,7 +171,8 @@ public class EventFactory {
 								.get(PROP_ESTIMATETOUCHBOUNDS));
 						ev.setAnimation((TileAnimation) result, estimateTouch,
 								!estimateTouch);
-						initVisibleEvent(ev, props);
+						if (toBool(props.get(PROP_CENTERIMAGE)))
+							ev.centerDrawbound();
 					}
 				}
 			} else if (PROP_HANDLER.equals(key)) {
@@ -191,75 +185,71 @@ public class EventFactory {
 
 				// merge both event handler
 				if (evHandler instanceof EventExecScriptAdapter
-						&& ev.getEventHandler() instanceof EventExecScriptAdapter) {
+						&& ev.eventHandler instanceof EventExecScriptAdapter) {
 					((EventExecScriptAdapter) evHandler)
-							.merge((EventExecScriptAdapter) ev
-									.getEventHandler());
+							.merge((EventExecScriptAdapter) ev.eventHandler);
 				} else if (evHandler instanceof EventHandler) {
-					ev.setEventHandler((EventHandler) evHandler);
+					ev.eventHandler = (EventHandler) evHandler;
 				}
 			} else if (key.startsWith(PROP_ONPUSH)) {
 				ev.pushable = true;
-				if (ev.getEventHandler() == null) {
-					ev.setEventHandler(new EventExecScriptAdapter());
+				if (ev.eventHandler == null) {
+					ev.eventHandler = new EventExecScriptAdapter(ev);
 				}
-				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+				if (ev.eventHandler instanceof EventExecScriptAdapter) {
 					String index = key.substring(PROP_ONPUSH.length()).trim();
-					((EventExecScriptAdapter) ev.getEventHandler()).execOnPush(
-							val, index.length() == 0 ? -1 : toInt(index));
+					((EventExecScriptAdapter) ev.eventHandler).execOnPush(val,
+							index.length() == 0 ? -1 : toInt(index));
 				}
 			} else if (key.startsWith(PROP_ONSTATECHANGE)) {
-				ev.reactOnGlobalChange = true;
-				if (ev.getEventHandler() == null) {
-					ev.setEventHandler(new EventExecScriptAdapter());
+				if (ev.eventHandler == null) {
+					ev.eventHandler = new EventExecScriptAdapter(ev);
 				}
-				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+				if (ev.eventHandler instanceof EventExecScriptAdapter) {
 					String index = key.substring(PROP_ONSTATECHANGE.length())
 							.trim();
-					((EventExecScriptAdapter) ev.getEventHandler())
+					((EventExecScriptAdapter) ev.eventHandler)
 							.execOnStateChange(val, index.length() == 0 ? -1
 									: toInt(index));
 				}
 			} else if (key.startsWith(PROP_ONTOUCH)) {
 				ev.touchable = true;
-				if (ev.getEventHandler() == null) {
-					ev.setEventHandler(new EventExecScriptAdapter());
+				if (ev.eventHandler == null) {
+					ev.eventHandler = new EventExecScriptAdapter(ev);
 				}
-				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+				if (ev.eventHandler instanceof EventExecScriptAdapter) {
 					String index = key.substring(PROP_ONTOUCH.length()).trim();
-					((EventExecScriptAdapter) ev.getEventHandler())
-							.execOnTouch(val, index.length() == 0 ? -1
-									: toInt(index));
+					((EventExecScriptAdapter) ev.eventHandler).execOnTouch(val,
+							index.length() == 0 ? -1 : toInt(index));
 				}
 			} else if (key.startsWith(PROP_ONTIMER)) {
-				if (ev.getEventHandler() == null) {
-					ev.setEventHandler(new EventExecScriptAdapter());
+				if (ev.eventHandler == null) {
+					ev.eventHandler = new EventExecScriptAdapter(ev);
 				}
-				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+				if (ev.eventHandler instanceof EventExecScriptAdapter) {
 					String index = key.substring(PROP_ONTIMER.length()).trim();
-					((EventExecScriptAdapter) ev.getEventHandler())
-							.execOnTimer(val, index.length() == 0 ? -1
-									: toInt(index));
+					((EventExecScriptAdapter) ev.eventHandler).execOnTimer(val,
+							index.length() == 0 ? -1 : toInt(index));
 				}
 			} else if (key.startsWith(PROP_ONCUSTOMEVENT)) {
-				if (ev.getEventHandler() == null) {
-					ev.setEventHandler(new EventExecScriptAdapter());
+				if (ev.eventHandler == null) {
+					ev.eventHandler = new EventExecScriptAdapter(ev);
 				}
-				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+				if (ev.eventHandler instanceof EventExecScriptAdapter) {
 					String index = key.substring(PROP_ONCUSTOMEVENT.length())
 							.trim();
-					((EventExecScriptAdapter) ev.getEventHandler())
+					((EventExecScriptAdapter) ev.eventHandler)
 							.execOnCustomTrigger(val, index.length() == 0 ? -1
 									: toInt(index));
 				}
 			} else if (key.startsWith(PROP_ONLOAD)) {
-				if (ev.getEventHandler() == null) {
-					ev.setEventHandler(new EventExecScriptAdapter());
+				if (ev.eventHandler == null) {
+					ev.eventHandler = new EventExecScriptAdapter(ev);
 				}
-				if (ev.getEventHandler() instanceof EventExecScriptAdapter) {
+				if (ev.eventHandler instanceof EventExecScriptAdapter) {
 					String index = key.substring(PROP_ONLOAD.length()).trim();
-					((EventExecScriptAdapter) ev.getEventHandler()).execOnLoad(
-							val, index.length() == 0 ? -1 : toInt(index));
+					((EventExecScriptAdapter) ev.eventHandler).execOnLoad(val,
+							index.length() == 0 ? -1 : toInt(index));
 				}
 			}
 		} catch (Exception e) {
@@ -316,21 +306,84 @@ public class EventFactory {
 				} else {
 					poly.execAtNodeScript[index] = val;
 				}
+			} else if (PROP_BLOCKING.equals(key)) {
+				poly.blockingBehavior = BlockingBehavior.parse(val.toUpperCase());
+			} else if (PROP_HANDLER.equals(key)) {
+				Object evHandler = GameBase.$().eval(val);
+				if (evHandler instanceof Class<?>) {
+					@SuppressWarnings("unchecked")
+					Class<? extends EventHandler> clazz = (Class<? extends EventHandler>) evHandler;
+					evHandler = clazz.newInstance();
+				}
+
+				// merge both event handler
+				if (evHandler instanceof EventExecScriptAdapter
+						&& poly.eventHandler instanceof EventExecScriptAdapter) {
+					((EventExecScriptAdapter) evHandler)
+							.merge((EventExecScriptAdapter) poly.eventHandler);
+				} else if (evHandler instanceof EventHandler) {
+					poly.eventHandler = (EventHandler) evHandler;
+				}
+			} else if (key.startsWith(PROP_ONSTATECHANGE)) {
+				if (poly.eventHandler == null) {
+					poly.eventHandler = new EventExecScriptAdapter(poly);
+				}
+				if (poly.eventHandler instanceof EventExecScriptAdapter) {
+					String index = key.substring(PROP_ONSTATECHANGE.length())
+							.trim();
+					((EventExecScriptAdapter) poly.eventHandler)
+							.execOnStateChange(val, index.length() == 0 ? -1
+									: toInt(index));
+				}
+			} else if (key.startsWith(PROP_ONPUSH)) {
+				GameBase.$error("Polygon.onpush", "The event onpush is not "
+						+ "available for polygon objects (for perfornamce "
+						+ "reasons)", new IllegalArgumentException("Argument "
+						+ key + " invalid"));
+			} else if (key.startsWith(PROP_ONTOUCH)) {
+				poly.touchable = true;
+				if (poly.eventHandler == null) {
+					poly.eventHandler = new EventExecScriptAdapter(poly);
+				}
+				if (poly.eventHandler instanceof EventExecScriptAdapter) {
+					String index = key.substring(PROP_ONTOUCH.length()).trim();
+					((EventExecScriptAdapter) poly.eventHandler).execOnTouch(
+							val, index.length() == 0 ? -1 : toInt(index));
+				}
+			} else if (key.startsWith(PROP_ONTIMER)) {
+				if (poly.eventHandler == null) {
+					poly.eventHandler = new EventExecScriptAdapter(poly);
+				}
+				if (poly.eventHandler instanceof EventExecScriptAdapter) {
+					String index = key.substring(PROP_ONTIMER.length()).trim();
+					((EventExecScriptAdapter) poly.eventHandler).execOnTimer(
+							val, index.length() == 0 ? -1 : toInt(index));
+				}
+			} else if (key.startsWith(PROP_ONCUSTOMEVENT)) {
+				if (poly.eventHandler == null) {
+					poly.eventHandler = new EventExecScriptAdapter(poly);
+				}
+				if (poly.eventHandler instanceof EventExecScriptAdapter) {
+					String index = key.substring(PROP_ONCUSTOMEVENT.length())
+							.trim();
+					((EventExecScriptAdapter) poly.eventHandler)
+							.execOnCustomTrigger(val, index.length() == 0 ? -1
+									: toInt(index));
+				}
+			} else if (key.startsWith(PROP_ONLOAD)) {
+				if (poly.eventHandler == null) {
+					poly.eventHandler = new EventExecScriptAdapter(poly);
+				}
+				if (poly.eventHandler instanceof EventExecScriptAdapter) {
+					String index = key.substring(PROP_ONLOAD.length()).trim();
+					((EventExecScriptAdapter) poly.eventHandler).execOnLoad(
+							val, index.length() == 0 ? -1 : toInt(index));
+				}
 			}
 		} catch (Exception e) {
 			GameBase.$error("TiledMap.createPolygon",
 					"Could not parse property '" + key + "' for polygon '"
 							+ poly.getName() + "'", e);
-		}
-	}
-
-	private static void initVisibleEvent(EventObject ev,
-			Map<String, String> props) {
-		ev.visible = true;
-		if (toBool(props.get(PROP_CENTERIMAGE)))
-			ev.centerDrawbound();
-		if (ev.z == 0f && props.get(PROP_HEIGHT) == null) {
-			ev.z = .1f;
 		}
 	}
 

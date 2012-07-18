@@ -17,6 +17,7 @@
 package com.ridiculousRPG.event;
 
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -31,11 +32,6 @@ import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
-import com.badlogic.gdx.graphics.g2d.tiled.TileAtlas;
-import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
-import com.badlogic.gdx.graphics.g2d.tiled.TiledObject;
-import com.badlogic.gdx.graphics.g2d.tiled.TiledObjectGroup;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.ridiculousRPG.GameBase;
@@ -71,9 +67,9 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	private transient ParticleEffect effectRear;
 	private transient TextureRegionRef imageRef;
 	private transient TextureRegion image;
-	private Point2D.Float softMove = new Point2D.Float();
+	private final Point2D.Float softMove = new Point2D.Float();
+	private final Rectangle2D.Float softMoveBounds = new Rectangle2D.Float();
 	private MoveTransformation mvTransform;
-	private EventHandler eventHandler;
 	private Color color = new ColorSerializable(1f, 1f, 1f, 1f);
 	private float colorFloatBits = color.toFloatBits();
 
@@ -92,11 +88,11 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 
 	public String name;
 	public float z;
-	public Rectangle drawBound = new Rectangle();
+	public Rectangle2D.Float drawBound = new Rectangle2D.Float();
 	public boolean visible = false;
 	public boolean pushable = false;
 	public boolean touchable = false;
-	public boolean reactOnGlobalChange = false;
+	public EventHandler eventHandler;
 
 	public float rotation = 0f, scaleX = 1f, scaleY = 1f;
 	/**
@@ -115,16 +111,16 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	/**
 	 * All actual collisions for this object are stored in this list
 	 */
-	public transient Array<EventObject> collision;
+	public transient Array<EventHandler> collision;
 	/**
 	 * Touching events which have just triggered a touch event
 	 */
-	public transient Array<EventObject> justTouching;
+	public transient Array<EventHandler> justTouching;
 	/**
 	 * All reachable objects which can be pushed at this time are stored in this
 	 * list
 	 */
-	public transient Array<EventObject> reachable;
+	public transient Array<EventHandler> reachable;
 	/**
 	 * This map holds the local event properties.<br>
 	 * If you use a {@link TiledMapWithEvents}, all object-properties starting
@@ -141,42 +137,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public EventObject(MoveTransformation moveTrans) {
 		initTransient();
 		mvTransform = moveTrans;
-	}
-
-	/**
-	 * With this constructor it's possible to simply instantiate an EventObject
-	 * from an object on the tiled map.
-	 * 
-	 * @param object
-	 *            One concrete tiled object
-	 * @param layer
-	 *            The layer on which the object is placed
-	 * @param atlas
-	 *            The atlas which contains all tiles as texture regions
-	 * @param map
-	 *            A reference to the entire tiled map
-	 */
-	public EventObject(TiledObject object, TiledObjectGroup layer,
-			TileAtlas atlas, TiledMap map, MoveTransformation moveTrans) {
-		this(moveTrans);
-		float mapHeight = map.height * map.tileHeight;
-		name = object.name;
-		setType(object.type);
-		if (object.gid > 0) {
-			gid = object.gid;
-			AtlasRegion region = (AtlasRegion) atlas.getRegion(object.gid);
-			setImage(region);
-			visible = true;
-			addX(region.offsetX + object.x);
-			addY(mapHeight + region.offsetY - object.y);
-			drawBound.width = touchBound.width = region.getRegionWidth();
-			drawBound.height = touchBound.height = region.getRegionHeight();
-		} else {
-			addX(object.x);
-			addY(mapHeight - object.y - object.height);
-			drawBound.width = touchBound.width = object.width;
-			drawBound.height = touchBound.height = object.height;
-		}
 	}
 
 	/**
@@ -343,21 +303,49 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	/**
 	 * Checks if one EventObject touches the other respecting all softMoves!
 	 */
-	public boolean overlaps(EventObject other) {
-		float x1 = getX();
-		float y1 = getY();
-		float x2 = other.getX();
-		float y2 = other.getY();
+	public boolean intersects(EventObject other) {
+		float x1, y1, x2, y2;
 		if (moves) {
-			x1 += softMove.x;
-			y1 += softMove.y;
+			x1 = this.softMoveBounds.x;
+			y1 = this.softMoveBounds.y;
+		} else {
+			x1 = this.touchBound.x;
+			y1 = this.touchBound.y;
 		}
 		if (other.moves) {
-			x2 += other.softMove.x;
-			y2 += other.softMove.y;
+			x2 = other.softMoveBounds.x;
+			y2 = other.softMoveBounds.y;
+		} else {
+			x2 = other.touchBound.x;
+			y2 = other.touchBound.y;
 		}
 		return x1 < x2 + other.getWidth() && x1 + getWidth() > x2
 				&& y1 < y2 + other.getHeight() && y1 + getHeight() > y2;
+	}
+
+	/**
+	 * Checks if this EventObject touches the given polygon!
+	 */
+	public boolean intersects(PolygonObject other) {
+		Rectangle2D.Float rect;
+		if (moves)
+			rect = this.softMoveBounds;
+		else
+			rect = this.touchBound;
+
+		int endIDX = other.vertexX.length - 1;
+		float x1, y1, x2, y2;
+		x2 = other.vertexX[endIDX];
+		y2 = other.vertexY[endIDX];
+		for (int i = endIDX - 1; i >= 0; i--) {
+			x1 = other.vertexX[i];
+			y1 = other.vertexY[i];
+			if (rect.intersectsLine(x1, y1, x2, y2))
+				return true;
+			x2 = x1;
+			y2 = y1;
+		}
+		return false;
 	}
 
 	/**
@@ -367,17 +355,20 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * @return true if other is reachable
 	 */
 	public boolean reaches(EventObject other) {
-		float x1 = getX();
-		float y1 = getY();
-		float x2 = other.getX();
-		float y2 = other.getY();
+		float x1, y1, x2, y2;
 		if (moves) {
-			x1 += softMove.x;
-			y1 += softMove.y;
+			x1 = this.softMoveBounds.x;
+			y1 = this.softMoveBounds.y;
+		} else {
+			x1 = this.touchBound.x;
+			y1 = this.touchBound.y;
 		}
 		if (other.moves) {
-			x2 += other.softMove.x;
-			y2 += other.softMove.y;
+			x2 = other.softMoveBounds.x;
+			y2 = other.softMoveBounds.y;
+		} else {
+			x2 = other.touchBound.x;
+			y2 = other.touchBound.y;
 		}
 		return x1 < x2 + other.getWidth() + outreach
 				&& x1 + getWidth() + outreach > x2
@@ -484,6 +475,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		float x = dir.getDistanceX(distance);
 		float y = dir.getDistanceY(distance);
 		mvTransform.set(x, y, softMove);
+		softMoveBounds.setRect(getX() + softMove.x, getY() + softMove.y,
+				getWidth(), getHeight());
 		moves = true;
 		if (animation != null) {
 			this.image = animation.animate(x, y, dir, deltaTime);
@@ -501,6 +494,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	@Override
 	public synchronized void offerMove(float x, float y) {
 		mvTransform.set(x, y, softMove);
+		softMoveBounds.setRect(getX() + softMove.x, getY() + softMove.y,
+				getWidth(), getHeight());
 		moves = true;
 	}
 
@@ -594,98 +589,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	}
 
 	/**
-	 * Loads a new animation-texture for this event.<br>
-	 * For compatibility with old graphic cards, the texture should have a width
-	 * and a height by the power of two.<br>
-	 * Good sizes for animation textures are for example: 256x256 pixel, 256x512
-	 * pixel 1024x512 pixel. Don't use textures with more than 2048 pixel width
-	 * or height.
-	 * 
-	 * @param path
-	 *            The path to the texture file - which should be a power of 2
-	 *            sized png image
-	 * @param tileWidth
-	 *            The width of one tile. Every animation tile must have the same
-	 *            width.
-	 * @param tileHeight
-	 *            The height of one tile. Every animation tile must have the
-	 *            same height.
-	 * @param anzCols
-	 *            The number of columns (how much tiles are in one row).
-	 * @param anzRows
-	 *            The number of rows.
-	 * @param estimateTouchBound
-	 *            true, if you want to recompute the touchBound from the new
-	 *            tileWidth and tileHeight.
-	 */
-	public void setAnimationTexture(String path, int tileWidth, int tileHeight,
-			int anzCols, int anzRows, boolean estimateTouchBound,
-			boolean estimateDrawBound) {
-		setAnimationTexture(path, tileWidth, tileHeight, anzCols, anzRows,
-				estimateTouchBound, estimateDrawBound, false);
-	}
-
-	/**
-	 * Loads a new animation-texture for this event.<br>
-	 * For compatibility with old graphic cards, the texture should have a width
-	 * and a height by the power of two.<br>
-	 * Good sizes for animation textures are for example: 256x256 pixel, 256x512
-	 * pixel 1024x512 pixel. Don't use textures with more than 2048 pixel width
-	 * or height.
-	 * 
-	 * @param path
-	 *            The path to the texture file - which should be a power of 2
-	 *            sized png image
-	 * @param tileWidth
-	 *            The width of one tile. Every animation tile must have the same
-	 *            width.
-	 * @param tileHeight
-	 *            The height of one tile. Every animation tile must have the
-	 *            same height.
-	 * @param anzCols
-	 *            The number of columns (how much tiles are in one row).
-	 * @param anzRows
-	 *            The number of rows.
-	 * @param estimateTouchBound
-	 *            true, if you want to recompute the touchBound from the new
-	 *            tileWidth and tileHeight.
-	 * @param isCompressed
-	 *            true if the animation should be uncompressed. (default=false)
-	 *            <ul>
-	 *            <li>If there is only one row, a compressed animation is
-	 *            uncompressed by flipping this row to a second one.<br>
-	 *            <li>If there are three rows, the third row represents the east
-	 *            direction and will be flipped to the west.<br>
-	 *            <li>If there are fife rows, the third row represents the east
-	 *            direction and will be flipped to the west.<br>
-	 *            The fourth row represents the south east direction and will be
-	 *            flipped to the south west.<br>
-	 *            And the fifth row represents the north east direction and will
-	 *            be flipped to the north west.
-	 *            </ul>
-	 */
-	public void setAnimationTexture(String path, int tileWidth, int tileHeight,
-			int anzCols, int anzRows, boolean estimateTouchBound,
-			boolean estimateDrawBound, boolean isCompressed) {
-		if (animation == null) {
-			animation = new TileAnimation(path, tileWidth, tileHeight, anzCols,
-					anzRows, isCompressed);
-			image = animation.getActualTextureRegion();
-		} else {
-			image = animation.setAnimationTexture(path, tileWidth, tileHeight,
-					anzCols, anzRows, isCompressed);
-		}
-		this.drawBound.width = tileWidth;
-		this.drawBound.height = tileHeight;
-		if (estimateTouchBound) {
-			estimateTouchBound();
-		} else if (estimateDrawBound) {
-			setDrawbounds(touchBound.x - (tileWidth - getWidth()) / 2,
-					touchBound.y);
-		}
-	}
-
-	/**
 	 * Sets a animation for this event. Never use the same animation-object for
 	 * two events because the animation will automatically be disposed with the
 	 * event!<br>
@@ -716,6 +619,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		} else if (estimateDrawBound) {
 			setDrawbounds(touchBound.x - (width - getWidth()) / 2, touchBound.y);
 		}
+		visible = true;
 		return old;
 	}
 
@@ -728,10 +632,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 */
 	public TileAnimation getAnimation() {
 		return animation;
-	}
-
-	public EventHandler getEventHandler() {
-		return eventHandler;
 	}
 
 	/**
@@ -756,10 +656,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			setDrawbounds(touchBound.x - (drawBound.width - getWidth()) / 2,
 					touchBound.y);
 		}
-	}
-
-	public void setEventHandler(EventHandler eventHandler) {
-		this.eventHandler = eventHandler;
+		visible = true;
 	}
 
 	public void dispose() {
@@ -808,7 +705,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		super.init();
 		if (eventHandler != null) {
 			eventHandler.init();
-			eventHandler.onLoad(this);
+			eventHandler.onLoad();
 		}
 	}
 
@@ -842,13 +739,14 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 
 	// default values for transient variables
 	private void initTransient() {
-		collision = new Array<EventObject>(false, 4);
-		justTouching = new Array<EventObject>(false, 4);
-		reachable = new Array<EventObject>(false, 4);
+		collision = new Array<EventHandler>(false, 4);
+		justTouching = new Array<EventHandler>(false, 4);
+		reachable = new Array<EventHandler>(false, 4);
 	}
 
 	public void setImage(AtlasRegion region) {
 		image = region;
+		visible = true;
 	}
 
 	public void computeParticleEffect(float deltaTime) {

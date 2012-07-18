@@ -16,10 +16,11 @@
 
 package com.ridiculousRPG.movement.auto;
 
+import java.awt.geom.Rectangle2D;
 import java.util.Deque;
 import java.util.LinkedList;
 
-import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Pool;
 import com.ridiculousRPG.event.EventObject;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
@@ -51,8 +52,15 @@ public class MoveTracerAdapter extends MovementHandler {
 	private float followDistance;
 	private boolean estimateDistance = false;
 
-	private Deque<Rectangle> movementQueue = new LinkedList<Rectangle>();
+	private Deque<Rectangle2D.Float> movementQueue = new LinkedList<Rectangle2D.Float>();
 	private float distanceCount;
+
+	private Pool<Rectangle2D.Float> rectPool = new Pool<Rectangle2D.Float>() {
+		@Override
+		protected Rectangle2D.Float newObject() {
+			return new Rectangle2D.Float();
+		}
+	};
 
 	/**
 	 * <h1>ATTENTION!!!</h1> Use a non-blocking eventToTrace otherwise the
@@ -93,12 +101,15 @@ public class MoveTracerAdapter extends MovementHandler {
 			followDistance /= 2.5f;
 			estimateDistance = false;
 		}
-		Rectangle actualMove = eventToTrace.getTouchBound();
+		Rectangle2D.Float actualMove = eventToTrace.getTouchBound();
 		if (movementQueue.isEmpty()) {
-			movementQueue.offer(new Rectangle(actualMove));
+			Rectangle2D.Float r = rectPool.obtain();
+			r.setRect(actualMove.x, actualMove.y, actualMove.width,
+					actualMove.height);
+			movementQueue.offer(r);
 			setVisibility(event, false);
 		} else {
-			Rectangle lastMove = movementQueue.peekLast();
+			Rectangle2D.Float lastMove = movementQueue.peekLast();
 			if (actualMove.x == lastMove.x && actualMove.y == lastMove.y) {
 				// Other event did not move
 				if (movementQueue.size() > 1) {
@@ -131,22 +142,27 @@ public class MoveTracerAdapter extends MovementHandler {
 			((EventObject) event).visible = visible;
 	}
 
-	private void produceMove(Rectangle lastMove, Rectangle actualMove) {
+	private void produceMove(Rectangle2D.Float lastMove,
+			Rectangle2D.Float actualMove) {
 		distanceCount += Math.abs(actualMove.x - lastMove.x);
 		distanceCount += Math.abs(actualMove.y - lastMove.y);
-		movementQueue.offer(new Rectangle(actualMove));
+		Rectangle2D.Float r = rectPool.obtain();
+		r.setRect(actualMove.x, actualMove.y, actualMove.width,
+				actualMove.height);
+		movementQueue.offer(r);
 	}
 
 	private void consumeMoves(Movable event, int steps, float deltaTime) {
 		float x = 0;
 		float y = 0;
 		for (; steps > 0 && movementQueue.size() > 1; steps--) {
-			Rectangle firstMove = movementQueue.pollFirst();
-			Rectangle secondMove = movementQueue.peekFirst();
+			Rectangle2D.Float firstMove = movementQueue.pollFirst();
+			Rectangle2D.Float secondMove = movementQueue.peekFirst();
 			x += secondMove.x - firstMove.x;
 			y += secondMove.y - firstMove.y;
 			distanceCount -= Math.abs(secondMove.x - firstMove.x);
 			distanceCount -= Math.abs(secondMove.y - firstMove.y);
+			rectPool.free(firstMove);
 		}
 		event.offerMove(x, y);
 		if (event instanceof EventObject) {

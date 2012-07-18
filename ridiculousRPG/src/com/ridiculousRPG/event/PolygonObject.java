@@ -1,23 +1,36 @@
 package com.ridiculousRPG.event;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Matrix4;
 import com.ridiculousRPG.GameBase;
+import com.ridiculousRPG.event.handler.EventHandler;
 import com.ridiculousRPG.map.tiled.TiledMapWithEvents;
+import com.ridiculousRPG.util.BlockingBehavior;
 
 public class PolygonObject implements Cloneable, Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String name;
-	private boolean loop;
-	private float[] vertexX;
-	private float[] vertexY;
+	public boolean loop;
+	public float[] vertexX;
+	public float[] vertexY;
 	private float[] segmentXlen;
 	private float[] segmentYlen;
 	private float[] segmentLen;
+	/**
+	 * Script code to execute if node is reached
+	 */
 	public final String[] execAtNodeScript;
+	public BlockingBehavior blockingBehavior = BlockingBehavior.BUILDING_LOW;
 	/**
 	 * This map holds the local event properties.<br>
 	 * If you use a {@link TiledMapWithEvents}, all object-properties starting
@@ -27,6 +40,12 @@ public class PolygonObject implements Cloneable, Serializable {
 
 	private PolygonMoveState moveState = new PolygonMoveState();
 	private PolygonMoveState moveStateOld = new PolygonMoveState();
+
+	public EventHandler eventHandler;
+	public boolean touchable;
+	public Color color = Color.PINK;
+
+	private static transient ShapeRenderer renderer;
 
 	public PolygonObject(String name, float[] vertexX, float[] vertexY,
 			boolean loop) {
@@ -58,6 +77,13 @@ public class PolygonObject implements Cloneable, Serializable {
 			segmentLen[i] = (float) Math.sqrt(xLen * xLen + yLen * yLen);
 		}
 		this.execAtNodeScript = new String[vertexX.length];
+	}
+
+	public void init() {
+		if (eventHandler != null) {
+			eventHandler.init();
+			eventHandler.onLoad();
+		}
 	}
 
 	/**
@@ -318,6 +344,58 @@ public class PolygonObject implements Cloneable, Serializable {
 				return this;
 			}
 		}
+	}
+
+	public void translate(float x, float y) {
+		if (x != 0)
+			for (int i = vertexX.length - 1; i >= 0; i--)
+				vertexX[i] += x;
+		if (y != 0)
+			for (int i = vertexY.length - 1; i >= 0; i--)
+				vertexY[i] += y;
+	}
+
+	public void draw(boolean debug) {
+		ShapeRenderer r = getRenderer();
+		r.setColor(color);
+		for (int i = vertexX.length - 1; i > 0; i--)
+			r.line(vertexX[i - 1], vertexY[i - 1], vertexX[i], vertexY[i]);
+		if (debug) {
+			r.setColor(blockingBehavior.color);
+			for (int i = vertexX.length - 1; i > 0; i--)
+				r.line(vertexX[i - 1] + 1, vertexY[i - 1] + 1, vertexX[i] + 1,
+						vertexY[i] + 1);
+		}
+	}
+
+	public static void startPolygonBatch(Matrix4 projection) {
+		getRenderer().setProjectionMatrix(projection);
+		getRenderer().begin(ShapeType.Line);
+	}
+
+	public static void endPolygonBatch() {
+		getRenderer().end();
+	}
+
+	private static ShapeRenderer getRenderer() {
+		if (renderer == null) {
+			synchronized (PolygonObject.class) {
+				if (renderer != null)
+					return renderer;
+				renderer = new ShapeRenderer();
+			}
+		}
+		return renderer;
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+		init();
 	}
 
 	@Override

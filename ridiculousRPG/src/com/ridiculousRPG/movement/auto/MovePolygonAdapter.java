@@ -149,7 +149,7 @@ public class MovePolygonAdapter extends MovementHandler {
 						"onNode-Event-" + polygonName);
 				ObjectState state = null;
 				if (event instanceof EventObject) {
-					EventHandler h = ((EventObject) event).getEventHandler();
+					EventHandler h = ((EventObject) event).eventHandler;
 					if (h != null)
 						state = h.getActualState();
 				}

@@ -16,13 +16,13 @@
 
 package com.ridiculousRPG.movement;
 
+import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Pool;
 import com.ridiculousRPG.GameBase;
 import com.ridiculousRPG.movement.CombinedMovesAdapter.MoveSegment;
@@ -57,7 +57,7 @@ public abstract class Movable implements Serializable {
 	public float offsetX, offsetY;
 
 	protected Speed moveSpeed = Speed.S00_ZERO;
-	protected Rectangle touchBound = new Rectangle();
+	protected Rectangle2D.Float touchBound = new Rectangle2D.Float();
 
 	private MovementHandler moveHandler = MoveNullAdapter.$();
 	private SortedMap<Integer, MoveSegment> moveSequence = new TreeMap<Integer, MoveSegment>();
@@ -440,7 +440,7 @@ public abstract class Movable implements Serializable {
 	 * 
 	 * @return The touching bounds.
 	 */
-	public Rectangle getTouchBound() {
+	public Rectangle2D.Float getTouchBound() {
 		return touchBound;
 	}
 
@@ -449,7 +449,7 @@ public abstract class Movable implements Serializable {
 	 * 
 	 * @param touchBound
 	 */
-	public void setTouchBound(Rectangle touchBound) {
+	public void setTouchBound(Rectangle2D.Float touchBound) {
 		this.touchBound = touchBound;
 	}
 

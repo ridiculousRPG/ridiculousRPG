@@ -339,6 +339,9 @@
    </properties>
   </object>
   <object x="337" y="33">
+   <properties>
+    <property name="ontouch" value="System.out.println(&quot;test&quot;)"/>
+   </properties>
    <polyline points="-59,-33 248,272"/>
   </object>
   <object x="414" y="71" width="164" height="13">
@@ -350,6 +353,9 @@
    </properties>
   </object>
   <object x="466" y="0">
+   <properties>
+    <property name="blocking" value="none"/>
+   </properties>
    <polygon points="0,0 112,287 -173,364"/>
   </object>
   <object name="movePolyTest" x="256" y="344">
@@ -381,6 +387,7 @@
   </object>
   <object name="polyLoop" x="346" y="362">
    <properties>
+    <property name="blocking" value="NONE"/>
     <property name="onnode3" value="eventSelf.sleep(3)"/>
    </properties>
    <polygon points="0,0 -32,67 143,70 205,62 205,27 109,-6"/>

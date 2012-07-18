@@ -17,6 +17,7 @@
 package com.ridiculousRPG.map.tiled;
 
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -39,7 +40,6 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledLoader;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObject;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObjectGroup;
-import com.badlogic.gdx.math.Rectangle;
 import com.ridiculousRPG.DebugHelper;
 import com.ridiculousRPG.GameBase;
 import com.ridiculousRPG.event.EventFactory;
@@ -84,8 +84,11 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	// named events
 	private Map<String, EventObject> namedRegions = new HashMap<String, EventObject>(
 			30);
+	// polygons
+	private List<PolygonObject> polyList = new ArrayList<PolygonObject>(16);
 	// named polygons
-	private Map<String, PolygonObject> polyMap;
+	private Map<String, PolygonObject> polyMap = new HashMap<String, PolygonObject>(
+			16);
 
 	private static transient EventTrigger eventTrigger;
 
@@ -165,7 +168,6 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			}
 		};
 		int i, j, len_i, len_j;
-		EventObject ev;
 		Map<Integer, ObjectState> eventsById = loadStateFromFS();
 		for (i = 0, len_i = map.objectGroups.size(); i < len_i; i++) {
 			TiledObjectGroup group = map.objectGroups.get(i);
@@ -175,21 +177,14 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				TiledObject object = group.objects.get(j);
 				if (EventFactory.isSkip(object.properties))
 					continue;
+
 				if (object.polygon != null) {
-					createPolyMove(map, group, object, object.polygon, true);
-					continue;
+					createPolygon(map, group, object, object.polygon, true);
+				} else if (object.polyline != null) {
+					createPolygon(map, group, object, object.polyline, false);
+				} else {
+					createEvent(map, atlas, group, object, mvTrans);
 				}
-				if (object.polyline != null) {
-					createPolyMove(map, group, object, object.polyline, false);
-					continue;
-				}
-				ev = new EventObject(object, group, atlas, map, mvTrans);
-				if (object.gid > 0) {
-					ev.z += EventFactory.getZIndex(map, object.gid);
-				}
-				EventFactory.parseProps(ev, group.properties);
-				EventFactory.parseProps(ev, object.properties);
-				put(object.name, ev);
 			}
 		}
 		Map<String, EventObject> globalEv = GameBase.$().getGlobalEventsClone();
@@ -208,35 +203,77 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					put(globalObj.name, globalObj).dispose();
 				}
 			} else {
-				if (eventObj.getEventHandler() != null
+				if (eventObj.eventHandler != null
 						&& eventsById.containsKey(eventObj.id)) {
-					eventObj.getEventHandler().setState(
-							eventsById.get(eventObj.id));
+					eventObj.eventHandler.setState(eventsById.get(eventObj.id));
 				}
 				eventObj.init();
 			}
 		}
+		// Initialize the polygons
+		for (i = 0, len_i = polyList.size(); i < len_i; i++) {
+			polyList.get(i).init();
+		}
+
 		for (EventObject globalObj : globalEv.values()) {
 			globalObj.clearCollision();
 			put(globalObj.name, globalObj);
 		}
 
 		// insert half-planes around the map
-		put(null, ev = new EventObject(mvTrans));
-		ev.setTouchBound(new Rectangle(-1000f, -1000f, width + 2000f, 1000f));
-		put(null, ev = new EventObject(mvTrans));
-		ev.setTouchBound(new Rectangle(-1000f, -1000f, 1000f, height + 2000f));
-		put(null, ev = new EventObject(mvTrans));
-		ev.setTouchBound(new Rectangle(-1000f, height, width + 2000f, 1000f));
-		put(null, ev = new EventObject(mvTrans));
-		ev.setTouchBound(new Rectangle(width, -1000f, 1000f, height + 2000f));
+		EventObject ev;
+		ev = new EventObject(mvTrans);
+		ev.setTouchBound(new Rectangle2D.Float(-1000f, -1000f, width + 2000f,
+				1000f));
+		put(null, ev);
+		ev = new EventObject(mvTrans);
+		ev.setTouchBound(new Rectangle2D.Float(-1000f, -1000f, 1000f,
+				height + 2000f));
+		put(null, ev);
+		ev = new EventObject(mvTrans);
+		ev.setTouchBound(new Rectangle2D.Float(-1000f, height, width + 2000f,
+				1000f));
+		put(null, ev);
+		ev = new EventObject(mvTrans);
+		ev.setTouchBound(new Rectangle2D.Float(width, -1000f, 1000f,
+				height + 2000f));
+		put(null, ev);
 	}
 
-	private void createPolyMove(TiledMap map, TiledObjectGroup group,
+	private void createEvent(TiledMap map, TileAtlas atlas2,
+			TiledObjectGroup group, TiledObject object,
+			MoveTransformation mvTrans) {
+		EventObject ev = new EventObject(mvTrans);
+		float mapHeight = map.height * map.tileHeight;
+		ev.name = object.name;
+		ev.setType(object.type);
+		if (object.gid > 0) {
+			ev.gid = object.gid;
+			ev.z = EventFactory.getZIndex(map, object.gid);
+			AtlasRegion region = (AtlasRegion) atlas.getRegion(object.gid);
+			ev.setImage(region);
+			ev.addX(region.offsetX + object.x);
+			ev.addY(mapHeight + region.offsetY - object.y);
+			ev.drawBound.width = ev.getTouchBound().width = region
+					.getRegionWidth();
+			ev.drawBound.height = ev.getTouchBound().height = region
+					.getRegionHeight();
+		} else {
+			ev.addX(object.x);
+			ev.addY(mapHeight - object.y - object.height);
+			ev.drawBound.width = ev.getTouchBound().width = object.width;
+			ev.drawBound.height = ev.getTouchBound().height = object.height;
+		}
+		EventFactory.parseProps(ev, group.properties);
+		EventFactory.parseProps(ev, object.properties);
+		if (ev.visible && ev.z == 0)
+			ev.z = .1f;
+		put(object.name, ev);
+	}
+
+	private void createPolygon(TiledMap map, TiledObjectGroup group,
 			TiledObject object, String polygon, boolean loop) {
 		String name = object.name;
-		if (name == null || name.length() == 0)
-			return;
 		String[] sa = polygon.split(" ");
 		int len = loop ? sa.length + 1 : sa.length;
 		float[] verticesX = new float[len];
@@ -258,9 +295,10 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		EventFactory.parseProps(poly, group.properties);
 		EventFactory.parseProps(poly, object.properties);
 
-		if (polyMap == null)
-			polyMap = new HashMap<String, PolygonObject>();
-		polyMap.put(name, poly);
+		polyList.add(poly);
+
+		if (name != null && name.length() != 0)
+			polyMap.put(name, poly);
 	}
 
 	@Override
@@ -314,7 +352,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					100);
 			ObjectOutputStream oOut = new ObjectOutputStream(fh.write(false));
 			for (EventObject event : getAllEvents()) {
-				EventHandler handler = event.getEventHandler();
+				EventHandler handler = event.eventHandler;
 				if (handler != null) {
 					eventsById.put(event.id, handler.getActualState());
 				}
@@ -430,7 +468,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			// Uses a shared context to load textures in other thread
 			eventTrigger = new EventTriggerAsync();
 		}
-		eventTrigger.compute(deltaTime, actionKeyDown, dynamicRegions);
+		eventTrigger
+				.compute(deltaTime, actionKeyDown, dynamicRegions, polyList);
 	}
 
 	// TODO: NEEDS REFACTORING
@@ -440,7 +479,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		// Load pointers into register
 		MapRenderRegion[] staticRegions = this.staticRegions;
 		MapRenderRegion region;
-		Rectangle drawBound;
+		Rectangle2D.Float drawBound;
 		// Load variables into register
 		float camX1 = camera.position.x;
 		float camX2 = camera.position.x + camera.viewportWidth;
@@ -495,6 +534,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		if (debug) {
 			spriteBatch.end();
 			DebugHelper.debugEvents(dynamicRegions);
+			DebugHelper.debugPolygons(polyList);
 			spriteBatch.begin();
 		}
 	}

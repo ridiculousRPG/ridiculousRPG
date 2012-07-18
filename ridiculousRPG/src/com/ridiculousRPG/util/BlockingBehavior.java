@@ -16,6 +16,8 @@
 
 package com.ridiculousRPG.util;
 
+import com.badlogic.gdx.graphics.Color;
+
 /**
  * <ul>
  * <li>Use FLYING_HIGH or FLYING_LOW for flying objects like birds,
@@ -47,14 +49,18 @@ package com.ridiculousRPG.util;
  * @author Alexander Baumgartner
  */
 public enum BlockingBehavior {
-	NONE(0), FLYING_HIGH(5), FLYING_LOW(15), BARRIER_LOW(35), BARRIER_HIGH(45), PASSES_ALL_BARRIERS(
-			50), PASSES_LOW_BARRIER(60), PASSES_NO_BARRIER(70), BUILDING_LOW(80), BUILDING_HIGH(
-			90), ALL(99);
+	NONE(0, Color.GREEN), FLYING_HIGH(5, Color.GREEN), FLYING_LOW(15,
+			Color.GREEN), BARRIER_LOW(35, Color.GREEN), BARRIER_HIGH(45,
+			Color.YELLOW), PASSES_ALL_BARRIERS(50, Color.YELLOW), PASSES_LOW_BARRIER(
+			60, Color.YELLOW), PASSES_NO_BARRIER(70, Color.RED), BUILDING_LOW(
+			80, Color.RED), BUILDING_HIGH(90, Color.RED), ALL(99, Color.RED);
 
 	private final int value;
+	public final Color color;
 
-	private BlockingBehavior(int value) {
+	private BlockingBehavior(int value, Color color) {
 		this.value = value;
+		this.color = color;
 	}
 
 	public boolean blocks(BlockingBehavior other) {

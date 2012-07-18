@@ -6,5 +6,5 @@ import com.badlogic.gdx.utils.Disposable;
 
 public interface EventTrigger extends Disposable {
 	public void compute(float deltaTime, boolean actionKeyDown,
-			List<EventObject> events);
+			List<EventObject> events, List<PolygonObject> polys);
 }

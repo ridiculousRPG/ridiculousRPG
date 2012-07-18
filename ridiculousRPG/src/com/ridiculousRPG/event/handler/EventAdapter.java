@@ -29,27 +29,32 @@ public class EventAdapter implements EventHandler {
 	private static final long serialVersionUID = 1L;
 
 	private ObjectState myState = new ObjectState();
+	private Object belongingObject;
 
-	public boolean onTouch(EventObject eventSelf, EventObject eventTrigger) {
+	public EventAdapter(Object belongingObject) {
+		this.belongingObject = belongingObject;
+	}
+
+	public boolean onTouch(EventObject eventTrigger) {
 		return false;
 	}
 
-	public boolean onPush(EventObject eventSelf, EventObject eventTrigger) {
+	public boolean onPush(EventObject eventTrigger) {
 		return false;
 	}
 
-	public void onLoad(EventObject eventSelf) {
+	public void onLoad() {
 	}
 
-	public boolean onCustomTrigger(EventObject eventSelf, int triggerId) {
+	public boolean onCustomTrigger(int triggerId) {
 		return false;
 	}
 
-	public boolean onTimer(EventObject eventSelf, float deltaTime) {
+	public boolean onTimer(float deltaTime) {
 		return false;
 	}
 
-	public void onStateChange(EventObject eventSelf, ObjectState globalState) {
+	public void onStateChange(ObjectState globalState) {
 	}
 
 	@Override
@@ -69,5 +74,10 @@ public class EventAdapter implements EventHandler {
 	@Override
 	public void dispose() {
 		myState = null;
+	}
+
+	@Override
+	public Object getBelongingObject() {
+		return belongingObject;
 	}
 }

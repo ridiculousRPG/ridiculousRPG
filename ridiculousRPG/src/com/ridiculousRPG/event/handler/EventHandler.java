@@ -38,7 +38,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 *            The event which triggered this touch (most likely the player)
 	 * @return true if the input has been consumed
 	 */
-	public boolean onTouch(EventObject eventSelf, EventObject eventTrigger);
+	public boolean onTouch(EventObject eventTrigger);
 
 	/**
 	 * This method is called if the event is touchable and an push event
@@ -50,7 +50,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 *            The event which triggered this push (most likely the player)
 	 * @return true if the input has been consumed
 	 */
-	public boolean onPush(EventObject eventSelf, EventObject eventTrigger);
+	public boolean onPush(EventObject eventTrigger);
 
 	/**
 	 * This method is called if the events timer is running. It's your
@@ -64,7 +64,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 * @return true if the input has been consumed
 	 * @see #getActualState()
 	 */
-	public boolean onTimer(EventObject eventSelf, float deltaTime);
+	public boolean onTimer(float deltaTime);
 
 	/**
 	 * This method is not called by the engines default implementation. You can
@@ -77,7 +77,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 * @return true if the custom event ate up this triggerId
 	 * @see #getActualState()
 	 */
-	public boolean onCustomTrigger(EventObject eventSelf, int triggerId);
+	public boolean onCustomTrigger(int triggerId);
 
 	/**
 	 * This method is called every time after the global state has changed. It
@@ -88,12 +88,17 @@ public interface EventHandler extends Serializable, Disposable {
 	 * @param globalState
 	 *            The global state
 	 */
-	public void onStateChange(EventObject eventSelf, ObjectState globalState);
+	public void onStateChange(ObjectState globalState);
 
 	/**
 	 * @return the actual state of this object
 	 */
 	public ObjectState getActualState();
+
+	/**
+	 * @return the object which belongs to this handler
+	 */
+	public Object getBelongingObject();
 
 	/**
 	 * Sets the state for this object
@@ -108,7 +113,7 @@ public interface EventHandler extends Serializable, Disposable {
 	 * 
 	 * @param eventSelf
 	 */
-	public void onLoad(EventObject eventSelf);
+	public void onLoad();
 
 	/**
 	 * Initializes the event handler. For example compiles (and executes

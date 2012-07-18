@@ -80,6 +80,15 @@ public class EventExecScriptAdapter extends EventAdapter {
 	private SortedMap<Integer, String> onLoad = new TreeMap<Integer, String>();
 	private SortedMap<Integer, String> onCustomTrigger = new TreeMap<Integer, String>();
 
+	/**
+	 * Creates an script executing event handler for the specified object
+	 * 
+	 * @param belongingObject
+	 */
+	public EventExecScriptAdapter(Object belongingObject) {
+		super(belongingObject);
+	}
+
 	@Override
 	public void init() {
 		if (CUSTOMTRIGGER_TEMPLATE == null) {
@@ -125,100 +134,101 @@ public class EventExecScriptAdapter extends EventAdapter {
 	}
 
 	@Override
-	public boolean onPush(EventObject eventSelf, EventObject eventTrigger) {
+	public boolean onPush(EventObject eventTrigger) {
 		if (!push)
 			return false;
 		try {
 			String script = GameBase.$scriptFactory().prepareScriptFunction(
 					onPush, PUSH_TEMPLATE);
 			GameBase.$().getSharedEngine().put(ScriptEngine.FILENAME,
-					"onPush-Event-" + eventSelf.name);
+					"onPush-Event");
 			return (Boolean) GameBase.$().invokeFunction(script, "onPush",
-					eventSelf, eventTrigger, getActualState());
+					getBelongingObject(), eventTrigger, getActualState());
 		} catch (Exception e) {
-			logError("push", eventSelf, e);
+			logError("push", e);
 			return false;
 		}
 	}
 
 	@Override
-	public boolean onTouch(EventObject eventSelf, EventObject eventTrigger) {
+	public boolean onTouch(EventObject eventTrigger) {
 		if (!touch)
 			return false;
 		try {
 			String script = GameBase.$scriptFactory().prepareScriptFunction(
 					onTouch, TOUCH_TEMPLATE);
 			GameBase.$().getSharedEngine().put(ScriptEngine.FILENAME,
-					"onTouch-Event-" + eventSelf.name);
+					"onTouch-Event");
 			return (Boolean) GameBase.$().invokeFunction(script, "onTouch",
-					eventSelf, eventTrigger, getActualState());
+					getBelongingObject(), eventTrigger, getActualState());
 		} catch (Exception e) {
-			logError("touch", eventSelf, e);
+			logError("touch", e);
 			return false;
 		}
 	}
 
 	@Override
-	public boolean onTimer(EventObject eventSelf, float deltaTime) {
+	public boolean onTimer(float deltaTime) {
 		if (!timer)
 			return false;
 		try {
-			return (Boolean) localEngine.invokeFunction("onTimer", eventSelf,
-					deltaTime, getActualState());
+			return (Boolean) localEngine.invokeFunction("onTimer",
+					getBelongingObject(), deltaTime, getActualState());
 		} catch (Exception e) {
-			logError("timer", eventSelf, e);
+			logError("timer", e);
 			return false;
 		}
 	}
 
 	@Override
-	public void onStateChange(EventObject eventSelf, ObjectState globalState) {
+	public void onStateChange(ObjectState globalState) {
 		if (!stateChange)
 			return;
 		try {
-			localEngine.invokeFunction("onStateChange", eventSelf,
+			localEngine.invokeFunction("onStateChange", getBelongingObject(),
 					getActualState(), globalState);
 		} catch (Exception e) {
-			logError("stateChange", eventSelf, e);
+			logError("stateChange", e);
 		}
 	}
 
 	@Override
-	public boolean onCustomTrigger(EventObject eventSelf, int triggerId) {
+	public boolean onCustomTrigger(int triggerId) {
 		if (!customTrigger)
 			return false;
 		try {
 			String script = GameBase.$scriptFactory().prepareScriptFunction(
 					onCustomTrigger, CUSTOMTRIGGER_TEMPLATE);
 			GameBase.$().getSharedEngine().put(ScriptEngine.FILENAME,
-					"onCustomTrigger" + triggerId + "-Event-" + eventSelf.name);
+					"onCustomTrigger" + triggerId + "-Event");
 			return (Boolean) GameBase.$().invokeFunction(script,
-					"onCustomTrigger", eventSelf, triggerId, getActualState());
+					"onCustomTrigger", getBelongingObject(), triggerId,
+					getActualState());
 		} catch (Exception e) {
-			logError("customTrigger", eventSelf, e);
+			logError("customTrigger", e);
 			return false;
 		}
 	}
 
 	@Override
-	public void onLoad(EventObject eventSelf) {
+	public void onLoad() {
 		if (!load)
 			return;
 		try {
 			String script = GameBase.$scriptFactory().prepareScriptFunction(
 					onLoad, LOAD_TEMPLATE);
 			GameBase.$().getSharedEngine().put(ScriptEngine.FILENAME,
-					"onLoad-Event-" + eventSelf.name);
-			GameBase.$().invokeFunction(script, "onLoad", eventSelf,
+					"onLoad-Event");
+			GameBase.$().invokeFunction(script, "onLoad", getBelongingObject(),
 					getActualState());
 		} catch (Exception e) {
-			logError("load", eventSelf, e);
+			logError("load", e);
 		}
 	}
 
-	private void logError(String eventType, EventObject eventSelf, Exception e) {
+	private void logError(String eventType, Exception e) {
 		GameBase.$error("EventObject.on" + eventType, "Could not execute "
-				+ eventType + " script for " + eventSelf, e);
+				+ eventType + " script for " + getBelongingObject(), e);
 	}
 
 	/**

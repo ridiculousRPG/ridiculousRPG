@@ -67,18 +67,18 @@ public class EventActor extends Actor {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				EventObject ev = EventActor.this.event;
-				EventHandler handler = ev.getEventHandler();
+				EventHandler handler = ev.eventHandler;
 				if (handler != null)
-					handler.onPush(ev, ev);
+					handler.onPush(ev);
 			}
 
 			@Override
 			public void enter(InputEvent event, float x, float y, int pointer,
 					Actor fromActor) {
 				EventObject ev = EventActor.this.event;
-				EventHandler handler = ev.getEventHandler();
+				EventHandler handler = ev.eventHandler;
 				if (handler != null)
-					handler.onTouch(ev, ev);
+					handler.onTouch(ev);
 			}
 
 		});
@@ -115,8 +115,8 @@ public class EventActor extends Actor {
 		event.computeParticleEffect(delta);
 		event.getMoveHandler().tryMove(event, delta);
 		event.commitMove();
-		if (event.getEventHandler() != null)
-			event.getEventHandler().onTimer(event, delta);
+		if (event.eventHandler != null)
+			event.eventHandler.onTimer(delta);
 		super.act(delta);
 	}
 
