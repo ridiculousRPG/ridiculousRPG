@@ -29,6 +29,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.ParticleEmitter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
@@ -319,8 +320,8 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			x2 = other.touchBound.x;
 			y2 = other.touchBound.y;
 		}
-		return x1 < x2 + other.getWidth() && x1 + getWidth() > x2
-				&& y1 < y2 + other.getHeight() && y1 + getHeight() > y2;
+		return x1 + getWidth() > x2 && y1 + getHeight() > y2
+				&& x1 < x2 + other.getWidth() && y1 < y2 + other.getHeight();
 	}
 
 	/**
@@ -421,11 +422,13 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			float y = drawBound.y;
 			float h = drawBound.height;
 			float w = drawBound.width;
+			float oX = getOffsetX();
+			float oY = getOffsetY();
 			spriteBatch.setColor(eventColorBits);
-			boolean trans = offsetX != 0 || offsetY != 0;
+			boolean trans = oX != 0 || oY != 0;
 			if (trans)
 				spriteBatch.setTransformMatrix(spriteBatch.getTransformMatrix()
-						.translate(offsetX, offsetY, 0));
+						.translate(oX, oY, 0));
 			if (effectRear != null)
 				effectRear.draw(spriteBatch);
 			if (image != null)
@@ -435,8 +438,31 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 				effectFront.draw(spriteBatch);
 			if (trans)
 				spriteBatch.setTransformMatrix(spriteBatch.getTransformMatrix()
-						.translate(-offsetX, -offsetY, 0));
+						.translate(-oX, -oY, 0));
 			spriteBatch.setColor(gameColorBits);
+		}
+	}
+
+	protected void offsetJump(float x, float y) {
+		x = drawBound.x - x + drawBound.width * .5f;
+		y = drawBound.y - y;
+		if (effectRear != null) {
+			translateParticles(x, y, effectRear.getEmitters());
+		}
+		if (effectFront != null) {
+			translateParticles(x, y, effectFront.getEmitters());
+		}
+	}
+
+	private void translateParticles(float x, float y,
+			Array<ParticleEmitter> emit) {
+		for (int i = 0, n = emit.size; i < n; i++) {
+			ParticleEmitter e = emit.get(i);
+			if (!e.isAttached()) {
+				e.setAttached(true);
+				e.setPosition(x, y);
+				e.setAttached(false);
+			}
 		}
 	}
 

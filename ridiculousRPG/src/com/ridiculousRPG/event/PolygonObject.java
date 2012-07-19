@@ -44,7 +44,7 @@ public class PolygonObject implements Cloneable, Serializable {
 
 	public EventHandler eventHandler;
 	public boolean touchable;
-	public Color color = Color.PINK;
+	public Color color;
 
 	private static transient ShapeRenderer renderer;
 
@@ -373,15 +373,24 @@ public class PolygonObject implements Cloneable, Serializable {
 	}
 
 	public void draw(boolean debug) {
-		ShapeRenderer r = getRenderer();
-		r.setColor(color);
-		for (int i = vertexX.length - 1; i > 0; i--)
-			r.line(vertexX[i - 1], vertexY[i - 1], vertexX[i], vertexY[i]);
-		if (debug) {
-			r.setColor(blockingBehavior.color);
+		if (color != null) {
+			ShapeRenderer r = getRenderer();
+			r.setColor(color);
 			for (int i = vertexX.length - 1; i > 0; i--)
-				r.line(vertexX[i - 1] + 1, vertexY[i - 1] + 1, vertexX[i] + 1,
-						vertexY[i] + 1);
+				r.line(vertexX[i - 1], vertexY[i - 1], vertexX[i], vertexY[i]);
+		}
+		if (debug) {
+			ShapeRenderer r = getRenderer();
+			r.setColor(blockingBehavior.color);
+			if (color == null) {
+				for (int i = vertexX.length - 1; i > 0; i--)
+					r.line(vertexX[i - 1], vertexY[i - 1], vertexX[i],
+							vertexY[i]);
+			} else {
+				for (int i = vertexX.length - 1; i > 0; i--)
+					r.line(vertexX[i - 1] + 1, vertexY[i - 1] + 1,
+							vertexX[i] + 1, vertexY[i] + 1);
+			}
 		}
 	}
 

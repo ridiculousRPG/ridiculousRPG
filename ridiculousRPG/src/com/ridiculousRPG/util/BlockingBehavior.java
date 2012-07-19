@@ -49,11 +49,13 @@ import com.badlogic.gdx.graphics.Color;
  * @author Alexander Baumgartner
  */
 public enum BlockingBehavior {
-	NONE(0, Color.GREEN), FLYING_HIGH(5, Color.GREEN), FLYING_LOW(15,
-			Color.GREEN), BARRIER_LOW(35, Color.GREEN), BARRIER_HIGH(45,
-			Color.YELLOW), PASSES_ALL_BARRIERS(50, Color.YELLOW), PASSES_LOW_BARRIER(
-			60, Color.YELLOW), PASSES_NO_BARRIER(70, Color.RED), BUILDING_LOW(
-			80, Color.RED), BUILDING_HIGH(90, Color.RED), ALL(99, Color.RED);
+	NONE(0, Color.GREEN), FLYING_HIGH(5, new Color(.2f, .9f, 0, 1)), FLYING_LOW(
+			15, new Color(.4f, .8f, 0, 1)), BARRIER_LOW(35, new Color(.6f, .9f,
+			0, 1)), BARRIER_HIGH(45, new Color(.8f, 1, 0, 1)), PASSES_ALL_BARRIERS(
+			50, Color.YELLOW), PASSES_LOW_BARRIER(60, new Color(1, .8f, 0, 1)), PASSES_NO_BARRIER(
+			70, new Color(.9f, .6f, 0, 1)), BUILDING_LOW(80, new Color(.8f,
+			.4f, 0, 1)), BUILDING_HIGH(90, new Color(.9f, .2f, 0, 1)), ALL(99,
+			Color.RED);
 
 	private final int value;
 	public final Color color;

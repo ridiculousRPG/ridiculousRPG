@@ -282,8 +282,8 @@
   </object>
   <object name="player" type="player" x="511" y="370" width="19" height="9">
    <properties>
-    <property name="//blocking" value="PASSES_LOW_BARRIER"/>
     <property name="animation" value="data/charset/Daisy.png"/>
+    <property name="blocking" value="PASSES_LOW_BARRIER"/>
     <property name="effect" value="data/effect/particle/fireContinuous2.effect"/>
     <property name="movehandler" value="Move4WayAdapter"/>
     <property name="movehandler01" value="moveRandomSec(MoveRandomAdapter())"/>
@@ -379,7 +379,7 @@
    <properties>
     <property name="//movehandler" value="data/script/game/moveEvent/player2AutoMove.js"/>
     <property name="animation" value="data/charset/Daisy.png"/>
-    <property name="blocking" value="PASSES_LOW_BARRIER"/>
+    <property name="blocking" value="PASSES_NO_BARRIER"/>
     <property name="movehandler" value="MovePolygonAdapter(&quot;polyLoop&quot;)"/>
     <property name="ontouch" value="if (!eventState.getBool(0)) {say('test'); eventState.setBool(0, true)}"/>
     <property name="speed" value="S06_SLOW"/>

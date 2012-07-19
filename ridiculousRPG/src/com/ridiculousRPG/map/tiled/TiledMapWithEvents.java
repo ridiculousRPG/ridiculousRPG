@@ -52,6 +52,7 @@ import com.ridiculousRPG.event.handler.EventHandler;
 import com.ridiculousRPG.map.MapLoader;
 import com.ridiculousRPG.map.MapRenderRegion;
 import com.ridiculousRPG.map.MapWithEvents;
+import com.ridiculousRPG.util.BlockingBehavior;
 import com.ridiculousRPG.util.ExecuteInMainThread;
 import com.ridiculousRPG.util.IntSet;
 import com.ridiculousRPG.util.ObjectState;
@@ -223,18 +224,22 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		// insert half-planes around the map
 		EventObject ev;
 		ev = new EventObject(mvTrans);
+		ev.blockingBehavior = BlockingBehavior.ALL;
 		ev.setTouchBound(new Rectangle2D.Float(-1000f, -1000f, width + 2000f,
 				1000f));
 		put(null, ev);
 		ev = new EventObject(mvTrans);
+		ev.blockingBehavior = BlockingBehavior.ALL;
 		ev.setTouchBound(new Rectangle2D.Float(-1000f, -1000f, 1000f,
 				height + 2000f));
 		put(null, ev);
 		ev = new EventObject(mvTrans);
+		ev.blockingBehavior = BlockingBehavior.ALL;
 		ev.setTouchBound(new Rectangle2D.Float(-1000f, height, width + 2000f,
 				1000f));
 		put(null, ev);
 		ev = new EventObject(mvTrans);
+		ev.blockingBehavior = BlockingBehavior.ALL;
 		ev.setTouchBound(new Rectangle2D.Float(width, -1000f, 1000f,
 				height + 2000f));
 		put(null, ev);
@@ -485,12 +490,12 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		float camX2 = camera.position.x + camera.viewportWidth;
 		float camY1 = camera.position.y;
 		float camY2 = camera.position.y + camera.viewportHeight;
-		float rX, rY;
 
 		int i = 0;
 		EventObject event = dynamicRegions.get(0); // is never empty
 		int dynSize = dynamicRegions.size();
 		// If there are performance problems:
+		// USE SPRITECACHE TO RENDER STATIC TILES!!!!!
 		// 1) Add only MapRenderRegions with z>0 to staticRegions
 		// 2) Build a new 3-dim array with [row][col][layer] for all
 		// MapRenderRegions with z==0
@@ -501,8 +506,8 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		// (Tested and felt really bad)
 		for (int j = 0, statSize = staticRegions.length; j < statSize; j++) {
 			region = staticRegions[j];
-			rX = region.x;
-			rY = region.y;
+			float rX = region.x;
+			float rY = region.y;
 			if (rX < camX2 && rY < camY2 && rX + region.width > camX1
 					&& rY + region.height > camY1) {
 				while (dynSize > i && event.compareTo(region) == -1) {
@@ -531,12 +536,19 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			}
 			i++;
 		}
+
+		// draw polygon objects
+		spriteBatch.end();
+		PolygonObject.startPolygonBatch(spriteBatch.getProjectionMatrix());
+		for (int j = 0, len = polyList.size(); j < len; j++)
+			polyList.get(j).draw(debug);
+		PolygonObject.endPolygonBatch();
+
 		if (debug) {
-			spriteBatch.end();
 			DebugHelper.debugEvents(dynamicRegions);
 			DebugHelper.debugPolygons(polyList);
-			spriteBatch.begin();
 		}
+		spriteBatch.begin();
 	}
 
 	public void dispose() {

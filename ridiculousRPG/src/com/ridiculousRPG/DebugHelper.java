@@ -138,7 +138,7 @@ public final class DebugHelper {
 					Math.max(1, ev.getWidth()), Math.max(1, ev.getHeight()));
 			if (ev.name != null) {
 				getTextMapDebugger().addMessage(ev.name,
-						getTextMapDebugger().getDefaultColor(),
+						ev.blockingBehavior.color.toFloatBits(),
 						ev.drawBound.x + 2f,
 						ev.drawBound.y + ev.drawBound.height - 2, 0f, true);
 			}
@@ -192,17 +192,17 @@ public final class DebugHelper {
 	}
 
 	public static void debugPolygons(List<PolygonObject> polyList) {
-		PolygonObject.startPolygonBatch(GameBase.$().getCamera().projection);
 		for (PolygonObject poly : polyList) {
-			poly.draw(true);
 			for (int i = poly.vertexX.length - 1; i >= 0; i--) {
 				float x = poly.vertexX[i];
+				Color c = poly.color;
+				if (c == null)
+					c = poly.blockingBehavior.color;
 				if (poly.loop && i == 0)
 					x -= 20;
-				getTextMapDebugger().addMessage("#" + i,
-						poly.color.toFloatBits(), x, poly.vertexY[i], 0f, true);
+				getTextMapDebugger().addMessage("#" + i, c.toFloatBits(), x,
+						poly.vertexY[i], 0f, true);
 			}
 		}
-		PolygonObject.endPolygonBatch();
 	}
 }

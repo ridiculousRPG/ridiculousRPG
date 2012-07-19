@@ -50,11 +50,7 @@ public abstract class Movable implements Serializable {
 	 * false.
 	 */
 	public boolean moves = false;
-	/**
-	 * Offset for drawing this event. Useful e.g. for jump movement, where the
-	 * y-offset continuously grows and shrinks.
-	 */
-	public float offsetX, offsetY;
+	private float offsetX, offsetY;
 
 	protected Speed moveSpeed = Speed.S00_ZERO;
 	protected Rectangle2D.Float touchBound = new Rectangle2D.Float();
@@ -483,6 +479,48 @@ public abstract class Movable implements Serializable {
 
 	public void setX(float x) {
 		this.touchBound.x = x;
+	}
+
+	/**
+	 * Offset for drawing this event. Useful e.g. for jump movement, where the
+	 * y-offset continuously grows and shrinks.
+	 */
+	public void offset(float x, float y) {
+		float diffX = x - offsetX;
+		float diffY = y - offsetY;
+		if (diffX > 3 || diffY > 3 || diffX < -3 || diffY < -3) {
+			offsetJump(diffX, diffY);
+		}
+		offsetX = x;
+		offsetY = y;
+	}
+
+	/**
+	 * Offset for drawing this event. Useful e.g. for jump movement, where the
+	 * y-offset continuously grows and shrinks.
+	 */
+	public void offsetAdd(float x, float y) {
+		if (x > 3 || y > 3 || x < -3 || y < -3) {
+			offsetJump(x, y);
+		}
+		offsetX += x;
+		offsetY += y;
+	}
+
+	/**
+	 * Override to re-adjust the effect position
+	 * @param x
+	 * @param y
+	 */
+	protected void offsetJump(float x, float y) {
+	}
+
+	public float getOffsetX() {
+		return offsetX;
+	}
+
+	public float getOffsetY() {
+		return offsetY;
 	}
 
 	public void setY(float y) {

@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.ridiculousRPG.GameBase;
 import com.ridiculousRPG.animation.TileAnimation;
@@ -29,6 +30,7 @@ public class EventFactory {
 	private static final String PROP_SCALEX = "scalex";
 	private static final String PROP_SCALEY = "scaley";
 	private static final String PROP_IMAGE = "image";
+	private static final String PROP_COLOR = "color";
 	private static final String PROP_EFFECT = "effect";
 	private static final String PROP_EFFECTFRONT = "effectfront";
 	private static final String PROP_EFFECTREAR = "effectrear";
@@ -124,6 +126,10 @@ public class EventFactory {
 				}
 			} else if (PROP_OUTREACH.equals(key)) {
 				ev.outreach = toInt(val);
+			} else if (PROP_COLOR.equals(key)) {
+				Object color = GameBase.$().eval(val);
+				if (color instanceof Color)
+					ev.setColor((Color) color);
 			} else if (PROP_ROTATION.equals(key)) {
 				ev.rotation = toFloat(val);
 			} else if (PROP_SCALEX.equals(key)) {
@@ -307,7 +313,12 @@ public class EventFactory {
 					poly.execAtNodeScript[index] = val;
 				}
 			} else if (PROP_BLOCKING.equals(key)) {
-				poly.blockingBehavior = BlockingBehavior.parse(val.toUpperCase());
+				poly.blockingBehavior = BlockingBehavior.parse(val
+						.toUpperCase());
+			} else if (PROP_COLOR.equals(key)) {
+				Object color = GameBase.$().eval(val);
+				if (color instanceof Color)
+					poly.color = (Color) color;
 			} else if (PROP_HANDLER.equals(key)) {
 				Object evHandler = GameBase.$().eval(val);
 				if (evHandler instanceof Class<?>) {

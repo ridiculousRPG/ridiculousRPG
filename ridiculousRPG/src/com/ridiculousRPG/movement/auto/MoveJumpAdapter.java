@@ -50,8 +50,7 @@ public class MoveJumpAdapter extends MoveSetXYAdapter implements Poolable {
 			if (finished)
 				return;
 			if (distanceX == 0 && distanceY == 0) {
-				event.offsetX = offsetOldX;
-				event.offsetY = offsetOldY;
+				event.offset(offsetOldX, offsetOldY);
 				finished = true;
 				return;
 			}
@@ -65,41 +64,44 @@ public class MoveJumpAdapter extends MoveSetXYAdapter implements Poolable {
 				stretchX = stretchY * absX / absY;
 			}
 			float yJump = centerXY;
+			float oX = 0;
+			float oY = 0;
 			if (distanceX > 0f) {
 				yJump -= distanceX;
 				distanceX -= stretchX;
-				event.offsetX += stretchX;
+				oX = stretchX;
 				if (distanceX < 0f) {
-					event.offsetX += distanceX;
+					oX += distanceX;
 					distanceX = 0f;
 				}
 			} else if (distanceX < 0f) {
 				yJump += distanceX;
 				distanceX += stretchX;
-				event.offsetX -= stretchX;
+				oX = -stretchX;
 				if (distanceX > 0f) {
-					event.offsetX += distanceX;
+					oX += distanceX;
 					distanceX = 0f;
 				}
 			}
 			if (distanceY > 0f) {
 				yJump -= distanceY;
 				distanceY -= stretchY;
-				event.offsetY += stretchY;
+				oY = stretchY;
 				if (distanceY < 0f) {
-					event.offsetY += distanceY;
+					oY += distanceY;
 					distanceY = 0f;
 				}
 			} else if (distanceY < 0f) {
 				yJump += distanceY;
 				distanceY += stretchY;
-				event.offsetY -= stretchY;
+				oY = -stretchY;
 				if (distanceY > 0f) {
-					event.offsetY += distanceY;
+					oY += distanceY;
 					distanceY = 0f;
 				}
 			}
-			event.offsetY -= yJump*10 / centerXY;
+			oY -= yJump * 10 / centerXY;
+			event.offsetAdd(oX, oY);
 			return;
 		}
 		if (!checkPerformed) {
@@ -108,10 +110,9 @@ public class MoveJumpAdapter extends MoveSetXYAdapter implements Poolable {
 			absX = Math.abs(distanceX);
 			absY = Math.abs(distanceY);
 			centerXY = (absX + absY) * .5f;
-			offsetOldX = event.offsetX;
-			offsetOldY = event.offsetY;
-			event.offsetX -= distanceX;
-			event.offsetY -= distanceY;
+			offsetOldX = event.getOffsetX();
+			offsetOldY = event.getOffsetY();
+			event.offsetAdd(-distanceX, -distanceY);
 		}
 		super.tryMove(event, deltaTime);
 		if (finished) {
@@ -129,7 +130,6 @@ public class MoveJumpAdapter extends MoveSetXYAdapter implements Poolable {
 	@Override
 	public void moveBlocked(Movable event) {
 		super.moveBlocked(event);
-		event.offsetX = offsetOldX;
-		event.offsetY = offsetOldY;
+		event.offset(offsetOldX, offsetOldY);
 	}
 }
