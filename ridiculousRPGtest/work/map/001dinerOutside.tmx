@@ -375,7 +375,7 @@
     <property name="speed" value="S04_XX_SLOW"/>
    </properties>
   </object>
-  <object name="player4Polynom" type="player" x="337" y="357" width="19" height="9">
+  <object name="player4Polynom" x="337" y="357" width="19" height="9">
    <properties>
     <property name="//movehandler" value="data/script/game/moveEvent/player2AutoMove.js"/>
     <property name="animation" value="data/charset/Daisy.png"/>
