@@ -112,8 +112,8 @@ public class EventActor extends Actor {
 			initialized = true;
 			event.init();
 		}
-		event.computeParticleEffect(delta);
-		event.getMoveHandler().tryMove(event, delta);
+		event.compute(delta);
+		// No collision detection, just move it
 		event.commitMove();
 		if (event.eventHandler != null)
 			event.eventHandler.onTimer(delta);

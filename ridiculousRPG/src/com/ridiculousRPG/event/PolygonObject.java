@@ -21,6 +21,7 @@ public class PolygonObject implements Cloneable, Serializable {
 
 	private String name;
 	public boolean loop;
+	public float maxX, maxY, minX, minY;
 	public float[] vertexX;
 	public float[] vertexY;
 	private float[] segmentXlen;
@@ -62,16 +63,26 @@ public class PolygonObject implements Cloneable, Serializable {
 		this.segmentLen = new float[vertexX.length - 1];
 		this.segmentXlen = new float[vertexX.length - 1];
 		this.segmentYlen = new float[vertexX.length - 1];
-		float x1, y1, x2, y2, xLen, yLen;
-		x1 = vertexX[vertexX.length - 1];
-		y1 = vertexY[vertexY.length - 1];
+
+		float x1 = vertexX[vertexX.length - 1];
+		float y1 = vertexY[vertexY.length - 1];
+		maxX = minX = x1;
+		maxY = minY = y1;
 		for (int i = vertexX.length - 2; i > -1; i--) {
-			x2 = x1;
-			y2 = y1;
+			float x2 = x1;
+			float y2 = y1;
 			x1 = vertexX[i];
 			y1 = vertexY[i];
-			xLen = x2 - x1;
-			yLen = y2 - y1;
+			if (x1 > maxX)
+				maxX = x1;
+			if (x1 < minX)
+				minX = x1;
+			if (y1 > maxY)
+				maxY = y1;
+			if (y1 < minY)
+				minY = y1;
+			float xLen = x2 - x1;
+			float yLen = y2 - y1;
 			segmentXlen[i] = xLen;
 			segmentYlen[i] = yLen;
 			segmentLen[i] = (float) Math.sqrt(xLen * xLen + yLen * yLen);
@@ -347,12 +358,18 @@ public class PolygonObject implements Cloneable, Serializable {
 	}
 
 	public void translate(float x, float y) {
-		if (x != 0)
+		if (x != 0) {
 			for (int i = vertexX.length - 1; i >= 0; i--)
 				vertexX[i] += x;
-		if (y != 0)
+			maxX += x;
+			minX += x;
+		}
+		if (y != 0) {
 			for (int i = vertexY.length - 1; i >= 0; i--)
 				vertexY[i] += y;
+			maxY += y;
+			minY += y;
+		}
 	}
 
 	public void draw(boolean debug) {

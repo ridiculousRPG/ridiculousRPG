@@ -333,6 +333,13 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		else
 			rect = this.touchBound;
 
+		// perform fast check
+		if (rect.x > other.maxX || rect.y > other.maxY
+				|| rect.x + rect.width < other.minX
+				|| rect.y + rect.height < other.minY)
+			return false;
+
+		// perform exact check
 		int endIDX = other.vertexX.length - 1;
 		float x1, y1, x2, y2;
 		x2 = other.vertexX[endIDX];
@@ -383,6 +390,17 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 
 	public Color getColor() {
 		return color;
+	}
+
+	public void compute(float deltaTime) {
+		collision.clear();
+		getMoveHandler().tryMove(this, deltaTime);
+		if (effectFront != null) {
+			effectFront.update(deltaTime);
+		}
+		if (effectRear != null) {
+			effectRear.update(deltaTime);
+		}
 	}
 
 	public void draw(SpriteBatch spriteBatch) {
@@ -747,15 +765,6 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public void setImage(AtlasRegion region) {
 		image = region;
 		visible = true;
-	}
-
-	public void computeParticleEffect(float deltaTime) {
-		if (effectFront != null) {
-			effectFront.update(deltaTime);
-		}
-		if (effectRear != null) {
-			effectRear.update(deltaTime);
-		}
 	}
 
 	@Override

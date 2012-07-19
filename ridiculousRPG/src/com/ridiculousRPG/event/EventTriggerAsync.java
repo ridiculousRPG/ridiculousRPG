@@ -121,7 +121,6 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 		}
 	}
 
-	// TODO: NEEDS REFACTORING
 	/**
 	 * Compute collisions and move the events.<br>
 	 * Invoke parallel execution of the {@link EventHandler}.
@@ -129,48 +128,32 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 	@Override
 	public void compute(float deltaTime, boolean actionKeyDown,
 			List<EventObject> events, List<PolygonObject> polys) {
-		// Load frequently used pointers/variables into register
-		int dynSize = events.size();
+		int evSize = events.size();
 		int polySize = polys.size();
-		int i, j;
-		EventObject obj1, obj2;
-		EventHandler obj1Ev, obj2Ev;
-		boolean checkReachability;
 
 		// compute all moves
-		for (i = 0; i < dynSize; i++) {
-			obj1 = events.get(i);
-			obj1.collision.clear();
-			obj1.getMoveHandler().tryMove(obj1, deltaTime);
-			obj1.computeParticleEffect(deltaTime);
-		}
-		// move if no collision
-		for (i = 0; i < dynSize; i++) {
-			obj1 = events.get(i);
-			obj1Ev = obj1.eventHandler;
-			// increase performance by only computing this once per event
-			checkReachability = obj1.pushable || obj1.reachable.size > 0;
-			for (j = i + 1; j < dynSize; j++) {
-				obj2 = events.get(j);
-				obj2Ev = obj2.eventHandler;
-				if (obj1.intersects(obj2)) {
-					if (obj2Ev != null) {
-						if (obj2.touchable)
-							obj1.collision.add(obj2Ev);
-						if (obj2.pushable
-								&& !obj1.reachable.contains(obj2Ev, true))
-							obj1.reachable.add(obj2Ev);
-					}
-					if (obj1Ev != null) {
-						if (obj1.touchable)
-							obj2.collision.add(obj1Ev);
-						if (obj1.pushable
-								&& !obj2.reachable.contains(obj1Ev, true))
-							obj2.reachable.add(obj1Ev);
-					}
-					if (obj1.blockingBehavior.blocks(obj2.blockingBehavior)) {
-						if (!(obj1.isPlayerEvent() && obj2.isPlayerEvent())) {
-							if (obj1.moves) {
+		for (int i = 0; i < evSize; i++)
+			events.get(i).compute(deltaTime);
+
+		// collision detection
+		for (int i = 0; i < evSize; i++) {
+			EventObject obj1 = events.get(i);
+			if (obj1.moves) {
+				for (int j = 0; j < evSize; j++) {
+					EventObject obj2 = events.get(j);
+					if (obj1 == obj2)
+						continue;
+					EventHandler obj2Ev = obj2.eventHandler;
+					if (obj1.intersects(obj2)) {
+						if (obj2Ev != null && obj1.consumeInput) {
+							if (obj2.touchable)
+								obj1.collision.add(obj2Ev);
+							if (obj2.pushable
+									&& !obj1.reachable.contains(obj2Ev, true))
+								obj1.reachable.add(obj2Ev);
+						}
+						if (obj1.blockingBehavior.blocks(obj2.blockingBehavior)) {
+							if (!(obj1.isPlayerEvent() && obj2.isPlayerEvent())) {
 								obj1.moves = false;
 								if (obj2.moves && obj1.intersects(obj2)) {
 									obj1.moves = true;
@@ -183,56 +166,42 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 								} else {
 									obj1.getMoveHandler().moveBlocked(obj1);
 								}
-							} else if (obj2.moves) {
-								obj2.moves = false;
-								obj2.getMoveHandler().moveBlocked(obj2);
 							}
 						}
-					}
-				} else {
-					if (obj2Ev != null) {
-						obj1.justTouching.removeValue(obj2Ev, true);
-						boolean removeReach = checkReachability
-								&& (obj2.pushable || obj2.reachable.size > 0)
-								&& !obj1.reaches(obj2);
-						if (removeReach)
-							obj1.reachable.removeValue(obj2Ev, true);
-						if (obj1Ev != null) {
-							obj2.justTouching.removeValue(obj1Ev, true);
-							if (removeReach)
-								obj2.reachable.removeValue(obj1Ev, true);
-						}
-					} else if (obj1Ev != null) {
-						obj2.justTouching.removeValue(obj1Ev, true);
-						if (checkReachability
-								&& (obj2.pushable || obj2.reachable.size > 0)
+					} else if (obj2Ev != null && obj1.consumeInput) {
+						if (obj2.touchable && obj1.justTouching.size > 0)
+							obj1.justTouching.removeValue(obj2Ev, true);
+						if (obj2.pushable && obj1.reachable.size > 0
 								&& !obj1.reaches(obj2))
-							obj2.reachable.removeValue(obj1Ev, true);
+							obj1.reachable.removeValue(obj2Ev, true);
 					}
 				}
-			}
-			if (obj1.moves) {
-				// collision detection for polygons
-				for (i = 0; i < polySize; i++) {
-					PolygonObject p = polys.get(i);
-					if (p.touchable) {
-						if (obj1.intersects(p)) {
-							obj1.collision.add(p.eventHandler);
-							if (p.blockingBehavior
-									.blocks(obj1.blockingBehavior)) {
-								obj1.moves = false;
-								obj1.getMoveHandler().moveBlocked(obj1);
+				// move state has possibly been changed
+				if (obj1.moves) {
+					// collision detection for polygons
+					for (int j = 0; j < polySize; j++) {
+						PolygonObject p = polys.get(j);
+						if (p.touchable && obj1.consumeInput) {
+							if (obj1.intersects(p)) {
+								obj1.collision.add(p.eventHandler);
+								if (p.blockingBehavior
+										.blocks(obj1.blockingBehavior)) {
+									obj1.moves = false;
+									obj1.getMoveHandler().moveBlocked(obj1);
+								}
+							} else {
+								obj1.justTouching.removeValue(p.eventHandler,
+										true);
 							}
-						} else {
-							obj1.justTouching.removeValue(p.eventHandler, true);
+						} else if (p.blockingBehavior
+								.blocks(obj1.blockingBehavior)
+								&& obj1.intersects(p)) {
+							obj1.moves = false;
+							obj1.getMoveHandler().moveBlocked(obj1);
 						}
-					} else if (p.blockingBehavior.blocks(obj1.blockingBehavior)
-							&& obj1.intersects(p)) {
-						obj1.moves = false;
-						obj1.getMoveHandler().moveBlocked(obj1);
 					}
+					obj1.commitMove();
 				}
-				obj1.commitMove();
 			}
 		}
 		synchronized (this) {
