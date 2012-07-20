@@ -44,7 +44,8 @@ public class PolygonObject implements Cloneable, Serializable {
 
 	public EventHandler eventHandler;
 	public boolean touchable;
-	public Color color;
+	private Color color;
+	public boolean visible;
 
 	private static transient ShapeRenderer renderer;
 
@@ -373,7 +374,7 @@ public class PolygonObject implements Cloneable, Serializable {
 	}
 
 	public void draw(boolean debug) {
-		if (color != null) {
+		if (visible && color != null) {
 			ShapeRenderer r = getRenderer();
 			r.setColor(color);
 			for (int i = vertexX.length - 1; i > 0; i--)
@@ -382,7 +383,7 @@ public class PolygonObject implements Cloneable, Serializable {
 		if (debug) {
 			ShapeRenderer r = getRenderer();
 			r.setColor(blockingBehavior.color);
-			if (color == null) {
+			if (visible && color != null) {
 				for (int i = vertexX.length - 1; i > 0; i--)
 					r.line(vertexX[i - 1], vertexY[i - 1], vertexX[i],
 							vertexY[i]);
@@ -412,6 +413,16 @@ public class PolygonObject implements Cloneable, Serializable {
 			}
 		}
 		return renderer;
+	}
+
+	public Color getColor() {
+		return color;
+	}
+
+	public void setColor(Color color) {
+		this.color = color;
+		if (color != null)
+			visible = true;
 	}
 
 	private void writeObject(ObjectOutputStream out) throws IOException {

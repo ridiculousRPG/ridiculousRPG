@@ -21,7 +21,6 @@ import java.util.List;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -35,6 +34,7 @@ import com.ridiculousRPG.service.Computable;
 import com.ridiculousRPG.service.Drawable;
 import com.ridiculousRPG.service.GameService;
 import com.ridiculousRPG.ui.DisplayPlainTextService;
+import com.ridiculousRPG.ui.DisplayPlainTextService.Alignment;
 
 /**
  * This class offers some debug functions.
@@ -45,7 +45,8 @@ public final class DebugHelper {
 	private static ShapeRenderer debugRenderer;
 	private static DisplayPlainTextService textMapDebugger;
 	private static DisplayPlainTextService textViewDebugger;
-	private static BitmapFont f;
+	private static final float colorServiceDebug = new Color(1f, 1f, 0f, .5f)
+			.toFloatBits();
 
 	private DebugHelper() {
 	} // static container
@@ -53,13 +54,13 @@ public final class DebugHelper {
 	public static void drawServiceExecutionOrder(SpriteBatch spriteBatch,
 			Camera camera, Array<Computable> computables,
 			Array<Drawable> drawables, GameService holdsAttention) {
-		spriteBatch.setProjectionMatrix(camera.view);
-		spriteBatch.begin();
+
 		String text = "";
 		if (holdsAttention != null) {
 			text += holdsAttention.getClass().getName()
 					+ " holds attention!\n\n";
 		}
+
 		text += "Execution order of Computable services";
 		for (Computable c : computables) {
 			text += "\n        " + c.getClass().getName();
@@ -68,20 +69,16 @@ public final class DebugHelper {
 		for (Drawable d : drawables) {
 			text += "\n        " + d.getClass().getName();
 		}
-		f.setColor(1f, 1f, 0f, .5f);
-		TextBounds b = f.getMultiLineBounds(text);
-		f.drawMultiLine(spriteBatch, text,
-				(GameBase.$().getScreen().width - b.width) * .5f, GameBase.$()
-						.getScreen().height
-						- (GameBase.$().getScreen().height - b.height) * .5f);
-		spriteBatch.end();
+
+		getTextViewDebugger().addMessage(text, colorServiceDebug,
+				Alignment.CENTER, Alignment.CENTER, 0f,
+				GameBase.$().getScreen().width, true);
 	}
 
 	public static void drawMousePosition(SpriteBatch spriteBatch, Camera camera) {
-		spriteBatch.setProjectionMatrix(camera.view);
-		spriteBatch.begin();
 		float x1 = Gdx.input.getX();
 		float y1 = GameBase.$().getScreen().height - Gdx.input.getY();
+
 		String text = "( " + (int) x1 + " / " + (int) y1 + " ) Screen\n";
 		float x2 = camera.position.x + x1 * camera.viewportWidth
 				/ GameBase.$().getScreen().width;
@@ -91,35 +88,31 @@ public final class DebugHelper {
 		float x3 = GameBase.$().getPlane().width - x2;
 		float y3 = GameBase.$().getPlane().height - y2;
 		text += "( " + (int) x3 + " / " + (int) y3 + " ) Origin top right";
-		f.setColor(1f, 0f, 1f, 1f);
-		TextBounds b = f.getMultiLineBounds(text);
-		f.drawMultiLine(spriteBatch, text, Math.max(Math.min(x1 + 10, GameBase
-				.$().getScreen().width
-				- b.width), 0f), Math.max(Math.min(y1,
-				GameBase.$().getScreen().height), b.height));
-		spriteBatch.end();
+
+		TextBounds b = getTextViewDebugger().getFont().getMultiLineBounds(text);
+		float x = Math.max(Math.min(x1 + 10, GameBase.$().getScreen().width
+				- b.width), 0f);
+		float y = Math.max(Math.min(y1, GameBase.$().getScreen().height),
+				b.height);
+
+		getTextViewDebugger().addMessage(text, Color.MAGENTA.toFloatBits(), x,
+				y, 0f, true);
 	}
 
 	public static void drawViewportCorners(SpriteBatch spriteBatch,
 			Camera camera) {
-		spriteBatch.setProjectionMatrix(camera.projection);
-		spriteBatch.begin();
-		float x1 = Math.max(0f, camera.position.x);
-		float y1 = Math.max(0f, camera.position.y);
-		float x2 = x1
-				+ Math.min(camera.viewportWidth, GameBase.$().getPlane().width);
-		float y2 = y1
-				+ Math.min(camera.viewportHeight,
-						GameBase.$().getPlane().height);
-		if (f == null)
-			f = new BitmapFont();
-		f.setColor(0f, 1f, 1f, 1f);
-		String text = "( " + (int) x1 + " / " + (int) y1 + " )";
-		f.draw(spriteBatch, text, x1, y1 + f.getLineHeight());
-		text = "( " + (int) x2 + " / " + (int) y2 + " )";
-		TextBounds b = f.getBounds(text);
-		f.draw(spriteBatch, text, x2 - b.width, y2);
-		spriteBatch.end();
+		float x = Math.max(0f, camera.position.x);
+		float y = Math.max(0f, camera.position.y);
+		String text = "( " + (int) x + " / " + (int) y + " )";
+		getTextMapDebugger().addMessage(text, Color.CYAN.toFloatBits(), x,
+				y + getTextMapDebugger().getFont().getLineHeight(), 0f, true);
+
+		x += Math.min(camera.viewportWidth, GameBase.$().getPlane().width);
+		y += Math.min(camera.viewportHeight, GameBase.$().getPlane().height);
+		text = "( " + (int) x + " / " + (int) y + " )";
+		TextBounds b = getTextViewDebugger().getFont().getMultiLineBounds(text);
+		getTextMapDebugger().addMessage(text, Color.CYAN.toFloatBits(),
+				x - b.width, y, 0f, true);
 	}
 
 	public static void debugEvents(List<EventObject> dynamicRegions) {
@@ -163,6 +156,21 @@ public final class DebugHelper {
 		debugRenderer.end();
 	}
 
+	public static void debugPolygons(List<PolygonObject> polyList) {
+		for (PolygonObject poly : polyList) {
+			for (int i = poly.vertexX.length - 1; i >= 0; i--) {
+				float x = poly.vertexX[i];
+				Color c = poly.getColor();
+				if (c == null)
+					c = poly.blockingBehavior.color;
+				if (poly.loop && i == 0)
+					x -= 20;
+				getTextMapDebugger().addMessage("#" + i, c.toFloatBits(), x,
+						poly.vertexY[i], 0f, true);
+			}
+		}
+	}
+
 	public static DisplayPlainTextService getTextMapDebugger() {
 		if (textMapDebugger == null) {
 			textMapDebugger = new DisplayPlainTextService() {
@@ -191,18 +199,14 @@ public final class DebugHelper {
 		return textViewDebugger;
 	}
 
-	public static void debugPolygons(List<PolygonObject> polyList) {
-		for (PolygonObject poly : polyList) {
-			for (int i = poly.vertexX.length - 1; i >= 0; i--) {
-				float x = poly.vertexX[i];
-				Color c = poly.color;
-				if (c == null)
-					c = poly.blockingBehavior.color;
-				if (poly.loop && i == 0)
-					x -= 20;
-				getTextMapDebugger().addMessage("#" + i, c.toFloatBits(), x,
-						poly.vertexY[i], 0f, true);
-			}
+	public static void clear() {
+		if (textMapDebugger != null) {
+			textMapDebugger.dispose();
+			textMapDebugger = null;
+		}
+		if (textViewDebugger != null) {
+			textViewDebugger.dispose();
+			textViewDebugger = null;
 		}
 	}
 }

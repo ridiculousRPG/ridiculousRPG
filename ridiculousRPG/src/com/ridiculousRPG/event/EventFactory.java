@@ -23,7 +23,10 @@ public class EventFactory {
 	private static final char CUSTOM_PROP_KZ = '$';
 	// the key is translated to lower case -> we are case insensitive
 	private static final String PROP_ID = "id";
+	// event will not be created
 	private static final String PROP_DISPLAY = "display";
+	// event will be created but is hidden
+	private static final String PROP_VISIBLE = "visible";
 	private static final String PROP_HEIGHT = "height";
 	private static final String PROP_OUTREACH = "outreach";
 	private static final String PROP_ROTATION = "rotation";
@@ -66,8 +69,10 @@ public class EventFactory {
 	 * @param props
 	 */
 	public static void parseProps(EventObject ev, Map<String, String> props) {
+		String visibility = null;
 		for (Entry<String, String> entry : props.entrySet()) {
-			String key = entry.getKey().trim();
+			// let's be case insensitive
+			String key = entry.getKey().trim().toLowerCase();
 			// Fix the behavior of the libgdx XmlReader
 			String val = entry.getValue().replace("&quot;", "\"").replace(
 					"&gt;", ">").replace("&lt;", "<").replace("&amp;", "&")
@@ -76,16 +81,18 @@ public class EventFactory {
 				continue;
 			if (key.charAt(0) == CUSTOM_PROP_KZ) {
 				ev.properties.put(key, val);
+			} else if (key.equals(PROP_VISIBLE)) {
+				visibility = val;
 			} else {
 				parseSingleProp(ev, key, val, props);
 			}
 		}
+		if (visibility != null && ev.visible)
+			ev.visible = toBool(visibility);
 	}
 
 	private static void parseSingleProp(EventObject ev, String key, String val,
 			Map<String, String> props) {
-		// let's be case insensitive
-		key = key.toLowerCase();
 		try {
 			if (PROP_ID.equals(key)) {
 				ev.id = toInt(val);
@@ -272,8 +279,10 @@ public class EventFactory {
 	 * @param props
 	 */
 	public static void parseProps(PolygonObject poly, Map<String, String> props) {
+		String visibility = null;
 		for (Entry<String, String> entry : props.entrySet()) {
-			String key = entry.getKey().trim();
+			// let's be case insensitive
+			String key = entry.getKey().trim().toLowerCase();
 			// Fix the behavior of the libgdx XmlReader
 			String val = entry.getValue().replace("&quot;", "\"").replace(
 					"&gt;", ">").replace("&lt;", "<").replace("&amp;", "&")
@@ -282,10 +291,14 @@ public class EventFactory {
 				continue;
 			if (key.charAt(0) == CUSTOM_PROP_KZ) {
 				poly.properties.put(key, val);
+			} else if (key.equals(PROP_VISIBLE)) {
+				visibility = val;
 			} else {
 				parseSingleProp(poly, key, val, props);
 			}
 		}
+		if (visibility != null && poly.visible)
+			poly.visible = toBool(visibility);
 	}
 
 	private static void parseSingleProp(PolygonObject poly, String key,
@@ -318,7 +331,7 @@ public class EventFactory {
 			} else if (PROP_COLOR.equals(key)) {
 				Object color = GameBase.$().eval(val);
 				if (color instanceof Color)
-					poly.color = (Color) color;
+					poly.setColor((Color) color);
 			} else if (PROP_HANDLER.equals(key)) {
 				Object evHandler = GameBase.$().eval(val);
 				if (evHandler instanceof Class<?>) {

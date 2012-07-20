@@ -92,6 +92,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 			16);
 
 	private static transient EventTrigger eventTrigger;
+	private static final HashMap<Integer, ObjectState> EMPTY_MAP = new HashMap<Integer, ObjectState>();
 
 	TiledMapWithEvents(String tmxPath) throws ScriptException {
 		TiledMap map = loadTileMap(tmxPath);
@@ -198,7 +199,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					eventObj.init();
 					GameBase.$().getGlobalEvents().put(eventObj.name, eventObj);
 					if (eventObj.isPlayerEvent())
-						eventObj.consumeInput = true;
+						eventObj.consumesEvent = true;
 				} else {
 					globalObj.clearCollision();
 					put(globalObj.name, globalObj).dispose();
@@ -338,7 +339,7 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 						"Could not load the map state from the file system", e);
 			}
 		}
-		return new HashMap<Integer, ObjectState>();
+		return EMPTY_MAP;
 	}
 
 	/**

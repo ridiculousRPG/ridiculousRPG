@@ -988,6 +988,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 					globalState.clear();
 					serviceProvider.clearServices();
 					scriptFactory.clearGlobalState();
+					DebugHelper.clear();
 
 					scriptFactory.evalAllScripts(sharedEngine, GameBase
 							.$options().initScript, false);

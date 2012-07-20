@@ -44,6 +44,7 @@ import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.util.BlockingBehavior;
 import com.ridiculousRPG.util.ColorSerializable;
 import com.ridiculousRPG.util.Direction;
+import com.ridiculousRPG.util.ExecuteInMainThread;
 import com.ridiculousRPG.util.ObjectState;
 import com.ridiculousRPG.util.Speed;
 import com.ridiculousRPG.util.TextureRegionLoader;
@@ -100,7 +101,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * If an event consumes input, it triggers touch and push events. The
 	 * {@link EventHandler} from the other event is called.
 	 */
-	public boolean consumeInput = false;
+	public boolean consumesEvent = false;
 	public BlockingBehavior blockingBehavior = BlockingBehavior.BUILDING_LOW;
 	/**
 	 * The outreach for pushing other events. Default = 10 pixel
@@ -128,6 +129,10 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * with the $ sign are considered local event properties.
 	 */
 	public Map<String, String> properties = new HashMap<String, String>();
+
+	// internally used switch to increase performance for
+	// events which are not drawn onto the screen (out of view)
+	private boolean drawDoneSwitch = false;
 
 	/**
 	 * Creates an empty new event.
@@ -169,11 +174,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			FileHandle fh = Gdx.files.internal(internalPath);
 			if (fh.exists()) {
 				effectFrontPath = internalPath;
-				effectFront = new ParticleEffect();
-				effectFront.load(fh, fh.parent());
-				effectFront.setPosition(drawBound.x + drawBound.width * .5f,
-						drawBound.y);
-				visible = true;
+				effectFront = loadParticleEffect(fh);
 			}
 		}
 		return effectFront;
@@ -200,11 +201,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 			FileHandle fh = Gdx.files.internal(internalPath);
 			if (fh.exists()) {
 				effectRearPath = internalPath;
-				effectRear = new ParticleEffect();
-				effectRear.load(fh, fh.parent());
-				effectRear.setPosition(drawBound.x + drawBound.width * .5f,
-						drawBound.y);
-				visible = true;
+				effectRear = loadParticleEffect(fh);
 			}
 		}
 		return effectRear;
@@ -214,6 +211,23 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		if (effectRear != null) {
 			effectRear.start();
 		}
+	}
+
+	private ParticleEffect loadParticleEffect(final FileHandle fh) {
+		final ParticleEffect effect = new ParticleEffect();
+		if (GameBase.$().isGlContextThread()) {
+			effect.load(fh, fh.parent());
+		} else {
+			new ExecuteInMainThread() {
+				@Override
+				public void exec() {
+					effect.load(fh, fh.parent());
+				}
+			}.runWait();
+		}
+		effect.setPosition(drawBound.x + drawBound.width * .5f, drawBound.y);
+		visible = true;
+		return effect;
 	}
 
 	public void setType(String type) {
@@ -297,7 +311,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * The touch bounds are used to compute the direction.
 	 */
 	public void lookAt(EventObject other) {
-		if (animation != null && visible && other.visible)
+		if (visible && animation != null && other.visible)
 			animation.animate(other.getX() - getX(), other.getY() - getY(), 0f);
 	}
 
@@ -396,16 +410,20 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	public void compute(float deltaTime) {
 		collision.clear();
 		getMoveHandler().tryMove(this, deltaTime);
-		if (effectFront != null) {
-			effectFront.update(deltaTime);
-		}
-		if (effectRear != null) {
-			effectRear.update(deltaTime);
+		if (drawDoneSwitch) {
+			if (effectFront != null) {
+				effectFront.update(deltaTime);
+			}
+			if (effectRear != null) {
+				effectRear.update(deltaTime);
+			}
+			drawDoneSwitch = false;
 		}
 	}
 
 	public void draw(SpriteBatch spriteBatch) {
 		if (visible) {
+			drawDoneSwitch = true;
 			float eventColorBits = this.colorFloatBits;
 			float gameColorBits = GameBase.$().getGameColorBits();
 			if (gameColorBits != COLOR_WHITE_BITS) {
@@ -522,7 +540,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		softMoveBounds.setRect(getX() + softMove.x, getY() + softMove.y,
 				getWidth(), getHeight());
 		moves = true;
-		if (animation != null) {
+		if (drawDoneSwitch && animation != null) {
 			this.image = animation.animate(x, y, dir, deltaTime);
 		}
 		return distance;
@@ -560,7 +578,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * @see {@link TileAnimation#animate(float, float, float)}
 	 */
 	public void animate(float x, float y, float deltaTime) {
-		if (animation != null) {
+		if (drawDoneSwitch && animation != null) {
 			this.image = animation.animate(x, y, deltaTime);
 		}
 	}
@@ -571,7 +589,7 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	 * @see {@link TileAnimation#animate(int, Speed)}
 	 */
 	public void animate(int animationTextureRow, Speed speed, float deltaTime) {
-		if (animation != null) {
+		if (drawDoneSwitch && animation != null) {
 			this.image = animation.animate(animationTextureRow, speed,
 					deltaTime);
 		}

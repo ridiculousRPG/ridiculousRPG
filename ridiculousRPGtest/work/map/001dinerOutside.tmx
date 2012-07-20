@@ -350,6 +350,7 @@
     <property name="effectFront" value="data/effect/particle/greenMixed.effect"/>
     <property name="onTouch" value="$.globalState.setBool(1, true) /*player burning*/"/>
     <property name="onTouch01" value="eventTrigger.moveHandler.nextSegment();"/>
+    <property name="ontouch2" value="eventSelf.setEffectRear(&quot;data/effect/particle/greenMixed.effect&quot;)"/>
    </properties>
   </object>
   <object x="466" y="0">

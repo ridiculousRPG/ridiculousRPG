@@ -265,7 +265,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 			super.clear();
 		} catch (Exception e) {
 			// Stage.cancelTouchFocus throws IndexOutOfBoundsException
-			GameBase.$info("Stage.clear", "Workaround known bug", e);
+			clear();
 		}
 		disposeDrawables();
 	}
@@ -541,7 +541,10 @@ public class ActorsOnStageService extends Stage implements GameService,
 					releaseAttention = false;
 				}
 				computeTouchPoint(a, tmp);
-				super.touchUp((int) tmp.x, (int) tmp.y, 0, Buttons.LEFT);
+				try {
+					super.touchUp((int) tmp.x, (int) tmp.y, 0, Buttons.LEFT);
+				} catch (Exception e) {
+				}
 				return true;
 			}
 		}

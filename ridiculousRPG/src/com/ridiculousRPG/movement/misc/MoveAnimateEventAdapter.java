@@ -16,8 +16,11 @@
 
 package com.ridiculousRPG.movement.misc;
 
+import com.badlogic.gdx.utils.Array;
+import com.ridiculousRPG.GameBase;
 import com.ridiculousRPG.animation.TileAnimation;
 import com.ridiculousRPG.event.EventObject;
+import com.ridiculousRPG.map.MapRenderService;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
 import com.ridiculousRPG.util.Speed;
@@ -47,7 +50,7 @@ public class MoveAnimateEventAdapter extends MovementHandler {
 	 * Simply animates the event and uses it's own animation therefore.
 	 */
 	public MoveAnimateEventAdapter() {
-		this(null, -1);
+		this(-1);
 	}
 
 	/**
@@ -57,7 +60,27 @@ public class MoveAnimateEventAdapter extends MovementHandler {
 	 *            The row index or -1 if the animation should run over all rows.
 	 */
 	public MoveAnimateEventAdapter(int animationTextureRow) {
-		this(null, animationTextureRow);
+		this((TileAnimation) null, animationTextureRow);
+	}
+
+	/**
+	 * ATTENTION: An animation should always belong to one visible event!!!<br>
+	 * 
+	 * @param animation
+	 *            Named event which's animation should be used
+	 * @param animationTextureRow
+	 *            The row index or -1 if the animation should run over all rows.
+	 */
+	public MoveAnimateEventAdapter(String animation, int animationTextureRow) {
+		Array<MapRenderService> services = GameBase.$serviceProvider()
+				.getServices(MapRenderService.class);
+		for (int i = services.size - 1; i >= 0; i--) {
+			Object ev = services.get(i).getMap().get(animation);
+			if (ev instanceof EventObject) {
+				this.animation = ((EventObject) ev).getAnimation();
+				this.animationTextureRow = animationTextureRow;
+			}
+		}
 	}
 
 	/**

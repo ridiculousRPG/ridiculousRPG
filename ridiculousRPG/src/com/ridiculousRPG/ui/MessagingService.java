@@ -30,6 +30,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -66,6 +67,7 @@ public class MessagingService extends ActorsOnStageService implements
 	private transient boolean dispose;
 	private transient Object[] resultPointer;
 	private transient boolean dirty;
+	private transient Array<Actor> foraignActors;
 
 	public static final int MARGIN = 5;
 
@@ -81,6 +83,7 @@ public class MessagingService extends ActorsOnStageService implements
 		lines = new Array<Message>();
 		pictures = new IntMap<PictureRef>();
 		resultPointer = new Object[] { null };
+		foraignActors = new Array<Actor>();
 		try {
 			setCallBackScript(callBackScript);
 		} catch (ScriptException e) {
@@ -210,20 +213,14 @@ public class MessagingService extends ActorsOnStageService implements
 		if (dispose || lines.size == 0)
 			return null;
 		if (GameBase.$serviceProvider().requestAttention(this, false, false)) {
-			// TODO: An other box is showing up. At the time we have already a
-			// problem if we reached this state because the new generated box
-			// has already disposed the textures used by the old one, which is
-			// currently showed at the screen.
-			// We should extract data class with a dispose method and at every
-			// commit a new instance of the data class should be assigned for
-			// the user. At the end of this function the entire data class with
-			// all the elements should be disposed.
-			while (getActors().size > 0) {
-				if (dispose) {
-					GameBase.$serviceProvider().releaseAttention(this);
-					return null;
+			foraignActors.clear();
+			for (int i = getActors().size - 1; i >= 0; i--) {
+				try {
+					foraignActors.add(getActors().get(i));
+				} catch (IndexOutOfBoundsException e) {
+					GameBase.$info("MessagingService.threadCross",
+							"Another thread deleted an actor", e);
 				}
-				Thread.yield();
 			}
 
 			resultPointer[0] = null;
@@ -239,8 +236,10 @@ public class MessagingService extends ActorsOnStageService implements
 
 			lines.clear();
 
-			while (resultPointer[0] == null && getActors().size > 0 && !dispose)
+			while (resultPointer[0] == null && !dispose
+					&& msgActorsOpen(foraignActors))
 				Thread.yield();
+
 			if (!GameBase.$serviceProvider().releaseAttention(this)) {
 				GameBase.$error("MessagingService.commit",
 						"Failed to release attention",
@@ -250,18 +249,45 @@ public class MessagingService extends ActorsOnStageService implements
 				GameBase.$serviceProvider().forceAttentionReset();
 				clear();
 			}
-			fadeOutAllActors();
+			fadeOutOwnActors(foraignActors);
 			setAllowNull(true);
-			// sleep until box has disappeared
-			do {
+
+			while (!dispose && msgActorsOpen(foraignActors))
 				Thread.yield();
-			} while (getActors().size > 0 && !dispose);
 
 			if (dirty)
 				setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
 						false);
 		}
 		return resultPointer[0];
+	}
+
+	private void fadeOutOwnActors(Array<Actor> foraignActors) {
+		for (int i = getActors().size - 1; i >= 0; i--) {
+			try {
+				Actor a = getActors().get(i);
+				if (!foraignActors.contains(a, true)) {
+					a.getColor().a -= .1f;
+					a.addAction(Actions.sequence(
+							Actions.fadeOut(getFadeTime()), Actions
+									.removeActor()));
+				}
+			} catch (IndexOutOfBoundsException e) {
+			}
+		}
+	}
+
+	private boolean msgActorsOpen(Array<Actor> foraignActors) {
+		if (getActors().size > foraignActors.size)
+			return true;
+		for (int i = getActors().size - 1; i >= 0; i--) {
+			try {
+				if (!foraignActors.contains(getActors().get(i), true))
+					return true;
+			} catch (IndexOutOfBoundsException e) {
+			}
+		}
+		return false;
 	}
 
 	public interface Message {

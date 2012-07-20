@@ -138,30 +138,35 @@ public abstract class DisplayPlainTextService extends GameServiceDefaultImpl
 	public BitmapFontCache addMessage(CharSequence text, float color,
 			Alignment horizontalAlign, Alignment verticalAlign, float padding,
 			float wrapWidth, boolean forceRemove) {
-		Rectangle $screen = GameBase.$().getScreen();
-		float x = padding, y = $screen.height - padding;
+		Rectangle bounds = GameBase.$().getScreen();
+		Camera cam = GameBase.$().getCamera();
+		if (projectionMatrix(cam) == cam.projection) {
+			bounds = GameBase.$().getPlane();
+		}
+		float x = padding, y = bounds.height - padding;
 		BitmapFontCache bfc = createMsg(text, color, 0f, 0f, wrapWidth);
 		TextBounds b = bfc.getBounds();
 
 		if (horizontalAlign == Alignment.CENTER)
-			x = ($screen.width - b.width) * .5f;
+			x = (bounds.width - b.width) * .5f;
 		else if (horizontalAlign == Alignment.RIGHT)
-			x = $screen.width - b.width - padding;
+			x = bounds.width - b.width - padding;
 
 		if (verticalAlign == Alignment.CENTER)
-			y = $screen.height - ($screen.height - b.height) * .5f;
+			y = bounds.height - (bounds.height - b.height) * .5f;
 		else if (verticalAlign == Alignment.BOTTOM)
 			y = b.height + padding;
 
-		Camera cam = GameBase.$().getCamera();
 		if (projectionMatrix(cam) == cam.view) {
 			if (x < 0f)
 				x = 0f;
-			if (y > $screen.height)
-				y = $screen.height;
+			if (y > bounds.height)
+				y = bounds.height;
 		}
 
-		bfc.setPosition(x, y);
+		int ix = (int) (x + .5f);
+		int iy = (int) (y + .5f);
+		bfc.setPosition(ix, iy);
 		if (forceRemove)
 			msgDisplayOnce.add(bfc);
 		else
@@ -229,6 +234,10 @@ public abstract class DisplayPlainTextService extends GameServiceDefaultImpl
 		BitmapFont old = this.font;
 		this.font = font;
 		return old;
+	}
+
+	public BitmapFont getFont() {
+		return font;
 	}
 
 	/**
