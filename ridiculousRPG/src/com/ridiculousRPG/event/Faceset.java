@@ -37,8 +37,8 @@ public class Faceset implements Disposable {
 			int anzRows, int anzCols) {
 		if (faceset != null)
 			faceset.dispose();
-		faceset = TextureRegionLoader.load(path, 0, 0, faceWidth
-				* anzCols, faceHeight * anzRows);
+		faceset = TextureRegionLoader.load(path, 0, 0, faceWidth * anzCols,
+				faceHeight * anzRows);
 		faces = faceset.split(faceWidth, faceHeight);
 	}
 

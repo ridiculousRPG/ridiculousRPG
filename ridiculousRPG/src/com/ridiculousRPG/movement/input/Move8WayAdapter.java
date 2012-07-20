@@ -35,7 +35,8 @@ public class Move8WayAdapter extends MovementHandler {
 	public float touchEpsilon = 5f;
 
 	/**
-	 * Instantiates an {@link MovementHandler} listening to the specified input keys.
+	 * Instantiates an {@link MovementHandler} listening to the specified input
+	 * keys.
 	 * 
 	 * @param eastKey
 	 * @param westKey

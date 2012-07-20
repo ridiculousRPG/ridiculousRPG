@@ -68,6 +68,7 @@ public class MessagingService extends ActorsOnStageService implements
 	private transient Object[] resultPointer;
 	private transient boolean dirty;
 	private transient Array<Actor> foraignActors;
+	private transient Array<Actor> ownActors;
 
 	public static final int MARGIN = 5;
 
@@ -84,6 +85,7 @@ public class MessagingService extends ActorsOnStageService implements
 		pictures = new IntMap<PictureRef>();
 		resultPointer = new Object[] { null };
 		foraignActors = new Array<Actor>();
+		ownActors = new Array<Actor>();
 		try {
 			setCallBackScript(callBackScript);
 		} catch (ScriptException e) {
@@ -225,9 +227,20 @@ public class MessagingService extends ActorsOnStageService implements
 
 			resultPointer[0] = null;
 			try {
+				ownActors.clear();
 				if (scriptEngine != null)
 					scriptEngine.invokeFunction(callBackFunction, this, title,
 							face, lines, boxPosition, pictures.values());
+				for (int i = getActors().size - 1; i >= 0; i--) {
+					try {
+						Actor a = getActors().get(i);
+						if (!foraignActors.contains(a, true))
+							ownActors.add(getActors().get(i));
+					} catch (IndexOutOfBoundsException e) {
+						GameBase.$info("MessagingService.threadCross",
+								"Another thread deleted an actor", e);
+					}
+				}
 			} catch (Exception e) {
 				GameBase.$error("MessagingService." + callBackFunction,
 						"Error processing message callback function "
@@ -236,8 +249,7 @@ public class MessagingService extends ActorsOnStageService implements
 
 			lines.clear();
 
-			while (resultPointer[0] == null && !dispose
-					&& msgActorsOpen(foraignActors))
+			while (resultPointer[0] == null && !dispose && ownActorsOpen())
 				Thread.yield();
 
 			if (!GameBase.$serviceProvider().releaseAttention(this)) {
@@ -249,10 +261,10 @@ public class MessagingService extends ActorsOnStageService implements
 				GameBase.$serviceProvider().forceAttentionReset();
 				clear();
 			}
-			fadeOutOwnActors(foraignActors);
 			setAllowNull(true);
 
-			while (!dispose && msgActorsOpen(foraignActors))
+			fadeOutOwnActors();
+			while (!dispose && ownActorsOpen())
 				Thread.yield();
 
 			if (dirty)
@@ -262,32 +274,20 @@ public class MessagingService extends ActorsOnStageService implements
 		return resultPointer[0];
 	}
 
-	private void fadeOutOwnActors(Array<Actor> foraignActors) {
-		for (int i = getActors().size - 1; i >= 0; i--) {
-			try {
-				Actor a = getActors().get(i);
-				if (!foraignActors.contains(a, true)) {
-					a.getColor().a -= .1f;
-					a.addAction(Actions.sequence(
-							Actions.fadeOut(getFadeTime()), Actions
-									.removeActor()));
-				}
-			} catch (IndexOutOfBoundsException e) {
-			}
-		}
+	private boolean ownActorsOpen() {
+		for (int i = ownActors.size - 1; i >= 0; i--)
+			if (getActors().contains(ownActors.get(i), true))
+				return true;
+		return false;
 	}
 
-	private boolean msgActorsOpen(Array<Actor> foraignActors) {
-		if (getActors().size > foraignActors.size)
-			return true;
-		for (int i = getActors().size - 1; i >= 0; i--) {
-			try {
-				if (!foraignActors.contains(getActors().get(i), true))
-					return true;
-			} catch (IndexOutOfBoundsException e) {
-			}
+	private void fadeOutOwnActors() {
+		for (int i = ownActors.size - 1; i >= 0; i--) {
+			Actor a = ownActors.get(i);
+			a.getColor().a -= .1f;
+			a.addAction(Actions.sequence(Actions.fadeOut(getFadeTime()),
+					Actions.removeActor()));
 		}
-		return false;
 	}
 
 	public interface Message {

@@ -28,6 +28,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -76,6 +77,14 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	private static final int SCROLL_PIXEL_AMOUNT = 64;
 	private static final float RESIZE_DELAY = .33f;
+
+	public Action setFadeState = new Action() {
+		@Override
+		public boolean act(float delta) {
+			fadingOut = false;
+			return true;
+		}
+	};
 
 	public ActorsOnStageService() {
 		super(GameBase.$().getScreen().width, GameBase.$().getScreen().height,
@@ -467,7 +476,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 		} else if (awaitingKeyUp) {
 			switch (keycode) {
 			case Keys.SPACE:
-				if (focusedActor != null)
+				if (getKeyboardFocus() != null || focusedActor != null)
 					break;
 				// else fall through
 			case Keys.ENTER:
@@ -482,6 +491,12 @@ public class ActorsOnStageService extends Stage implements GameService,
 	@Override
 	public boolean touchDown(int x, int y, int pointer, int button) {
 		boolean consumed = super.touchDown(x, y, pointer, button);
+		if (focusedActor != null
+				&& !ActorFocusUtil.isActorOnStage(focusedActor, getRoot())) {
+			setKeyboardFocus(null);
+			focusedActor = null;
+			awaitingKeyUp = false;
+		}
 		if (!consumed && !awaitingKeyUp
 				&& (pointer == 1 || button == Buttons.RIGHT)
 				&& focusedActor == null) {
@@ -508,8 +523,10 @@ public class ActorsOnStageService extends Stage implements GameService,
 		Actor a = focusedActor;
 		if (a == null || a instanceof Window) {
 			if (closeOnAction && getActors().size > 0) {
-				fadeOutAllActors();
-				return true;
+				if (!fadingOut) {
+					fadeOutAllActors();
+					return true;
+				}
 			}
 		} else {
 			// unfocus if actor is removed
@@ -566,8 +583,8 @@ public class ActorsOnStageService extends Stage implements GameService,
 			for (int i = aa.size - 1; i > -1; i--) {
 				Actor a = aa.get(i);
 				a.getColor().a -= .1f;
-				a.addAction(Actions.sequence(Actions.fadeOut(fadeTime), Actions
-						.removeActor()));
+				a.addAction(Actions.sequence(Actions.fadeOut(fadeTime),
+						setFadeState, Actions.removeActor()));
 			}
 			fadingOut = true;
 		} else {
@@ -632,7 +649,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 			w.getColor().a = .1f;
 			w.addAction(Actions.sequence(Actions.fadeIn(fadeInfoTime), Actions
 					.delay(displayInfoTime, Actions.fadeOut(fadeInfoTime)),
-					Actions.removeActor()));
+					setFadeState, Actions.removeActor()));
 			w.add(info);
 
 			w.pack();
@@ -693,11 +710,12 @@ public class ActorsOnStageService extends Stage implements GameService,
 				public boolean touchDown(InputEvent event, float x, float y,
 						int pointer, int button) {
 					dragging = pointer == 0
+							&& button == Buttons.LEFT
 							&& getHeight() - y <= getPadTop().height(
 									ScrollWindow.this) && y < getHeight()
 							&& x > 0 && x < getWidth();
+					event.stop();
 					if (dragging) {
-						event.stop();
 						dragOffset.set(x, y);
 						return true;
 					}

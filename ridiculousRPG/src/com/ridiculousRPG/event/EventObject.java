@@ -44,7 +44,7 @@ import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.util.BlockingBehavior;
 import com.ridiculousRPG.util.ColorSerializable;
 import com.ridiculousRPG.util.Direction;
-import com.ridiculousRPG.util.ExecuteInMainThread;
+import com.ridiculousRPG.util.ExecWithGlContext;
 import com.ridiculousRPG.util.ObjectState;
 import com.ridiculousRPG.util.Speed;
 import com.ridiculousRPG.util.TextureRegionLoader;
@@ -215,16 +215,12 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 
 	private ParticleEffect loadParticleEffect(final FileHandle fh) {
 		final ParticleEffect effect = new ParticleEffect();
-		if (GameBase.$().isGlContextThread()) {
-			effect.load(fh, fh.parent());
-		} else {
-			new ExecuteInMainThread() {
-				@Override
-				public void exec() {
-					effect.load(fh, fh.parent());
-				}
-			}.runWait();
-		}
+		new ExecWithGlContext() {
+			@Override
+			public void exec() {
+				effect.load(fh, fh.parent());
+			}
+		}.runWait();
 		effect.setPosition(drawBound.x + drawBound.width * .5f, drawBound.y);
 		visible = true;
 		return effect;

@@ -37,7 +37,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
  * 
  * @author Alexander Baumgartner
  */
-//TODO: JUST DROP THIS JUNK
+// TODO: JUST DROP THIS JUNK
 @Deprecated
 public class GameLauncher extends AndroidApplication {
 	public static String BRANDING = " (powered by ridiculousRPG)";

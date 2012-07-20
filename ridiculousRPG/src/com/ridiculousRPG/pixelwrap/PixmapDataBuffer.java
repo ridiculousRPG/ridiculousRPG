@@ -20,6 +20,7 @@ public class PixmapDataBuffer extends DataBuffer implements Disposable {
 
 	/**
 	 * Sets the new {@link Pixmap} and returns the old one.
+	 * 
 	 * @param pixmap
 	 * @return
 	 */

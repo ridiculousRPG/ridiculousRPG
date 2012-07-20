@@ -66,7 +66,7 @@ import com.ridiculousRPG.service.GestureDetectorService;
 import com.ridiculousRPG.ui.DisplayErrorService;
 import com.ridiculousRPG.ui.MenuService;
 import com.ridiculousRPG.util.ColorSerializable;
-import com.ridiculousRPG.util.ExecuteInMainThread;
+import com.ridiculousRPG.util.ExecWithGlContext;
 import com.ridiculousRPG.util.ObjectState;
 import com.ridiculousRPG.util.Speed;
 import com.ridiculousRPG.util.Zipper;
@@ -159,6 +159,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 
 	public synchronized static void $error(String tag, String message,
 			Exception e) {
+		if ($().terminating)
+			return;
 		Gdx.app.error(tag, message, e);
 		StringWriter stackTrace = new StringWriter();
 		e.printStackTrace(new PrintWriter(stackTrace));
@@ -169,6 +171,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	}
 
 	public static void $info(String tag, String message, Exception ex) {
+		if ($().terminating)
+			return;
 		Gdx.app.log(tag, message, ex);
 	}
 
@@ -697,7 +701,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		exitForced = false;
 		if (fullscreen)
 			toggleFullscreen();
-		new ExecuteInMainThread() {
+		new ExecWithGlContext() {
 			@Override
 			public void exec() {
 				Gdx.app.exit();
@@ -980,7 +984,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 */
 	public void resetEngine() {
 		try {
-			new ExecuteInMainThread() {
+			new ExecWithGlContext() {
 				@Override
 				public void exec() {
 					clearTmpFiles();
@@ -1203,7 +1207,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 						"Error occured while loading the game", e);
 			}
 
-			new ExecuteInMainThread() {
+			new ExecWithGlContext() {
 				@Override
 				public void exec() throws Exception {
 					InputStream is = getServiceStateTmpPath().read();

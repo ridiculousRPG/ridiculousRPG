@@ -16,7 +16,6 @@
 
 package com.ridiculousRPG.service;
 
-
 /**
  * You can extend from this one instead or {@link GameService} if you need
  * gesture detection within your service.

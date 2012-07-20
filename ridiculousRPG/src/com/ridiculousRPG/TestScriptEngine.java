@@ -23,8 +23,8 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 /**
- * This class tests if the script engine works properly and may be used with this
- * game engine.<br>
+ * This class tests if the script engine works properly and may be used with
+ * this game engine.<br>
  * You should see the following output:<br>
  * <code><pre> testOut1: 5
  * testOut2: -22

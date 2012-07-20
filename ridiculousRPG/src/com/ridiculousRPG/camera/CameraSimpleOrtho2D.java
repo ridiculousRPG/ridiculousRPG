@@ -38,7 +38,7 @@ import com.ridiculousRPG.service.Drawable;
  * @see SpriteBatch#setProjectionMatrix(Matrix4)
  * @author Alexander Baumgartner
  */
-//TODO: Compare with com.badlogic.gdx.graphics.OrthographicCamera
+// TODO: Compare with com.badlogic.gdx.graphics.OrthographicCamera
 // Maybe switch to the libGDX implementation
 public class CameraSimpleOrtho2D extends Camera implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -67,7 +67,7 @@ public class CameraSimpleOrtho2D extends Camera implements Serializable {
 				.getScreen().height);
 		projection.setToOrtho2D(position.x, position.y, viewportWidth,
 				viewportHeight);
-		//combined.set(projection);
+		// combined.set(projection);
 	}
 
 	private float adjustX() {
@@ -111,7 +111,7 @@ public class CameraSimpleOrtho2D extends Camera implements Serializable {
 		out.writeObject(combined);
 		out.writeObject(direction);
 		out.writeFloat(far);
-		//out.writeObject(frustum);
+		// out.writeObject(frustum);
 		out.writeObject(invProjectionView);
 		out.writeFloat(near);
 		out.writeObject(position);

@@ -30,7 +30,7 @@ import com.ridiculousRPG.service.Drawable;
 import com.ridiculousRPG.service.GameService;
 import com.ridiculousRPG.service.GameServiceDefaultImpl;
 import com.ridiculousRPG.util.BitmapFontCachePool;
-import com.ridiculousRPG.util.ExecuteInMainThread;
+import com.ridiculousRPG.util.ExecWithGlContext;
 
 /**
  * Draws multilined text onto the screen. This class is optimized for
@@ -54,7 +54,7 @@ public abstract class DisplayPlainTextService extends GameServiceDefaultImpl
 	private float defaultColor = Color.WHITE.toFloatBits();
 
 	protected DisplayPlainTextService() {
-		new ExecuteInMainThread() {
+		new ExecWithGlContext() {
 			@Override
 			public void exec() {
 				font = new BitmapFont();

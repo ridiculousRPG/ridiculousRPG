@@ -28,7 +28,8 @@ import com.ridiculousRPG.service.Computable;
  * 
  * @author Alexander Baumgartner
  */
-public class DisplayFPSService extends DisplayPlainTextService implements Computable {
+public class DisplayFPSService extends DisplayPlainTextService implements
+		Computable {
 	private float colorBits;
 	private Alignment horiAlign, vertAlign;
 	private int oldFPS;
@@ -65,8 +66,8 @@ public class DisplayFPSService extends DisplayPlainTextService implements Comput
 			oldFPS = Gdx.graphics.getFramesPerSecond();
 			if (fontCache != null)
 				removeMessage(fontCache);
-			fontCache = addMessage("FPS: " + oldFPS,
-					colorBits, horiAlign, vertAlign, 5f);
+			fontCache = addMessage("FPS: " + oldFPS, colorBits, horiAlign,
+					vertAlign, 5f);
 		}
 	}
 

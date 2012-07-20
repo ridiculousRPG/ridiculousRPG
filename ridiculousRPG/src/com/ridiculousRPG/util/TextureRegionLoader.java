@@ -153,7 +153,7 @@ public final class TextureRegionLoader {
 			tCache = new TextureCache(safeWidth, safeHeight, format);
 		} else {
 			final TextureCacheContainer tCC = new TextureCacheContainer();
-			new ExecuteInMainThread() {
+			new ExecWithGlContext() {
 				@Override
 				public void exec() {
 					tCC.tCache = new TextureCache(safeWidth, safeHeight, format);
@@ -183,7 +183,7 @@ public final class TextureRegionLoader {
 				}
 			} else {
 				final TextureCacheContainer tCC = new TextureCacheContainer();
-				new ExecuteInMainThread() {
+				new ExecWithGlContext() {
 					@Override
 					public void exec() {
 						if (width != safeWidth || height != safeHeight) {

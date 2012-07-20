@@ -509,6 +509,7 @@ public abstract class Movable implements Serializable {
 
 	/**
 	 * Override to re-adjust the effect position
+	 * 
 	 * @param x
 	 * @param y
 	 */

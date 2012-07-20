@@ -45,6 +45,7 @@ public class ColorSerializable extends Color implements Serializable {
 		return c instanceof ColorSerializable ? (ColorSerializable) c
 				: new ColorSerializable(c);
 	}
+
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		out.defaultWriteObject();
 		out.writeFloat(a);

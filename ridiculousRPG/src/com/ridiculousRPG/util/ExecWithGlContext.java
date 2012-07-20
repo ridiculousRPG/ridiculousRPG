@@ -3,7 +3,8 @@ package com.ridiculousRPG.util;
 import com.badlogic.gdx.Gdx;
 import com.ridiculousRPG.GameBase;
 
-public abstract class ExecuteInMainThread implements Runnable {
+public abstract class ExecWithGlContext implements Runnable {
+	private Object syncObj = new Object();
 
 	/**
 	 * The run method is called by the main thread.
@@ -11,8 +12,8 @@ public abstract class ExecuteInMainThread implements Runnable {
 	@Override
 	public void run() {
 		execCatchException();
-		synchronized (this) {
-			notify();
+		synchronized (syncObj) {
+			syncObj.notify();
 		}
 	}
 
@@ -24,12 +25,12 @@ public abstract class ExecuteInMainThread implements Runnable {
 		if (GameBase.$().isGlContextThread()) {
 			execCatchException();
 		} else {
-			synchronized (this) {
+			synchronized (syncObj) {
 				Gdx.app.postRunnable(this);
 				try {
-					wait();
+					syncObj.wait();
 				} catch (InterruptedException e) {
-					GameBase.$info("ExecuteInMainThread.interrupt",
+					GameBase.$info("ExecWithGlContext.interrupt",
 							"Wait interrupted - continuing", e);
 				}
 			}
@@ -40,7 +41,7 @@ public abstract class ExecuteInMainThread implements Runnable {
 		try {
 			exec();
 		} catch (Exception e) {
-			GameBase.$error("ExecuteInMainThread.exec",
+			GameBase.$error("ExecWithGlContext.exec",
 					"Exception in executed code: " + e.getMessage(), e);
 		}
 	}

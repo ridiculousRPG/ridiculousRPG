@@ -40,7 +40,7 @@ import com.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
  * @see ParticleEffectService
  * @author Alexander Baumgartner
  */
-//TODO: Fix inaccurate rendering
+// TODO: Fix inaccurate rendering
 public class WeatherEffectLayer extends EffectLayer {
 	private static final long serialVersionUID = 1L;
 
@@ -496,19 +496,14 @@ public class WeatherEffectLayer extends EffectLayer {
 		if (flip) {
 			batch.setTransformMatrix(batch.getTransformMatrix().idt());
 		}
-/*
-		if (debug) {
-			batch.end();
-			List<Rectangle> rects = new ArrayList<Rectangle>();
-			for (List<Rectangle> row : tileLayer)
-				for (Rectangle clip : row)
-					rects.add(new Rectangle(clip.x, clip.y, Math.abs(tWidth),
-							Math.abs(tHeight)));
-			DebugHelper.debugRectangle(new Color(1f, 0.67f, 0f, .4f),
-					flip ? compTransMatrix(batch, cam) : null, rects
-							.toArray(new Rectangle[0]));
-			batch.begin();
-		}*/
+		/*
+		 * if (debug) { batch.end(); List<Rectangle> rects = new
+		 * ArrayList<Rectangle>(); for (List<Rectangle> row : tileLayer) for
+		 * (Rectangle clip : row) rects.add(new Rectangle(clip.x, clip.y,
+		 * Math.abs(tWidth), Math.abs(tHeight))); DebugHelper.debugRectangle(new
+		 * Color(1f, 0.67f, 0f, .4f), flip ? compTransMatrix(batch, cam) : null,
+		 * rects .toArray(new Rectangle[0])); batch.begin(); }
+		 */
 	}
 
 	private Matrix4 compTransMatrix(SpriteBatch batch, Camera cam) {

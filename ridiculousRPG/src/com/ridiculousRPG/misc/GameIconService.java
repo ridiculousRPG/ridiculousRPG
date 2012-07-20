@@ -29,10 +29,10 @@ public class GameIconService extends GameServiceDefaultImpl {
 	private Pixmap applIcon;
 
 	public GameIconService() {
-		//TODO: hard coded :( ==> options :)
+		// TODO: hard coded :( ==> options :)
 		FileHandle applIconFile = Gdx.files.internal("data/icon.png");
 		if (applIconFile.exists()) {
-			//TODO: fix this
+			// TODO: fix this
 			// 1) Load Pixmap via TextureRegionLoader
 			// 2) Different Icons for different platforms???
 			applIcon = new Pixmap(applIconFile);

@@ -53,7 +53,7 @@ import com.ridiculousRPG.map.MapLoader;
 import com.ridiculousRPG.map.MapRenderRegion;
 import com.ridiculousRPG.map.MapWithEvents;
 import com.ridiculousRPG.util.BlockingBehavior;
-import com.ridiculousRPG.util.ExecuteInMainThread;
+import com.ridiculousRPG.util.ExecWithGlContext;
 import com.ridiculousRPG.util.IntSet;
 import com.ridiculousRPG.util.ObjectState;
 
@@ -109,16 +109,12 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		tileHeight = map.tileHeight;
 		width = map.width * tileWidth;
 		height = map.height * tileHeight;
-		if (GameBase.$().isGlContextThread()) {
-			atlas = new TileAtlas(map, tmxFile.parent());
-		} else {
-			new ExecuteInMainThread() {
-				@Override
-				public void exec() {
-					atlas = new TileAtlas(map, tmxFile.parent());
-				}
-			}.runWait();
-		}
+		new ExecWithGlContext() {
+			@Override
+			public void exec() {
+				atlas = new TileAtlas(map, tmxFile.parent());
+			}
+		}.runWait();
 		return map;
 	}
 

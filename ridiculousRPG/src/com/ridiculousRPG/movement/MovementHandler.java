@@ -54,6 +54,7 @@ public abstract class MovementHandler implements Serializable {
 	/**
 	 * If the move handler is pooled it can be freed (returned to the pool) by
 	 * overriding this method.
+	 * 
 	 * @see Movable Movable for example
 	 */
 	public void free() {
