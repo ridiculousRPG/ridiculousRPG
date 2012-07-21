@@ -55,6 +55,7 @@ public class MessagingService extends ActorsOnStageService implements
 
 	// Only the most important state informations will be serialized.
 	private Rectangle boxPosition;
+	private boolean boxAutoSize;
 	private String title;
 	private String callBackScript;
 	private String callBackFunction = "drawMessageBox";
@@ -78,7 +79,7 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	private void init() {
-		boxPosition = new Rectangle(0, 0, 0, 200);
+		boxPosition = new Rectangle();
 		setAllowNull(allowNull);
 		setFadeTime(.15f);
 		lines = new Array<Message>();
@@ -138,11 +139,13 @@ public class MessagingService extends ActorsOnStageService implements
 		showInfoNormal(info);
 	}
 
-	public void box(float x, float y, float width, float height) {
+	public void box(float x, float y, float width, float height,
+			boolean autosize) {
 		boxPosition.x = x;
 		boxPosition.y = y;
 		boxPosition.width = width;
 		boxPosition.height = height;
+		boxAutoSize = autosize;
 	}
 
 	public Object face(String internalPath, int x, int y, int width, int height) {
@@ -197,7 +200,7 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	public void say(String text) {
-		lines.add(new MessageText(text));
+		lines.add(new MessageText(text, !boxAutoSize));
 	}
 
 	public void choice(String text, int value) {
@@ -230,7 +233,8 @@ public class MessagingService extends ActorsOnStageService implements
 				ownActors.clear();
 				if (scriptEngine != null)
 					scriptEngine.invokeFunction(callBackFunction, this, title,
-							face, lines, boxPosition, pictures.values());
+							face, lines, boxPosition, boxAutoSize, pictures
+									.values());
 				for (int i = getActors().size - 1; i >= 0; i--) {
 					try {
 						Actor a = getActors().get(i);
@@ -252,6 +256,15 @@ public class MessagingService extends ActorsOnStageService implements
 			while (resultPointer[0] == null && !dispose && ownActorsOpen())
 				Thread.yield();
 
+			fadeOutOwnActors();
+			while (!dispose && ownActorsOpen())
+				Thread.yield();
+
+			if (dirty)
+				setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
+						false);
+
+			setAllowNull(true);
 			if (!GameBase.$serviceProvider().releaseAttention(this)) {
 				GameBase.$error("MessagingService.commit",
 						"Failed to release attention",
@@ -261,15 +274,6 @@ public class MessagingService extends ActorsOnStageService implements
 				GameBase.$serviceProvider().forceAttentionReset();
 				clear();
 			}
-			setAllowNull(true);
-
-			fadeOutOwnActors();
-			while (!dispose && ownActorsOpen())
-				Thread.yield();
-
-			if (dirty)
-				setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
-						false);
 		}
 		return resultPointer[0];
 	}
@@ -414,15 +418,17 @@ public class MessagingService extends ActorsOnStageService implements
 
 	public class MessageText implements Message {
 		private String text;
+		private boolean wrap;
 
-		public MessageText(String text) {
+		public MessageText(String text, boolean wrap) {
 			this.text = text;
+			this.wrap = wrap;
 		}
 
 		@Override
 		public Actor getActor() {
 			Label l = new Label(text, getSkinNormal());
-			l.setWrap(true);
+			l.setWrap(wrap);
 			return l;
 		}
 

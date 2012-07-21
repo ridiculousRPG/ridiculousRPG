@@ -227,6 +227,11 @@ public class ActorsOnStageService extends Stage implements GameService,
 		return createWindow(title, new Rectangle(x, y, w, h), false, skin);
 	}
 
+	public Window createWindow(String title, float x, float y,
+			boolean autoSize, Skin skin) {
+		return createWindow(title, new Rectangle(x, y, 0, 0), false, skin);
+	}
+
 	public Window createWindow(String title, Skin skin) {
 		return createWindow(title, new Rectangle(-1, -1, 0, 0), true, skin);
 	}
@@ -734,15 +739,30 @@ public class ActorsOnStageService extends Stage implements GameService,
 		}
 
 		public ScrollPane obtainRoot() {
-			Rectangle boxPosition = this.boxPosition;
-			if (boxPosition == null)
+			Rectangle boxPosition;
+			if (this.boxPosition == null) {
 				boxPosition = new Rectangle();
+			} else {
+				boxPosition = new Rectangle(this.boxPosition);
+			}
 			float stageW = ActorsOnStageService.this.getWidth();
 			float stageH = ActorsOnStageService.this.getHeight();
+			boolean alignTop = false;
+			boolean alignRight = false;
 
 			if (autoSize) {
 				pack();
+				if (boxPosition.width < 0) {
+					// bind box at the right edge of the screen
+					boxPosition.x = stageW - getWidth() - boxPosition.x;
+					alignRight = true;
+				}
 				boxPosition.width = getWidth();
+				if (boxPosition.height < 0) {
+					// bind box at the top edge of the screen
+					boxPosition.y = stageH - getHeight() - boxPosition.y;
+					alignTop = true;
+				}
 				boxPosition.height = getHeight();
 			} else {
 				if (boxPosition.width == 0) {
@@ -750,7 +770,9 @@ public class ActorsOnStageService extends Stage implements GameService,
 					boxPosition.width = stageW - 2 * boxPosition.x;
 				} else if (boxPosition.width < 0) {
 					// bind box at the right edge of the screen
+					boxPosition.width = -boxPosition.width;
 					boxPosition.x = stageW - boxPosition.width - boxPosition.x;
+					alignRight = true;
 				}
 
 				if (boxPosition.height == 0) {
@@ -758,7 +780,9 @@ public class ActorsOnStageService extends Stage implements GameService,
 					boxPosition.height = stageH - 2 * boxPosition.y;
 				} else if (boxPosition.height < 0) {
 					// bind box at the top edge of the screen
+					boxPosition.height = -boxPosition.height;
 					boxPosition.y = stageH - boxPosition.height - boxPosition.y;
+					alignTop = true;
 				}
 			}
 			ScrollPane s = new ScrollPane(null, skin);
@@ -770,6 +794,9 @@ public class ActorsOnStageService extends Stage implements GameService,
 					boxPosition.x = 0;
 					boxPosition.height += s.getStyle().hScrollKnob
 							.getMinHeight();
+					if (alignTop)
+						boxPosition.y -= s.getStyle().hScrollKnob
+								.getMinHeight();
 				} else {
 					boxPosition.x = centerX() - boxPosition.width * 0.5f;
 				}
@@ -782,9 +809,13 @@ public class ActorsOnStageService extends Stage implements GameService,
 					boxPosition.height = stageH;
 					boxPosition.y = 0;
 					if (boxPosition.x + boxPosition.width
-							+ s.getStyle().vScrollKnob.getMinWidth() < stageW)
+							+ s.getStyle().vScrollKnob.getMinWidth() < stageW) {
 						boxPosition.width += s.getStyle().vScrollKnob
 								.getMinWidth();
+						if (alignRight)
+							boxPosition.x -= s.getStyle().vScrollKnob
+									.getMinHeight();
+					}
 				} else {
 					boxPosition.y = centerY() - boxPosition.height * 0.5f;
 				}

@@ -30,6 +30,8 @@ import com.ridiculousRPG.map.MapWithEvents;
  * 
  * @author Alexander Baumgartner
  */
+
+// TODO: REFACTOR this class - it causes deadlocks in certain cases
 public class TiledMapLoaderAsync extends Thread implements
 		MapLoader<EventObject> {
 

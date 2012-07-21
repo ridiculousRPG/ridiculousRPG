@@ -7,7 +7,7 @@
  * Called if the the commit statement is performed (or autocommit).
  * See also data/global/messaging.js for defined shortcuts
  */
-function drawMessageBox(msgService, title, face, lines, boxPosition, pictures) {
+function drawMessageBox(msgService, title, face, lines, boxPosition, boxAutoSize, pictures) {
 	// DROP PICTURES ONTO THE SCREEN
 	while (pictures.hasNext()) {
 		msgService.addActor(pictures.next().getImage());
@@ -15,7 +15,7 @@ function drawMessageBox(msgService, title, face, lines, boxPosition, pictures) {
 
 	// CREATE LAYOUT WINDOW WITH AUTOMATIC SCROLLBARS AS NEEDED
 	// Last parameter is the skin. It defaults to skinNormal
-	var w = msgService.createWindow(title, boxPosition, false, null).top();
+	var w = msgService.createWindow(title, boxPosition, boxAutoSize, null).top();
 	w.row().pad(5);
 
 	// FACE

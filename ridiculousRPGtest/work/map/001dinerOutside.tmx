@@ -323,9 +323,9 @@
   <object x="391" y="358" width="66" height="83">
    <properties>
     <property name="blocking" value="NONE"/>
-    <property name="onpush01" value="box(0, 0, 0, 200); face('data/charset/face.png',0,0,160,160)"/>
+    <property name="onpush01" value="box(0, 0, 0, -200); face('data/charset/face.png',0,0,160,160)"/>
     <property name="onpush02" value="say('line 1'); commit();"/>
-    <property name="onpush03" value="say('line 2 while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0')"/>
+    <property name="onpush03" value="say('line 2 while (resultPointer[0] == null &amp;&amp; getActors().size() \n &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() \n &gt; 0while (resultPointer[0] == null \n &amp;&amp; getActors().size() &gt; 0while \n(resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; \n0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; \ngetActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer\n[0] == null &amp;&amp; getActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; \ngetActors().size() &gt; 0while (resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while \n(resultPointer[0] == null &amp;&amp; getActors().size() &gt; 0while (\nresultPointer[0] == null &amp;&amp; getActors().size() &gt; 0')"/>
     <property name="onpush04" value="title('blub'); putPicture('data/image/pictureTest.png', 300, 0, 1)"/>
     <property name="onpush05" value="choice('c1', 4)"/>
     <property name="onpush06" value="choice('c2', 14)"/>
@@ -334,7 +334,6 @@
     <property name="onpush09" value="say('Your choice: '+commit())"/>
     <property name="onpush10" value="inputText('defaultVal'); commit();"/>
     <property name="onpush11" value="inputNumber(23)"/>
-    <property name="onpush12" value="removePicture(1)"/>
     <property name="ontouch01" value="if (!eventState.getBool(0)) {info('What\'s that? I would click here if i where you.'); eventState.setBool(0, true)}"/>
    </properties>
   </object>

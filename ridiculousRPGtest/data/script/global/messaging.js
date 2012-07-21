@@ -2,8 +2,9 @@ function info(infoText) {
 	$.serviceProvider.getService("messaging").info(infoText);
 }
 
-function box(x, y, width, height) {
-	$.serviceProvider.getService("messaging").box(x, y, width, height);
+function box(x, y, width, height, boxAutoSize) {
+	if (boxAutoSize == null) boxAutoSize = false;
+	$.serviceProvider.getService("messaging").box(x, y, width, height, boxAutoSize);
 }
 
 function face(internalPath, x, y, width, height) {
