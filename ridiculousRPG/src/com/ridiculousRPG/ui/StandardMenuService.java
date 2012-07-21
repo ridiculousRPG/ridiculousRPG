@@ -28,7 +28,6 @@ import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.IntMap.Entry;
 import com.ridiculousRPG.GameBase;
 import com.ridiculousRPG.service.GameService;
-import com.ridiculousRPG.util.ExecWithGlContext;
 
 /**
  * This class provides a customizable standard menu for the game.<br>
@@ -210,12 +209,7 @@ public class StandardMenuService extends ActorsOnStageService implements
 
 	public void startNewGame() throws ScriptException {
 		GameBase.$().resetEngine();
-		new ExecWithGlContext() {
-			@Override
-			public void exec() throws Exception {
-				GameBase.$().eval(startNewGameScript);
-			}
-		}.runWait();
+		GameBase.$().eval(startNewGameScript);
 	}
 
 	public void setStartNewGameScript(String startNewGameScript) {

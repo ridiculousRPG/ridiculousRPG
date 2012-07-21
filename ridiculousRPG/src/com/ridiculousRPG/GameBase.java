@@ -66,6 +66,7 @@ import com.ridiculousRPG.service.GestureDetectorService;
 import com.ridiculousRPG.ui.DisplayErrorService;
 import com.ridiculousRPG.ui.MenuService;
 import com.ridiculousRPG.util.ColorSerializable;
+import com.ridiculousRPG.util.ExecInMainThread;
 import com.ridiculousRPG.util.ExecWithGlContext;
 import com.ridiculousRPG.util.ObjectState;
 import com.ridiculousRPG.util.Speed;
@@ -784,6 +785,10 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 		return glContextThread.contains(Thread.currentThread());
 	}
 
+	public boolean isMainThread() {
+		return Thread.currentThread() == glContextThread.get(0);
+	}
+
 	public boolean isGlAsyncLoadable() {
 		return glAsyncLoadable;
 	}
@@ -984,7 +989,7 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 */
 	public void resetEngine() {
 		try {
-			new ExecWithGlContext() {
+			new ExecInMainThread() {
 				@Override
 				public void exec() {
 					clearTmpFiles();

@@ -495,19 +495,21 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	@Override
 	public boolean touchDown(int x, int y, int pointer, int button) {
-		boolean consumed = super.touchDown(x, y, pointer, button);
+		if (button == Buttons.LEFT && pointer == 0
+				&& super.touchDown(x, y, pointer, button)) {
+			return true;
+		}
 		if (focusedActor != null
 				&& !ActorFocusUtil.isActorOnStage(focusedActor, getRoot())) {
 			setKeyboardFocus(null);
 			focusedActor = null;
 			awaitingKeyUp = false;
 		}
-		if (!consumed && !awaitingKeyUp
-				&& (pointer == 1 || button == Buttons.RIGHT)
-				&& focusedActor == null) {
+		if (!awaitingKeyUp && focusedActor == null
+				&& (pointer > 0 || button == Buttons.RIGHT)) {
 			return (awaitingKeyUp = actionKeyPressed(true));
 		}
-		return consumed;
+		return false;
 	}
 
 	@Override
@@ -516,7 +518,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	private boolean touchUpIntern(int x, int y, int pointer, int button) {
-		if (awaitingKeyUp && (pointer == 1 || button == Buttons.RIGHT)) {
+		if (awaitingKeyUp && (pointer > 0 || button == Buttons.RIGHT)) {
 			awaitingKeyUp = false;
 			actionKeyPressed(false);
 			return true;
@@ -719,8 +721,8 @@ public class ActorsOnStageService extends Stage implements GameService,
 							&& getHeight() - y <= getPadTop().height(
 									ScrollWindow.this) && y < getHeight()
 							&& x > 0 && x < getWidth();
-					event.stop();
 					if (dragging) {
+						event.stop();
 						dragOffset.set(x, y);
 						return true;
 					}

@@ -21,13 +21,12 @@ import com.badlogic.gdx.utils.Disposable;
 import com.ridiculousRPG.GameBase;
 
 /**
- * Executes a piece of code within an OpenGL context. It's not guaranteed that
- * this is the main thread.
+ * Executes a piece of code within the main thread at a safe position.
  * 
- * @see ExecInMainThread
+ * @see ExecWithGlContext
  * @author Alexander Baumgartner
  */
-public abstract class ExecWithGlContext implements Runnable, Disposable {
+public abstract class ExecInMainThread implements Runnable, Disposable {
 	private Object syncObj = new Object();
 
 	/**
@@ -46,7 +45,7 @@ public abstract class ExecWithGlContext implements Runnable, Disposable {
 	 * execution inside the main thread.
 	 */
 	public void runWait() {
-		if (GameBase.$().isGlContextThread()) {
+		if (GameBase.$().isMainThread()) {
 			execCatchException();
 		} else {
 			synchronized (syncObj) {

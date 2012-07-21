@@ -41,6 +41,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 import com.ridiculousRPG.GameBase;
+import com.ridiculousRPG.util.ExecInMainThread;
 import com.ridiculousRPG.util.TextureRegionLoader;
 import com.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
@@ -70,6 +71,9 @@ public class MessagingService extends ActorsOnStageService implements
 	private transient boolean dirty;
 	private transient Array<Actor> foraignActors;
 	private transient Array<Actor> ownActors;
+	private transient ExecInMainThread determineForaignActors;
+	private transient ExecInMainThread determineOwnActors;
+	private transient ExecInMainThread checkOwnActors;
 
 	public static final int MARGIN = 5;
 
@@ -87,6 +91,31 @@ public class MessagingService extends ActorsOnStageService implements
 		resultPointer = new Object[] { null };
 		foraignActors = new Array<Actor>();
 		ownActors = new Array<Actor>();
+		determineForaignActors = new ExecInMainThread() {
+			@Override
+			public void exec() throws Exception {
+				foraignActors.clear();
+				foraignActors.addAll(getActors());
+			}
+		};
+		determineOwnActors = new ExecInMainThread() {
+			@Override
+			public void exec() throws Exception {
+				for (int i = getActors().size - 1; i >= 0; i--) {
+					Actor a = getActors().get(i);
+					if (!foraignActors.contains(a, true))
+						ownActors.add(getActors().get(i));
+				}
+			}
+		};
+		checkOwnActors = new ExecInMainThread() {
+			@Override
+			public void exec() throws Exception {
+				for (int i = ownActors.size - 1; i >= 0; i--)
+					if (!getActors().contains(ownActors.get(i), true))
+						ownActors.removeIndex(i);
+			}
+		};
 		try {
 			setCallBackScript(callBackScript);
 		} catch (ScriptException e) {
@@ -218,16 +247,7 @@ public class MessagingService extends ActorsOnStageService implements
 		if (dispose || lines.size == 0)
 			return null;
 		if (GameBase.$serviceProvider().requestAttention(this, false, false)) {
-			foraignActors.clear();
-			for (int i = getActors().size - 1; i >= 0; i--) {
-				try {
-					foraignActors.add(getActors().get(i));
-				} catch (IndexOutOfBoundsException e) {
-					GameBase.$info("MessagingService.threadCross",
-							"Another thread deleted an actor", e);
-				}
-			}
-
+			determineForaignActors.runWait();
 			resultPointer[0] = null;
 			try {
 				ownActors.clear();
@@ -235,16 +255,7 @@ public class MessagingService extends ActorsOnStageService implements
 					scriptEngine.invokeFunction(callBackFunction, this, title,
 							face, lines, boxPosition, boxAutoSize, pictures
 									.values());
-				for (int i = getActors().size - 1; i >= 0; i--) {
-					try {
-						Actor a = getActors().get(i);
-						if (!foraignActors.contains(a, true))
-							ownActors.add(getActors().get(i));
-					} catch (IndexOutOfBoundsException e) {
-						GameBase.$info("MessagingService.threadCross",
-								"Another thread deleted an actor", e);
-					}
-				}
+				determineOwnActors.runWait();
 			} catch (Exception e) {
 				GameBase.$error("MessagingService." + callBackFunction,
 						"Error processing message callback function "
@@ -254,11 +265,10 @@ public class MessagingService extends ActorsOnStageService implements
 			lines.clear();
 
 			while (resultPointer[0] == null && !dispose && ownActorsOpen())
-				Thread.yield();
-
+				;
 			fadeOutOwnActors();
 			while (!dispose && ownActorsOpen())
-				Thread.yield();
+				;
 
 			if (dirty)
 				setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
@@ -279,10 +289,10 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	private boolean ownActorsOpen() {
-		for (int i = ownActors.size - 1; i >= 0; i--)
-			if (getActors().contains(ownActors.get(i), true))
-				return true;
-		return false;
+		if (ownActors.size > 0) {
+			checkOwnActors.runWait();
+		}
+		return ownActors.size > 0;
 	}
 
 	private void fadeOutOwnActors() {
@@ -304,8 +314,7 @@ public class MessagingService extends ActorsOnStageService implements
 
 	@Override
 	public void resizeDone(int width, int height) {
-		// TODO: if (!inMutex)
-		if (getActors().size == 0) {
+		if (ownActors.size == 0) {
 			setViewport(width, height, false);
 		} else {
 			dirty = true;
@@ -483,5 +492,10 @@ public class MessagingService extends ActorsOnStageService implements
 		if (face != null)
 			face.dispose();
 		removePicture(-1);
+		foraignActors.clear();
+		ownActors.clear();
+		determineForaignActors.dispose();
+		determineOwnActors.dispose();
+		checkOwnActors.dispose();
 	}
 }
