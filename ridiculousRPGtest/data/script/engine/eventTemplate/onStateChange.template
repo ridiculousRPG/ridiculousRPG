@@ -12,7 +12,7 @@ function onStateChange(eventSelf, eventState, globalState) {
   #codeLine#;
 
   // automatically commit outstanding messages
-  commit(); // comment this out if you don't want the autocommit feature
+  commit(true); // comment this out if you don't want the autocommit feature
   // clear all pictures and the face
   removePicture(-1); // comment this out if you don't want to reset automatically
   face(null,0,0,0,0); // comment this out if you don't want to reset automatically

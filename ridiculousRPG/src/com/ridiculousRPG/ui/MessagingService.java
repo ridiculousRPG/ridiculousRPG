@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -62,6 +63,7 @@ public class MessagingService extends ActorsOnStageService implements
 	private transient boolean dispose;
 	private transient Object[] resultPointer;
 	private transient boolean dirty;
+	private transient ReentrantLock lock;
 	private transient Array<Actor> foraignActors;
 	private transient Array<Actor> ownActors;
 	private transient ExecInMainThread determineForaignActors;
@@ -84,6 +86,7 @@ public class MessagingService extends ActorsOnStageService implements
 			}
 		};
 
+		lock = new ReentrantLock(true);
 		resultPointer = new Object[] { null };
 		foraignActors = new Array<Actor>();
 		ownActors = new Array<Actor>();
@@ -164,7 +167,7 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	public Object face(String internalPath, int x, int y, int width, int height) {
-		Object result = commit();
+		Object result = commit(false);
 		TextureRegionRef tRef;
 		if (internalPath == null) {
 			tRef = null;
@@ -232,12 +235,14 @@ public class MessagingService extends ActorsOnStageService implements
 				password));
 	}
 
-	public Object commit() {
+	public Object commit(boolean lastCommit) {
 		MessageData data = msgData.get();
 		if (dispose || data.lines.size == 0)
 			return null;
 		if (GameBase.$serviceProvider().requestAttention(this, false, false)) {
-			synchronized (this) {
+			try {
+				if (!lock.isHeldByCurrentThread())
+					lock.lock();
 				if (dispose || data.lines.size == 0)
 					return null;
 
@@ -280,6 +285,9 @@ public class MessagingService extends ActorsOnStageService implements
 					GameBase.$serviceProvider().forceAttentionReset();
 					clear();
 				}
+			} finally {
+				if (lastCommit)
+					lock.unlock();
 			}
 		}
 		return resultPointer[0];

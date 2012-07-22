@@ -40,13 +40,13 @@ function fadeColor(fadeAdapter) {
 	while (!fadeAdapter.finished) {
 		Thread.yield(); // let other threads do their work
 		var nanoTimeNew = System.nanoTime();
-		fadeAdapter.tryMove(null, (nanoTimeNew - nanoTimeOld) * 1e-9);
+		fadeAdapter.tryMove(null, (nanoTimeNew - nanoTimeOld) * 1e-9, null);
 		nanoTimeOld = nanoTimeNew;
 	}
 }
 function setPlayerPosition(playerX, playerY, trackService, movePlayer) {
 	var globEv = $.globalEvents.values().toArray();
-	for (var i = 0; i < globEv.length; i++) {
+	for ( var i = 0; i < globEv.length; i++) {
 		var ev = globEv[i];
 		if (ev.isPlayerEvent()) {
 			if (movePlayer)

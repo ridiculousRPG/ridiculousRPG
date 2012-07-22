@@ -75,7 +75,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 	private int resizeWidth;
 	private int resizeHeight;
 
-	private static final int SCROLL_PIXEL_AMOUNT = 64;
+	private static final int SCROLL_PIXEL_AMOUNT = 32;
 	private static final float RESIZE_DELAY = .33f;
 	// Use syncObj because implementers may use this to sync something else
 	private Object syncObj = new Object();
@@ -410,17 +410,49 @@ public class ActorsOnStageService extends Stage implements GameService,
 				}
 				return false;
 			case Keys.UP:
-				return checkScroll(ActorFocusUtil.focusPrev(focusedActor,
-						getRoot(), true, false, this));
+				if (!checkScroll(ActorFocusUtil.focusPrev(focusedActor,
+						getRoot(), true, false, this))
+						&& getScrollFocus() instanceof ScrollPane) {
+					ScrollPane s = (ScrollPane) getScrollFocus();
+					s.setScrollY(s.getScrollY() - SCROLL_PIXEL_AMOUNT);
+				}
+				return true;
 			case Keys.DOWN:
-				return checkScroll(ActorFocusUtil.focusNext(focusedActor,
-						getRoot(), true, false, this));
+				if (!checkScroll(ActorFocusUtil.focusNext(focusedActor,
+						getRoot(), true, false, this))
+						&& getScrollFocus() instanceof ScrollPane) {
+					ScrollPane s = (ScrollPane) getScrollFocus();
+					s.setScrollY(s.getScrollY() + SCROLL_PIXEL_AMOUNT);
+				}
+				return true;
 			case Keys.LEFT:
-				return checkScroll(ActorFocusUtil.focusPrev(focusedActor,
-						getRoot(), false, true, this));
+				if (!checkScroll(ActorFocusUtil.focusPrev(focusedActor,
+						getRoot(), false, true, this))
+						&& getScrollFocus() instanceof ScrollPane) {
+					ScrollPane s = (ScrollPane) getScrollFocus();
+					s.setScrollX(s.getScrollX() - SCROLL_PIXEL_AMOUNT);
+				}
+				return true;
 			case Keys.RIGHT:
-				return checkScroll(ActorFocusUtil.focusNext(focusedActor,
-						getRoot(), false, true, this));
+				if (!checkScroll(ActorFocusUtil.focusNext(focusedActor,
+						getRoot(), false, true, this))
+						&& getScrollFocus() instanceof ScrollPane) {
+					ScrollPane s = (ScrollPane) getScrollFocus();
+					s.setScrollX(s.getScrollX() + SCROLL_PIXEL_AMOUNT);
+				}
+				return true;
+			case Keys.PAGE_UP:
+				if (getScrollFocus() instanceof ScrollPane) {
+					ScrollPane s = (ScrollPane) getScrollFocus();
+					s.setScrollY(s.getScrollY() - s.getHeight() * .7f);
+				}
+				return true;
+			case Keys.PAGE_DOWN:
+				if (getScrollFocus() instanceof ScrollPane) {
+					ScrollPane s = (ScrollPane) getScrollFocus();
+					s.setScrollY(s.getScrollY() + s.getHeight() * .7f);
+				}
+				return true;
 			}
 		}
 		return consumed;

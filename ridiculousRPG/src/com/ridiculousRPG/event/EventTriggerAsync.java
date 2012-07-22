@@ -183,7 +183,8 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 						}
 					}
 				}
-				if (actionKeyDown) {
+				if (actionKeyDown
+						&& GameBase.$serviceProvider().queryAttention() == null) {
 					for (int j = 0; j < obj1.reachable.size && !disposed; j++) {
 						handler2 = obj1.reachable.get(j);
 						if (handler2.onPush(obj1))
