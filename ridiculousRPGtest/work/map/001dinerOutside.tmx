@@ -388,6 +388,7 @@
   <object name="polyLoop" x="346" y="362">
    <properties>
     <property name="blocking" value="NONE"/>
+    <property name="onnode1" value="say('test')"/>
     <property name="onnode3" value="eventSelf.sleep(3)"/>
    </properties>
    <polygon points="0,0 -32,67 143,70 205,62 205,27 109,-6"/>

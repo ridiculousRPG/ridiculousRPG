@@ -24,6 +24,7 @@ import java.util.List;
 
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pool.Poolable;
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.auto.MoveSetXYAdapter;
 import com.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 
@@ -174,11 +175,13 @@ public class CombinedMovesAdapter extends MovementHandler {
 	}
 
 	@Override
-	public void tryMove(Movable event, float deltaTime) {
-		tryMove(event, deltaTime, 3);
+	public void tryMove(Movable event, float deltaTime,
+			EventTrigger eventTrigger) {
+		tryMove(event, deltaTime, eventTrigger, 3);
 	}
 
-	private void tryMove(Movable event, float deltaTime, int recurse) {
+	private void tryMove(Movable event, float deltaTime,
+			EventTrigger eventTrigger, int recurse) {
 		if (movementQueue.isEmpty()) {
 			if (event != null)
 				event.stop();
@@ -195,10 +198,10 @@ public class CombinedMovesAdapter extends MovementHandler {
 				}
 			}
 			lastMove = movementQueue.peek();
-			if (lastMove.softMoveSegment(event, deltaTime)) {
+			if (lastMove.softMoveSegment(event, deltaTime, eventTrigger)) {
 				nextSegment();
 				if (recurse > 0)
-					tryMove(event, deltaTime, recurse - 1);
+					tryMove(event, deltaTime, eventTrigger, recurse - 1);
 			}
 		}
 	}
@@ -317,10 +320,11 @@ public class CombinedMovesAdapter extends MovementHandler {
 		 * this {@link MoveSegment} has finished.<br>
 		 * 
 		 * @param deltaTime
+		 * @param eventTrigger
 		 * @return true if the move has finished
 		 */
 		protected abstract boolean softMoveSegment(Movable event,
-				float deltaTime);
+				float deltaTime, EventTrigger eventTrigger);
 
 		/**
 		 * This method is called after the move has finished. It should restore
@@ -342,9 +346,10 @@ public class CombinedMovesAdapter extends MovementHandler {
 		}
 
 		@Override
-		protected boolean softMoveSegment(Movable event, float deltaTime) {
+		protected boolean softMoveSegment(Movable event, float deltaTime,
+				EventTrigger eventTrigger) {
 			if (delegate != null)
-				delegate.tryMove(event, deltaTime);
+				delegate.tryMove(event, deltaTime, eventTrigger);
 			secondsCount += deltaTime;
 			return secondsCount >= seconds;
 		}
@@ -366,15 +371,21 @@ public class CombinedMovesAdapter extends MovementHandler {
 		}
 
 		@Override
-		protected boolean softMoveSegment(Movable event, float deltaTime) {
+		protected boolean softMoveSegment(Movable event, float deltaTime,
+				EventTrigger eventTrigger) {
 			if (delegate != null) {
-				delegate.tryMove(event, deltaTime);
+				delegate.tryMove(event, deltaTime, eventTrigger);
 				if (delegate.finished) {
-					count++;
-					if (count < times) {
+					// repeat infinitely
+					if (times == -1) {
 						super.reset();
 					} else {
-						return true;
+						count++;
+						if (count < times) {
+							super.reset();
+						} else {
+							return true;
+						}
 					}
 				}
 			}

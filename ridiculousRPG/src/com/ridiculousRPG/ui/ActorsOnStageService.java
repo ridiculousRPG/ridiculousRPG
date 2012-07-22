@@ -77,6 +77,8 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 	private static final int SCROLL_PIXEL_AMOUNT = 64;
 	private static final float RESIZE_DELAY = .33f;
+	// Use syncObj because implementers may use this to sync something else
+	private Object syncObj = new Object();
 
 	public Action setFadeState = new Action() {
 		@Override
@@ -147,7 +149,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 	public com.badlogic.gdx.scenes.scene2d.utils.Drawable createDrawable(
 			TextureRegionRef tRef, boolean auto9patch, boolean autoFree) {
 		if (autoFree) {
-			synchronized (this) {
+			synchronized (syncObj) {
 				dirty = true;
 			}
 			managedDrawables.add(tRef);
@@ -210,7 +212,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	@Override
-	public synchronized void addActor(Actor actor) {
+	public void addActor(Actor actor) {
 		if (actor instanceof ScrollWindow) {
 			actor = ((ScrollWindow) actor).obtainRoot();
 			setScrollFocus(actor);
@@ -219,7 +221,9 @@ public class ActorsOnStageService extends Stage implements GameService,
 			actor.getColor().a = .1f;
 			actor.addAction(Actions.fadeIn(fadeTime));
 		}
-		super.addActor(actor);
+		synchronized (syncObj) {
+			super.addActor(actor);
+		}
 	}
 
 	public Window createWindow(String title, float x, float y, float w,
@@ -274,56 +278,63 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	@Override
-	public synchronized void clear() {
-		try {
-			super.clear();
-		} catch (Exception e) {
-			// Stage.cancelTouchFocus throws IndexOutOfBoundsException
-			clear();
+	public void clear() {
+		synchronized (syncObj) {
+			try {
+				super.clear();
+			} catch (Exception e) {
+				// Stage.cancelTouchFocus throws IndexOutOfBoundsException
+				clear();
+			}
+			disposeDrawables();
 		}
-		disposeDrawables();
 	}
 
 	// @Override
-	public synchronized void removeActor(Actor actor) {
-		actor.clearActions();
-		actor.remove();
+	public void removeActor(Actor actor) {
+		synchronized (syncObj) {
+			actor.clearActions();
+			actor.remove();
+		}
 	}
 
-	public synchronized void compute(float deltaTime, boolean actionKeyDown) {
-		act(deltaTime);
-		if (resizing) {
-			if (resizeCountdown <= 0) {
-				resizing = false;
-				resizeCountdown = RESIZE_DELAY;
-				resizeDone(resizeWidth, resizeHeight);
-			} else {
-				resizeCountdown -= deltaTime;
+	public void compute(float deltaTime, boolean actionKeyDown) {
+		synchronized (syncObj) {
+			act(deltaTime);
+			if (resizing) {
+				if (resizeCountdown <= 0) {
+					resizing = false;
+					resizeCountdown = RESIZE_DELAY;
+					resizeDone(resizeWidth, resizeHeight);
+				} else {
+					resizeCountdown -= deltaTime;
+				}
 			}
 		}
 	}
 
-	public synchronized void draw(SpriteBatch spriteBatch, Camera camera,
-			boolean debug) {
-		if (getActors().size == 0) {
-			fadingOut = false;
-			if (!dirty && managedDrawables.size > 0)
-				disposeDrawables();
-		} else {
-			try {
-				// draw onto OUR spriteBatch!!!
-				getRoot().draw(spriteBatch, 1f);
-				if (debug) {
-					debugTableLayout(getActors());
-					Table.drawDebug(this);
+	public void draw(SpriteBatch spriteBatch, Camera camera, boolean debug) {
+		synchronized (syncObj) {
+			if (getActors().size == 0) {
+				fadingOut = false;
+				if (!dirty && managedDrawables.size > 0)
+					disposeDrawables();
+			} else {
+				try {
+					// draw onto OUR spriteBatch!!!
+					getRoot().draw(spriteBatch, 1f);
+					if (debug) {
+						debugTableLayout(getActors());
+						Table.drawDebug(this);
+					}
+					if (!fadingOut) {
+						dirty = false;
+					}
+				} catch (Exception e) {
+					GameBase.$error("StageService.draw",
+							"Error drawing the stage onto the screen", e);
+					clear();
 				}
-				if (!fadingOut) {
-					dirty = false;
-				}
-			} catch (Exception e) {
-				GameBase.$error("StageService.draw",
-						"Error drawing the stage onto the screen", e);
-				clear();
 			}
 		}
 	}
@@ -583,19 +594,21 @@ public class ActorsOnStageService extends Stage implements GameService,
 						/ getHeight());
 	}
 
-	public synchronized void fadeOutAllActors() {
-		if (fadeTime > 0) {
-			Array<Actor> aa = getActors();
-			ActorFocusUtil.disableRecursive(aa);
-			for (int i = aa.size - 1; i > -1; i--) {
-				Actor a = aa.get(i);
-				a.getColor().a -= .1f;
-				a.addAction(Actions.sequence(Actions.fadeOut(fadeTime),
-						setFadeState, Actions.removeActor()));
+	public void fadeOutAllActors() {
+		synchronized (syncObj) {
+			if (fadeTime > 0) {
+				Array<Actor> aa = getActors();
+				ActorFocusUtil.disableRecursive(aa);
+				for (int i = aa.size - 1; i > -1; i--) {
+					Actor a = aa.get(i);
+					a.getColor().a -= .1f;
+					a.addAction(Actions.sequence(Actions.fadeOut(fadeTime),
+							setFadeState, Actions.removeActor()));
+				}
+				fadingOut = true;
+			} else {
+				clear();
 			}
-			fadingOut = true;
-		} else {
-			clear();
 		}
 	}
 
@@ -623,10 +636,12 @@ public class ActorsOnStageService extends Stage implements GameService,
 	}
 
 	@Override
-	public synchronized void dispose() {
+	public void dispose() {
 		try {
-			clear(); // calls disposeDrawables()
-			super.dispose();
+			synchronized (syncObj) {
+				clear(); // calls disposeDrawables()
+				super.dispose();
+			}
 			skinNormal.dispose();
 			skinFocused.dispose();
 		} catch (Exception ignored) {
@@ -661,7 +676,7 @@ public class ActorsOnStageService extends Stage implements GameService,
 
 			w.pack();
 			center(w);
-			synchronized (this) {
+			synchronized (syncObj) {
 				super.addActor(w);
 				fadingOut = true;
 			}

@@ -26,7 +26,6 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -54,18 +53,12 @@ public class MessagingService extends ActorsOnStageService implements
 		Serializable {
 	private static final long serialVersionUID = 1L;
 
-	// Only the most important state informations will be serialized.
-	private Rectangle boxPosition;
-	private boolean boxAutoSize;
-	private String title;
+	// Only the callback settings are serialized.
 	private String callBackScript;
 	private String callBackFunction = "drawMessageBox";
-	private boolean allowNull = true;
 
+	private transient ThreadLocal<MessageData> msgData;
 	private transient Invocable scriptEngine;
-	private transient TextureRegionRef face;
-	private transient Array<Message> lines;
-	private transient IntMap<PictureRef> pictures;
 	private transient boolean dispose;
 	private transient Object[] resultPointer;
 	private transient boolean dirty;
@@ -83,11 +76,14 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	private void init() {
-		boxPosition = new Rectangle();
-		setAllowNull(allowNull);
 		setFadeTime(.15f);
-		lines = new Array<Message>();
-		pictures = new IntMap<PictureRef>();
+		msgData = new ThreadLocal<MessageData>() {
+			@Override
+			protected MessageData initialValue() {
+				return new MessageData();
+			}
+		};
+
 		resultPointer = new Object[] { null };
 		foraignActors = new Array<Actor>();
 		ownActors = new Array<Actor>();
@@ -133,18 +129,7 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	public void setAllowNull(boolean allowNull) {
-		this.allowNull = allowNull;
-		setCloseOnAction(allowNull);
-	}
-
-	@Override
-	public boolean keyDown(int keycode) {
-		if (keycode == Keys.ESCAPE) {
-			if (allowNull)
-				fadeOutAllActors();
-			return true;
-		}
-		return super.keyDown(keycode);
+		msgData.get().allowNull = allowNull;
 	}
 
 	/*
@@ -170,11 +155,12 @@ public class MessagingService extends ActorsOnStageService implements
 
 	public void box(float x, float y, float width, float height,
 			boolean autosize) {
+		Rectangle boxPosition = msgData.get().boxPosition;
 		boxPosition.x = x;
 		boxPosition.y = y;
 		boxPosition.width = width;
 		boxPosition.height = height;
-		boxAutoSize = autosize;
+		msgData.get().boxAutoSize = autosize;
 	}
 
 	public Object face(String internalPath, int x, int y, int width, int height) {
@@ -187,9 +173,9 @@ public class MessagingService extends ActorsOnStageService implements
 		} else {
 			tRef = TextureRegionLoader.load(internalPath, x, y, width, height);
 		}
-		if (face != null)
-			face.dispose();
-		face = tRef;
+		if (msgData.get().face != null)
+			msgData.get().face.dispose();
+		msgData.get().face = tRef;
 		return result;
 	}
 
@@ -205,13 +191,14 @@ public class MessagingService extends ActorsOnStageService implements
 				pRef.textureRegion = TextureRegionLoader.load(internalPath, x,
 						y, width, height);
 			}
-			pRef = pictures.put(posZkey, pRef);
+			pRef = msgData.get().pictures.put(posZkey, pRef);
 			if (pRef != null)
 				pRef.textureRegion.dispose();
 		}
 	}
 
 	public void removePicture(int posZkey) {
+		IntMap<PictureRef> pictures = msgData.get().pictures;
 		if (posZkey == -1) {
 			for (PictureRef pic : pictures.values()) {
 				pic.textureRegion.dispose();
@@ -225,64 +212,74 @@ public class MessagingService extends ActorsOnStageService implements
 	}
 
 	public void title(String title) {
-		this.title = title;
+		msgData.get().title = title;
 	}
 
 	public void say(String text) {
-		lines.add(new MessageText(text, !boxAutoSize));
+		msgData.get().lines.add(new MessageText(text,
+				!msgData.get().boxAutoSize));
 	}
 
 	public void choice(String text, int value) {
 		setAllowNull(false);
-		lines.add(new MessageChoice(text, value));
+		msgData.get().lines.add(new MessageChoice(text, value));
 	}
 
 	public void input(String text, int maximum, boolean numeric,
 			boolean password) {
 		setAllowNull(false);
-		lines.add(new MessageInput(text, maximum, numeric, password));
+		msgData.get().lines.add(new MessageInput(text, maximum, numeric,
+				password));
 	}
 
 	public Object commit() {
-		if (dispose || lines.size == 0)
+		MessageData data = msgData.get();
+		if (dispose || data.lines.size == 0)
 			return null;
 		if (GameBase.$serviceProvider().requestAttention(this, false, false)) {
-			determineForaignActors.runWait();
-			resultPointer[0] = null;
-			try {
-				ownActors.clear();
-				if (scriptEngine != null)
-					scriptEngine.invokeFunction(callBackFunction, this, title,
-							face, lines, boxPosition, boxAutoSize, pictures
-									.values());
-				determineOwnActors.runWait();
-			} catch (Exception e) {
-				GameBase.$error("MessagingService." + callBackFunction,
-						"Error processing message callback function "
-								+ callBackFunction, e);
-			}
+			synchronized (this) {
+				if (dispose || data.lines.size == 0)
+					return null;
 
-			lines.clear();
+				determineForaignActors.runWait();
+				resultPointer[0] = null;
+				try {
+					setCloseOnAction(data.allowNull);
+					ownActors.clear();
+					if (scriptEngine != null)
+						scriptEngine.invokeFunction(callBackFunction, this,
+								data.title, data.face, data.lines,
+								data.boxPosition, data.boxAutoSize,
+								data.pictures.values());
+					determineOwnActors.runWait();
+				} catch (Exception e) {
+					GameBase.$error("MessagingService." + callBackFunction,
+							"Error processing message callback function "
+									+ callBackFunction, e);
+				}
 
-			while (resultPointer[0] == null && !dispose && ownActorsOpen())
-				;
-			fadeOutOwnActors();
-			while (!dispose && ownActorsOpen())
-				;
+				data.lines.clear();
 
-			if (dirty)
-				setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
-						false);
+				while (resultPointer[0] == null && !dispose && ownActorsOpen())
+					;
+				if (dirty)
+					setViewport(Gdx.graphics.getWidth(), Gdx.graphics
+							.getHeight(), false);
 
-			setAllowNull(true);
-			if (!GameBase.$serviceProvider().releaseAttention(this)) {
-				GameBase.$error("MessagingService.commit",
-						"Failed to release attention",
-						new IllegalStateException(
-								"Oooops, couldn't release the attention. "
-										+ "Something got terribly wrong!"));
-				GameBase.$serviceProvider().forceAttentionReset();
-				clear();
+				setAllowNull(true);
+				fadeOutOwnActors();
+				while (!dispose && ownActorsOpen())
+					;
+
+				if (!GameBase.$serviceProvider().releaseAttention(this)) {
+					GameBase.$error("MessagingService.commit",
+							"Failed to release attention",
+							new IllegalStateException(
+									"Oooops, couldn't release the attention. "
+											+ "Something got terribly wrong!"));
+					GameBase.$serviceProvider().forceAttentionReset();
+					clear();
+				}
 			}
 		}
 		return resultPointer[0];
@@ -485,13 +482,20 @@ public class MessagingService extends ActorsOnStageService implements
 		init();
 	}
 
+	public class MessageData {
+		public Array<Message> lines = new Array<Message>();
+		public IntMap<PictureRef> pictures = new IntMap<PictureRef>();
+		public Rectangle boxPosition = new Rectangle();
+		public boolean allowNull = true;
+		public boolean boxAutoSize;
+		public String title;
+		public TextureRegionRef face;
+	}
+
 	@Override
 	public void dispose() {
 		dispose = true;
 		super.dispose();
-		if (face != null)
-			face.dispose();
-		removePicture(-1);
 		foraignActors.clear();
 		ownActors.clear();
 		determineForaignActors.dispose();

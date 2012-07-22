@@ -16,8 +16,13 @@
 
 package com.ridiculousRPG.event;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import javax.script.ScriptEngine;
+
+import com.badlogic.gdx.Gdx;
 import com.ridiculousRPG.GameBase;
 import com.ridiculousRPG.event.handler.EventHandler;
 import com.ridiculousRPG.util.ObjectState;
@@ -31,16 +36,96 @@ import com.ridiculousRPG.util.ObjectState;
  * @author Alexander Baumgartner
  */
 public class EventTriggerAsync extends Thread implements EventTrigger {
+	private List<String> execScriptsDesc = new ArrayList<String>();
+	private List<Object[]> execScriptsParm = new ArrayList<Object[]>();
+	private List<String> execScriptsFnc = new ArrayList<String>();
+	private List<String> execScripts = new ArrayList<String>();
+	private final Runnable execScriptNotifier = new Runnable() {
+		@Override
+		public void run() {
+			synchronized (execScriptNotifier) {
+				execScriptNotifier.notify();
+			}
+		}
+	};
+	private Thread execScriptThread = new Thread("ExecScript-EventTrigger") {
+		@Override
+		public void run() {
+			GameBase.$().registerGlContextThread();
+			while (true) {
+				synchronized (execScriptNotifier) {
+					if (disposed)
+						return;
+					try {
+						if (execScripts.size() == 0)
+							execScriptNotifier.wait();
+					} catch (InterruptedException e) {
+						GameBase.$info("EventTriggerAsync.interrupt",
+								"The EventTrigger thread has been "
+										+ "interrupted - continuing", e);
+					}
+				}
+				if (disposed)
+					return;
+				execScriptQueue();
+			}
+		}
+	};
 	private List<EventObject> events;
 	private List<PolygonObject> polys;
 	private boolean disposed = false;
-	private float deltaTime;
+	private float deltaTime = 0f;
 	private boolean actionKeyDown = false;
 	// Count to determine if the state has changed
 	private int lastGlobalChangeCount = -1;
 
 	public EventTriggerAsync() {
+		super("ExecHandler-EventTrigger");
+		setDaemon(true);
 		start();
+		execScriptThread.setDaemon(true);
+		execScriptThread.start();
+	}
+
+	private void execScriptQueue() {
+		int len = execScripts.size();
+		for (int i = 0; i < len; i++) {
+			String exe = execScripts.get(i);
+			String exeFnc = execScriptsFnc.get(i);
+			String exeDesc = execScriptsDesc.get(i);
+			Object[] exeParm = execScriptsParm.get(i);
+			try {
+				GameBase.$().getSharedEngine().put(ScriptEngine.FILENAME,
+						(exeFnc == null ? "" : exeFnc + "-") + exeDesc);
+				if (exeFnc != null) {
+					if (exeParm == null)
+						GameBase.$().invokeFunction(exe, exeFnc);
+					else
+						GameBase.$().invokeFunction(exe, exeFnc, exeParm);
+				} else {
+					GameBase.$().eval(exe);
+				}
+			} catch (Exception e) {
+				GameBase.$error("EventTrigger." + exeFnc,
+						"Could not execute script \"" + exeDesc + "\" (PARAM="
+								+ Arrays.toString(exeParm)
+								+ ")\nSCRIPT-CODE:\n" + exe, e);
+			}
+		}
+		synchronized (execScripts) {
+			if (len == execScripts.size()) {
+				// perform fast clear if possible
+				execScripts.clear();
+				execScriptsFnc.clear();
+				execScriptsDesc.clear();
+				execScriptsParm.clear();
+			} else {
+				execScripts.subList(0, len).clear();
+				execScriptsFnc.subList(0, len).clear();
+				execScriptsDesc.subList(0, len).clear();
+				execScriptsParm.subList(0, len).clear();
+			}
+		}
 	}
 
 	@Override
@@ -53,11 +138,9 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 				try {
 					wait();
 				} catch (InterruptedException e) {
-					GameBase
-							.$info(
-									"EventTriggerAsync.interrupt",
-									"The EventTrigger thread has been interrupted - continuing",
-									e);
+					GameBase.$info("EventTriggerAsync.interrupt",
+							"The EventTrigger thread has been "
+									+ "interrupted - continuing", e);
 					continue;
 				}
 			}
@@ -133,7 +216,7 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 
 		// compute all moves
 		for (int i = 0; i < evSize; i++)
-			events.get(i).compute(deltaTime);
+			events.get(i).compute(deltaTime, this);
 
 		// collision detection
 		for (int i = 0; i < evSize; i++) {
@@ -163,17 +246,25 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 						if (obj1.blockingBehavior.blocks(obj2.blockingBehavior)) {
 							// Player events never block mutually
 							if (!(obj1.isPlayerEvent() && obj2.isPlayerEvent())) {
-								obj1.moves = false;
-								if (obj2.moves && obj1.intersects(obj2)) {
-									obj1.moves = true;
-									obj2.moves = false;
-									obj2.getMoveHandler().moveBlocked(obj2);
-									if (obj1.intersects(obj2)) {
-										obj1.moves = false;
+								// Another "obj2" could have blocked "obj1"
+								// already
+								if (obj1.moves) {
+									obj1.moves = false;
+									if (obj2.moves && obj1.intersects(obj2)) {
+										obj1.moves = true;
+										obj2.moves = false;
+										obj2.getMoveHandler().moveBlocked(obj2);
+										if (obj1.intersects(obj2)) {
+											obj1.moves = false;
+											obj1.getMoveHandler().moveBlocked(
+													obj1);
+										}
+									} else {
 										obj1.getMoveHandler().moveBlocked(obj1);
 									}
 								} else {
-									obj1.getMoveHandler().moveBlocked(obj1);
+									obj2.moves = false;
+									obj2.getMoveHandler().moveBlocked(obj2);
 								}
 							}
 						}
@@ -235,5 +326,40 @@ public class EventTriggerAsync extends Thread implements EventTrigger {
 	public synchronized void dispose() {
 		disposed = true;
 		notifyAll();
+		synchronized (execScriptNotifier) {
+			execScriptNotifier.notifyAll();
+		}
+	}
+
+	/**
+	 * If invokeFnc is null the script will not be invoked but evaluated.
+	 * 
+	 * @param description
+	 *            Short description of the trigger/event
+	 * @param script
+	 *            The script to execute
+	 * @param invokeFnc
+	 *            Function to invoke - may be null
+	 * @param invokeParm
+	 *            Parameters for invoked function
+	 */
+	@Override
+	public void postScriptToExec(String description, String script,
+			String invokeFnc, Object... invokeParm) {
+		synchronized (execScripts) {
+			execScriptsDesc.add(description);
+			execScriptsFnc.add(invokeFnc);
+			execScriptsParm.add(invokeParm);
+			execScripts.add(script);
+		}
+		Gdx.app.postRunnable(execScriptNotifier);
+	}
+
+	/**
+	 * Note: The answer is not 100% time-accurate! It may be delayed.
+	 */
+	@Override
+	public boolean isScriptQueueEmpty() {
+		return execScripts.size() == 0;
 	}
 }

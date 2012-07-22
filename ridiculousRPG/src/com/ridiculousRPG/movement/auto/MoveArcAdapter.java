@@ -19,6 +19,7 @@ package com.ridiculousRPG.movement.auto;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.ridiculousRPG.event.EventObject;
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
 
@@ -133,7 +134,8 @@ public class MoveArcAdapter extends MovementHandler {
 	}
 
 	@Override
-	public void tryMove(Movable event, float deltaTime) {
+	public void tryMove(Movable event, float deltaTime,
+			EventTrigger eventTrigger) {
 		float absAngle = Math.abs(angle);
 		if ((absAngle > 0f && entireMoveArc >= absAngle) || finished) {
 			if (entireMoveArc == 0f)

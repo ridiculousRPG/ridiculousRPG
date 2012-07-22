@@ -43,6 +43,8 @@ public class TiledMapLoaderAsync extends Thread implements
 	private ScriptException loadException;
 
 	TiledMapLoaderAsync() {
+		super("TiledMapLoaderAsync");
+		setDaemon(true);
 		start();
 	}
 

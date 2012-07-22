@@ -18,6 +18,7 @@ package com.ridiculousRPG.movement.misc;
 
 import com.ridiculousRPG.animation.TileAnimation;
 import com.ridiculousRPG.event.EventObject;
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
 import com.ridiculousRPG.util.Speed;
@@ -45,7 +46,8 @@ public class MoveChangeSpeedAdapter extends MovementHandler {
 	}
 
 	@Override
-	public void tryMove(Movable movable, float deltaTime) {
+	public void tryMove(Movable movable, float deltaTime,
+			EventTrigger eventTrigger) {
 		if (newMoveSpeed != null)
 			movable.setMoveSpeed(newMoveSpeed);
 		if (movable instanceof EventObject) {

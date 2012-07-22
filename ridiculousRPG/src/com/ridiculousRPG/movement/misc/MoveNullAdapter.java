@@ -16,6 +16,7 @@
 
 package com.ridiculousRPG.movement.misc;
 
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
 
@@ -46,7 +47,8 @@ public class MoveNullAdapter extends MovementHandler {
 	}
 
 	@Override
-	public void tryMove(Movable event, float deltaTime) {
+	public void tryMove(Movable event, float deltaTime,
+			EventTrigger eventTrigger) {
 		if (event != null)
 			event.stop();
 	}

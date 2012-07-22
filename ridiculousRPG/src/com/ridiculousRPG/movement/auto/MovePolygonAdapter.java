@@ -16,12 +16,11 @@
 
 package com.ridiculousRPG.movement.auto;
 
-import javax.script.ScriptEngine;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.ridiculousRPG.GameBase;
 import com.ridiculousRPG.event.EventObject;
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.event.PolygonObject;
 import com.ridiculousRPG.event.handler.EventHandler;
 import com.ridiculousRPG.map.MapRenderService;
@@ -46,6 +45,7 @@ public class MovePolygonAdapter extends MovementHandler {
 	private boolean rewind;
 	private boolean crop;
 	private boolean moveFinished;
+	private boolean waitScriptExec;
 
 	private static String NODE_TEMPLATE;
 
@@ -131,49 +131,51 @@ public class MovePolygonAdapter extends MovementHandler {
 	}
 
 	@Override
-	public void tryMove(Movable event, float deltaTime) {
+	public void tryMove(Movable event, float deltaTime,
+			EventTrigger eventTrigger) {
 		// Polygons are defined on the map and may not be available at event
 		// creation time, that's why we have to initialize them here.
 		if (polygon == null && !initPolygon())
 			return;
+		if (finished) {
+			event.stop();
+			return;
+		}
 
+		// Post script to execute (execution is performed in a separate thread)
 		if (execScript != null) {
 			if (NODE_TEMPLATE == null)
 				NODE_TEMPLATE = Gdx.files.internal(
 						GameBase.$options().eventNodeTemplate).readString(
 						GameBase.$options().encoding);
-			try {
-				String script = GameBase.$scriptFactory()
-						.prepareScriptFunction(execScript, NODE_TEMPLATE);
-				GameBase.$().getSharedEngine().put(ScriptEngine.FILENAME,
-						"onNode-Event-" + polygonName);
-				ObjectState state = null;
-				if (event instanceof EventObject) {
-					EventHandler h = ((EventObject) event).eventHandler;
-					if (h != null)
-						state = h.getActualState();
-				}
-				GameBase.$().invokeFunction(script, "onNode", event, state,
-						polygon, this);
-			} catch (Exception e) {
-				GameBase.$error("PolygonObject.onNode", "Could not execute "
-						+ "onNode script for " + event + " " + polygon, e);
+			String script = GameBase.$scriptFactory().prepareScriptFunction(
+					execScript, NODE_TEMPLATE);
+			ObjectState state = null;
+			if (event instanceof EventObject) {
+				EventHandler h = ((EventObject) event).eventHandler;
+				if (h != null)
+					state = h.getActualState();
 			}
+			eventTrigger.postScriptToExec(
+					"MovePolygonAdapter(" + polygon + ")", script, "onNode",
+					event, state, polygon, this);
 			execScript = null;
-			if (crop) {
-				event.stop();
-				return;
-			}
+			if (crop)
+				waitScriptExec = true;
 		}
-		if (polygonChanged) {
-			reset();
-		} else if (finished) {
+		// Wait for script execution if the crop-switch is true
+		if (waitScriptExec && !eventTrigger.isScriptQueueEmpty()) {
 			event.stop();
 			return;
 		}
+		// Reset polygon if it has changed (e.g. by the just executed script)
+		if (polygonChanged)
+			reset();
+		// Move along the polygon while not finished
 		if (!moveFinished) {
 			float distance = event.getMoveSpeed().computeStretch(deltaTime);
 			if (distance > 0) {
+				waitScriptExec = false;
 				if (rewind)
 					execScript = polygon.moveAlong(-distance, crop);
 				else
@@ -185,8 +187,10 @@ public class MovePolygonAdapter extends MovementHandler {
 				}
 				moveFinished = polygon.isFinished();
 			}
-		} else
+		} else {
+			event.stop();
 			finished = true;
+		}
 	}
 
 	@Override
@@ -202,6 +206,7 @@ public class MovePolygonAdapter extends MovementHandler {
 		super.reset();
 		polygonChanged = false;
 		moveFinished = false;
+		waitScriptExec = false;
 		execScript = null;
 		if (polygon != null)
 			polygon.start(rewind);

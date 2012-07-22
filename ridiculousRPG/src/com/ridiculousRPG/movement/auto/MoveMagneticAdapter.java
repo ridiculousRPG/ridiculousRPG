@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
 import com.ridiculousRPG.util.Direction;
@@ -177,11 +178,12 @@ public class MoveMagneticAdapter extends MoveRandomAdapter {
 	}
 
 	@Override
-	public void tryMove(Movable event, float deltaTime) {
+	public void tryMove(Movable event, float deltaTime,
+			EventTrigger eventTrigger) {
 		if (magneticEffect == null
 				|| !magneticEffect.tryMagneticMove(this, event, deltaTime))
 			// fall back to random movement
-			super.tryMove(event, deltaTime);
+			super.tryMove(event, deltaTime, eventTrigger);
 	}
 
 	public static class MagneticEffect implements Serializable {

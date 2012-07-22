@@ -16,7 +16,7 @@
 
 package com.ridiculousRPG.movement.misc;
 
-import com.ridiculousRPG.GameBase;
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
 
@@ -31,6 +31,8 @@ import com.ridiculousRPG.movement.MovementHandler;
 public class MoveExecScriptAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 
+	private boolean waitExec;
+	private boolean scriptApplied;
 	private String script;
 
 	/**
@@ -42,17 +44,38 @@ public class MoveExecScriptAdapter extends MovementHandler {
 	 *            The script code to execute.
 	 */
 	public MoveExecScriptAdapter(String script) {
+		this(script, false);
+	}
+
+	/**
+	 * This MovementAdapter allows you to execute some script code.<br>
+	 * Feel free to do whatever you want;)<br>
+	 * This move cannot be blocked.
+	 * 
+	 * @param script
+	 *            The script code to execute.
+	 * @param waitExec
+	 *            Whether the move should wait until the script has been
+	 *            executed
+	 */
+	public MoveExecScriptAdapter(String script, boolean waitExec) {
 		this.script = script;
+		this.waitExec = waitExec;
 	}
 
 	@Override
-	public void tryMove(Movable movable, float deltaTime) {
-		try {
-			GameBase.$().eval(script);
-		} catch (Exception e) {
-			GameBase.$error("MoveExecScriptAdapter.eval",
-					"Could not evaluate move-script for " + movable, e);
+	public void tryMove(Movable movable, float deltaTime,
+			EventTrigger eventTrigger) {
+		if (finished)
+			return;
+
+		if (!scriptApplied) {
+			eventTrigger.postScriptToExec("MoveExecScriptAdapter", script, null);
+			scriptApplied = true;
 		}
-		finished = true;
+		if (!waitExec || eventTrigger.isScriptQueueEmpty()) {
+			finished = true;
+			scriptApplied = false;
+		}
 	}
 }

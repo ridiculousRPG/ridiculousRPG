@@ -16,6 +16,7 @@
 
 package com.ridiculousRPG.movement.auto;
 
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
 import com.ridiculousRPG.util.Direction;
@@ -46,7 +47,8 @@ public class MoveDistanceAdapter extends MovementHandler {
 	}
 
 	@Override
-	public void tryMove(Movable event, float deltaTime) {
+	public void tryMove(Movable event, float deltaTime,
+			EventTrigger eventTrigger) {
 		// move could be blocked
 		if (distanceCount >= distance || finished) {
 			if (finished)

@@ -19,6 +19,7 @@ package com.ridiculousRPG.movement.misc;
 import com.badlogic.gdx.graphics.Color;
 import com.ridiculousRPG.GameBase;
 import com.ridiculousRPG.event.EventObject;
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.CombinedMovesAdapter;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
@@ -77,7 +78,8 @@ public class MoveFadeColorAdapter extends MovementHandler {
 	 * the parameter movable will not be needed and may be null.
 	 */
 	@Override
-	public void tryMove(Movable movable, float deltaTime) {
+	public void tryMove(Movable movable, float deltaTime,
+			EventTrigger eventTrigger) {
 		if (!finished && (tintEntireGame || movable instanceof EventObject)) {
 			float changeSpeed = transitionSpeed == null ? 1f : transitionSpeed
 					.computeStretch(deltaTime) * .02f;

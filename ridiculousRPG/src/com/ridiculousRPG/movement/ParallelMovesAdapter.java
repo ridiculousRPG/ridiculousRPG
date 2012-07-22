@@ -19,6 +19,7 @@ package com.ridiculousRPG.movement;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.misc.MoveFadeColorAdapter;
 
 /**
@@ -78,11 +79,12 @@ public class ParallelMovesAdapter extends MovementHandler {
 	}
 
 	@Override
-	public void tryMove(Movable event, float deltaTime) {
+	public void tryMove(Movable event, float deltaTime,
+			EventTrigger eventTrigger) {
 		List<MovementHandler> movements = this.movements;
 		for (int i = 0, len = movements.size(); i < len; i++) {
 			MovementHandler m = movements.get(i);
-			m.tryMove(event, deltaTime);
+			m.tryMove(event, deltaTime, eventTrigger);
 			if (m.finished) {
 				movements.remove(i);
 				len--;

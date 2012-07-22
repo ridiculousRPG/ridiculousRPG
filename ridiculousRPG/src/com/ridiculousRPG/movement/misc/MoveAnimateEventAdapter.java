@@ -20,6 +20,7 @@ import com.badlogic.gdx.utils.Array;
 import com.ridiculousRPG.GameBase;
 import com.ridiculousRPG.animation.TileAnimation;
 import com.ridiculousRPG.event.EventObject;
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.map.MapRenderService;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
@@ -99,7 +100,8 @@ public class MoveAnimateEventAdapter extends MovementHandler {
 	}
 
 	@Override
-	public void tryMove(Movable movable, float deltaTime) {
+	public void tryMove(Movable movable, float deltaTime,
+			EventTrigger eventTrigger) {
 		if (!finished && movable instanceof EventObject) {
 			EventObject newEvent = (EventObject) movable;
 			if (newEvent != oldEvent) {

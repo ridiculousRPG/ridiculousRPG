@@ -403,9 +403,10 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 		return color;
 	}
 
-	public void compute(float deltaTime) {
+	@Override
+	public void compute(float deltaTime, EventTrigger eventTrigger) {
+		super.compute(deltaTime, eventTrigger);
 		collision.clear();
-		getMoveHandler().tryMove(this, deltaTime);
 		if (drawDoneSwitch) {
 			if (effectFront != null) {
 				effectFront.update(deltaTime);

@@ -22,6 +22,7 @@ import java.util.LinkedList;
 
 import com.badlogic.gdx.utils.Pool;
 import com.ridiculousRPG.event.EventObject;
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
 
@@ -94,7 +95,8 @@ public class MoveTracerAdapter extends MovementHandler {
 	}
 
 	@Override
-	public void tryMove(Movable event, float deltaTime) {
+	public void tryMove(Movable event, float deltaTime,
+			EventTrigger eventTrigger) {
 		if (estimateDistance) {
 			followDistance = eventToTrace.getWidth() + eventToTrace.getHeight()
 					+ event.getWidth() + event.getHeight();

@@ -112,7 +112,7 @@ public class EventActor extends Actor {
 			initialized = true;
 			event.init();
 		}
-		event.compute(delta);
+		event.compute(delta, null);
 		// No collision detection, just move it
 		event.commitMove();
 		if (event.eventHandler != null)

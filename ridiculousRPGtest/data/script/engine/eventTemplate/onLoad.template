@@ -1,5 +1,19 @@
 function onLoad(eventSelf, eventState) {
+  // reset message box to default - CHANGE THE DEFAULT HERE IF YOU WANT! E.G.:
+  // box(-1, -1, 0, 0, true); // message box at the center of the screen sized by it's content
+  // box(0, 0, -1, -1, true); // message box at the top right corner of the screen sized by it's content
+  // box(100, 50, 0, 0, true); // message box at position (100,50) sized by it's content
+  // box(-1, -1, 400, 180, false); // message box 400x180 at the center of the screen
+  // box(0, 0, 0, 0, false); // message box covers entire screen
+  // box(0, 0, 0, -200, false); // message box appears at the top of the screen by default
+  box(0, 0, 0, 200, false); // comment this out if you don't want to reset automatically
+
   #codeLine#;
   #codeLine#;
+
+  // automatically commit outstanding messages
   commit(); // comment this out if you don't want the autocommit feature
+  // clear all pictures and the face
+  removePicture(-1); // comment this out if you don't want to reset automatically
+  face(null,0,0,0,0); // comment this out if you don't want to reset automatically
 }

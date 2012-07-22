@@ -17,6 +17,7 @@
 package com.ridiculousRPG.movement.auto;
 
 import com.badlogic.gdx.utils.Pool.Poolable;
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.Movable;
 
 /**
@@ -45,7 +46,8 @@ public class MoveJumpAdapter extends MoveSetXYAdapter implements Poolable {
 	}
 
 	@Override
-	public void tryMove(Movable event, float deltaTime) {
+	public void tryMove(Movable event, float deltaTime,
+			EventTrigger eventTrigger) {
 		if (jumpSuccess) {
 			if (finished)
 				return;
@@ -114,7 +116,7 @@ public class MoveJumpAdapter extends MoveSetXYAdapter implements Poolable {
 			offsetOldY = event.getOffsetY();
 			event.offsetAdd(-distanceX, -distanceY);
 		}
-		super.tryMove(event, deltaTime);
+		super.tryMove(event, deltaTime, eventTrigger);
 		if (finished) {
 			jumpSuccess = true;
 			finished = false;

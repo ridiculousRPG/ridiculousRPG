@@ -19,6 +19,7 @@ package com.ridiculousRPG.movement.auto;
 import java.util.Random;
 
 import com.badlogic.gdx.utils.Pool.Poolable;
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
 import com.ridiculousRPG.util.Direction;
@@ -80,7 +81,8 @@ public class MoveRandomAdapter extends MovementHandler implements Poolable {
 	}
 
 	@Override
-	public void tryMove(Movable event, float deltaTime) {
+	public void tryMove(Movable event, float deltaTime,
+			EventTrigger eventTrigger) {
 		if (lastDir == null || minWidth < 0) {
 			int randNum = randomNumberGenerator
 					.nextInt(changeDirectionSlackness);

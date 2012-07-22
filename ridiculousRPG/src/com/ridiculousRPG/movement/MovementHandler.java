@@ -18,6 +18,8 @@ package com.ridiculousRPG.movement;
 
 import java.io.Serializable;
 
+import com.ridiculousRPG.event.EventTrigger;
+
 /**
  * All possible MovementAdapters must extend this class.<br>
  * All MovementAdapters without any status-information should be implement a
@@ -40,8 +42,10 @@ public abstract class MovementHandler implements Serializable {
 	 * 
 	 * @param event
 	 * @param deltaTime
+	 * @param eventTrigger
 	 */
-	public abstract void tryMove(Movable event, float deltaTime);
+	public abstract void tryMove(Movable event, float deltaTime,
+			EventTrigger eventTrigger);
 
 	/**
 	 * Resets the state of this MovementAdapter. The default implementation sets

@@ -18,6 +18,8 @@ package com.ridiculousRPG.movement;
 
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -25,6 +27,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.utils.Pool;
 import com.ridiculousRPG.GameBase;
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.CombinedMovesAdapter.MoveSegment;
 import com.ridiculousRPG.movement.auto.MoveJumpAdapter;
 import com.ridiculousRPG.movement.auto.MovePolygonAdapter;
@@ -59,6 +62,7 @@ public abstract class Movable implements Serializable {
 	private SortedMap<Integer, MoveSegment> moveSequence = new TreeMap<Integer, MoveSegment>();
 	private boolean moveLoop;
 	private boolean moveResetEventPosition;
+	private List<MoveSegment> execOnce = new ArrayList<MoveSegment>();
 
 	// To avoid garbage collection - ATTENTION: Pool is NOT thread safe, but we
 	// have actually only one thread which handles all events. Therefore it
@@ -330,16 +334,14 @@ public abstract class Movable implements Serializable {
 	 */
 	public void exec(MoveSegment moveSegment) {
 		if (moveSegment != null) {
-			if (moveHandler instanceof CombinedMovesAdapter) {
-				((CombinedMovesAdapter) moveHandler).execMoveOnce(moveSegment);
-			} else {
-				CombinedMovesAdapter combined = new CombinedMovesAdapter(
-						moveLoop, moveResetEventPosition);
-				combined.execMoveOnce(moveSegment);
-				if (moveHandler != MoveNullAdapter.$()) {
-					combined.addMoveToExecute(moveHandler);
+			synchronized (execOnce) {
+				execOnce.add(moveSegment);
+				try {
+					execOnce.wait();
+				} catch (InterruptedException e) {
+					GameBase.$info("Movable.execInterrupt",
+							"Interrupt for wait on execOnce", e);
 				}
-				moveHandler = combined;
 			}
 		}
 	}
@@ -564,6 +566,31 @@ public abstract class Movable implements Serializable {
 			MoveRandomAdapter mv = obtain();
 			mv.changeDirectionSlackness = changeDirectionSlackness;
 			return mv;
+		}
+	}
+
+	public void compute(float deltaTime, EventTrigger eventTrigger) {
+		moveHandler.tryMove(this, deltaTime, eventTrigger);
+		if (execOnce.size() > 0) {
+			synchronized (execOnce) {
+				while (execOnce.size() > 0) {
+					MoveSegment moveSegment = execOnce
+							.remove(execOnce.size() - 1);
+					if (moveHandler instanceof CombinedMovesAdapter) {
+						((CombinedMovesAdapter) moveHandler)
+								.execMoveOnce(moveSegment);
+					} else {
+						CombinedMovesAdapter combined = new CombinedMovesAdapter(
+								moveLoop, moveResetEventPosition);
+						combined.execMoveOnce(moveSegment);
+						if (moveHandler != MoveNullAdapter.$()) {
+							combined.addMoveToExecute(moveHandler);
+						}
+						moveHandler = combined;
+					}
+				}
+				execOnce.notifyAll();
+			}
 		}
 	}
 }

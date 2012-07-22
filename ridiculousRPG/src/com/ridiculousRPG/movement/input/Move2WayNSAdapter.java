@@ -20,6 +20,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
 import com.ridiculousRPG.GameBase;
+import com.ridiculousRPG.event.EventTrigger;
 import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
 import com.ridiculousRPG.util.Direction;
@@ -74,7 +75,8 @@ public class Move2WayNSAdapter extends MovementHandler {
 	}
 
 	@Override
-	public void tryMove(Movable movable, float deltaTime) {
+	public void tryMove(Movable movable, float deltaTime,
+			EventTrigger eventTrigger) {
 		if (GameBase.$serviceProvider().queryAttention() != null) {
 			movable.stop();
 			freeze();
