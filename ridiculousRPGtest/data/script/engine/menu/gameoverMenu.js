@@ -28,14 +28,40 @@ function processInput(keycode, menuService, menu) {
 function createGui(menuService, menu) {
 	i18nContainer = "engineMenuText";
 	var skin = menuService.skinNormal;
-
-	// Apply the background image
-	var bg = menu.createImage("data/image/GameOver.png", menuService.width, menuService.height);
-	// Use the following scaling to keep aspect ratio on resize:
-	// bg.setScaling(gdx.utils.Scaling.fit);
-	menuService.addActor(bg);
-
 	var w = menuService.createWindow(i18nText("gameovermenu.title"), skin);
+
+	if (files.internal("data/image/Background.png").exists()) {
+		// Apply the background image
+		var img = menu.createImage("data/image/Background.png", menuService.width, menuService.height);
+		// Use the following scaling to keep aspect ratio on resize:
+		// img.setScaling(Scaling.fit);
+		menuService.addActor(img);
+	}
+
+	if (files.internal("data/image/GameOverBottom.png").exists()) {
+		var img = menu.createImage("data/image/GameOverBottom.png");
+		img.setPosition(20, 20);
+		menuService.addActor(img);
+	}
+
+	// create particle effect
+	if (files.internal("data/effect/particle/bloodDrops.effect").exists()) {
+		var props = [
+		    "effectFront", "data/effect/particle/bloodDrops.effect"
+		]
+	 	var particleEffect = new ridiculousRPG.event.EventActor(menuService.width - 150, menuService.height, props);
+		menuService.addActor(particleEffect);
+	}
+
+	if (files.internal("data/image/GameOverTop.png").exists()) {
+		var img = menu.createImage("data/image/GameOverTop.png");
+		if (menuService.width < img.width)
+			img.width = menuService.width;
+		img.setScaling(Scaling.fit);
+		menuService.center(img);
+		img.setY(menuService.height - img.height - 25);
+		menuService.addActor(img);
+	}
 
 	var quickload = new ui.TextButton(i18nText("gameovermenu.quickload"), skin);
 	quickload.addListener(new ClickAdapter(

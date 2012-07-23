@@ -31,34 +31,49 @@ function createGui(menuService, menu) {
 	var w = menuService.createWindow(i18nText("titlemenu.title"), skin);
 	var button;
 
-	// Apply the background image
-	var img = menu.createImage("data/image/Background.png", menuService.width, menuService.height);
-	// Use the following scaling to keep aspect ratio on resize:
-	// img.setScaling(gdx.utils.Scaling.fit);
-	menuService.addActor(img);
+	if (files.internal("data/image/Background.png").exists()) {
+		// Apply the background image
+		var img = menu.createImage("data/image/Background.png", menuService.width, menuService.height);
+		// Use the following scaling to keep aspect ratio on resize:
+		// img.setScaling(Scaling.fit);
+		menuService.addActor(img);
+	}
 
-	var img = menu.createImage("data/image/TitleTop.png");
-	menuService.center(img);
-	img.setY(menuService.height - img.height - 25);
-	menuService.addActor(img);
+	if (files.internal("data/image/TitleBottom.png").exists()) {
+		var img = menu.createImage("data/image/TitleBottom.png");
+		if (menuService.width < img.width)
+			img.width = menuService.width;
+		img.setScaling(Scaling.fit);
+		menuService.center(img);
+		img.setY(15);
+		menuService.addActor(img);
+	}
 
-	var img = menu.createImage("data/image/TitleBottom.png");
-	menuService.center(img);
-	img.setY(15);
-	menuService.addActor(img);
+	if (files.internal("data/image/TitleTop.png").exists()) {
+		var img = menu.createImage("data/image/TitleTop.png");
+		if (menuService.width < img.width)
+			img.width = menuService.width;
+		img.setScaling(Scaling.fit);
+		menuService.center(img);
+		img.setY(menuService.height - img.height - 25);
+		menuService.addActor(img);
+	}
 
 	// create particle effect
-	var props = [
-	    "effectFront", "data/effect/particle/greenMixed.effect"
-	]
-	var particleEffect = new ridiculousRPG.event.EventActor(50, 200, props);
-	menuService.addActor(particleEffect);
-
-	var props = [
- 	    "effectFront", "data/effect/particle/greenStars3.effect"
- 	]
- 	var particleEffect = new ridiculousRPG.event.EventActor(menuService.width - 100, menuService.height - 50, props);
- 	menuService.addActor(particleEffect);
+	if (files.internal("data/effect/particle/greenMixed.effect").exists()) {
+		var props = [
+		    "effectFront", "data/effect/particle/greenMixed.effect"
+		]
+		var particleEffect = new ridiculousRPG.event.EventActor(50, 200, props);
+		menuService.addActor(particleEffect);
+	}
+	if (files.internal("data/effect/particle/greenStars3.effect").exists()) {
+		var props = [
+	 	    "effectFront", "data/effect/particle/greenStars3.effect"
+	 	]
+	 	var particleEffect = new ridiculousRPG.event.EventActor(menuService.width - 100, menuService.height - 50, props);
+	 	menuService.addActor(particleEffect);
+	}
 
 	var start = new ui.TextButton(i18nText("titlemenu.new"), skin);
 	start.addListener(new ClickAdapter(

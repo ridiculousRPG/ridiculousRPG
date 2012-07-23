@@ -36,9 +36,9 @@ function createGui(menuService, menu) {
 	w.row().fill().expandX().padBottom(10);
 	w.add(cancel);
 
-	var files = internalFile($.options.i18nPath).list();
-	for (var i = 0; i < files.length; i++) {
-		var f = files[i];
+	var fList = files.internal($.options.i18nPath).list();
+	for (var i = 0; i < fList.length; i++) {
+		var f = fList[i];
 		if (f.isDirectory() && !f.name().startsWith(".")) {
 			var text = new java.util.Locale(f.name()).displayLanguage;
 			var button = new ui.TextButton(text, skin);

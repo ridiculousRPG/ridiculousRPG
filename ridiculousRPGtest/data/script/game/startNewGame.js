@@ -7,6 +7,6 @@
  */
 
 // Play 3 seconds from the test card
-$.serviceProvider.getService("video").play(internalFile("data/video/test.ogg"), false, 3, false);
+$.serviceProvider.getService("video").play(files.internal("data/video/test.ogg"), false, 3, false);
 // Display startup map
 mapTransition("data/map/001dinerOutside.tmx", 0, 0, true, null);
