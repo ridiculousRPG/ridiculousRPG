@@ -823,12 +823,13 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 
 	/**
 	 * Reads all files at the specified save directory.<br>
-	 * Empty files are indicated with null. The maximum number of files is 202,
-	 * where the first file is reserved for auto save (e.g. incoming call on
-	 * android device). The second file is reserved for a quick save feature and
-	 * should be treated specially by the load/save menu (the auto save file can
-	 * be entirely ignored or can also be treated as a special save file by the
-	 * menu)
+	 * Empty files are indicated with null. The maximum number of files is
+	 * 100*cols+2, where the first file is reserved for auto save (e.g. incoming
+	 * call on android device). The second file is reserved for a quick save
+	 * feature and should be treated specially by the load/save menu (the auto
+	 * save file can be entirely ignored or can also be treated as a special
+	 * save file by the menu).<br>
+	 * In fact, the amount of 100*cols+2 represents a maximum of 100 rows.
 	 * 
 	 * @param cols
 	 *            Amount of columns per row
@@ -839,6 +840,31 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 	 * @return An array of files, containing null values for empty save slots
 	 */
 	public FileHandle[] listSaveFiles(int cols, int emptyTailRows, int minRows) {
+		return listSaveFiles(cols, emptyTailRows, minRows, 100);
+	}
+
+	/**
+	 * Reads all files at the specified save directory.<br>
+	 * Empty files are indicated with null. The maximum number of files is
+	 * maxRows*cols+2, where the first file is reserved for auto save (e.g.
+	 * incoming call on android device). The second file is reserved for a quick
+	 * save feature and should be treated specially by the load/save menu (the
+	 * auto save file can be entirely ignored or can also be treated as a
+	 * special save file by the menu).<br>
+	 * 
+	 * @param cols
+	 *            Amount of columns per row
+	 * @param emptyTailRows
+	 *            Amount of empty rows appended at the end
+	 * @param minRows
+	 *            Minimum amount of rows
+	 * @param maxRows
+	 *            Maximum amount of rows
+	 * @return An array of files, containing null values for empty save slots
+	 */
+	public FileHandle[] listSaveFiles(int cols, int emptyTailRows, int minRows,
+			int maxRows) {
+		maxRows = maxRows * cols + 2;
 		String[] fileNames = Gdx.files.external(GameBase.$options().savePath)
 				.file().list(new FilenameFilter() {
 					@Override
@@ -847,8 +873,8 @@ public abstract class GameBase extends GameServiceDefaultImpl implements
 								&& name.endsWith(".sav");
 					}
 				});
-		// 1 auto save + 1 quick save + 200 save files
-		FileHandle[] fh = new FileHandle[202];
+		// 1 auto save + 1 quick save + maxRows * cols save files
+		FileHandle[] fh = new FileHandle[maxRows];
 		int max = 0;
 		for (String nm : fileNames) {
 			int index = Integer.parseInt(nm.substring(9, nm.length() - 4));

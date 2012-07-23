@@ -24,7 +24,8 @@ function createGui(menuService, menu) {
 	var w = menuService.createWindow(i18nText("savemenu.title"), 
 			-1, -1, 700, 480, skin).top();
 
-	// ADVANCED LIST GENERATION: listSaveFiles(int cols, int emptyTailRows, int minRows)
+	// ADVANCED LIST GENERATION: listSaveFiles(int cols, int emptyTailRows, int
+	// minRows)
 	// var files = $.listSaveFiles(2, 1, 10);
 	var files = $.listSaveFiles();
 	var button;
@@ -56,9 +57,10 @@ function createGui(menuService, menu) {
 	for (var i = 2; i < files.length;) {
 		w.row().fill(true, true).expand(true, false).colspan(3);
 		for (var j = 0; j < 2; j++, i++) {
-			button = generateButton(buttonText+" "+(i-1), files[i-1], skin, menu);
+			var index = (i-j);
+			button = generateButton(buttonText+" "+index, files[index], skin, menu);
 			button.addListener(new ClickAdapter(
-				 "if ($.saveFile("+i+")) { "
+				 "if ($.saveFile("+index+")) { "
 	*/
 	for (var i = files.length-1; i > 1;) {
 		w.row().fill(true, true).expand(true, false).colspan(3);
@@ -82,7 +84,6 @@ function createGui(menuService, menu) {
 
 function generateButton(buttonText, zipFile, skin, menu) {
 	if (zipFile==null) {
-		// button.getLabel().setAlignment(ui.Align.LEFT);
 		return new ui.TextButton(buttonText + " - " + i18nText("savemenu.empty"), skin);
 	}
 	var DF = java.text.DateFormat;
