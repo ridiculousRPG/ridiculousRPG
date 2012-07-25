@@ -411,6 +411,126 @@ public class EventFactory {
 		}
 	}
 
+	/**
+	 * Method to parse the object properties input for a ellipse.
+	 * 
+	 * @param container
+	 * @param props
+	 */
+	public static void parseProps(EllipseObject ell, Map<String, String> props) {
+		String visibility = null;
+		for (Entry<String, String> entry : props.entrySet()) {
+			// let's be case insensitive
+			String key = entry.getKey().trim().toLowerCase();
+			// Fix the behavior of the libgdx XmlReader
+			String val = entry.getValue().replace("&quot;", "\"").replace(
+					"&gt;", ">").replace("&lt;", "<").replace("&amp;", "&")
+					.trim();
+			if (key.length() == 0 || val.length() == 0)
+				continue;
+			if (key.charAt(0) == CUSTOM_PROP_KZ) {
+				ell.properties.put(key, val);
+			} else if (key.equals(PROP_VISIBLE)) {
+				visibility = val;
+			} else {
+				parseSingleProp(ell, key, val, props);
+			}
+		}
+		if (visibility != null && ell.visible)
+			ell.visible = toBool(visibility);
+	}
+
+	private static void parseSingleProp(EllipseObject ell, String key,
+			String val, Map<String, String> props) {
+		// let's be case insensitive
+		key = key.toLowerCase();
+		try {
+			if (PROP_BLOCKING.equals(key)) {
+				ell.blockingBehavior = BlockingBehavior
+						.parse(val.toUpperCase());
+			} else if (PROP_COLOR.equals(key)) {
+				Object color = GameBase.$().eval(val);
+				if (color instanceof Color)
+					ell.setColor((Color) color);
+			} else if (PROP_HANDLER.equals(key)) {
+				Object evHandler = GameBase.$().eval(val);
+				if (evHandler instanceof Class<?>) {
+					@SuppressWarnings("unchecked")
+					Class<? extends EventHandler> clazz = (Class<? extends EventHandler>) evHandler;
+					evHandler = clazz.newInstance();
+				}
+
+				// merge both event handler
+				if (evHandler instanceof EventExecScriptAdapter
+						&& ell.eventHandler instanceof EventExecScriptAdapter) {
+					((EventExecScriptAdapter) evHandler)
+							.merge((EventExecScriptAdapter) ell.eventHandler);
+				} else if (evHandler instanceof EventHandler) {
+					ell.eventHandler = (EventHandler) evHandler;
+				}
+			} else if (key.startsWith(PROP_ONSTATECHANGE)) {
+				if (ell.eventHandler == null) {
+					ell.eventHandler = new EventExecScriptAdapter(ell);
+				}
+				if (ell.eventHandler instanceof EventExecScriptAdapter) {
+					String index = key.substring(PROP_ONSTATECHANGE.length())
+							.trim();
+					((EventExecScriptAdapter) ell.eventHandler)
+							.execOnStateChange(val, index.length() == 0 ? -1
+									: toInt(index));
+				}
+			} else if (key.startsWith(PROP_ONPUSH)) {
+				GameBase.$error("Ellipse.onpush", "The event onpush is not "
+						+ "available for ellipse objects (for perfornamce "
+						+ "reasons)", new IllegalArgumentException("Argument "
+						+ key + " invalid"));
+			} else if (key.startsWith(PROP_ONTOUCH)) {
+				ell.touchable = true;
+				if (ell.eventHandler == null) {
+					ell.eventHandler = new EventExecScriptAdapter(ell);
+				}
+				if (ell.eventHandler instanceof EventExecScriptAdapter) {
+					String index = key.substring(PROP_ONTOUCH.length()).trim();
+					((EventExecScriptAdapter) ell.eventHandler).execOnTouch(
+							val, index.length() == 0 ? -1 : toInt(index));
+				}
+			} else if (key.startsWith(PROP_ONTIMER)) {
+				if (ell.eventHandler == null) {
+					ell.eventHandler = new EventExecScriptAdapter(ell);
+				}
+				if (ell.eventHandler instanceof EventExecScriptAdapter) {
+					String index = key.substring(PROP_ONTIMER.length()).trim();
+					((EventExecScriptAdapter) ell.eventHandler).execOnTimer(
+							val, index.length() == 0 ? -1 : toInt(index));
+				}
+			} else if (key.startsWith(PROP_ONCUSTOMEVENT)) {
+				if (ell.eventHandler == null) {
+					ell.eventHandler = new EventExecScriptAdapter(ell);
+				}
+				if (ell.eventHandler instanceof EventExecScriptAdapter) {
+					String index = key.substring(PROP_ONCUSTOMEVENT.length())
+							.trim();
+					((EventExecScriptAdapter) ell.eventHandler)
+							.execOnCustomTrigger(val, index.length() == 0 ? -1
+									: toInt(index));
+				}
+			} else if (key.startsWith(PROP_ONLOAD)) {
+				if (ell.eventHandler == null) {
+					ell.eventHandler = new EventExecScriptAdapter(ell);
+				}
+				if (ell.eventHandler instanceof EventExecScriptAdapter) {
+					String index = key.substring(PROP_ONLOAD.length()).trim();
+					((EventExecScriptAdapter) ell.eventHandler).execOnLoad(val,
+							index.length() == 0 ? -1 : toInt(index));
+				}
+			}
+		} catch (Exception e) {
+			GameBase.$error("TiledMap.createEllipse",
+					"Could not parse property '" + key + "' for ellipse '"
+							+ ell.getName() + "'", e);
+		}
+	}
+
 	public static int getZIndex(Map<String, String> properties) {
 		return toInt(properties.get(PROP_HEIGHT));
 	}

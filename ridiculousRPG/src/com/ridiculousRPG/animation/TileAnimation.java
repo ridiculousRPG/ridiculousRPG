@@ -30,12 +30,7 @@ import com.ridiculousRPG.util.TextureRegionLoader.TextureRegionRef;
 
 /**
  * Every Animation consists of one texture which is split up into tiles. This
- * tiles are switched periodically.<br>
- * For compatibility with old graphic cards, the texture should have a width and
- * a height by the power of two.<br>
- * Some good-sized animation textures for example: 256x256 pixel, 256x512 pixel
- * 1024x512 pixel. Don't use textures with more than 2048 pixel in width or
- * height.
+ * tiles are switched periodically.
  * 
  * @author Alexander Baumgartner
  */

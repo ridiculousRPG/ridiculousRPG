@@ -385,12 +385,12 @@ public class PolygonObject implements Cloneable, Serializable {
 			r.setColor(blockingBehavior.color);
 			if (visible && color != null) {
 				for (int i = vertexX.length - 1; i > 0; i--)
-					r.line(vertexX[i - 1], vertexY[i - 1], vertexX[i],
-							vertexY[i]);
-			} else {
-				for (int i = vertexX.length - 1; i > 0; i--)
 					r.line(vertexX[i - 1] + 1, vertexY[i - 1] + 1,
 							vertexX[i] + 1, vertexY[i] + 1);
+			} else {
+				for (int i = vertexX.length - 1; i > 0; i--)
+					r.line(vertexX[i - 1], vertexY[i - 1], vertexX[i],
+							vertexY[i]);
 			}
 		}
 	}

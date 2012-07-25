@@ -42,6 +42,7 @@ import com.badlogic.gdx.graphics.g2d.tiled.TiledObject;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledObjectGroup;
 import com.ridiculousRPG.DebugHelper;
 import com.ridiculousRPG.GameBase;
+import com.ridiculousRPG.event.EllipseObject;
 import com.ridiculousRPG.event.EventFactory;
 import com.ridiculousRPG.event.EventObject;
 import com.ridiculousRPG.event.EventTrigger;
@@ -89,6 +90,11 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 	private List<PolygonObject> polyList = new ArrayList<PolygonObject>(16);
 	// named polygons
 	private Map<String, PolygonObject> polyMap = new HashMap<String, PolygonObject>(
+			16);
+	// ellipses
+	private List<EllipseObject> ellipseList = new ArrayList<EllipseObject>(16);
+	// named ellipses
+	private Map<String, EllipseObject> ellipseMap = new HashMap<String, EllipseObject>(
 			16);
 
 	private static transient EventTrigger eventTrigger;
@@ -180,6 +186,10 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 					createPolygon(map, group, object, object.polygon, true);
 				} else if (object.polyline != null) {
 					createPolygon(map, group, object, object.polyline, false);
+					/*
+					 * } else if (isEllipse) { createEllipse(map, group,
+					 * object);
+					 */
 				} else {
 					createEvent(map, atlas, group, object, mvTrans);
 				}
@@ -208,9 +218,13 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 				eventObj.init();
 			}
 		}
-		// Initialize the polygons
+		// Initialize polygons
 		for (i = 0, len_i = polyList.size(); i < len_i; i++) {
 			polyList.get(i).init();
+		}
+		// Initialize ellipses
+		for (i = 0, len_i = ellipseList.size(); i < len_i; i++) {
+			ellipseList.get(i).init();
 		}
 
 		for (EventObject globalObj : globalEv.values()) {
@@ -308,6 +322,28 @@ public class TiledMapWithEvents implements MapWithEvents<EventObject> {
 		if (polyMap == null)
 			return null;
 		return polyMap.get(polygonName);
+	}
+
+	private void createEllipse(TiledMap map, TiledObjectGroup group,
+			TiledObject object) {
+		String name = object.name;
+		float x = object.x;
+		float y = map.height * map.tileHeight - object.y;
+		EllipseObject ell = new EllipseObject(name, x, y, width, height);
+		EventFactory.parseProps(ell, group.properties);
+		EventFactory.parseProps(ell, object.properties);
+
+		ellipseList.add(ell);
+
+		if (name != null && name.length() != 0)
+			ellipseMap.put(name, ell);
+	}
+
+	@Override
+	public EllipseObject findEllipse(String ellipseName) {
+		if (ellipseMap == null)
+			return null;
+		return ellipseMap.get(ellipseName);
 	}
 
 	/**

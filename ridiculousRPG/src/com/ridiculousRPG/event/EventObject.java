@@ -367,6 +367,18 @@ public class EventObject extends Movable implements Comparable<EventObject>,
 	}
 
 	/**
+	 * Checks if this EventObject touches the given ellipse!
+	 */
+	public boolean intersects(EllipseObject other) {
+		Rectangle2D.Float rect;
+		if (moves)
+			rect = this.softMoveBounds;
+		else
+			rect = this.touchBound;
+		return other.intersects(rect.x, rect.y, rect.width, rect.height);
+	}
+
+	/**
 	 * Checks if one EventObject reaches the other respecting all softMoves!
 	 * 
 	 * @param other
