@@ -192,8 +192,7 @@ public class CombinedMovesAdapter extends MovementHandler {
 				initialized = true;
 				if (resetEventPosition && event != null) {
 					MoveSetXYAdapter setXY = MOVE_SET_XY.obtain();
-					setXY.other.setX(event.getX());
-					setXY.other.setY(event.getY());
+					setXY.setPosition(event);
 					addMoveToExecute(setXY);
 				}
 			}

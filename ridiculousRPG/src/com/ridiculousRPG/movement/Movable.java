@@ -544,8 +544,7 @@ public abstract class Movable implements Serializable {
 
 		public MoveJumpAdapter obtain(float x, float y) {
 			MoveJumpAdapter jump = obtain();
-			jump.other.setX(x);
-			jump.other.setY(y);
+			jump.setPosition(x, y);
 			return jump;
 		}
 	}

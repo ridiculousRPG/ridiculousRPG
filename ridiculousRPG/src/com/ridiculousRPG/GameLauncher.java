@@ -18,6 +18,7 @@ package com.ridiculousRPG;
 
 import java.io.File;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.SharedDrawable;
 
@@ -99,6 +100,12 @@ public class GameLauncher extends AndroidApplication {
 			conf.fullscreen = options.fullscreen;
 			conf.vSyncEnabled = options.vSyncEnabled;
 			new LwjglApplication(new GameBase(options) {
+				@Override
+				public void create() {
+					Keyboard.enableRepeatEvents(true);
+					super.create();
+				}
+
 				@Override
 				public boolean shareGLContext() {
 					try {

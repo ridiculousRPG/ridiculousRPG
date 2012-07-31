@@ -1,0 +1,8 @@
+TODO:
+
+Performance improvements:
+
+1) Pool for ExecWithGlContext/ExecInMainThread
+2) Use Sprite at least for static tiles!
+3) Improve pooling for MoveHandlers
+4) Use TexturePacker2

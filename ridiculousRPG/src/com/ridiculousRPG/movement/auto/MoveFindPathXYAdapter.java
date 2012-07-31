@@ -21,75 +21,63 @@ import com.ridiculousRPG.movement.Movable;
 import com.ridiculousRPG.movement.MovementHandler;
 
 /**
+ * STUB - NOT IMPLEMENTED YET!!!<br>
  * This {@link MovementHandler} tries to move an event to the given position.
- * The move is blocked while a blocking event exists on the given position.<br>
- * After succeeding the switch finished is set to true.<br>
- * If there exists a none-moving blocking event at the given position, this
- * movement will never finish.
+ * Therefore a path will be computed where the event will move along.<br>
+ * After the event has reached the given position, the switch finished is set to
+ * true.
  * 
  * @author Alexander Baumgartner
  */
-public class MoveSetXYAdapter extends MovementHandler {
+public class MoveFindPathXYAdapter extends MovementHandler {
 	private static final long serialVersionUID = 1L;
 
-	protected boolean checkPerformed;
-	public float x, y;
+	float x, y;
 
 	/**
-	 * This MovementAdapter tries to move an event to the given position. The
-	 * move is blocked while a blocking event exists on the given position.<br>
-	 * After succeeding the switch finished is set to true.<br>
-	 * If there exists a none-moving blocking event at the given position, this
-	 * movement will never finish.
+	 * STUB - NOT IMPLEMENTED YET!!!<br>
+	 * This {@link MovementHandler} tries to move an event to the given
+	 * position. Therefore a path will be computed where the event will move
+	 * along.<br>
+	 * After the event has reached the given position, the switch finished is
+	 * set to true.
 	 */
-	public MoveSetXYAdapter(float x, float y) {
+	public MoveFindPathXYAdapter(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}
 
 	/**
+	 * STUB - NOT IMPLEMENTED YET!!!<br>
 	 * This MovementAdapter tries to move an event to a given other Movable. The
 	 * move is blocked forever if two events block mutually.<br>
 	 * After succeeding the switch finished is set to true.<br>
 	 * If there exists a none-moving blocking event at the given position, this
 	 * movement will never finish.
 	 */
-	public MoveSetXYAdapter(Movable other) {
+	public MoveFindPathXYAdapter(Movable other) {
 		this.x = other.getX();
 		this.y = other.getY();
 	}
 
 	@Override
+	/**
+	 * STUB - NOT IMPLEMENTED YET!!!<br>
+	 */
 	public void tryMove(Movable event, float deltaTime,
 			EventTrigger eventTrigger) {
+		// TODO: implement it
 		event.stop();
-		// move could be blocked
-		if (checkPerformed || finished) {
-			finished = true;
-		} else {
-			event.offerMove(x - event.getX(), y - event.getY());
-			checkPerformed = true;
-		}
+		finished = true;
 	}
 
 	@Override
 	public void moveBlocked(Movable event) {
-		checkPerformed = false;
+		// TODO: compute new path
 	}
 
 	@Override
 	public void reset() {
 		super.reset();
-		checkPerformed = false;
-	}
-
-	public void setPosition(Movable event) {
-		this.x = event.getX();
-		this.y = event.getY();
-	}
-
-	public void setPosition(float x, float y) {
-		this.x = x;
-		this.y = y;
 	}
 }

@@ -107,8 +107,8 @@ public class MoveJumpAdapter extends MoveSetXYAdapter implements Poolable {
 			return;
 		}
 		if (!checkPerformed) {
-			distanceX = other.getX() - event.getX();
-			distanceY = other.getY() - event.getY();
+			distanceX = x - event.getX();
+			distanceY = y - event.getY();
 			absX = Math.abs(distanceX);
 			absY = Math.abs(distanceY);
 			centerXY = (absX + absY) * .5f;

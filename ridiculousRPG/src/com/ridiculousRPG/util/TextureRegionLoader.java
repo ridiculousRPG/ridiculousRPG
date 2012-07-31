@@ -24,6 +24,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.PixmapTextureData;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pool;
@@ -148,15 +149,17 @@ public final class TextureRegionLoader {
 			final Format format) {
 		final int safeWidth = MathUtils.nextPowerOfTwo(width);
 		final int safeHeight = MathUtils.nextPowerOfTwo(height);
+		final PixmapTextureData ptd = new PixmapTextureData(new Pixmap(
+				safeWidth, safeHeight, format), null, false, true);
 		TextureCache tCache;
 		if (GameBase.$().isGlContextThread()) {
-			tCache = new TextureCache(safeWidth, safeHeight, format);
+			tCache = new TextureCache(ptd);
 		} else {
 			final TextureCacheContainer tCC = new TextureCacheContainer();
 			new ExecWithGlContext() {
 				@Override
 				public void exec() {
-					tCC.tCache = new TextureCache(safeWidth, safeHeight, format);
+					tCC.tCache = new TextureCache(ptd);
 				}
 			}.runWait();
 			tCache = tCC.tCache;
@@ -173,29 +176,37 @@ public final class TextureRegionLoader {
 			final int height = pm.getHeight();
 			final int safeWidth = MathUtils.nextPowerOfTwo(width);
 			final int safeHeight = MathUtils.nextPowerOfTwo(height);
-			if (GameBase.$().isGlContextThread()) {
-				if (width != safeWidth || height != safeHeight) {
-					tCache = new TextureCache(safeWidth, safeHeight, pm
-							.getFormat());
-					tCache.setPixmap(pm, true);
+			if (width != safeWidth || height != safeHeight) {
+				final PixmapTextureData ptd = new PixmapTextureData(new Pixmap(
+						safeWidth, safeHeight, pm.getFormat()), null, false,
+						true);
+				if (GameBase.$().isGlContextThread()) {
+					tCache = new TextureCache(ptd);
+					tCache.drawPixmap(pm, true);
 				} else {
-					tCache = new TextureCache(pm, true);
+					final TextureCacheContainer tCC = new TextureCacheContainer();
+					new ExecWithGlContext() {
+						@Override
+						public void exec() {
+							tCC.tCache = new TextureCache(ptd);
+							tCC.tCache.drawPixmap(pm, true);
+						}
+					}.runWait();
+					tCache = tCC.tCache;
 				}
 			} else {
-				final TextureCacheContainer tCC = new TextureCacheContainer();
-				new ExecWithGlContext() {
-					@Override
-					public void exec() {
-						if (width != safeWidth || height != safeHeight) {
-							tCC.tCache = new TextureCache(safeWidth,
-									safeHeight, pm.getFormat());
-							tCC.tCache.setPixmap(pm, true);
-						} else {
+				if (GameBase.$().isGlContextThread()) {
+					tCache = new TextureCache(pm, true);
+				} else {
+					final TextureCacheContainer tCC = new TextureCacheContainer();
+					new ExecWithGlContext() {
+						@Override
+						public void exec() {
 							tCC.tCache = new TextureCache(pm, true);
 						}
-					}
-				}.runWait();
-				tCache = tCC.tCache;
+					}.runWait();
+					tCache = tCC.tCache;
+				}
 			}
 			textureCache.put(fileName, tCache);
 			textureReverseCache.put(tCache, fileName);
@@ -278,6 +289,13 @@ public final class TextureRegionLoader {
 		}
 
 		/**
+		 * Use {@link TextureRegionLoader#load} if possible
+		 */
+		protected TextureCache(PixmapTextureData ptd) {
+			super(ptd);
+		}
+
+		/**
 		 * Sets the specified {@link Pixmap} for this {@link TextureCache}. This
 		 * method shouldn't be used outside of the implementation, because it
 		 * effects all {@link TextureRegionRef}s which are already instantiaded
@@ -286,20 +304,13 @@ public final class TextureRegionLoader {
 		 * @param pm
 		 * @param autoDisposePixmap
 		 */
-		protected void setPixmap(Pixmap pm, boolean autoDisposePixmap) {
+		protected void drawPixmap(Pixmap pm, boolean autoDisposePixmap) {
 			draw(pm, 0, 0);
 			if (autoDisposePixmap) {
 				if (pixmap != null)
 					pixmap.dispose();
 				pixmap = pm;
 			}
-		}
-
-		/**
-		 * Use {@link TextureRegionLoader#load} if possible
-		 */
-		protected TextureCache(int width, int height, Format format) {
-			super(width, height, format);
 		}
 
 		/**
