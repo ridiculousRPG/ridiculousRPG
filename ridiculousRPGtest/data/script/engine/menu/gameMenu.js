@@ -118,15 +118,6 @@ function createGui(menuService, menuHandler) {
 	w.row().fill().expandX();
 	w.add(exit);
 
-	var toTitle = new ui.TextButton("TEST GAMEOVER", skin);
-	toTitle.addListener(new ClickAdapter(
-		function (actorEv, x, y) {
-			menuService.changeState(MENU_STATE_GAMEOVER);
-		}
-	));
-	w.row().fill().expandX().padTop(50);
-	w.add(toTitle);
-
 	menuService.addActor(w);
 	if (desktopMode) menuService.focus(resume);
 }

@@ -135,7 +135,7 @@ function createGui(menuService, menu) {
 			menuService.changeState(MENU_STATE_CHANGELANG);
 		}
 	));
-	w.row().fill().expandX();
+	w.row().fill().expandX().padBottom(10);
 	w.add(button);
 
 	var button = new ui.TextButton(i18nText("titlemenu.exit"), skin);
@@ -146,6 +146,16 @@ function createGui(menuService, menu) {
 	));
 	w.row().fill().expandX();
 	w.add(button);
+
+	/* REMOVE THIS MENUPOINT WHEN THE DESIGN FOR THE GAMEOVER SCREEN IS DONE*/
+	var toTitle = new ui.TextButton("TEST GAMEOVER SCREEN", skin);
+	toTitle.addListener(new ClickAdapter(
+		function (actorEv, x, y) {
+			menuService.changeState(MENU_STATE_GAMEOVER);
+		}
+	));
+	w.row().fill().expandX().padTop(20);
+	w.add(toTitle);
 
 	menuService.addActor(w);
 	if (desktopMode) menuService.focus(start);
