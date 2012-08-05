@@ -2,6 +2,9 @@
  * ATTENTION: This class links against cortado! If i got it right,
  * this means that the below licenses will be brought down to a
  * common denominator. GPLv3 is such a common denominator!
+ * 
+ * THIS FILE IS LICENSED AS NEEDED TO FULFILL GPL-LINKING REQUIREMENTS
+ * (GPLv3 should meet this needs if I got it right)
  */
 
 /*
