@@ -3,12 +3,11 @@ package com.ridiculousRPG.video.vlc;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.zip.ZipException;
 
 import com.badlogic.gdx.jnigen.JniGenSharedLibraryLoader;
 
-public class VlcLoadNatives {
-	public static void loadNatives() throws ZipException, IOException {
+public class VlcBridgeLoadNatives {
+	public static void loadNatives() throws IOException {
 		// TODO: linux32, win32, win64, mac
 		String osDependendPath = "lib/linux64/vlc-natives.jar";
 		String osDependendLibSuffix = ".so";

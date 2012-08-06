@@ -7,7 +7,7 @@ import com.badlogic.gdx.jnigen.BuildTarget;
 import com.badlogic.gdx.jnigen.NativeCodeGenerator;
 import com.badlogic.gdx.jnigen.BuildTarget.TargetOs;
 
-public class BuildVlcJNI {
+public class VlcBridgeBuildJNI {
 	public static void main(String[] args) throws Exception {
 		// generate native code
 		new NativeCodeGenerator().generate("src", "bin", "jni");
