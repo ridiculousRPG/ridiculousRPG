@@ -1,0 +1,13 @@
+This project is licensed under the Apache License, Version 2.0 (see LICENSE file)
+
+This project links against libvlc (http://wiki.videolan.org/LibVLC)
+The library libvlc and all the used plugins are licensed under
+GNU Lesser General Public License, Version 2.1 (or any later version)
+(For example open an arbitrary header file from directory /jni/vlc)
+You can find the LGPL-license within the folder "jni" and the folder "lib"!
+
+Important for you:
+If you use/modify this project you will not be forced to publish your source
+code because the Apache License, Version 2.0 has NO COPYLEFT RESTRICTION.
+Be careful if you change anything regarding the linked libraries, because
+LGPL is less generous.
