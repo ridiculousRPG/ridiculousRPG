@@ -18,7 +18,7 @@ public class VlcBridge {
 		// VLC pointers
 		libvlc_instance_t *vlcInstance;
 		libvlc_media_player_t *mp;
-		libvlc_media_t *media;
+		//libvlc_media_t *media;
 
 		// VLC options
 		char smem_options[256];
@@ -53,7 +53,7 @@ public class VlcBridge {
 
 		// We launch VLC
 		vlcInstance = libvlc_new(vlc_argc, vlc_argv);
-		printf("size: %ld", vlc_argc);
+		printf("size: %d", vlc_argc);
 
 		mp = libvlc_media_player_new(vlcInstance);
 	*/

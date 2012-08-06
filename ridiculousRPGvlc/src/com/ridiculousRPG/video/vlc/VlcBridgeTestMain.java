@@ -1,5 +1,6 @@
 package com.ridiculousRPG.video.vlc;
 
+import java.io.File;
 import java.io.IOException;
 
 public class VlcBridgeTestMain {
@@ -11,9 +12,10 @@ public class VlcBridgeTestMain {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		VlcBridgeLoadNatives.loadNatives();
+		boolean debug = false;
+		VlcBridgeLoadNatives.loadVlcNatives(new File("lib"), debug);
 		VlcBridge vlc = new VlcBridge();
-		//vlc.setDebug(true);
+		vlc.setDebug(debug);
 		vlc.startBackgroundVlc();
 	}
 }
