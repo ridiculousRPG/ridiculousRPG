@@ -1,0 +1,37 @@
+Hello,
+
+Le lundi 6 août 2012 22:45:23 Alexander Baumgartner, vous avez écrit :
+> Hello,
+> I have a question about using libvlc / libvlccore within an apache
+> licensed project (http://www.apache.org/licenses/LICENSE-2.0.html).
+> 
+> If I got it right the LGPL license allows me to link against these
+> libraries and I am allowed to distribute the libraries within my
+> application if I include source code for the libraries.
+
+Roughly, yes.
+
+> My first question is: Which parts of the vlc source code do I have
+> to include?
+
+All parts that you include in binary form in your application. See the LGPL 
+for details.
+
+> Is there a source bundle for the LGPL parts of vlc?
+
+No.
+
+> This leads me right to my second question: Are there any implemented
+> codec-modules (e.g. libavcodec) available under LGPL?
+
+The list of modules under LGPL is subject to changes (expansion) without 
+notice. It is best to check directly from the source code.
+
+However, in your particluar case, it would probably be far simpler to 
+distribute VLC under GPLv3, which is also compatible with ALv2, and is not 
+dependent on which VLC plugins are yet under LGPL and which not.
+
+-- 
+Rémi Denis-Courmont
+http://www.remlab.net/
+http://fi.linkedin.com/in/remidenis

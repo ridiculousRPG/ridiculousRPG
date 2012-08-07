@@ -1,4 +1,9 @@
 
+IMPORTANT NOTE:
+This library is ON HOLD!
+At the time there is not a single plugin/module for vlc available under LGPL!
+That's why all efforts regarding this library are pretty useless!
+
 --------------------- About the different LICENSES -----------------------
 This project is licensed under the Apache License, Version 2.0 (see LICENSE file)
 
@@ -15,12 +20,3 @@ If you use/modify this project you will not be forced to publish your source
 code because the Apache License, Version 2.0 has NO COPYLEFT RESTRICTION.
 Be careful if you change anything regarding the linked libraries, because
 LGPL is less generous.
-
------------- Side note about the header files inside /jni/vlc -------------
-These header files are shipped because it's easier for other users if they
-don't need to worry about offering the header files  when compiling this
-project. It's only for build-convenience, which itself is one of the goals
-stated by the LGPL license. I will not hesitate to remove these files if
-someone from the vlc project will complain about shipping this files,
-although I think it would contradict some goals of the LGPL.
-The shipping of the header files is currently a legal limbo, as far as I know.
