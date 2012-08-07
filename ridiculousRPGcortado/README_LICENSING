@@ -1,0 +1,18 @@
+This library links against Cortado and ridiculousRPG!
+
+Cortado (and all its components) is licensed under:
+GNU General Public License, Version 2 or any later version
+
+ridiculousRPG (and all its components) is licensed under:
+Apache License, Version 2
+
+
+If I got it right, both licenses can be brought down to a
+common denominator. GPLv3 is such a common denominator!
+This library is licensed under GPLv3 and overrides the above
+mentioned other licenses as needed.
+
+SEE file LICENSE!
+
+The Cortado applet player and its source code can be
+downloaded from: http://www.theora.org/cortado/
